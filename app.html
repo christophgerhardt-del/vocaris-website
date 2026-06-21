@@ -1,0 +1,2242 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vocaris — Verwaltung</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--paper-2); }
+    /* ---- Login (Split-Screen) ---- */
+    .login { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
+    .login__brand { position: relative; color: #fff; padding: 44px 48px; display: flex; flex-direction: column;
+      overflow: hidden; background: linear-gradient(150deg, var(--accent) 0%, var(--accent-2) 58%, #5b21b6 100%); }
+    .login__brand::before { content: ''; position: absolute; inset: 0;
+      background: radial-gradient(720px 420px at 82% 8%, rgba(255,255,255,.20), transparent 60%),
+                  radial-gradient(560px 420px at 10% 100%, rgba(255,255,255,.10), transparent 60%); }
+    .login__logo { position: relative; display: flex; align-items: center; gap: 10px; color: #fff;
+      text-decoration: none; font-weight: 700; font-size: 19px; letter-spacing: -.01em; }
+    .login__logo svg { width: 26px; height: 26px; }
+    .login__pitch { position: relative; margin: auto 0; max-width: 31ch; }
+    .login__pitch h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 3.6vw, 44px);
+      line-height: 1.06; margin-bottom: 18px; letter-spacing: -.01em; }
+    .login__pitch p { color: rgba(255,255,255,.86); font-size: 16px; line-height: 1.55; margin-bottom: 30px; }
+    .login__feats { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+    .login__feats li { display: flex; align-items: center; gap: 13px; font-size: 15px; color: rgba(255,255,255,.96); }
+    .login__feats .ic { width: 30px; height: 30px; flex: none; border-radius: 9px; display: grid; place-items: center;
+      background: rgba(255,255,255,.16); }
+    .login__feats svg { width: 17px; height: 17px; }
+    .login__foot { position: relative; color: rgba(255,255,255,.72); font-size: 13px; margin-top: 30px; }
+    .login__main { display: flex; align-items: center; justify-content: center; padding: 40px 24px; background: var(--white); }
+    .login__card { width: 100%; max-width: 380px; }
+    .login__card h1 { font-family: var(--serif); font-weight: 400; font-size: 33px; margin-bottom: 6px; letter-spacing: -.01em; }
+    .login__sub { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 28px; }
+    .login__card label { margin-top: 16px; }
+    .login__card input { padding: 12px 14px; border-radius: 12px; }
+    .login__submit { width: 100%; justify-content: center; margin-top: 24px; font-size: 15px; padding: 13px 18px; }
+    .login__err { color: var(--accent-3); font-size: 13.5px; margin-top: 12px; min-height: 1.1em; font-weight: 500; }
+    .login__alt { margin-top: 24px; font-size: 14px; color: var(--ink-faint); }
+    .login__alt a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .login__alt a:hover { text-decoration: underline; }
+    .pw { position: relative; }
+    .pw input { padding-right: 44px; }
+    .pw__toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: 0;
+      cursor: pointer; color: var(--ink-faint); padding: 9px; display: flex; border-radius: 8px; }
+    .pw__toggle:hover { color: var(--ink-soft); }
+    @media (max-width: 860px) {
+      .login { display: block; overflow-x: hidden; }
+      .login__brand { display: none; }
+      .login__main { display: block; min-height: 100vh; padding: 48px 22px; }
+      .login__card { width: 100%; max-width: 420px; margin: 0 auto; }
+    }
+    /* ---- Sidebar-Feinschliff ---- */
+    .nav-group { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--ink-faint); padding: 16px 12px 6px; }
+    .nav-group:first-of-type { padding-top: 4px; }
+    .side__user { display: flex; align-items: center; gap: 10px; padding: 2px 4px 12px; }
+    .side__avatar { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center;
+      color: #fff; font-weight: 700; font-size: 14px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .side__email { flex: 1; min-width: 0; font-size: 12.5px; color: var(--ink-faint); line-height: 1.25;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* ---- Shell ---- */
+    .shell { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+    .side { background: var(--white); border-right: 1px solid var(--line); padding: 20px 14px;
+      display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+    .side .brand { display: flex; align-items: center; gap: 10px; padding: 6px 10px 18px;
+      color: var(--ink); text-decoration: none; font-weight: 700; font-size: 18px; }
+    .side .brand .m { color: var(--accent); display: flex; }
+    .nav-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+      background: none; border: 0; border-radius: var(--r-sm); padding: 11px 12px; cursor: pointer;
+      color: var(--ink-soft); font: inherit; font-weight: 500; font-size: 14.5px; }
+    .nav-item:hover { background: var(--paper-2); color: var(--ink); }
+    .nav-item.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
+    .nav-item svg { width: 18px; height: 18px; flex: none; opacity: .8; }
+    .gap-badge { margin-left: auto; background: var(--accent-3); color: #fff; font-size: 11px;
+      font-weight: 700; border-radius: 999px; padding: 1px 7px; }
+    .call-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r);
+      padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+    .call-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .call-head .who { font-weight: 600; }
+    .live-pill { font-size: 11px; font-weight: 700; color: #fff; background: #28c76f; border-radius: 999px; padding: 2px 9px; }
+    .call-summary { background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px;
+      font-size: 13.5px; color: var(--ink-soft); margin-bottom: 12px; line-height: 1.45; }
+    .call-topic { display: inline-block; background: var(--white); border: 1px solid var(--line); border-radius: 999px;
+      padding: 1px 9px; font-size: 11.5px; font-weight: 700; color: var(--accent-ink); margin-right: 6px; }
+    .transcript { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
+    .bubble { max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 14px; white-space: pre-wrap; line-height: 1.4; }
+    .bubble.caller { align-self: flex-start; background: var(--paper-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+    .bubble.assistant { align-self: flex-end; background: color-mix(in srgb, var(--accent) 14%, var(--white));
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-bottom-right-radius: 4px; }
+    .side .foot { margin-top: auto; border-top: 1px solid var(--line); padding-top: 14px; }
+    .side .email { font-size: 12.5px; color: var(--ink-faint); padding: 0 10px 10px; word-break: break-all; }
+    .main { padding: 30px 36px 80px; max-width: 820px; }
+    .pagehead { font-family: var(--serif); font-weight: 400; font-size: 30px; margin-bottom: 4px; }
+    .pagesub { color: var(--ink-soft); font-size: 14px; margin-bottom: 24px; }
+    /* ---- Cards / forms ---- */
+    .panel { background: var(--white); border: 1px solid var(--line); border-radius: var(--r);
+      padding: 24px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
+    .panel h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 14px; letter-spacing: -.01em; }
+    .panel.muted { color: var(--ink-faint); text-align: center; padding: 34px 24px; font-size: 14px; }
+    /* ===== Chat-Widget (Wissens-Assistent, rechter Rand) ===== */
+    .wa-launcher { position: fixed; right: 22px; bottom: 22px; z-index: 60; display: flex; align-items: center; gap: 9px;
+      border: 0; cursor: pointer; color: #fff; font: inherit; font-weight: 600; font-size: 14.5px; padding: 13px 18px;
+      border-radius: 999px; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 30px -8px rgba(79,70,229,.55); transition: transform .15s, box-shadow .15s; }
+    .wa-launcher:hover { transform: translateY(-2px); box-shadow: 0 16px 38px -8px rgba(79,70,229,.6); }
+    .wa-launcher svg { width: 20px; height: 20px; }
+    .wa-launcher.hidden { display: none !important; }
+    .wa-panel { position: fixed; top: 0; right: 0; z-index: 61; height: 100vh; width: 420px; max-width: 100vw;
+      background: var(--white); border-left: 1px solid var(--line); box-shadow: -24px 0 60px -30px rgba(40,36,90,.4);
+      display: flex; flex-direction: column; transform: translateX(105%); transition: transform .28s cubic-bezier(.4,0,.2,1); }
+    .wa-panel.open { transform: translateX(0); }
+    .wa-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px;
+      color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .wa-title { font-weight: 700; font-size: 15.5px; }
+    .wa-sub { font-size: 12px; color: rgba(255,255,255,.82); margin-top: 1px; }
+    .wa-head-actions { display: flex; gap: 4px; }
+    .wa-head-actions button { background: rgba(255,255,255,.16); border: 0; color: #fff; cursor: pointer; width: 32px; height: 32px;
+      border-radius: 9px; font-size: 15px; display: grid; place-items: center; }
+    .wa-head-actions button:hover { background: rgba(255,255,255,.28); }
+    .wa-chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--paper); }
+    .wa-msg { max-width: 88%; padding: 10px 13px; border-radius: 15px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+    .wa-msg.user { align-self: flex-end; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-bottom-right-radius: 5px; }
+    .wa-msg.bot { align-self: flex-start; background: var(--white); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+    .wa-msg.bot b { color: var(--ink); } .wa-msg.bot ul { margin: 4px 0 0 18px; } .wa-msg.bot code { background: var(--paper-2); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+    .wa-msg.bot a { color: var(--accent); }
+    .wa-typing { align-self: flex-start; display: flex; gap: 4px; padding: 12px 14px; background: var(--white); border: 1px solid var(--line); border-radius: 15px; }
+    .wa-typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); animation: waBlink 1.2s infinite both; }
+    .wa-typing span:nth-child(2) { animation-delay: .2s; } .wa-typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes waBlink { 0%,80%,100% { opacity: .25; } 40% { opacity: 1; } }
+    .wa-starters { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 10px; }
+    .wa-starters.hidden { display: none; }
+    .wa-starter { background: var(--white); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font: inherit;
+      font-size: 13px; color: var(--accent-ink); cursor: pointer; }
+    .wa-starter:hover { border-color: var(--accent); }
+    .wa-input { display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--white); }
+    .wa-input textarea { flex: 1; resize: none; max-height: 130px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; }
+    .wa-icon, .wa-send { flex: none; width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line); background: var(--paper);
+      cursor: pointer; font-size: 17px; display: grid; place-items: center; color: var(--ink-soft); }
+    .wa-send { border: 0; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .wa-icon:hover { border-color: var(--accent); } .wa-send:disabled { opacity: .5; cursor: default; }
+    .wa-sug { border: 1px solid var(--line); border-radius: 11px; padding: 9px 11px; margin-top: 8px; background: var(--paper); }
+    .wa-sug .cat { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--accent-ink); font-weight: 700; }
+    .wa-sug b { display: block; margin: 3px 0; font-size: 13.5px; }
+    .wa-sug p { font-size: 13px; color: var(--ink-soft); margin-bottom: 7px; }
+    @media (max-width: 600px) { .wa-panel { width: 100vw; border-left: 0; } .wa-launcher span { display: none; } .wa-launcher { padding: 14px; } }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .stat { display: flex; align-items: center; gap: 14px; background: var(--white); border: 1px solid var(--line);
+      border-radius: var(--r); padding: 16px 18px; box-shadow: var(--shadow-sm); transition: box-shadow .18s, transform .18s; }
+    .stat:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+    .stat__ic { width: 42px; height: 42px; flex: none; border-radius: 12px; display: grid; place-items: center;
+      color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
+    .stat__ic svg { width: 21px; height: 21px; }
+    .stat .k { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 3px; }
+    .stat .v { font-size: 23px; font-weight: 600; font-family: var(--serif); line-height: 1.1; }
+    .statusdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #28c76f; margin-right: 7px; }
+    /* Gradient-Begrüßungskarte (Übersicht) */
+    .hero-card { position: relative; overflow: hidden; border-radius: var(--r); padding: 28px 30px; margin-bottom: 18px;
+      color: #fff; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 68%, #5b21b6 100%); box-shadow: var(--shadow); }
+    .hero-card::before { content: ''; position: absolute; inset: 0;
+      background: radial-gradient(540px 280px at 88% -10%, rgba(255,255,255,.22), transparent 60%); }
+    .hero-card > * { position: relative; }
+    .hero-card .eyebrow2 { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.82); }
+    .hero-card h2 { font-family: var(--serif); font-weight: 400; font-size: 30px; margin: 5px 0 14px; letter-spacing: -.01em; }
+    .hero-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; font-weight: 600; }
+    .hero-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,.25); }
+    /* Wochen-Kalender */
+    .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .cal-title { font-weight: 600; font-size: 14.5px; }
+    .cal-nav { display: flex; gap: 6px; }
+    .cal-nav button { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer; font: inherit; font-size: 13px; color: var(--ink-soft); }
+    .cal-nav button:hover { border-color: var(--accent); color: var(--accent-ink); }
+    .cal__headrow, .cal__grid { display: grid; grid-template-columns: 46px repeat(7, 1fr); }
+    .cal__dh { text-align: center; padding: 5px 2px; border-left: 1px solid var(--line); font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .03em; }
+    .cal__dh .dnum { display: block; font-size: 16px; font-family: var(--serif); color: var(--ink); letter-spacing: 0; }
+    .cal__dh.today { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    .cal__dh.today .dnum { color: var(--accent-ink); }
+    .cal__grid { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; max-height: 520px; overflow-y: auto; }
+    .cal__axis { position: relative; }
+    .cal__hr { height: 44px; font-size: 10.5px; color: var(--ink-faint); text-align: right; padding-right: 6px; box-sizing: border-box; }
+    .cal__col { position: relative; border-left: 1px solid var(--line);
+      background-image: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 44px); }
+    .cal__ev { position: absolute; left: 3px; right: 3px; min-height: 16px; border-radius: 7px; padding: 2px 6px;
+      font-size: 11px; line-height: 1.25; overflow: hidden; color: #fff; box-shadow: var(--shadow-sm);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); cursor: pointer; }
+    .cal__ev .t { font-weight: 700; }
+    .cal__ev.busy { background: repeating-linear-gradient(45deg, #d7dae2, #d7dae2 6px, #eceef3 6px, #eceef3 12px);
+      color: var(--ink-soft); box-shadow: none; cursor: default; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin: 14px 0 5px; }
+    input, textarea, select { width: 100%; font: inherit; color: var(--ink); background: var(--paper);
+      border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; }
+    input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    textarea { resize: vertical; min-height: 80px; }
+    .grid2 { display: flex; gap: 14px; flex-wrap: wrap; }
+    .grid2 > div { flex: 1; min-width: 200px; }
+    .hours { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+    .hrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .hrow .hday { width: 34px; font-size: 13px; color: var(--muted); font-weight: 600; }
+    .hrow input[type=time] { width: auto; padding: 6px 8px; }
+    .hrow .hsep { color: var(--muted); }
+    .chk { display: flex; align-items: center; gap: 10px; margin: 8px 0; cursor: pointer; }
+    .chk input { width: auto; }
+    code, .codebox { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+    .bignum { display: inline-flex; align-items: center; gap: 12px; font-family: var(--serif); font-size: 30px;
+      color: var(--ink); letter-spacing: .01em; }
+    .bignum button { font: inherit; font-family: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px;
+      border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; }
+    .bignum button:hover { border-color: var(--accent); color: var(--accent-ink); }
+    .fwd-list { margin: 6px 0 18px 2px; list-style: none; }
+    .fwd-list li { margin: 7px 0; color: var(--ink-soft); font-size: 14px; }
+    .fwd-list code { background: var(--paper-2); border: 1px solid var(--line); border-radius: 7px; padding: 3px 8px;
+      font-size: 13.5px; color: var(--accent-ink); margin-left: 4px; }
+    .codebox { display: block; white-space: pre-wrap; background: var(--paper-2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 12px 14px; color: var(--ink); overflow-x: auto; }
+    .chip { display: inline-block; background: var(--paper-2); border: 1px solid var(--line);
+      border-radius: 999px; padding: 8px 15px; font-size: 14px; font-weight: 600; }
+    /* Abteilungs-Umschalter (Allgemein / Vertrieb / Support) */
+    .deptbar { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 18px;
+      background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; }
+    .deptseg { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border: 0;
+      border-radius: 9px; background: transparent; color: var(--ink-soft); cursor: pointer; transition: all .15s; }
+    .deptseg:hover { color: var(--ink); }
+    .deptseg.active { background: var(--white); color: var(--accent-ink); box-shadow: var(--shadow-sm); }
+    .dept-hint { color: var(--ink-faint); font-size: 13.5px; margin: -8px 0 18px; }
+    .dept-badge { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .02em;
+      padding: 3px 10px; border-radius: 999px; vertical-align: middle; }
+    .dept-badge.general { background: var(--paper-2); color: var(--ink-soft); border: 1px solid var(--line); }
+    .dept-badge.vertrieb { background: #e8f0ff; color: #1d4ed8; }
+    .dept-badge.support { background: #e9f7ef; color: #15803d; }
+    .numcard { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 18px; margin-bottom: 14px; background: var(--white); }
+    .numcard .numhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+    .item { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 16px; margin-bottom: 12px;
+      background: var(--white); transition: border-color .15s, box-shadow .15s; }
+    .item:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: var(--shadow-sm); }
+    .item h4 { font-size: 15px; margin-bottom: 6px; }
+    .item p { color: var(--ink-soft); font-size: 14px; white-space: pre-wrap; }
+    .muted { color: var(--ink-faint); font-size: 14px; }
+    .btn.sm { padding: 7px 13px; font-size: 13px; }
+    .btn--danger { background: transparent; border: 1px solid var(--accent-3); color: var(--accent-3); }
+    .stack { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .hint { background: color-mix(in srgb, var(--accent) 7%, var(--white)); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+      border-radius: var(--r-sm); padding: 14px 16px; font-size: 14px; color: var(--ink-soft); }
+    .hint b { color: var(--ink); }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--dark);
+      color: #fff; padding: 12px 18px; border-radius: var(--r-sm); opacity: 0; transition: opacity .2s;
+      pointer-events: none; font-size: 14px; box-shadow: var(--shadow); z-index: 50; }
+    .toast.show { opacity: 1; } .toast.err { background: var(--accent-3); }
+    .hidden { display: none !important; }
+    /* Branchen-Vorlagen + Drag&Drop */
+    .kb-drop { border-radius: var(--r); transition: box-shadow .15s, background .15s; }
+    .kb-drop.drag-over { box-shadow: 0 0 0 2px var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); padding: 6px; }
+    .kb-drop.drag-over::after { content: 'Hier loslassen, um zu übernehmen'; display: block; text-align: center;
+      color: var(--accent-ink); font-size: 13px; padding: 12px; font-weight: 600; }
+    .doc-drop { border: 2px dashed var(--line); border-radius: var(--r-sm); padding: 26px 18px; text-align: center;
+      color: var(--ink-soft); cursor: pointer; transition: border-color .15s, background .15s; }
+    .doc-drop:hover, .doc-drop.drag-over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .doc-drop b { color: var(--accent-ink); }
+    .pwmodal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
+      background: rgba(20,18,24,.45); backdrop-filter: blur(2px); }
+    .pwmodal.hidden { display: none; }
+    .pwmodal__card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 26px;
+      width: min(420px, 92vw); box-shadow: var(--shadow-lg, 0 20px 60px rgba(0,0,0,.25)); }
+    .pwmodal__card h3 { margin-bottom: 4px; }
+    .pwmodal__card input { width: 100%; margin: 4px 0 10px; }
+    .statsum { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
+    .statsum > div { min-width: 90px; }
+    .statsum .n { font-family: var(--serif); font-size: 26px; color: var(--ink); line-height: 1.1; }
+    .statsum .l { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+    .statchart { display: flex; align-items: flex-end; gap: 6px; height: 110px; }
+    .statchart .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; justify-content: flex-end; }
+    .statchart .bar { width: 100%; max-width: 26px; min-height: 3px; background: var(--accent); border-radius: 5px 5px 0 0; opacity: .85; }
+    .statchart .bar.zero { background: var(--line); }
+    .statchart .d { font-size: 10.5px; color: var(--ink-faint); }
+    .statchart .c { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+    /* Schwebendes Live-Anruf-Widget (unten rechts, über dem Assistenten-Launcher) */
+    .livew { position: fixed; right: 22px; bottom: 84px; z-index: 70; width: 330px; max-width: calc(100vw - 44px);
+      background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+      box-shadow: 0 18px 50px -12px rgba(0,0,0,.32); display: flex; flex-direction: column; }
+    .livew.hidden { display: none; }
+    .livew__head { display: flex; align-items: center; gap: 9px; padding: 12px 14px; cursor: pointer;
+      background: linear-gradient(135deg,#111827,#1f2937); color: #fff; }
+    .livew__dot { width: 9px; height: 9px; border-radius: 50%; background: #28c76f; flex: none; animation: lvpulse 1.6s infinite; }
+    .livew__dot.ended { background: #9aa3b2; animation: none; }
+    @keyframes lvpulse { 0%{box-shadow:0 0 0 0 rgba(40,199,111,.5)} 70%{box-shadow:0 0 0 8px rgba(40,199,111,0)} 100%{box-shadow:0 0 0 0 rgba(40,199,111,0)} }
+    .livew__t { flex: 1; min-width: 0; }
+    .livew__t b { font-size: 13.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .livew__t span { font-size: 11.5px; opacity: .82; }
+    .livew__head button { background: rgba(255,255,255,.16); border: 0; color: #fff; width: 24px; height: 24px;
+      border-radius: 7px; cursor: pointer; font-size: 13px; line-height: 1; }
+    .livew__head button:hover { background: rgba(255,255,255,.3); }
+    .livew__body { padding: 12px; max-height: 46vh; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; background: var(--paper); }
+    .livew.collapsed .livew__body { display: none; }
+    .livew__empty { color: var(--ink-faint); font-size: 13px; text-align: center; padding: 18px 6px; }
+    /* Lade-Spinner beim ersten Öffnen */
+    #boot { position: fixed; inset: 0; z-index: 150; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 16px; background: var(--paper); color: var(--ink-soft); }
+    #boot.hidden { display: none; }
+    #boot .ring { width: 38px; height: 38px; border: 3px solid var(--line); border-top-color: var(--accent);
+      border-radius: 50%; animation: bootspin .8s linear infinite; }
+    @keyframes bootspin { to { transform: rotate(360deg); } }
+    .branch-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .branch-chip { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px;
+      font: inherit; font-size: 13.5px; cursor: pointer; color: var(--ink-soft); }
+    .branch-chip:hover { border-color: var(--accent); }
+    .branch-chip.active { background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+    .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+    .tpl-card { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 14px; background: var(--paper); cursor: grab; }
+    .tpl-card:active { cursor: grabbing; }
+    .tpl-card.dragging { opacity: .45; }
+    .tpl-card h4 { font-size: 14px; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+    .tpl-card h4 .grip { color: var(--ink-faint); cursor: grab; }
+    .tpl-card p { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; max-height: 60px; overflow: hidden; }
+    .tpl-card .btn { width: 100%; justify-content: center; }
+    .tpl-cat, .kb-cat-head { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .tpl-cat { display: inline-block; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 8px; }
+    .kb-cat-head { color: var(--ink-faint); margin: 20px 0 8px; }
+    .kb-cat-head:first-child { margin-top: 4px; }
+    @media (max-width: 760px) {
+      .shell { grid-template-columns: 1fr; }
+      .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
+      .side .brand { padding: 6px 10px; }
+      .side nav { display: flex; flex: 1; overflow-x: auto; gap: 4px; }
+      .nav-item { width: auto; white-space: nowrap; }
+      .side .foot { margin: 0 0 0 auto; border: 0; padding: 0; } .side__user { display: none; }
+      .nav-group { display: none; }
+      .main { padding: 22px 18px 60px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- AUTH -->
+  <div id="authView" class="hidden">
+    <div class="login">
+      <aside class="login__brand">
+        <a class="login__logo" href="https://vocaris.eu">
+          <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#fff" stroke-width="1.5" opacity=".4"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          Vocaris
+        </a>
+        <div class="login__pitch">
+          <h2>Dein KI-Telefon­assistent.</h2>
+          <p>Nimmt Anrufe an, beantwortet Fragen, bucht Termine und nimmt Rückrufe auf — rund um die Uhr, in unter einer Sekunde.</p>
+          <ul class="login__feats">
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>Antwortet sofort, ohne Warteschleife</li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>Termine &amp; Rückrufe automatisch</li>
+            <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7L12 5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7L12 19"/></svg></span>Slack, E-Mail, Kalender &amp; CRM</li>
+          </ul>
+        </div>
+        <p class="login__foot">© Vocaris · entwickelt in München</p>
+      </aside>
+
+      <main class="login__main">
+        <div class="login__card">
+          <h1 id="authTitle">Willkommen zurück</h1>
+          <p class="login__sub">Melde dich an, um deinen Assistenten zu verwalten.</p>
+          <label for="email">E-Mail</label>
+          <input id="email" type="email" autocomplete="email" placeholder="name@firma.de" />
+          <label for="password">Passwort</label>
+          <div class="pw">
+            <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+            <button type="button" id="pwToggle" class="pw__toggle" aria-label="Passwort anzeigen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <button id="authBtn" class="btn btn--primary login__submit">Anmelden</button>
+          <p id="authMsg" class="login__err"></p>
+          <p class="login__alt"><a href="#" id="forgotPw">Passwort vergessen?</a></p>
+          <p class="login__alt">Noch keinen Zugang? <a href="https://vocaris.eu/#contact">Demo anfragen →</a></p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="shell" class="shell hidden">
+    <aside class="side">
+      <a class="brand" href="./"><span class="m"><svg viewBox="0 0 28 28" width="24" height="24"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Vocaris</a>
+      <nav>
+        <div class="nav-group">Betrieb</div>
+        <button class="nav-item active" data-target="sec-overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Übersicht</button>
+        <button class="nav-item" data-target="sec-live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h4"/></svg>Live <span id="liveBadge" class="gap-badge hidden" style="background:#28c76f"></span></button>
+        <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Anrufe &amp; Nachrichten</button>
+        <div class="nav-group">Assistent</div>
+        <button class="nav-item" data-target="sec-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Wissensdatenbank</button>
+        <button class="nav-item" data-target="sec-gaps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Offene Fragen <span id="gapBadge" class="gap-badge hidden"></span></button>
+        <button class="nav-item" data-target="sec-assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Assistent</button>
+        <div class="nav-group">Funktionen</div>
+        <button class="nav-item" data-target="sec-number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Telefonnummer</button>
+        <button class="nav-item" data-target="sec-booking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
+        <button class="nav-item" data-target="sec-webhooks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Schnittstellen</button>
+      </nav>
+      <div class="foot">
+        <div class="side__user">
+          <span class="side__avatar" id="userAvatar">·</span>
+          <span class="side__email" id="userEmail"></span>
+        </div>
+        <button id="changePwBtn" class="btn btn--ghost sm" style="width:100%; justify-content:center; margin-bottom:6px">Passwort ändern</button>
+        <button id="logoutBtn" class="btn btn--ghost sm" style="width:100%; justify-content:center">Abmelden</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="noTenant" class="panel hidden">
+        <h3>Kein Assistent zugeordnet</h3>
+        <p class="muted">Diesem Konto ist noch kein Assistent zugewiesen. Melde dich bei uns, dann schalten wir dich frei.</p>
+      </div>
+
+      <div id="content" class="hidden">
+        <!-- Übersicht -->
+        <section id="sec-overview" class="section">
+          <div class="hero-card">
+            <span class="eyebrow2">Dein KI-Telefonassistent</span>
+            <h2 id="ovSub">—</h2>
+            <span id="ovStatus" class="hero-pill">—</span>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+              <div><div class="k">Wissens-Einträge</div><div class="v" id="ovKb">0</div></div>
+            </div>
+            <div class="stat">
+              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              <div><div class="k">Nachrichten</div><div class="v" id="ovMsg">0</div></div>
+            </div>
+            <div class="stat">
+              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div><div class="k">Offene Fragen</div><div class="v" id="ovGaps">0</div></div>
+            </div>
+            <div class="stat">
+              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg></span>
+              <div><div class="k">Sprache</div><div class="v" id="ovLang" style="font-size:18px">—</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Anrufe – letzte 14 Tage</h3>
+            <div id="statSummary" class="statsum"></div>
+            <div id="statChart" class="statchart"></div>
+          </div>
+          <div class="panel">
+            <h3>So testest du deinen Assistenten</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Pflege unter <b>Wissensdatenbank</b>, worüber er Auskunft geben soll, und passe unter <b>Assistent</b> Begrüßung, Öffnungszeiten und Stimme an. Änderungen wirken sofort beim nächsten Anruf.</p>
+            <button id="wizStartBtn" class="btn btn--primary">🚀 Einrichtungs-Assistent starten</button>
+          </div>
+        </section>
+
+        <!-- Live -->
+        <section id="sec-live" class="section hidden">
+          <h1 class="pagehead">Live</h1>
+          <p class="pagesub">Laufende Anrufe in Echtzeit. Der Gesprächsverlauf erscheint live, während telefoniert wird.</p>
+          <div class="panel">
+            <h3>Anruf starten</h3>
+            <p class="muted" style="margin-bottom:10px">Lass deinen Assistenten jemanden anrufen — z.B. für einen Rückruf. Nummer im Format +49…</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <input id="callTo" placeholder="+49 170 1234567" style="flex:1; min-width:200px" />
+              <button id="callBtn" class="btn btn--primary">Anrufen</button>
+            </div>
+            <p class="muted" id="callHint" style="margin-top:8px">Nummer im Format +49… eingeben — dein Assistent ruft sofort an.</p>
+          </div>
+          <div id="liveActive"></div>
+          <h3 style="margin:26px 0 12px; font-size:15px;">Letzte Anrufe</h3>
+          <div id="liveRecent"></div>
+        </section>
+
+        <!-- Nachrichten -->
+        <section id="sec-messages" class="section hidden">
+          <h1 class="pagehead">Anrufe &amp; Nachrichten</h1>
+          <p class="pagesub">Rückrufe und Anliegen, die dein Assistent entgegengenommen hat.</p>
+          <div id="messages"></div>
+        </section>
+
+        <!-- Wissensdatenbank -->
+        <section id="sec-kb" class="section hidden">
+          <h1 class="pagehead">Wissensdatenbank</h1>
+          <p class="pagesub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
+          <div class="deptbar" data-deptbar>
+            <button class="deptseg active" data-dept="general">Allgemein</button>
+            <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
+            <button class="deptseg" data-dept="support">Support</button>
+          </div>
+          <p class="dept-hint" id="kbDeptHint"></p>
+
+          <div class="panel">
+            <h3>Aus Website importieren</h3>
+            <p class="muted" style="margin-bottom:12px">Gib die Adresse deiner Website an — Vocaris liest sie und schlägt fertige Wissens-Einträge vor. Du übernimmst nur, was passt.</p>
+            <div class="grid2">
+              <div style="flex:3"><input id="ingestUrl" placeholder="https://deine-website.de" /></div>
+              <div><button id="ingestBtn" class="btn btn--primary" style="width:100%">Website lesen</button></div>
+            </div>
+            <p class="muted" id="ingestHint" style="margin-top:8px"></p>
+            <div id="ingestResults" style="margin-top:12px"></div>
+          </div>
+          <div class="panel">
+            <h3>Dokumente hochladen</h3>
+            <p class="muted" style="margin-bottom:12px">Lade ein oder mehrere Dokumente hoch (PDF, Word, Excel) — Vocaris liest sie, holt sich die wichtigsten Infos und legt sie automatisch als Einträge in der oben gewählten Abteilung an.</p>
+            <div id="docDrop" class="doc-drop">📄 Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
+            <input type="file" id="docFiles" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
+            <p class="muted" id="docHint" style="margin-top:10px"></p>
+          </div>
+          <div id="kbDrop" class="kb-drop"><div id="kbList"></div></div>
+          <div class="panel">
+            <h3>Neuen Eintrag hinzufügen</h3>
+            <div class="grid2">
+              <div><label>Kategorie</label>
+                <input id="kbCat" list="kbCats" placeholder="z.B. Öffnungszeiten" />
+                <datalist id="kbCats">
+                  <option>Öffnungszeiten</option><option>Leistungen</option><option>Termine &amp; Buchung</option>
+                  <option>Preise &amp; Zahlung</option><option>Anfahrt &amp; Parken</option><option>Notfall &amp; Dringendes</option>
+                  <option>Kontakt &amp; Rückruf</option><option>Ablauf</option><option>Storno &amp; Änderung</option><option>FAQ</option>
+                </datalist>
+              </div>
+              <div style="flex:2"><label>Titel</label>
+                <input id="kbTitle" placeholder="z.B. Geschäftszeiten" />
+              </div>
+            </div>
+            <label>Inhalt</label>
+            <textarea id="kbContent" placeholder="z.B. Montag bis Freitag von 8 bis 17 Uhr ..."></textarea>
+            <div class="stack"><button id="addKbBtn" class="btn btn--primary">Eintrag hinzufügen</button></div>
+          </div>
+          <div class="panel">
+            <h3>Vorlagen für deine Branche</h3>
+            <p class="muted" style="margin-bottom:14px">Branche wählen, dann einen Vorschlag per <b>Drag &amp; Drop</b> nach oben in deine Wissensdatenbank ziehen — oder auf „Übernehmen" tippen. Texte danach einfach anpassen.</p>
+            <div class="branch-chips" id="branchChips"></div>
+            <div class="tpl-grid" id="tplGrid"></div>
+          </div>
+        </section>
+
+        <!-- Offene Fragen -->
+        <section id="sec-gaps" class="section hidden">
+          <h1 class="pagehead">Offene Fragen</h1>
+          <p class="pagesub">Fragen, die dein Assistent nicht beantworten konnte. Beantworte sie hier — die Antwort wandert automatisch in die Wissensdatenbank, und beim nächsten Mal weiß er Bescheid.</p>
+          <div id="gapList"></div>
+        </section>
+
+        <!-- Assistent -->
+        <section id="sec-assistant" class="section hidden">
+          <h1 class="pagehead">Assistent</h1>
+          <p class="pagesub">Name, Begrüßung, Verhalten, Sprache und Stimme.</p>
+          <div class="deptbar" data-deptbar>
+            <button class="deptseg active" data-dept="general">Allgemein</button>
+            <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
+            <button class="deptseg" data-dept="support">Support</button>
+          </div>
+          <p class="dept-hint" id="asDeptHint"></p>
+          <div class="panel">
+            <label>Branchen-Vorlage (füllt die Felder vor – danach anpassbar)</label>
+            <div class="branch-chips" id="personaPresets"></div>
+
+            <label>Name deines Unternehmens</label>
+            <input id="bizName" placeholder="z.B. Mustermann Sanitär GmbH" />
+
+            <label>Begrüßung (wird beim Abnehmen gesagt)</label>
+            <textarea id="greeting"></textarea>
+
+            <div class="grid2">
+              <div style="flex:2">
+                <label>Rolle des Assistenten</label>
+                <input id="roleDesc" placeholder="z.B. die telefonische Rezeption der Praxis" />
+              </div>
+              <div>
+                <label>Tonalität</label>
+                <select id="tone">
+                  <option value="sie_formell">Sie – förmlich</option>
+                  <option value="sie_freundlich">Sie – freundlich</option>
+                  <option value="du_locker">Du – locker</option>
+                </select>
+              </div>
+            </div>
+
+            <label>Öffnungszeiten</label>
+            <div id="hoursGrid" class="hours"></div>
+            <p class="muted" style="margin:4px 0 14px">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z.B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
+
+            <label>Standort / Anfahrt (optional)</label>
+            <input id="location" placeholder="z.B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
+
+            <label>Verhalten</label>
+            <textarea id="behaviorRules" placeholder="z.B. Bei Terminwunsch keine Zusage machen, sondern einen Rückruf mit Name, Nummer und Anliegen aufnehmen."></textarea>
+
+            <label>Grenzen / Tabus <span class="muted">(Standard-Sicherheitsregeln gelten zusätzlich automatisch)</span></label>
+            <textarea id="guardrails" placeholder="z.B. Keine medizinische Beratung oder Diagnosen am Telefon."></textarea>
+
+            <label>Verabschiedung (optional)</label>
+            <input id="closing" placeholder="z.B. Vielen Dank für Ihren Anruf, einen schönen Tag!" />
+
+            <label>Zusätzliche Hinweise (frei, optional)</label>
+            <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
+
+            <div class="grid2">
+              <div>
+                <label>Sprache</label>
+                <select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select>
+              </div>
+              <div style="flex:2">
+                <label>Stimme (ElevenLabs Voice-ID)</label>
+                <input id="voiceId" placeholder="leer = Standardstimme" />
+              </div>
+            </div>
+            <p class="muted" style="margin-top:6px">Voice-ID findest du in ElevenLabs bei der Stimme („Copy Voice ID").</p>
+            <div class="stack"><button id="saveBtn" class="btn btn--primary">Speichern</button></div>
+          </div>
+        </section>
+
+        <!-- Termine -->
+        <section id="sec-booking" class="section hidden">
+          <h1 class="pagehead">Termine</h1>
+          <p class="pagesub">Dein Assistent kann am Telefon Termine vergeben — basierend auf deinen Öffnungszeiten (unter „Assistent"). Gebuchte Termine erscheinen hier und in deinem verbundenen Kalender.</p>
+
+          <div class="panel">
+            <h3>Kalender verbinden</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein.</p>
+            <div id="bkCal"><span class="muted">Lade …</span></div>
+          </div>
+
+          <div class="panel">
+            <label class="chk"><input type="checkbox" id="bkEnabled" /> <b>Terminbuchung aktiv</b> <span class="muted">– der Assistent darf Termine vergeben</span></label>
+            <div class="grid2" style="margin-top:8px">
+              <div><label>Termindauer (Min.)</label><input id="bkSlot" type="number" min="5" step="5" /></div>
+              <div><label>Puffer dazwischen (Min.)</label><input id="bkBuffer" type="number" min="0" step="5" /></div>
+            </div>
+            <div class="grid2">
+              <div><label>Frühestens ab (Std. im Voraus)</label><input id="bkLead" type="number" min="0" /></div>
+              <div><label>Buchbar bis (Tage im Voraus)</label><input id="bkHorizon" type="number" min="1" /></div>
+            </div>
+            <div class="stack" style="margin-top:12px"><button id="bkSave" class="btn btn--primary">Speichern</button></div>
+            <p class="muted" id="bkHint" style="margin-top:8px"></p>
+          </div>
+
+          <div class="panel">
+            <div class="cal-head">
+              <span class="cal-title" id="calTitle">Woche</span>
+              <div class="cal-nav">
+                <button id="calPrev">‹</button>
+                <button id="calToday">Heute</button>
+                <button id="calNext">›</button>
+              </div>
+            </div>
+            <div id="calWeek"><span class="muted">Lade Kalender …</span></div>
+            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12.5px">Indigo = Vocaris-Termine · schraffiert = belegt (aus dem verbundenen Kalender).</p>
+          </div>
+
+          <div class="panel">
+            <h3>Kalender-Abo (ohne Anmeldung)</h3>
+            <p class="muted" style="margin-bottom:10px">Diesen Link in Google/Apple/Outlook als „Kalender abonnieren" hinzufügen — neue Termine erscheinen automatisch. Link geheim halten.</p>
+            <div class="grid2">
+              <div style="flex:4"><input id="bkIcal" readonly /></div>
+              <div><button id="bkIcalCopy" class="btn" style="width:100%">Kopieren</button></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Termin manuell anlegen</h3>
+            <div class="grid2">
+              <div><label>Datum</label><input id="bkNewDate" type="date" /></div>
+              <div><label>Uhrzeit</label><input id="bkNewTime" type="time" /></div>
+            </div>
+            <div class="grid2">
+              <div style="flex:2"><label>Name</label><input id="bkNewName" placeholder="Name des Kunden" /></div>
+              <div style="flex:2"><label>Notiz (optional)</label><input id="bkNewNote" placeholder="z.B. Beratung" /></div>
+            </div>
+            <div class="stack" style="margin-top:12px"><button id="bkAdd" class="btn">Termin eintragen</button></div>
+          </div>
+
+          <div class="panel">
+            <h3>Anstehende Termine</h3>
+            <div id="bkList"></div>
+          </div>
+        </section>
+
+        <!-- Schnittstellen / Webhook -->
+        <section id="sec-webhooks" class="section hidden">
+          <h1 class="pagehead">Schnittstellen</h1>
+          <p class="pagesub">Vocaris meldet jedes Ereignis (z.B. eine aufgenommene Nachricht) an deine Ziele — Slack, Teams, Telegram, E-Mail oder einen eigenen Webhook (Zapier/Make/CRM).</p>
+
+          <div class="panel">
+            <label class="chk"><input type="checkbox" id="whEnabled" /> <b>Schnittstellen aktiv</b></label>
+            <label style="margin-top:10px">Welche Ereignisse senden?</label>
+            <label class="chk"><input type="checkbox" id="whMsg" /> <b>Neue Nachricht</b> – Rückruf/Anliegen aufgenommen <span class="muted">(message.captured)</span></label>
+            <label class="chk"><input type="checkbox" id="whGap" /> <b>Offene Frage</b> – konnte nicht beantwortet werden <span class="muted">(gap.created)</span></label>
+            <label class="chk"><input type="checkbox" id="whCall" /> <b>Anruf beendet</b> <span class="muted">(call.ended)</span></label>
+            <label class="chk"><input type="checkbox" id="whAppt" /> <b>Termin gebucht</b> <span class="muted">(appointment.booked)</span></label>
+          </div>
+
+          <div class="panel">
+            <h3>Ziele</h3>
+            <p class="muted" style="margin-bottom:14px">Trag nur ein, was du nutzen willst — leere Felder werden ignoriert. Die oben gewählten Ereignisse gehen an alle eingetragenen Ziele.</p>
+
+            <label>Slack <span class="muted">(eingehender Webhook)</span></label>
+            <input id="whSlack" placeholder="https://hooks.slack.com/services/…" />
+
+            <label>Microsoft Teams <span class="muted">(eingehender Webhook)</span></label>
+            <input id="whTeams" placeholder="https://….webhook.office.com/…" />
+
+            <label>Telegram <span class="muted">(Bot-Token von @BotFather + Chat-ID)</span></label>
+            <div class="grid2">
+              <div style="flex:2"><input id="whTgToken" placeholder="123456:ABC-DEF… (Bot-Token)" /></div>
+              <div><input id="whTgChat" placeholder="Chat-ID, z.B. 12345678" /></div>
+            </div>
+
+            <label>E-Mail an Adresse</label>
+            <input id="whEmail" placeholder="name@firma.de" />
+
+            <label style="margin-top:14px">Eigener Webhook <span class="muted">(JSON, z.B. Zapier/Make/CRM)</span></label>
+            <input id="whUrl" placeholder="https://hooks.zapier.com/… oder deine eigene Adresse" />
+            <label>Signatur-Schlüssel <span class="muted">(Echtheit prüfen via Header <code>X-Vocaris-Signature: sha256=HMAC(Body)</code>)</span></label>
+            <div class="grid2">
+              <div style="flex:3"><input id="whSecret" readonly /></div>
+              <div><button id="whRegen" class="btn" style="width:100%">Neu generieren</button></div>
+            </div>
+
+            <div class="stack" style="margin-top:14px">
+              <button id="whSave" class="btn btn--primary">Speichern</button>
+              <button id="whTest" class="btn">Test senden</button>
+            </div>
+            <p class="muted" id="whHint" style="margin-top:8px"></p>
+          </div>
+
+          <div class="panel">
+            <h3>Beispiel-Payload (eigener Webhook)</h3>
+            <p class="muted" style="margin-bottom:10px">POST, <code>Content-Type: application/json</code>, signiert per <code>X-Vocaris-Signature</code>:</p>
+            <code class="codebox">{
+  "event": "message.captured",
+  "occurred_at": "2026-06-18T12:00:00.000Z",
+  "data": {
+    "caller_name": "Max Mustermann",
+    "callback_number": "+49 170 1234567",
+    "summary": "Rückruf gewünscht zu Angebot",
+    "category": "Angebot",
+    "urgency": "mittel"
+  }
+}</code>
+          </div>
+        </section>
+
+        <!-- Telefonnummer -->
+        <section id="sec-number" class="section hidden">
+          <h1 class="pagehead">Telefonnummer &amp; Rufumleitung</h1>
+          <p class="pagesub">So koppelst du deine bestehende Geschäftsnummer mit Vocaris — du behältst deine Nummer. Du kannst mehrere Nummern hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
+          <div id="numbers"></div>
+          <div class="panel">
+            <label style="margin-top:0">☎️ Festnetz / Telefonanlage</label>
+            <p class="muted" style="text-align:left;padding:0">Richte die Rufumleitung im Online-Portal deines Anbieters (z.B. Telekom, Vodafone, 1&amp;1, sipgate) auf die jeweilige Vocaris-Nummer ein — meist unter „Anrufweiterleitung" bzw. „Rufumleitung". Bei einer Telefonanlage in deren Weiterleitungs-Einstellungen. Umleitung am Handy wieder aufheben: <code style="background:var(--paper-2);border:1px solid var(--line);border-radius:7px;padding:3px 8px">##002#</code></p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Schwebendes Live-Anruf-Widget -->
+    <div id="liveWidget" class="livew hidden">
+      <div class="livew__head" id="liveWidgetHead">
+        <span class="livew__dot" id="liveWidgetDot"></span>
+        <div class="livew__t"><b id="liveWidgetWho">Anruf</b><span id="liveWidgetStatus">Live</span></div>
+        <button id="liveWidgetMin" title="Ein-/ausklappen" type="button">–</button>
+        <button id="liveWidgetClose" title="Schließen" type="button">✕</button>
+      </div>
+      <div class="livew__body" id="liveWidgetBody"></div>
+    </div>
+
+    <!-- Chat-Widget: Wissens-Assistent -->
+    <button id="waLauncher" class="wa-launcher" aria-label="Wissens-Assistent öffnen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Assistent</span>
+    </button>
+    <div id="waPanel" class="wa-panel" aria-hidden="true">
+      <div class="wa-head">
+        <div>
+          <div class="wa-title">Wissens-Assistent</div>
+          <div class="wa-sub">Fragen · Infos ergänzen · Dokumente hochladen</div>
+        </div>
+        <div class="wa-head-actions">
+          <button id="waNew" title="Neue Unterhaltung">⟳</button>
+          <button id="waClose" title="Schließen">✕</button>
+        </div>
+      </div>
+      <div id="waChat" class="wa-chat"></div>
+      <div id="waStarters" class="wa-starters"></div>
+      <div class="wa-input">
+        <input type="file" id="waFile" accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
+        <button id="waAttach" class="wa-icon" type="button" title="Dokument hochladen">📎</button>
+        <textarea id="waText" rows="1" placeholder="Nachricht … (Enter sendet)"></textarea>
+        <button id="waSend" class="wa-send" type="button" title="Senden">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="boot" class="hidden"><div class="ring"></div><div>Dein Dashboard wird geladen …</div></div>
+
+  <!-- Einrichtungs-Assistent (Onboarding) -->
+  <div id="wizModal" class="pwmodal hidden">
+    <div class="pwmodal__card" style="width:min(580px,94vw)"><div id="wizBody"></div></div>
+  </div>
+
+  <!-- Passwort ändern / setzen -->
+  <div id="pwModal" class="pwmodal hidden">
+    <div class="pwmodal__card">
+      <h3 id="pwModalTitle">Passwort ändern</h3>
+      <p class="muted" id="pwModalSub" style="margin-bottom:14px">Wähle ein neues Passwort (mindestens 8 Zeichen).</p>
+      <label>Neues Passwort</label>
+      <input id="pwNew" type="password" autocomplete="new-password" placeholder="••••••••" />
+      <label>Wiederholen</label>
+      <input id="pwNew2" type="password" autocomplete="new-password" placeholder="••••••••" />
+      <p id="pwMsg" class="login__err"></p>
+      <div class="stack" style="margin-top:14px">
+        <button id="pwSave" class="btn btn--primary">Speichern</button>
+        <button id="pwCancel" class="btn btn--ghost">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    const sb = createClient('https://nocsjyzmnskbyccrjayx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4');
+    const $ = (id) => document.getElementById(id);
+    let tenant = null, accessToken = null, realtimeChannel = null, bookingToken = '', calStart = null, bizHours = {};
+    let currentDept = 'general';
+    const DEPT_LABEL = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
+    const KB_HINT = {
+      general: 'Allgemeines Wissen — gilt für alle Abteilungen (Vertrieb und Support).',
+      vertrieb: 'Wissen nur für die Vertrieb-Nummer. Das Allgemein-Wissen kommt automatisch dazu.',
+      support: 'Wissen nur für die Support-Nummer. Das Allgemein-Wissen kommt automatisch dazu.',
+    };
+    const AS_HINT = {
+      general: 'Basis-Einstellungen, die für alle Abteilungen gelten.',
+      vertrieb: 'Einstellungen für die Vertrieb-Nummer. Leere Felder übernehmen automatisch die Allgemein-Einstellung.',
+      support: 'Einstellungen für die Support-Nummer. Leere Felder übernehmen automatisch die Allgemein-Einstellung.',
+    };
+    const liveCalls = new Map();
+    const API = 'https://ki-anruf.onrender.com';
+    // Robuster API-Aufruf: bei reinem Netzwerkfehler (z.B. Server startet nach
+    // einem Deploy gerade neu → „Load failed") kurz warten und erneut versuchen.
+    async function apiFetch(path, opts, tries = 3) {
+      for (let i = 0; i < tries; i++) {
+        try { return await fetch(API + path, opts); }
+        catch (e) {
+          if (i === tries - 1) throw new Error('Server gerade nicht erreichbar – bitte in ein paar Sekunden nochmal versuchen.');
+          await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+        }
+      }
+    }
+    const TITLES = { 'sec-overview': 'Übersicht', 'sec-messages': 'Anrufe & Nachrichten',
+      'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
+      'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine' };
+
+    function toast(msg, kind = '') {
+      const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + kind;
+      setTimeout(() => (t.className = 'toast'), 2600);
+    }
+
+    // ---- Navigation ----
+    document.querySelectorAll('.nav-item').forEach((b) => {
+      b.onclick = () => {
+        document.querySelectorAll('.section').forEach((s) => s.classList.toggle('hidden', s.id !== b.dataset.target));
+        document.querySelectorAll('.nav-item').forEach((n) => n.classList.toggle('active', n === b));
+      };
+    });
+
+    // ---- Abteilungs-Umschalter (Allgemein / Vertrieb / Support) ----
+    document.querySelectorAll('[data-deptbar] .deptseg').forEach((b) => {
+      b.onclick = () => { if (b.dataset.dept !== currentDept) setDept(b.dataset.dept); };
+    });
+    function setDept(dept) {
+      currentDept = dept;
+      document.querySelectorAll('[data-deptbar] .deptseg').forEach((b) =>
+        b.classList.toggle('active', b.dataset.dept === dept));
+      const kh = $('kbDeptHint'); if (kh) kh.textContent = KB_HINT[dept] || '';
+      const ah = $('asDeptHint'); if (ah) ah.textContent = AS_HINT[dept] || '';
+      if (tenant) loadDept();
+    }
+
+    // ---- Auth ----
+    async function doLogin() {
+      const email = $('email').value.trim(), password = $('password').value;
+      if (!email || !password) { $('authMsg').textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
+      $('authBtn').disabled = true; $('authBtn').textContent = 'Anmelden …'; $('authMsg').textContent = '';
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      $('authBtn').disabled = false; $('authBtn').textContent = 'Anmelden';
+      if (error) {
+        const m = /invalid login credentials/i.test(error.message)
+          ? 'E-Mail oder Passwort ist nicht korrekt.'
+          : /email not confirmed/i.test(error.message)
+          ? 'Bitte bestätige zuerst deine E-Mail-Adresse.'
+          : error.message;
+        $('authMsg').textContent = m;
+      }
+    }
+    $('authBtn').onclick = doLogin;
+    // Enter in einem der Felder = anmelden
+    ['email', 'password'].forEach((id) =>
+      $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); }));
+    // Passwort ein-/ausblenden
+    $('pwToggle').onclick = () => {
+      const p = $('password');
+      p.type = p.type === 'password' ? 'text' : 'password';
+      $('pwToggle').setAttribute('aria-label', p.type === 'password' ? 'Passwort anzeigen' : 'Passwort verbergen');
+    };
+    $('logoutBtn').onclick = () => sb.auth.signOut();
+
+    // ---- Passwort ändern (eingeloggt) / zurücksetzen (vergessen) ----
+    let pwRecovery = false;
+    function openPwModal(recovery = false) {
+      pwRecovery = recovery;
+      $('pwModalTitle').textContent = recovery ? 'Neues Passwort setzen' : 'Passwort ändern';
+      $('pwModalSub').textContent = recovery
+        ? 'Lege jetzt dein neues Passwort fest (mindestens 8 Zeichen).'
+        : 'Wähle ein neues Passwort (mindestens 8 Zeichen).';
+      $('pwNew').value = ''; $('pwNew2').value = ''; $('pwMsg').textContent = '';
+      $('pwModal').classList.remove('hidden'); setTimeout(() => $('pwNew').focus(), 50);
+    }
+    $('changePwBtn').onclick = () => openPwModal(false);
+    $('pwCancel').onclick = () => { $('pwModal').classList.add('hidden'); pwRecovery = false; };
+    $('pwSave').onclick = async () => {
+      const a = $('pwNew').value, b = $('pwNew2').value;
+      if (a.length < 8) { $('pwMsg').textContent = 'Mindestens 8 Zeichen.'; return; }
+      if (a !== b) { $('pwMsg').textContent = 'Die Passwörter stimmen nicht überein.'; return; }
+      $('pwSave').disabled = true;
+      const { error } = await sb.auth.updateUser({ password: a });
+      $('pwSave').disabled = false;
+      if (error) { $('pwMsg').textContent = error.message; return; }
+      $('pwModal').classList.add('hidden'); pwRecovery = false; toast('Passwort geändert.');
+    };
+    $('forgotPw').onclick = async (e) => {
+      e.preventDefault();
+      const email = $('email').value.trim();
+      if (!email) { $('authMsg').textContent = 'Bitte zuerst deine E-Mail-Adresse oben eingeben.'; return; }
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+      $('authMsg').textContent = error
+        ? error.message
+        : 'Wir haben dir einen Link zum Zurücksetzen geschickt (bitte auch im Spam schauen).';
+    };
+
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') { showApp(session); openPwModal(true); return; }
+      session ? showApp(session) : showAuth();
+    });
+    function showAuth() { $('authView').classList.remove('hidden'); $('shell').classList.add('hidden'); }
+    async function showApp(session) {
+      $('authView').classList.add('hidden'); $('shell').classList.remove('hidden');
+      const mail = session?.user?.email ?? '';
+      $('userEmail').textContent = mail;
+      $('userAvatar').textContent = (mail.trim().charAt(0) || '?').toUpperCase();
+      accessToken = session?.access_token ?? null;
+      // Benachrichtigungs-Erlaubnis (für Anruf-Hinweise) einmalig anfragen.
+      if ('Notification' in window && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (_) {} }
+      const boot = $('boot'); if (!tenant) boot.classList.remove('hidden');
+      await loadAll();
+      boot.classList.add('hidden');
+      if (location.hash.indexOf('cal=ok') >= 0) { toast('Kalender verbunden.'); history.replaceState(null, '', 'app.html'); }
+      else if (location.hash.indexOf('cal=err') >= 0) { toast('Kalender-Verbindung fehlgeschlagen.', 'err'); history.replaceState(null, '', 'app.html'); }
+    }
+
+    // ---- Daten ----
+    async function loadAll() {
+      const { data: t } = await sb.from('tenants').select('*').limit(1).maybeSingle();
+      tenant = t;
+      if (!tenant) { $('noTenant').classList.remove('hidden'); $('content').classList.add('hidden'); return; }
+      $('noTenant').classList.add('hidden'); $('content').classList.remove('hidden');
+
+      const nowIso = new Date().toISOString();
+      const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
+        sb.from('phone_numbers').select('phone_number, department').eq('tenant_id', tenant.id),
+        sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
+        sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(50),
+        sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }),
+        sb.from('webhook_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
+        sb.from('booking_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
+        sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', nowIso).order('starts_at').limit(100),
+        sb.from('assistant_config').select('language').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
+      ]);
+
+      renderPersonaPresets();
+
+      // Schnittstellen / Webhook
+      $('whEnabled').checked = wh?.enabled ?? true;
+      $('whMsg').checked = wh?.send_messages ?? true;
+      $('whGap').checked = wh?.send_gaps ?? false;
+      $('whCall').checked = wh?.send_calls ?? false;
+      $('whAppt').checked = wh?.send_appointments ?? true;
+      $('whSlack').value = wh?.slack_url ?? '';
+      $('whTeams').value = wh?.teams_url ?? '';
+      $('whTgToken').value = wh?.telegram_token ?? '';
+      $('whTgChat').value = wh?.telegram_chat_id ?? '';
+      $('whEmail').value = wh?.email_to ?? ($('userEmail').textContent || '');
+      $('whUrl').value = wh?.url ?? '';
+      $('whSecret').value = wh?.secret || genSecret();
+
+      // Termine
+      $('bkEnabled').checked = bk?.enabled ?? false;
+      $('bkSlot').value = bk?.slot_minutes ?? 30;
+      $('bkBuffer').value = bk?.buffer_minutes ?? 0;
+      $('bkLead').value = bk?.lead_hours ?? 2;
+      $('bkHorizon').value = bk?.horizon_days ?? 30;
+      bookingToken = bk?.ical_token || genSecret();
+      $('bkIcal').value = API + '/ical/' + bookingToken + '.ics';
+      renderAppointments(appts ?? []);
+
+      // Übersicht
+      $('ovSub').textContent = tenant.name;
+      $('ovKb').textContent = kbCount ?? 0;
+      // Frischer Mandant (Standardname, kein Wissen) → Einrichtungs-Assistent anbieten.
+      if (!wizShown && (!tenant.name || tenant.name === 'Mein Unternehmen') && (kbCount ?? 0) === 0) { wizShown = true; setTimeout(openWizard, 500); }
+      $('ovMsg').textContent = (msgs ?? []).length;
+      $('ovGaps').textContent = (gaps ?? []).length;
+      $('ovLang').textContent = (genCfg?.language ?? 'de') === 'en' ? 'Englisch' : 'Deutsch';
+
+      // Badge an der Navigation
+      const badge = $('gapBadge');
+      if ((gaps ?? []).length) { badge.textContent = gaps.length; badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+      renderGaps(gaps ?? []);
+      loadStats();
+
+      // Nummern + Status
+      const hasNumber = (nums ?? []).length > 0;
+      renderNumbers(nums ?? []);
+      $('ovStatus').innerHTML = hasNumber
+        ? '<span class="statusdot"></span>Aktiv'
+        : '<span class="statusdot" style="background:var(--accent-3)"></span>Einrichtung';
+
+      $('bizName').value = tenant.name ?? '';
+      await loadDept();
+      renderMessages(msgs ?? []);
+      loadCalendarStatus();
+      renderWeek();
+      waRestore();
+      await loadLive();
+      ensureRealtime(tenant.id);
+    }
+
+    // ---- Abteilungs-spezifische Daten (Persona + Wissensbasis) laden ----
+    async function loadDept() {
+      if (!tenant) return;
+      const kh = $('kbDeptHint'); if (kh) kh.textContent = KB_HINT[currentDept] || '';
+      const ah = $('asDeptHint'); if (ah) ah.textContent = AS_HINT[currentDept] || '';
+      const [{ data: cfg }, { data: kb }] = await Promise.all([
+        sb.from('assistant_config').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).maybeSingle(),
+        sb.from('knowledge_base').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).order('created_at'),
+      ]);
+      // Persona-Formular
+      $('greeting').value = cfg?.greeting ?? '';
+      $('roleDesc').value = cfg?.role_description ?? '';
+      $('tone').value = cfg?.tone ?? 'sie_freundlich';
+      $('location').value = cfg?.location ?? '';
+      $('behaviorRules').value = cfg?.behavior_rules ?? '';
+      $('guardrails').value = cfg?.guardrails ?? '';
+      $('closing').value = cfg?.closing ?? '';
+      bizHours = cfg?.business_hours ?? {};
+      renderHours(bizHours);
+      $('persona').value = cfg?.persona ?? '';
+      $('language').value = cfg?.language ?? 'de';
+      $('voiceId').value = cfg?.voice_id ?? '';
+      renderKb(kb ?? []);
+    }
+
+    // ---- Nummern je Abteilung rendern (mit Rufumleitungs-Codes) ----
+    function renderNumbers(nums) {
+      const wrap = $('numbers');
+      if (!nums.length) {
+        wrap.innerHTML = '<div class="panel"><span class="muted">Deine Nummer wird gerade eingerichtet — wir melden uns, sobald sie aktiv ist.</span></div>';
+        return;
+      }
+      // Sortierung: Allgemein → Vertrieb → Support
+      const order = { general: 0, vertrieb: 1, support: 2 };
+      const sorted = [...nums].sort((a, b) => (order[a.department || 'general'] ?? 9) - (order[b.department || 'general'] ?? 9));
+      wrap.innerHTML = '';
+      sorted.forEach((n) => {
+        const dep = (n.department || 'general');
+        const num = n.phone_number;
+        const card = document.createElement('div'); card.className = 'numcard';
+        const labelHtml = dep === 'general'
+          ? '<span class="dept-badge general">Allgemein</span>'
+          : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>';
+        card.innerHTML =
+          '<div class="numhead"><span class="bignum"><span>' + num + '</span></span>' + labelHtml + '</div>' +
+          '<p class="muted" style="text-align:left;padding:0;margin:2px 0 12px">Leite deine ' +
+          (dep === 'general' ? '' : (DEPT_LABEL[dep] || dep) + '-') +
+          'Geschäftsnummer auf diese Nummer um.</p>' +
+          '<ul class="fwd-list">' +
+          '<li>Bei Nichtannahme: <code>**61*' + num + '#</code></li>' +
+          '<li>Wenn besetzt: <code>**67*' + num + '#</code></li>' +
+          '<li>Wenn nicht erreichbar: <code>**62*' + num + '#</code></li>' +
+          '<li>Alle Anrufe sofort umleiten: <code>**21*' + num + '#</code></li>' +
+          '</ul>' +
+          '<button class="btn btn--ghost sm" type="button">Nummer kopieren</button>';
+        card.querySelector('button').onclick = () => { navigator.clipboard?.writeText(num); toast('Nummer kopiert.'); };
+        wrap.append(card);
+      });
+    }
+
+    // ---- Live-Anrufe (Echtzeit) ----
+    async function loadLive() {
+      liveCalls.clear();
+      const { data: calls } = await sb.from('calls').select('*')
+        .eq('tenant_id', tenant.id).order('started_at', { ascending: false }).limit(15);
+      for (const c of calls ?? []) liveCalls.set(c.id, { call: c, turns: [] });
+      const ids = (calls ?? []).map((c) => c.id);
+      if (ids.length) {
+        const { data: turns } = await sb.from('call_turns').select('*')
+          .in('call_id', ids).order('created_at');
+        for (const t of turns ?? []) liveCalls.get(t.call_id)?.turns.push(t);
+      }
+      renderLive();
+    }
+    function callCard(x, live) {
+      const div = document.createElement('div'); div.className = 'call-card';
+      const head = document.createElement('div'); head.className = 'call-head';
+      const who = document.createElement('span'); who.className = 'who';
+      who.textContent = x.call.caller_number || 'Anrufer';
+      const right = document.createElement('span');
+      if (live) { right.className = 'live-pill'; right.textContent = '● Live'; }
+      else { right.className = 'muted'; right.style.fontSize = '13px'; right.textContent = new Date(x.call.started_at).toLocaleString('de-DE'); }
+      head.append(who, right);
+      div.append(head);
+      if (x.call.summary) {
+        const sm = document.createElement('div'); sm.className = 'call-summary';
+        const sent = { positiv: '🙂', neutral: '😐', negativ: '🙁' }[x.call.sentiment] || '';
+        if (x.call.topic) { const tp = document.createElement('span'); tp.className = 'call-topic'; tp.textContent = x.call.topic; sm.append(tp); }
+        const txt = document.createElement('span'); txt.textContent = (sent ? sent + ' ' : '') + x.call.summary; sm.append(txt);
+        div.append(sm);
+      }
+      const tr = document.createElement('div'); tr.className = 'transcript';
+      if (!x.turns.length) { const m = document.createElement('span'); m.className = 'muted'; m.textContent = 'Verbindung aufgebaut …'; tr.append(m); }
+      for (const t of x.turns) {
+        const b = document.createElement('div');
+        b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+        b.textContent = t.content; tr.append(b);
+      }
+      div.append(tr);
+      return div;
+    }
+    function renderLive() {
+      const arr = [...liveCalls.values()].sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
+      const active = arr.filter((x) => x.call.status === 'active');
+      const ended = arr.filter((x) => x.call.status !== 'active');
+      $('liveBadge').textContent = active.length;
+      $('liveBadge').classList.toggle('hidden', active.length === 0);
+      $('liveActive').innerHTML = '';
+      if (!active.length) $('liveActive').innerHTML = '<div class="panel muted">Gerade kein aktiver Anruf. Sobald jemand anruft, erscheint das Gespräch hier live.</div>';
+      active.forEach((x) => $('liveActive').append(callCard(x, true)));
+      $('liveRecent').innerHTML = '';
+      if (!ended.length) $('liveRecent').innerHTML = '<div class="panel muted">Noch keine vergangenen Anrufe.</div>';
+      ended.forEach((x) => $('liveRecent').append(callCard(x, false)));
+      document.querySelectorAll('#liveActive .transcript').forEach((el) => { el.scrollTop = el.scrollHeight; });
+      renderLiveWidget();
+    }
+
+    // ---- Benachrichtigung bei eingehendem Anruf (Ton + Browser-Push) ----
+    const notifiedCalls = new Set();
+    let audioCtx = null;
+    function ringTone() {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        [0, 0.32].forEach((delay) => {
+          const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination); o.type = 'sine'; o.frequency.value = 880;
+          const t = audioCtx.currentTime + delay;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.25, t + 0.04);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+          o.start(t); o.stop(t + 0.28);
+        });
+      } catch (_) {}
+    }
+    function notifyIncoming(call) {
+      ringTone();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try { new Notification('📞 Eingehender Anruf', { body: (call.caller_number || 'Anrufer') + ' spricht gerade mit Vocaris.' }); } catch (_) {}
+      }
+    }
+
+    // ---- Schwebendes Live-Anruf-Widget (taucht bei Anruf auf, bleibt danach) ----
+    let liveWidgetId = null, liveWidgetDismissed = false, liveWidgetCollapsed = false;
+    $('liveWidgetClose').onclick = (e) => { e.stopPropagation(); liveWidgetDismissed = true; liveWidgetId = null; $('liveWidget').classList.add('hidden'); };
+    $('liveWidgetMin').onclick = (e) => { e.stopPropagation(); liveWidgetCollapsed = !liveWidgetCollapsed; $('liveWidget').classList.toggle('collapsed', liveWidgetCollapsed); };
+    $('liveWidgetHead').onclick = () => { if (liveWidgetCollapsed) { liveWidgetCollapsed = false; $('liveWidget').classList.remove('collapsed'); } };
+    function renderLiveWidget() {
+      const arr = [...liveCalls.values()].sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
+      const active = arr.find((x) => x.call.status === 'active');
+      if (active) {
+        liveWidgetId = active.call.id; liveWidgetDismissed = false; // neuer Anruf → aufpoppen
+        if (!notifiedCalls.has(active.call.id)) { notifiedCalls.add(active.call.id); notifyIncoming(active.call); }
+      }
+      const focus = active || (liveWidgetId ? liveCalls.get(liveWidgetId) : null);
+      const w = $('liveWidget');
+      if (!focus || liveWidgetDismissed) { w.classList.add('hidden'); return; }
+      const isLive = focus.call.status === 'active';
+      w.classList.remove('hidden');
+      $('liveWidgetDot').className = 'livew__dot' + (isLive ? '' : ' ended');
+      $('liveWidgetWho').textContent = focus.call.caller_number || 'Anrufer';
+      $('liveWidgetStatus').textContent = isLive
+        ? '● Live-Gespräch läuft'
+        : 'Anruf beendet · ' + new Date(focus.call.started_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const body = $('liveWidgetBody');
+      body.innerHTML = '';
+      if (focus.call.summary) {
+        const sm = document.createElement('div'); sm.className = 'call-summary'; sm.style.marginBottom = '4px';
+        const sent = { positiv: '🙂', neutral: '😐', negativ: '🙁' }[focus.call.sentiment] || '';
+        if (focus.call.topic) { const tp = document.createElement('span'); tp.className = 'call-topic'; tp.textContent = focus.call.topic; sm.append(tp); }
+        const txt = document.createElement('span'); txt.textContent = (sent ? sent + ' ' : '') + focus.call.summary; sm.append(txt);
+        body.append(sm);
+      }
+      if (!focus.turns.length) {
+        const e = document.createElement('div'); e.className = 'livew__empty';
+        e.textContent = 'Verbindung aufgebaut … warte auf den Gesprächsverlauf.'; body.append(e);
+      } else {
+        for (const t of focus.turns) {
+          const b = document.createElement('div');
+          b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+          b.textContent = t.content; body.append(b);
+        }
+      }
+      if (!liveWidgetCollapsed) body.scrollTop = body.scrollHeight;
+    }
+    function ensureRealtime(tenantId) {
+      if (realtimeChannel) return;
+      if (accessToken) sb.realtime.setAuth(accessToken);
+      realtimeChannel = sb.channel('live-' + tenantId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'calls', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          const c = p.new; if (!c || !c.id) return;
+          const e = liveCalls.get(c.id) || { call: c, turns: [] };
+          e.call = c; liveCalls.set(c.id, e); renderLive();
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'call_turns', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          const t = p.new; if (!t) return;
+          const e = liveCalls.get(t.call_id) || { call: { id: t.call_id, status: 'active', started_at: new Date().toISOString(), caller_number: null }, turns: [] };
+          e.turns.push(t); liveCalls.set(t.call_id, e); renderLive();
+        })
+        .subscribe();
+    }
+
+    // ---- Assistent speichern (Name + Config) ----
+    $('saveBtn').onclick = async () => {
+      if (!tenant) return;
+      $('saveBtn').disabled = true;
+      const name = $('bizName').value.trim() || 'Mein Unternehmen';
+      const [r1, r2] = await Promise.all([
+        sb.from('tenants').update({ name }).eq('id', tenant.id),
+        sb.from('assistant_config').upsert({
+          tenant_id: tenant.id, department: currentDept, greeting: $('greeting').value.trim(),
+          persona: $('persona').value.trim(), language: $('language').value,
+          voice_id: $('voiceId').value.trim() || null,
+          role_description: $('roleDesc').value.trim(),
+          tone: $('tone').value,
+          business_hours: readHours(),
+          location: $('location').value.trim(),
+          behavior_rules: $('behaviorRules').value.trim(),
+          guardrails: $('guardrails').value.trim(),
+          closing: $('closing').value.trim(),
+        }, { onConflict: 'tenant_id,department' }),
+      ]);
+      $('saveBtn').disabled = false;
+      const err = r1.error || r2.error;
+      if (err) return toast('Fehler: ' + err.message, 'err');
+      tenant.name = name; $('ovSub').textContent = name;
+      $('ovLang').textContent = $('language').value === 'en' ? 'Englisch' : 'Deutsch';
+      toast('Gespeichert.');
+    };
+
+    // ---- Wissensdatenbank (Inline-Bearbeitung) ----
+    function renderKb(items) {
+      const el = $('kbList');
+      if (!items.length) { el.innerHTML = '<div class="panel muted">Noch keine Einträge. Zieh unten eine Branchen-Vorlage hier herein oder lege einen Eintrag an.</div>'; return; }
+      el.innerHTML = '';
+      const byCat = {};
+      for (const it of items) { const c = it.category || 'Allgemein'; (byCat[c] ||= []).push(it); }
+      for (const cat of Object.keys(byCat)) {
+        const head = document.createElement('div'); head.className = 'kb-cat-head';
+        head.textContent = cat + ' · ' + byCat[cat].length;
+        el.append(head);
+        for (const it of byCat[cat]) el.append(kbCard(it));
+      }
+    }
+    function kbCard(it) {
+      const div = document.createElement('div'); div.className = 'item';
+      const render = () => {
+        div.innerHTML = '';
+        const h = document.createElement('h4'); h.textContent = it.title;
+        const p = document.createElement('p'); p.textContent = it.content;
+        const row = document.createElement('div'); row.className = 'stack';
+        const e = document.createElement('button'); e.className = 'btn btn--ghost sm'; e.textContent = 'Bearbeiten';
+        const d = document.createElement('button'); d.className = 'btn btn--danger sm'; d.textContent = 'Löschen';
+        e.onclick = edit; d.onclick = () => del(it.id);
+        row.append(e, d); div.append(h, p, row);
+      };
+      const edit = () => {
+        div.innerHTML = '';
+        const ca = document.createElement('input'); ca.value = it.category || ''; ca.placeholder = 'Kategorie (z.B. Öffnungszeiten)';
+        const ti = document.createElement('input'); ti.value = it.title; ti.style.marginTop = '8px';
+        const co = document.createElement('textarea'); co.value = it.content; co.style.marginTop = '8px';
+        const row = document.createElement('div'); row.className = 'stack';
+        const s = document.createElement('button'); s.className = 'btn btn--primary sm'; s.textContent = 'Speichern';
+        const c = document.createElement('button'); c.className = 'btn btn--ghost sm'; c.textContent = 'Abbrechen';
+        s.onclick = async () => {
+          const { error } = await sb.from('knowledge_base')
+            .update({ category: ca.value.trim() || null, title: ti.value.trim(), content: co.value.trim() }).eq('id', it.id);
+          if (error) return toast('Fehler: ' + error.message, 'err');
+          toast('Aktualisiert.'); loadAll();
+        };
+        c.onclick = render;
+        row.append(s, c); div.append(ca, ti, co, row);
+      };
+      render(); return div;
+    }
+    async function del(id) {
+      if (!confirm('Diesen Eintrag löschen?')) return;
+      const { error } = await sb.from('knowledge_base').delete().eq('id', id);
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      toast('Gelöscht.'); loadAll();
+    }
+    $('addKbBtn').onclick = async () => {
+      if (!tenant) return;
+      const category = $('kbCat').value.trim() || null;
+      const title = $('kbTitle').value.trim(), content = $('kbContent').value.trim();
+      if (!title || !content) return toast('Titel und Inhalt nötig.', 'err');
+      const { error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: currentDept, category, title, content });
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      $('kbCat').value = ''; $('kbTitle').value = ''; $('kbContent').value = ''; toast('Hinzugefügt.'); loadAll();
+    };
+
+    // ---- Persona: Öffnungszeiten-Raster ----
+    const H_DAYS = [['mon','Mo'],['tue','Di'],['wed','Mi'],['thu','Do'],['fri','Fr'],['sat','Sa'],['sun','So']];
+    const H_WD = (a, b) => ({ mon:[[a,b]], tue:[[a,b]], wed:[[a,b]], thu:[[a,b]], fri:[[a,b]], sat:[], sun:[] });
+    const tInput = (cls, val) => `<input type="time" class="${cls}" value="${val || ''}">`;
+    function renderHours(data) {
+      const g = $('hoursGrid'); if (!g) return; g.innerHTML = '';
+      H_DAYS.forEach(([k, lbl]) => {
+        const iv = (data && data[k]) || [];
+        const r = document.createElement('div'); r.className = 'hrow'; r.dataset.day = k;
+        r.innerHTML = `<span class="hday">${lbl}</span>`
+          + tInput('hfrom', iv[0] && iv[0][0]) + `<span class="hsep">–</span>` + tInput('hto', iv[0] && iv[0][1])
+          + `<span class="hsep">·</span>`
+          + tInput('hfrom', iv[1] && iv[1][0]) + `<span class="hsep">–</span>` + tInput('hto', iv[1] && iv[1][1]);
+        g.append(r);
+      });
+    }
+    function readHours() {
+      const out = {};
+      document.querySelectorAll('#hoursGrid .hrow').forEach((r) => {
+        const froms = r.querySelectorAll('.hfrom'), tos = r.querySelectorAll('.hto'), ivs = [];
+        for (let i = 0; i < froms.length; i++) {
+          const a = froms[i].value, b = tos[i].value; if (a && b) ivs.push([a, b]);
+        }
+        out[r.dataset.day] = ivs;
+      });
+      return out;
+    }
+
+    // ---- Persona: Branchen-Vorlagen (füllen die Formularfelder vor) ----
+    const PERSONA_PRESETS = {
+      'Arzt-/Zahnarztpraxis': {
+        role: 'die telefonische Rezeption der Praxis', tone: 'sie_freundlich',
+        hours: { mon:[['08:00','12:00'],['14:00','18:00']], tue:[['08:00','12:00'],['14:00','18:00']], wed:[['08:00','12:00']], thu:[['08:00','12:00'],['14:00','18:00']], fri:[['08:00','13:00']], sat:[], sun:[] },
+        behavior: 'Termine nicht selbst zusagen, sondern einen Rückruf mit Name, Telefonnummer und Anliegen aufnehmen. Bei Schmerzen oder Notfällen als dringend markieren und auf den ärztlichen Bereitschaftsdienst (116117) hinweisen.',
+        guardrails: 'Gib keine medizinische Beratung, keine Diagnosen und keine Auskunft zu Befunden am Telefon.',
+        closing: 'Vielen Dank für Ihren Anruf und gute Besserung!',
+        greeting: 'Praxis Dr. …, guten Tag! Was kann ich für Sie tun?',
+      },
+      'Handwerk / Sanitär & Heizung': {
+        role: 'die telefonische Auftragsannahme des Handwerksbetriebs', tone: 'sie_freundlich',
+        hours: H_WD('07:00','17:00'),
+        behavior: 'Bei Aufträgen und Terminwünschen Name, Adresse, Telefonnummer und eine kurze Problembeschreibung aufnehmen. Wasserschaden oder Heizungsausfall als dringend markieren.',
+        guardrails: 'Nenne keine verbindlichen Preise oder Termine – das klärt der Betrieb beim Rückruf.',
+        closing: 'Danke für Ihren Anruf, wir melden uns schnellstmöglich!',
+        greeting: 'Mustermann Sanitär, guten Tag! Wie kann ich Ihnen helfen?',
+      },
+      'Restaurant': {
+        role: 'die telefonische Reservierungsannahme des Restaurants', tone: 'sie_freundlich',
+        hours: { mon:[], tue:[['17:00','23:00']], wed:[['17:00','23:00']], thu:[['17:00','23:00']], fri:[['17:00','23:59']], sat:[['12:00','23:59']], sun:[['12:00','22:00']] },
+        behavior: 'Reservierungen mit Name, Personenzahl, Datum und Uhrzeit aufnehmen. Sonderwünsche (Allergien, große Gruppen) notieren und Rückruf anbieten.',
+        guardrails: 'Bestätige keine Reservierung verbindlich, wenn die Uhrzeit außerhalb der Öffnungszeiten liegt.',
+        closing: 'Vielen Dank, wir freuen uns auf Ihren Besuch!',
+        greeting: 'Restaurant …, guten Tag! Möchten Sie einen Tisch reservieren?',
+      },
+      'Kanzlei (Anwalt/Steuer)': {
+        role: 'das telefonische Sekretariat der Kanzlei', tone: 'sie_formell',
+        hours: H_WD('09:00','17:00'),
+        behavior: 'Anliegen, Name und Rückrufnummer aufnehmen und an die zuständige Person weiterleiten. Keine Fristen oder Termine selbst zusagen.',
+        guardrails: 'Gib keine rechtliche oder steuerliche Beratung am Telefon.',
+        closing: 'Vielen Dank für Ihren Anruf, wir melden uns zeitnah.',
+        greeting: 'Kanzlei …, guten Tag. Was darf ich für Sie notieren?',
+      },
+      'Friseur / Kosmetik': {
+        role: 'die telefonische Terminannahme des Salons', tone: 'sie_freundlich',
+        hours: { mon:[], tue:[['09:00','18:00']], wed:[['09:00','18:00']], thu:[['09:00','20:00']], fri:[['09:00','20:00']], sat:[['09:00','14:00']], sun:[] },
+        behavior: 'Terminwünsche mit Name, gewünschter Leistung und Wunschzeit aufnehmen; verbindliche Bestätigung per Rückruf anbieten.',
+        guardrails: 'Nenne keine festen Preise, wenn sie nicht in der Wissensbasis stehen.',
+        closing: 'Danke und bis bald im Salon!',
+        greeting: 'Salon …, guten Tag! Möchten Sie einen Termin vereinbaren?',
+      },
+      'Autowerkstatt': {
+        role: 'die telefonische Annahme der Kfz-Werkstatt', tone: 'sie_freundlich',
+        hours: H_WD('08:00','17:00'),
+        behavior: 'Bei Reparatur- und Terminwünschen Name, Kennzeichen, Fahrzeugmodell und Problem aufnehmen. TÜV-Fristen oder Pannen als dringend einordnen.',
+        guardrails: 'Nenne keine verbindlichen Kostenvoranschläge am Telefon.',
+        closing: 'Danke für Ihren Anruf, wir kümmern uns darum!',
+        greeting: 'Autohaus …, guten Tag! Wie können wir Ihnen helfen?',
+      },
+    };
+    function applyPreset(name) {
+      const p = PERSONA_PRESETS[name]; if (!p) return;
+      $('roleDesc').value = p.role || '';
+      $('tone').value = p.tone || 'sie_freundlich';
+      $('behaviorRules').value = p.behavior || '';
+      $('guardrails').value = p.guardrails || '';
+      $('closing').value = p.closing || '';
+      if (p.greeting && !$('greeting').value.trim()) $('greeting').value = p.greeting;
+      renderHours(p.hours || {});
+      toast('Vorlage „' + name + '" eingefügt – bitte anpassen und speichern.');
+    }
+    function renderPersonaPresets() {
+      const el = $('personaPresets'); if (!el) return; el.innerHTML = '';
+      Object.keys(PERSONA_PRESETS).forEach((name) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'branch-chip'; b.textContent = name;
+        b.onclick = () => applyPreset(name);
+        el.append(b);
+      });
+    }
+
+    // ---- Einrichtungs-Assistent (Onboarding-Wizard) ----
+    const BRANCH_KB = {
+      'Arzt-/Zahnarztpraxis': 'Arztpraxis', 'Handwerk / Sanitär & Heizung': 'Handwerk',
+      'Restaurant': 'Restaurant', 'Kanzlei (Anwalt/Steuer)': 'Kanzlei',
+      'Friseur / Kosmetik': 'Friseur & Beauty', 'Autowerkstatt': 'Autowerkstatt',
+    };
+    let wiz = {}, wizShown = false;
+    function openWizard() {
+      wiz = { step: 0, branch: null, name: (tenant && tenant.name && tenant.name !== 'Mein Unternehmen') ? tenant.name : '', greeting: '', tone: 'sie_freundlich', applyKb: true };
+      $('wizModal').classList.remove('hidden'); renderWiz();
+    }
+    function closeWizard() { $('wizModal').classList.add('hidden'); }
+    function renderWiz() {
+      const b = $('wizBody'); b.innerHTML = '';
+      const titles = ['Branche & Name', 'Begrüßung & Ton', 'Wissen & Fertig'];
+      const h = document.createElement('h3'); h.textContent = 'Einrichtungs-Assistent · Schritt ' + (wiz.step + 1) + ' von 3';
+      const sub = document.createElement('p'); sub.className = 'muted'; sub.style.margin = '2px 0 16px'; sub.textContent = titles[wiz.step];
+      b.append(h, sub);
+      if (wiz.step === 0) {
+        const ln = document.createElement('label'); ln.textContent = 'Name deines Unternehmens';
+        const inp = document.createElement('input'); inp.value = wiz.name; inp.placeholder = 'z.B. Mustermann GmbH'; inp.oninput = () => wiz.name = inp.value;
+        const lb = document.createElement('label'); lb.textContent = 'Branche (füllt Persona & Wissen vor)'; lb.style.marginTop = '14px';
+        const chips = document.createElement('div'); chips.className = 'branch-chips';
+        Object.keys(PERSONA_PRESETS).forEach((name) => {
+          const c = document.createElement('button'); c.type = 'button'; c.className = 'branch-chip' + (wiz.branch === name ? ' active' : ''); c.textContent = name;
+          c.onclick = () => { wiz.branch = name; const p = PERSONA_PRESETS[name]; wiz.greeting = p.greeting || ''; wiz.tone = p.tone || 'sie_freundlich'; renderWiz(); };
+          chips.append(c);
+        });
+        b.append(ln, inp, lb, chips);
+      } else if (wiz.step === 1) {
+        const lg = document.createElement('label'); lg.textContent = 'Begrüßung (wird beim Abnehmen gesagt)';
+        const tg = document.createElement('textarea'); tg.value = wiz.greeting; tg.oninput = () => wiz.greeting = tg.value;
+        const lt = document.createElement('label'); lt.textContent = 'Tonalität'; lt.style.marginTop = '14px';
+        const sel = document.createElement('select');
+        [['sie_formell', 'Sie – förmlich'], ['sie_freundlich', 'Sie – freundlich'], ['du_locker', 'Du – locker']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === wiz.tone) o.selected = true; sel.append(o); });
+        sel.onchange = () => wiz.tone = sel.value;
+        b.append(lg, tg, lt, sel);
+      } else {
+        const kbKey = wiz.branch ? (BRANCH_KB[wiz.branch] || 'Allgemein') : 'Allgemein';
+        const n = (TEMPLATES[kbKey] || []).length;
+        const chk = document.createElement('label'); chk.className = 'chk'; chk.style.display = 'flex'; chk.style.gap = '8px'; chk.style.alignItems = 'flex-start';
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wiz.applyKb; cb.onchange = () => wiz.applyKb = cb.checked;
+        const sp = document.createElement('span'); sp.innerHTML = '<b>' + n + ' Wissens-Vorlagen</b> für „' + kbKey + '" in „Allgemein" übernehmen (danach anpassbar).';
+        chk.append(cb, sp);
+        const note = document.createElement('p'); note.className = 'muted'; note.style.marginTop = '14px';
+        note.textContent = 'Mit „Fertig" werden Name, Persona (Begrüßung, Ton, Öffnungszeiten, Verhalten) und – falls gewählt – die Wissens-Einträge gespeichert.';
+        b.append(chk, note);
+      }
+      const row = document.createElement('div'); row.className = 'stack'; row.style.marginTop = '18px';
+      if (wiz.step > 0) { const back = document.createElement('button'); back.className = 'btn btn--ghost'; back.textContent = 'Zurück'; back.onclick = () => { wiz.step--; renderWiz(); }; row.append(back); }
+      if (wiz.step < 2) { const next = document.createElement('button'); next.className = 'btn btn--primary'; next.textContent = 'Weiter'; next.onclick = () => { if (wiz.step === 0 && !wiz.branch) { toast('Bitte eine Branche wählen.', 'err'); return; } wiz.step++; renderWiz(); }; row.append(next); }
+      else { const fin = document.createElement('button'); fin.className = 'btn btn--primary'; fin.textContent = 'Fertig 🎉'; fin.onclick = finishWiz; row.append(fin); }
+      const cancel = document.createElement('button'); cancel.className = 'btn btn--ghost'; cancel.textContent = 'Abbrechen'; cancel.onclick = closeWizard; row.append(cancel);
+      b.append(row);
+    }
+    async function finishWiz() {
+      if (!tenant) return;
+      const p = PERSONA_PRESETS[wiz.branch] || {};
+      const name = (wiz.name || '').trim() || 'Mein Unternehmen';
+      const kbKey = wiz.branch ? (BRANCH_KB[wiz.branch] || 'Allgemein') : 'Allgemein';
+      try {
+        await sb.from('tenants').update({ name }).eq('id', tenant.id);
+        await sb.from('assistant_config').upsert({
+          tenant_id: tenant.id, department: 'general',
+          greeting: (wiz.greeting || '').trim(), role_description: p.role || '', tone: wiz.tone,
+          business_hours: p.hours || {}, behavior_rules: p.behavior || '', guardrails: p.guardrails || '',
+          closing: p.closing || '', language: 'de',
+        }, { onConflict: 'tenant_id,department' });
+        if (wiz.applyKb && (TEMPLATES[kbKey] || []).length) {
+          const rows = TEMPLATES[kbKey].map(([category, title, content]) => ({ tenant_id: tenant.id, department: 'general', category, title, content }));
+          await sb.from('knowledge_base').insert(rows);
+        }
+        closeWizard(); toast('Einrichtung gespeichert 🎉'); loadAll();
+      } catch (e) { toast('Fehler: ' + (e.message || e), 'err'); }
+    }
+    $('wizStartBtn').onclick = openWizard;
+
+    // ---- Branchen-Vorlagen (Drag & Drop) ----
+    // Vorlagen je Branche: [Kategorie, Titel, Inhalt]
+    const TEMPLATES = {
+      'Handwerk': [
+        ['Öffnungszeiten', 'Geschäftszeiten', 'Wir sind Montag bis Freitag von 7:30 bis 17 Uhr erreichbar. Am Wochenende geschlossen.'],
+        ['Leistungen', 'Unsere Leistungen', 'Wir bieten Sanitärinstallation, Heizungsbau und -wartung, Badsanierung sowie Rohrreinigung.'],
+        ['Leistungen', 'Kleine Reparaturen', 'Wir übernehmen auch kleine Reparaturen wie tropfende Wasserhähne, verstopfte Abflüsse und defekte Spülkästen.'],
+        ['Leistungen', 'Heizungswartung', 'Wartung und Prüfung bieten wir für Gas-, Öl- und Wärmepumpenheizungen an.'],
+        ['Termine & Buchung', 'Termin vereinbaren', 'Termine vor Ort vergeben wir nach Verfügbarkeit. Wir nehmen Wunschtermin, Adresse und eine kurze Problembeschreibung auf und bestätigen telefonisch.'],
+        ['Termine & Buchung', 'Was wir vorab brauchen', 'Bitte beschreiben Sie das Problem kurz, damit wir das passende Material und Werkzeug mitbringen.'],
+        ['Preise & Zahlung', 'Anfahrt & Stundensatz', 'Die Anfahrt kostet pauschal [X] Euro, der Stundensatz beträgt [Y] Euro. Materialkosten kommen hinzu.'],
+        ['Preise & Zahlung', 'Angebot', 'Für größere Arbeiten erstellen wir vorab ein kostenloses, unverbindliches Angebot.'],
+        ['Preise & Zahlung', 'Zahlungsarten', 'Zahlung ist per Rechnung, EC-Karte oder bar möglich.'],
+        ['Notfall & Dringendes', 'Notdienst', 'Außerhalb der Geschäftszeiten erreichen Sie unseren Notdienst unter [Notfallnummer].'],
+        ['Notfall & Dringendes', 'Im Notfall', 'Bei Wasserrohrbruch oder Heizungsausfall im Winter handeln wir bevorzugt. Bei Gasgeruch bitte sofort lüften und die 112 rufen.'],
+        ['Anfahrt & Parken', 'Einzugsgebiet', 'Wir arbeiten im Umkreis von etwa 30 Kilometern um [Ort].'],
+        ['Kontakt & Rückruf', 'Angebot anfragen', 'Für ein Angebot nehmen wir Name, Adresse, Telefonnummer und eine Beschreibung auf und rufen zurück.'],
+        ['FAQ', 'Gewährleistung', 'Auf unsere Arbeit geben wir [X] Jahre Gewährleistung.'],
+      ],
+      'Arztpraxis': [
+        ['Öffnungszeiten', 'Sprechzeiten', 'Mo–Fr 8–12 Uhr, zusätzlich Di und Do 15–18 Uhr. Mittwochnachmittag geschlossen.'],
+        ['Termine & Buchung', 'Termin vereinbaren', 'Für einen Termin nehmen wir Name, Geburtsdatum und das Anliegen auf. Akute Beschwerden bitte direkt nennen.'],
+        ['Termine & Buchung', 'Akuttermine', 'Für dringende Beschwerden halten wir täglich Akutsprechstunden frei. Rufen Sie möglichst früh am Morgen an.'],
+        ['Leistungen', 'Leistungsspektrum', 'Wir bieten [z.B. Vorsorge, Impfungen, Laboruntersuchungen, EKG]. Bitte anpassen.'],
+        ['Ablauf', 'Erstbesuch', 'Bringen Sie zum ersten Besuch bitte Versichertenkarte und ggf. Vorbefunde mit. Kommen Sie etwa zehn Minuten früher.'],
+        ['Ablauf', 'Rezept & Überweisung', 'Folgerezepte und Überweisungen können Sie telefonisch anfragen; sie liegen i.d.R. am nächsten Werktag bereit.'],
+        ['Ablauf', 'Krankschreibung', 'Eine Krankschreibung ist nur nach ärztlicher Rücksprache möglich. Wir vereinbaren dafür einen kurzen Termin.'],
+        ['Notfall & Dringendes', 'Medizinischer Notfall', 'Bei einem Notfall wählen Sie bitte den ärztlichen Bereitschaftsdienst 116117 oder im Ernstfall die 112.'],
+        ['Storno & Änderung', 'Termin absagen', 'Bitte sagen Sie Termine mindestens 24 Stunden vorher ab, damit wir sie neu vergeben können.'],
+        ['Anfahrt & Parken', 'Anfahrt', 'Die Praxis befindet sich in [Adresse]. Parkmöglichkeiten: [Hinweis], ÖPNV: [Hinweis].'],
+        ['FAQ', 'Privat oder gesetzlich', 'Wir behandeln [gesetzlich und privat Versicherte / nur Privatpatienten]. Bitte anpassen.'],
+      ],
+      'Restaurant': [
+        ['Öffnungszeiten', 'Öffnungszeiten', 'Geöffnet Di–So von 17 bis 23 Uhr, Küche bis 22 Uhr. Montag Ruhetag.'],
+        ['Öffnungszeiten', 'Mittagstisch', 'Von Mo–Fr bieten wir von 12 bis 14 Uhr einen wechselnden Mittagstisch an.'],
+        ['Termine & Buchung', 'Tisch reservieren', 'Reservierungen nehmen wir mit Name, Personenzahl und Wunschzeit gern entgegen.'],
+        ['Termine & Buchung', 'Große Gruppen', 'Für Gruppen ab [X] Personen bitten wir um eine Reservierung mit etwas Vorlauf.'],
+        ['Leistungen', 'Küche', 'Wir bieten [z.B. saisonale, regionale Küche]. Vegetarische und vegane Gerichte sind vorhanden.'],
+        ['Leistungen', 'Allergien', 'Über Allergene und Unverträglichkeiten informieren wir gern – sagen Sie es bei der Bestellung.'],
+        ['Leistungen', 'Abholung & Lieferung', 'Speisen zum Mitnehmen [bieten wir an / liefern wir im Umkreis von X km]. Bitte anpassen.'],
+        ['Preise & Zahlung', 'Zahlung', 'Sie können bar, mit EC- oder Kreditkarte zahlen.'],
+        ['Ablauf', 'Feiern & Veranstaltungen', 'Für Geburtstage, Firmenfeiern und Hochzeiten haben wir besondere Angebote. Wir nehmen Ihre Anfrage auf und rufen zurück.'],
+        ['Anfahrt & Parken', 'Lage', 'Sie finden uns in [Adresse]. Parkmöglichkeiten: [Hinweis].'],
+        ['Storno & Änderung', 'Reservierung ändern', 'Möchten Sie eine Reservierung ändern oder absagen, genügt ein kurzer Anruf.'],
+      ],
+      'Kanzlei': [
+        ['Öffnungszeiten', 'Bürozeiten', 'Unsere Kanzlei ist Mo–Fr von 9 bis 17 Uhr erreichbar.'],
+        ['Leistungen', 'Rechtsgebiete', 'Wir beraten in [z.B. Arbeitsrecht, Familienrecht, Verkehrsrecht, Mietrecht]. Bitte anpassen.'],
+        ['Termine & Buchung', 'Erstberatung', 'Für eine Erstberatung nehmen wir Ihr Anliegen kurz auf und vereinbaren einen Termin – telefonisch oder vor Ort.'],
+        ['Ablauf', 'Benötigte Unterlagen', 'Bringen Sie relevante Schreiben und Verträge zum Termin mit. Für die Terminvergabe genügt eine kurze Schilderung.'],
+        ['Preise & Zahlung', 'Kosten', 'Die Erstberatung kostet [X] Euro. Die weiteren Kosten richten sich nach Gegenstandswert bzw. Aufwand und werden vorab besprochen.'],
+        ['Notfall & Dringendes', 'Fristen', 'Bei laufenden Fristen weisen Sie uns bitte sofort darauf hin – wir behandeln solche Fälle vorrangig.'],
+        ['Kontakt & Rückruf', 'Erreichbarkeit', 'Außerhalb der Bürozeiten nehmen wir Ihre Nachricht auf und rufen am nächsten Werktag zurück.'],
+        ['FAQ', 'Vertraulichkeit', 'Alle Angaben werden streng vertraulich behandelt und unterliegen der anwaltlichen Schweigepflicht.'],
+      ],
+      'Friseur & Beauty': [
+        ['Öffnungszeiten', 'Öffnungszeiten', 'Di–Fr 9–19 Uhr, Sa 9–14 Uhr. Montag geschlossen.'],
+        ['Termine & Buchung', 'Termin buchen', 'Für einen Termin nehmen wir Name, gewünschte Leistung und Wunschzeit auf.'],
+        ['Termine & Buchung', 'Ohne Termin', 'Spontane Besuche sind möglich, je nach Auslastung kann es aber zu Wartezeiten kommen.'],
+        ['Leistungen', 'Leistungen', 'Wir bieten Schnitt, Färben, Strähnen, Styling sowie [weitere Leistungen]. Bitte anpassen.'],
+        ['Preise & Zahlung', 'Preise', 'Unsere Preise richten sich nach Leistung und Haarlänge – wir nennen sie Ihnen gern vorab.'],
+        ['Storno & Änderung', 'Absage', 'Bitte sagen Sie Termine mindestens 24 Stunden vorher ab, damit wir den Platz neu vergeben können.'],
+        ['Anfahrt & Parken', 'Anfahrt', 'Sie finden uns in [Adresse]. Parkmöglichkeiten: [Hinweis].'],
+        ['Kontakt & Rückruf', 'Rückruf', 'Wenn wir gerade einen Kunden bedienen, nehmen wir Ihre Nummer auf und rufen zurück.'],
+      ],
+      'Autowerkstatt': [
+        ['Öffnungszeiten', 'Öffnungszeiten', 'Mo–Fr 7:30–18 Uhr, Sa nach Vereinbarung.'],
+        ['Termine & Buchung', 'Werkstatttermin', 'Für einen Termin nehmen wir Kennzeichen, Fahrzeugmodell und das Anliegen auf.'],
+        ['Leistungen', 'Leistungen', 'Wir bieten Inspektion, HU/AU, Reifenservice, Klimaservice und Reparaturen aller Art.'],
+        ['Leistungen', 'HU/AU', 'Die Hauptuntersuchung führen wir im Haus mit einem Prüforganisation-Partner durch. Bitte Fahrzeugschein bereithalten.'],
+        ['Preise & Zahlung', 'Kostenvoranschlag', 'Für einen Kostenvoranschlag notieren wir Ihr Anliegen und melden uns mit einem Angebot.'],
+        ['Preise & Zahlung', 'Stundensatz', 'Unser Stundensatz beträgt [X] Euro. Den genauen Preis nennen wir nach Diagnose.'],
+        ['Ablauf', 'Hol- & Bringservice', 'Auf Wunsch holen wir Ihr Fahrzeug ab und bringen es zurück. Wir nehmen Adresse und Wunschzeit auf.'],
+        ['Ablauf', 'Ersatzwagen', 'Ein Ersatz- oder Leihwagen ist nach Verfügbarkeit möglich – bitte bei der Terminvergabe angeben.'],
+        ['Notfall & Dringendes', 'Panne', 'Bei einer Panne notieren wir Standort und Problem und organisieren bei Bedarf einen Abschleppdienst.'],
+        ['Kontakt & Rückruf', 'Reparaturstatus', 'Den Status Ihrer Reparatur erfragen Sie jederzeit – wir nehmen Kennzeichen auf und geben Auskunft oder rufen zurück.'],
+      ],
+      'Immobilien': [
+        ['Öffnungszeiten', 'Erreichbarkeit', 'Mo–Fr 9–18 Uhr. Außerhalb nehmen wir Ihre Anfrage auf und rufen zurück.'],
+        ['Termine & Buchung', 'Besichtigung', 'Für eine Besichtigung nehmen wir das Objekt, Ihren Namen und einen Wunschtermin auf.'],
+        ['Ablauf', 'Mietunterlagen', 'Für Mietobjekte benötigen wir i.d.R. eine Selbstauskunft und Einkommensnachweise der letzten drei Monate.'],
+        ['Ablauf', 'Verkauf & Bewertung', 'Sie möchten verkaufen? Wir nehmen Adresse und Eckdaten auf und vereinbaren eine kostenlose Bewertung.'],
+        ['Leistungen', 'Leistungen', 'Wir vermitteln Wohnungen, Häuser und Gewerbeobjekte zur Miete und zum Kauf und übernehmen die Vermarktung.'],
+        ['Preise & Zahlung', 'Provision', 'Die Provision beträgt [X] %. Bei Mietobjekten gilt das Bestellerprinzip.'],
+        ['Kontakt & Rückruf', 'Rückruf', 'Hinterlassen Sie Name, Nummer und das Objekt, das Sie interessiert – wir melden uns zeitnah.'],
+      ],
+      'Fitnessstudio': [
+        ['Öffnungszeiten', 'Öffnungszeiten', 'Täglich von 6 bis 23 Uhr geöffnet, für Mitglieder teils rund um die Uhr per Chip.'],
+        ['Leistungen', 'Angebot', 'Wir bieten Geräte- und Freihanteltraining, Kurse, Sauna und persönliche Trainingspläne.'],
+        ['Termine & Buchung', 'Probetraining', 'Ein kostenloses Probetraining vereinbaren wir gern – wir nehmen Name und Wunschtermin auf.'],
+        ['Preise & Zahlung', 'Mitgliedschaft', 'Die Mitgliedschaft kostet ab [X] Euro im Monat. Tageskarten sind für [Y] Euro erhältlich.'],
+        ['Storno & Änderung', 'Kündigung', 'Die Kündigungsfrist beträgt [X]. Wir nehmen Ihr Anliegen auf und bestätigen schriftlich.'],
+        ['Anfahrt & Parken', 'Anfahrt', 'Sie finden uns in [Adresse]. Kostenlose Parkplätze sind vorhanden.'],
+        ['Kontakt & Rückruf', 'Beratung', 'Für eine Beratung zur passenden Mitgliedschaft rufen wir Sie gern zurück.'],
+      ],
+      'Allgemein': [
+        ['Öffnungszeiten', 'Öffnungszeiten', 'Wir sind Montag bis Freitag von 9 bis 17 Uhr für Sie da.'],
+        ['Leistungen', 'Leistungen', 'Wir bieten [Ihre Leistungen]. Bitte an Ihr Unternehmen anpassen.'],
+        ['Termine & Buchung', 'Termin', 'Für einen Termin nehmen wir Name, Anliegen und Wunschzeit auf und bestätigen telefonisch.'],
+        ['Kontakt & Rückruf', 'Rückruf', 'Hinterlassen Sie Name, Nummer und Ihr Anliegen — wir rufen schnellstmöglich zurück.'],
+        ['Anfahrt & Parken', 'Standort', 'Sie finden uns in [Adresse]. [Hinweis zu Parken/ÖPNV].'],
+        ['Preise & Zahlung', 'Preise', 'Preise nennen wir Ihnen gern auf Anfrage. Zahlung per [Bar/Karte/Rechnung].'],
+        ['FAQ', 'Über uns', '[Kurzer Satz über Ihr Unternehmen, z.B. seit wann es besteht und was es besonders macht.]'],
+      ],
+    };
+
+    async function addKbEntry(category, title, content) {
+      if (!tenant) { toast('Bitte zuerst anmelden.', 'err'); return; }
+      const { error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: currentDept, category, title, content });
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      toast('„' + title + '" übernommen.'); loadAll();
+    }
+    async function addKbBranch(branch) {
+      if (!tenant) { toast('Bitte zuerst anmelden.', 'err'); return; }
+      const rows = TEMPLATES[branch].map(([category, title, content]) => ({ tenant_id: tenant.id, department: currentDept, category, title, content }));
+      const { error } = await sb.from('knowledge_base').insert(rows);
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      toast(rows.length + ' Einträge übernommen.'); loadAll();
+    }
+
+    function setupTemplates() {
+      const chips = $('branchChips'), grid = $('tplGrid'), drop = $('kbDrop');
+      if (!chips || !grid) return;
+      const branches = Object.keys(TEMPLATES);
+      let active = branches[0];
+      const renderChips = () => {
+        chips.innerHTML = '';
+        branches.forEach((b) => {
+          const el = document.createElement('button');
+          el.className = 'branch-chip' + (b === active ? ' active' : '');
+          el.textContent = b;
+          el.onclick = () => { active = b; renderChips(); renderCards(); };
+          chips.append(el);
+        });
+      };
+      const renderCards = () => {
+        grid.innerHTML = '';
+        const bar = document.createElement('div');
+        bar.style.cssText = 'grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;';
+        const info = document.createElement('span'); info.className = 'muted'; info.textContent = TEMPLATES[active].length + ' Vorschläge';
+        const all = document.createElement('button'); all.className = 'btn btn--ghost sm'; all.textContent = 'Alle übernehmen';
+        all.onclick = () => { if (confirm('Alle ' + TEMPLATES[active].length + ' Vorschläge aus „' + active + '" übernehmen?')) addKbBranch(active); };
+        bar.append(info, all); grid.append(bar);
+        TEMPLATES[active].forEach(([category, title, content]) => {
+          const card = document.createElement('div');
+          card.className = 'tpl-card'; card.draggable = true;
+          const cat = document.createElement('span'); cat.className = 'tpl-cat'; cat.textContent = category;
+          const h = document.createElement('h4'); h.innerHTML = '<span class="grip">⠿</span>'; h.append(title);
+          const p = document.createElement('p'); p.textContent = content;
+          const btn = document.createElement('button'); btn.className = 'btn btn--primary sm'; btn.textContent = 'Übernehmen';
+          btn.onclick = () => addKbEntry(category, title, content);
+          card.addEventListener('dragstart', (e) => {
+            card.classList.add('dragging');
+            e.dataTransfer.setData('application/json', JSON.stringify({ category, title, content }));
+            e.dataTransfer.effectAllowed = 'copy';
+          });
+          card.addEventListener('dragend', () => card.classList.remove('dragging'));
+          card.append(cat, h, p, btn); grid.append(card);
+        });
+      };
+      if (drop) {
+        drop.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; drop.classList.add('drag-over'); });
+        drop.addEventListener('dragleave', (e) => { if (!drop.contains(e.relatedTarget)) drop.classList.remove('drag-over'); });
+        drop.addEventListener('drop', (e) => {
+          e.preventDefault(); drop.classList.remove('drag-over');
+          try { const d = JSON.parse(e.dataTransfer.getData('application/json')); if (d && d.title) addKbEntry(d.category, d.title, d.content); } catch (_) {}
+        });
+      }
+      renderChips(); renderCards();
+    }
+
+    // ---- Offene Fragen (Lern-Schleife) ----
+    function renderGaps(items) {
+      const el = $('gapList');
+      if (!items.length) { el.innerHTML = '<div class="panel muted">Keine offenen Fragen. Wenn dein Assistent etwas nicht beantworten kann, erscheint die Frage hier.</div>'; return; }
+      el.innerHTML = '';
+      for (const g of items) {
+        const div = document.createElement('div'); div.className = 'item';
+        const h = document.createElement('h4'); h.textContent = g.question;
+        const dep = g.department || 'general';
+        if (dep !== 'general') {
+          const b = document.createElement('span'); b.className = 'dept-badge ' + dep;
+          b.textContent = DEPT_LABEL[dep] || dep; b.style.marginLeft = '8px';
+          h.append(b);
+        }
+        const when = document.createElement('p'); when.className = 'muted';
+        when.textContent = 'Gefragt am ' + new Date(g.created_at).toLocaleString('de-DE')
+          + ' · Antwort geht in „' + (DEPT_LABEL[dep] || 'Allgemein') + '"';
+        const ta = document.createElement('textarea');
+        ta.placeholder = 'Antwort eingeben – sie wird automatisch in die Wissensdatenbank übernommen ...';
+        ta.style.marginTop = '10px';
+        const row = document.createElement('div'); row.className = 'stack';
+        const save = document.createElement('button'); save.className = 'btn btn--primary sm';
+        save.textContent = 'Beantworten & ins Wissen übernehmen';
+        const dismiss = document.createElement('button'); dismiss.className = 'btn btn--ghost sm';
+        dismiss.textContent = 'Verwerfen';
+        const suggest = document.createElement('button'); suggest.className = 'btn btn--ghost sm'; suggest.textContent = '✨ KI-Antwort vorschlagen';
+        suggest.onclick = async () => {
+          suggest.disabled = true; const orig = suggest.textContent; suggest.textContent = 'Entwerfe …';
+          try {
+            const res = await apiFetch('/api/gap-suggest', {
+              method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+              body: JSON.stringify({ question: g.question, department: g.department || 'general' }),
+            });
+            const d = await res.json();
+            if (!res.ok) throw new Error(d.error || 'Fehler');
+            ta.value = d.answer || ''; ta.focus();
+          } catch (e) { toast('Fehler: ' + e.message, 'err'); }
+          suggest.disabled = false; suggest.textContent = orig;
+        };
+        save.onclick = () => answerGap(g, ta.value.trim(), save);
+        dismiss.onclick = () => dismissGap(g.id);
+        row.append(save, suggest, dismiss); div.append(h, when, ta, row); el.append(div);
+      }
+    }
+    async function answerGap(g, answer, btn) {
+      if (!answer) return toast('Bitte eine Antwort eingeben.', 'err');
+      btn.disabled = true;
+      const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: g.department || 'general', title: g.question, content: answer });
+      if (ins.error) { btn.disabled = false; return toast('Fehler: ' + ins.error.message, 'err'); }
+      await sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: new Date().toISOString() }).eq('id', g.id);
+      toast('Gespeichert – der Assistent weiß es jetzt.'); loadAll();
+    }
+    async function dismissGap(id) {
+      if (!confirm('Diese Frage verwerfen?')) return;
+      await sb.from('knowledge_gaps').update({ status: 'answered' }).eq('id', id);
+      toast('Verworfen.'); loadAll();
+    }
+
+    // ---- Anruf-Statistik (Übersicht) ----
+    async function loadStats() {
+      if (!tenant) return;
+      const since = new Date(Date.now() - 14 * 864e5).toISOString();
+      const [{ data: calls }, { count: leads }] = await Promise.all([
+        sb.from('calls').select('started_at, ended_at').eq('tenant_id', tenant.id).gte('started_at', since).limit(2000),
+        sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
+      ]);
+      renderStats(calls ?? [], leads ?? 0);
+    }
+    function renderStats(calls, leads) {
+      const days = [], now = new Date();
+      for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i); days.push({ d, count: 0 }); }
+      const idx = new Map(days.map((b, i) => [b.d.getTime(), i]));
+      const dayKey = (iso) => { const x = new Date(iso); x.setHours(0, 0, 0, 0); return x.getTime(); };
+      let durSum = 0, durN = 0, last7 = 0; const sevenAgo = Date.now() - 7 * 864e5;
+      for (const c of calls) {
+        const k = dayKey(c.started_at); if (idx.has(k)) days[idx.get(k)].count++;
+        if (new Date(c.started_at).getTime() >= sevenAgo) last7++;
+        if (c.ended_at) { const s = (new Date(c.ended_at) - new Date(c.started_at)) / 1000; if (s > 0 && s < 3600) { durSum += s; durN++; } }
+      }
+      const avg = durN ? Math.round(durSum / durN) : 0;
+      const avgStr = avg ? Math.floor(avg / 60) + ':' + String(avg % 60).padStart(2, '0') + ' Min' : '–';
+      $('statSummary').innerHTML =
+        '<div><div class="n">' + calls.length + '</div><div class="l">Anrufe (14 Tage)</div></div>' +
+        '<div><div class="n">' + last7 + '</div><div class="l">letzte 7 Tage</div></div>' +
+        '<div><div class="n">' + avgStr + '</div><div class="l">Ø Dauer</div></div>' +
+        '<div><div class="n">' + leads + '</div><div class="l">Nachrichten/Leads</div></div>';
+      const max = Math.max(1, ...days.map((b) => b.count));
+      const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+      $('statChart').innerHTML = days.map((b) => {
+        const h = b.count ? Math.max(3, Math.round((b.count / max) * 92)) : 3;
+        return '<div class="col"><div class="c">' + (b.count || '') + '</div><div class="bar' + (b.count ? '' : ' zero') + '" style="height:' + h + 'px"></div><div class="d">' + wd[b.d.getDay()] + '</div></div>';
+      }).join('');
+    }
+
+    // ---- Nachrichten ----
+    function renderMessages(items) {
+      const el = $('messages');
+      if (!items.length) { el.innerHTML = '<div class="panel muted">Noch keine Nachrichten. Sobald dein Assistent einen Rückruf aufnimmt, erscheint er hier.</div>'; return; }
+      el.innerHTML = '';
+      for (const m of items) {
+        const div = document.createElement('div'); div.className = 'item';
+        const when = new Date(m.created_at).toLocaleString('de-DE');
+        const h = document.createElement('h4');
+        h.textContent = `${m.caller_name || 'Unbekannt'} — ${m.category || '—'} / ${m.urgency || '—'}`;
+        const p = document.createElement('p');
+        p.textContent = `${m.summary || ''}\nRückruf: ${m.callback_number || m.caller_number || '—'} · ${when}`;
+        div.append(h, p); el.append(div);
+      }
+    }
+
+    $('callBtn').onclick = async () => {
+      const to = $('callTo').value.trim();
+      if (!/^\+\d{7,15}$/.test(to)) { $('callHint').textContent = 'Bitte Nummer im Format +49… eingeben.'; return; }
+      $('callBtn').disabled = true; $('callHint').textContent = 'Verbinde …';
+      try {
+        const res = await fetch(API + '/api/call', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ to }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Fehler');
+        $('callHint').textContent = 'Anruf gestartet — er erscheint gleich oben unter „Live".';
+        $('callTo').value = '';
+      } catch (e) { $('callHint').textContent = 'Fehler: ' + e.message; }
+      $('callBtn').disabled = false;
+    };
+
+    // ---- Wissensbasis aus Website importieren ----
+    $('ingestBtn').onclick = async () => {
+      const url = $('ingestUrl').value.trim();
+      if (!/^https?:\/\//i.test(url)) { $('ingestHint').textContent = 'Bitte eine Adresse mit https:// angeben.'; return; }
+      $('ingestBtn').disabled = true; $('ingestHint').textContent = 'Lese Website … das dauert ein paar Sekunden.';
+      $('ingestResults').innerHTML = '';
+      try {
+        const res = await apiFetch('/api/ingest', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Fehler');
+        renderIngest(data.entries || []);
+      } catch (e) { $('ingestHint').textContent = 'Fehler: ' + e.message; }
+      $('ingestBtn').disabled = false;
+    };
+
+    function renderIngest(entries) {
+      const el = $('ingestResults'); el.innerHTML = '';
+      if (!entries.length) {
+        $('ingestHint').textContent = 'Keine verwertbaren Inhalte gefunden. Versuch eine andere Seite (z.B. „Über uns" oder „Kontakt").';
+        return;
+      }
+      $('ingestHint').textContent = entries.length + ' Vorschläge gefunden – übernimm, was passt:';
+      const bar = document.createElement('div'); bar.className = 'stack'; bar.style.marginBottom = '10px';
+      const all = document.createElement('button'); all.className = 'btn btn--primary';
+      all.textContent = 'Alle ' + entries.length + ' übernehmen';
+      all.onclick = async () => { all.disabled = true; await addKbEntries(entries); };
+      bar.append(all); el.append(bar);
+      entries.forEach((e) => {
+        const card = document.createElement('div'); card.className = 'panel'; card.style.marginBottom = '8px';
+        const cat = document.createElement('span'); cat.className = 'chip'; cat.textContent = e.category;
+        const title = document.createElement('b'); title.textContent = ' ' + e.title;
+        const p = document.createElement('p'); p.className = 'muted'; p.style.margin = '6px 0 10px'; p.textContent = e.content;
+        const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = 'Übernehmen';
+        btn.onclick = async () => { btn.disabled = true; await addKbEntry(e.category, e.title, e.content); card.remove(); };
+        card.append(cat, title, p, btn); el.append(card);
+      });
+    }
+    async function addKbEntries(entries) {
+      if (!tenant) { toast('Bitte zuerst anmelden.', 'err'); return; }
+      const rows = entries.map((e) => ({ tenant_id: tenant.id, department: currentDept, category: e.category, title: e.title, content: e.content }));
+      const { error } = await sb.from('knowledge_base').insert(rows);
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      toast(rows.length + ' Einträge übernommen.');
+      $('ingestResults').innerHTML = ''; $('ingestHint').textContent = ''; $('ingestUrl').value = '';
+      loadAll();
+    }
+
+    // ---- Dokumente hochladen → automatisch in die Wissensbasis ----
+    let docBusy = false;
+    function setupDocUpload() {
+      const drop = $('docDrop'), input = $('docFiles');
+      if (!drop || !input) return;
+      drop.onclick = () => input.click();
+      input.onchange = () => { if (input.files.length) handleDocs([...input.files]); input.value = ''; };
+      ['dragover', 'dragenter'].forEach((e) => drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('drag-over'); }));
+      ['dragleave', 'dragend'].forEach((e) => drop.addEventListener(e, () => drop.classList.remove('drag-over')));
+      drop.addEventListener('drop', (ev) => { ev.preventDefault(); drop.classList.remove('drag-over'); const fs = [...(ev.dataTransfer?.files || [])]; if (fs.length) handleDocs(fs); });
+    }
+    async function handleDocs(files) {
+      if (!tenant) { toast('Bitte zuerst anmelden.', 'err'); return; }
+      if (docBusy) return;
+      docBusy = true;
+      const hint = $('docHint');
+      const tooBig = files.filter((f) => f.size > 10 * 1024 * 1024).map((f) => f.name + ' (zu groß, max. 10 MB)');
+      files = files.filter((f) => f.size <= 10 * 1024 * 1024);
+      const depLabel = DEPT_LABEL[currentDept] || 'Allgemein';
+      const allEntries = [], okFiles = [], failed = [...tooBig];
+      if (!files.length) { hint.textContent = failed.join('; ') || 'Keine Datei gewählt.'; docBusy = false; return; }
+      const auth = { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken };
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        try {
+          hint.textContent = `Lese „${f.name}" (${i + 1}/${files.length}) …`;
+          const data = await fileToBase64(f);
+          const pr = await apiFetch('/api/parse-file', { method: 'POST', headers: auth, body: JSON.stringify({ filename: f.name, mimetype: f.type, data }) });
+          const pd = await pr.json();
+          if (!pr.ok) throw new Error(pd.error || 'konnte nicht gelesen werden');
+          hint.textContent = `Werte „${f.name}" aus (${i + 1}/${files.length}) …`;
+          const er = await apiFetch('/api/ingest-text', { method: 'POST', headers: auth, body: JSON.stringify({ text: pd.text }) });
+          const ed = await er.json();
+          if (!er.ok) throw new Error(ed.error || 'Auswertung fehlgeschlagen');
+          const entries = ed.entries || [];
+          if (!entries.length) throw new Error('keine verwertbaren Infos gefunden');
+          allEntries.push(...entries);
+          okFiles.push(`${f.name} (${entries.length})`);
+        } catch (e) { failed.push(`${f.name}: ${e.message}`); }
+      }
+      if (allEntries.length) {
+        hint.textContent = `Lege ${allEntries.length} Einträge an …`;
+        await addKbEntries(allEntries); // fügt mit currentDept ein + lädt neu
+      }
+      let msg = allEntries.length
+        ? `✓ ${allEntries.length} Einträge aus ${okFiles.length} Dokument(en) in „${depLabel}" angelegt.`
+        : 'Es konnten keine Infos übernommen werden.';
+      if (failed.length) msg += ' Übersprungen: ' + failed.join('; ');
+      hint.textContent = msg;
+      docBusy = false;
+    }
+    setupDocUpload();
+
+    // ---- Schnittstellen / Webhook ----
+    function genSecret() {
+      const a = new Uint8Array(24); crypto.getRandomValues(a);
+      return [...a].map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    $('whRegen').onclick = () => { $('whSecret').value = genSecret(); $('whHint').textContent = 'Neuer Schlüssel erzeugt – zum Übernehmen „Speichern".'; };
+    $('whSave').onclick = async () => {
+      if (!tenant) return;
+      const url = $('whUrl').value.trim();
+      if (url && !/^https?:\/\//i.test(url)) { $('whHint').textContent = 'Eigener Webhook: bitte Adresse mit https:// angeben.'; return; }
+      $('whSave').disabled = true;
+      const { error } = await sb.from('webhook_config').upsert({
+        tenant_id: tenant.id, url, secret: $('whSecret').value,
+        enabled: $('whEnabled').checked, send_messages: $('whMsg').checked,
+        send_gaps: $('whGap').checked, send_calls: $('whCall').checked,
+        send_appointments: $('whAppt').checked,
+        slack_url: $('whSlack').value.trim(), teams_url: $('whTeams').value.trim(),
+        telegram_token: $('whTgToken').value.trim(), telegram_chat_id: $('whTgChat').value.trim(),
+        email_to: $('whEmail').value.trim(),
+      }, { onConflict: 'tenant_id' });
+      $('whSave').disabled = false;
+      $('whHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
+    };
+    $('whTest').onclick = async () => {
+      $('whTest').disabled = true; $('whHint').textContent = 'Sende Test-Event … (gespeicherte Ziele werden getestet)';
+      try {
+        const res = await fetch(API + '/api/webhook-test', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: '{}',
+        });
+        const d = await res.json();
+        if (d.results && d.results.length) {
+          $('whHint').textContent = d.results
+            .map((r) => r.name + ': ' + (r.ok ? '✓ ' + (r.status || 'OK') : '✗ ' + (r.error || ('HTTP ' + r.status))))
+            .join('   ·   ');
+        } else {
+          $('whHint').textContent = (d.error || 'Keine Ziele konfiguriert.') + ' (Erst speichern, dann testen.)';
+        }
+      } catch (e) { $('whHint').textContent = 'Fehler: ' + e.message; }
+      $('whTest').disabled = false;
+    };
+
+    // ---- Termine ----
+    $('bkSave').onclick = async () => {
+      if (!tenant) return;
+      $('bkSave').disabled = true;
+      const { error } = await sb.from('booking_config').upsert({
+        tenant_id: tenant.id,
+        enabled: $('bkEnabled').checked,
+        slot_minutes: Math.max(5, parseInt($('bkSlot').value) || 30),
+        buffer_minutes: Math.max(0, parseInt($('bkBuffer').value) || 0),
+        lead_hours: Math.max(0, parseInt($('bkLead').value) || 0),
+        horizon_days: Math.max(1, parseInt($('bkHorizon').value) || 30),
+        ical_token: bookingToken,
+      }, { onConflict: 'tenant_id' });
+      $('bkSave').disabled = false;
+      $('bkHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
+      if (!error && !$('bkEnabled').checked) $('bkHint').textContent = 'Gespeichert. (Terminbuchung ist deaktiviert.)';
+    };
+    $('bkIcalCopy').onclick = () => {
+      $('bkIcal').select();
+      navigator.clipboard?.writeText($('bkIcal').value);
+      toast('Abo-Link kopiert.');
+    };
+    $('bkAdd').onclick = async () => {
+      if (!tenant) return;
+      const date = $('bkNewDate').value, time = $('bkNewTime').value;
+      if (!date || !time) return toast('Datum und Uhrzeit nötig.', 'err');
+      const starts = new Date(date + 'T' + time + ':00');
+      const mins = Math.max(5, parseInt($('bkSlot').value) || 30);
+      const ends = new Date(starts.getTime() + mins * 60000);
+      const { error } = await sb.from('appointments').insert({
+        tenant_id: tenant.id, starts_at: starts.toISOString(), ends_at: ends.toISOString(),
+        customer_name: $('bkNewName').value.trim() || null, notes: $('bkNewNote').value.trim() || null,
+        source: 'dashboard',
+      });
+      if (error) return toast('Fehler: ' + error.message, 'err');
+      $('bkNewName').value = ''; $('bkNewNote').value = '';
+      toast('Termin eingetragen.'); loadAll();
+    };
+    function renderAppointments(items) {
+      const el = $('bkList');
+      if (!items.length) { el.innerHTML = '<div class="muted">Noch keine anstehenden Termine.</div>'; return; }
+      el.innerHTML = '';
+      for (const a of items) {
+        const div = document.createElement('div'); div.className = 'item';
+        const h = document.createElement('h4');
+        h.textContent = new Date(a.starts_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+        const p = document.createElement('p');
+        p.textContent = (a.customer_name || 'Ohne Name') + (a.notes ? ' · ' + a.notes : '') + (a.customer_phone ? ' · ' + a.customer_phone : '');
+        const row = document.createElement('div'); row.className = 'stack';
+        const c = document.createElement('button'); c.className = 'btn btn--danger sm'; c.textContent = 'Absagen';
+        c.onclick = async () => {
+          if (!confirm('Diesen Termin absagen?')) return;
+          await sb.from('appointments').update({ status: 'cancelled' }).eq('id', a.id);
+          toast('Termin abgesagt.'); loadAll();
+        };
+        row.append(c); div.append(h, p, row); el.append(div);
+      }
+    }
+
+    // ---- Kalender (Google / Outlook) ----
+    async function calApi(path, body) {
+      const res = await fetch(API + '/api/calendar/' + path, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+        body: JSON.stringify(body || {}),
+      });
+      return res.json();
+    }
+    async function loadCalendarStatus() {
+      const el = $('bkCal'); if (!el) return;
+      try { renderCalendar(await calApi('status')); }
+      catch { el.innerHTML = '<span class="muted">Status nicht verfügbar.</span>'; }
+    }
+    function renderCalendar(s) {
+      const el = $('bkCal'); el.innerHTML = '';
+      if (s && s.connected) {
+        const name = s.provider === 'google' ? 'Google Calendar' : 'Outlook / Microsoft 365';
+        const row = document.createElement('div'); row.className = 'stack'; row.style.alignItems = 'center';
+        const txt = document.createElement('span');
+        txt.innerHTML = '<span class="statusdot"></span><b>' + name + '</b> verbunden';
+        if (s.email) { const e = document.createElement('span'); e.className = 'muted'; e.textContent = ' · ' + s.email; txt.append(e); }
+        const btn = document.createElement('button'); btn.className = 'btn btn--danger sm'; btn.textContent = 'Trennen';
+        btn.onclick = async () => { btn.disabled = true; await calApi('disconnect'); toast('Kalender getrennt.'); loadCalendarStatus(); };
+        row.append(txt, btn); el.append(row);
+      } else {
+        const row = document.createElement('div'); row.className = 'stack';
+        [['google', 'Mit Google verbinden'], ['microsoft', 'Mit Outlook verbinden']].forEach(([p, label]) => {
+          const b = document.createElement('button'); b.className = 'btn'; b.textContent = label;
+          b.onclick = async () => {
+            b.disabled = true;
+            const r = await calApi('connect', { provider: p });
+            if (r.url) window.location = r.url;
+            else { toast(r.error || 'Nicht verfügbar.', 'err'); b.disabled = false; }
+          };
+          row.append(b);
+        });
+        el.append(row);
+      }
+    }
+
+    // ---- Wochen-Kalender ----
+    const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    function mondayOf(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); const wd = (x.getDay() + 6) % 7; x.setDate(x.getDate() - wd); return x; }
+    async function renderWeek() {
+      const el = $('calWeek'); if (!el || !tenant) return;
+      if (!calStart) calStart = mondayOf(new Date());
+      const start = new Date(calStart), end = new Date(calStart); end.setDate(end.getDate() + 7);
+
+      let sH = 24, eH = 0;
+      for (const k in (bizHours || {})) for (const iv of (bizHours[k] || [])) {
+        const a = parseInt(iv[0]); const [eh, em] = iv[1].split(':').map(Number);
+        sH = Math.min(sH, a); eH = Math.max(eH, em > 0 ? eh + 1 : eh);
+      }
+      if (sH >= eH) { sH = 8; eH = 20; } else { sH = Math.max(0, sH - 1); eH = Math.min(24, eH + 1); }
+      const PX = 44 / 60;
+
+      const fmt = (d) => d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+      const last = new Date(end); last.setDate(last.getDate() - 1);
+      $('calTitle').textContent = fmt(start) + ' – ' + fmt(last) + ' ' + start.getFullYear();
+
+      let appts = [], busy = [];
+      try {
+        const [r1, r2] = await Promise.all([
+          sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
+            .gte('starts_at', start.toISOString()).lt('starts_at', end.toISOString()),
+          calApi('busy', { from: start.toISOString(), to: end.toISOString() }),
+        ]);
+        appts = r1.data || []; busy = (r2 && r2.busy) || [];
+      } catch { /* offline/Fehler → leer */ }
+
+      const days = []; for (let i = 0; i < 7; i++) { const d = new Date(start); d.setDate(d.getDate() + i); days.push(d); }
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      let head = '<div class="cal__headrow"><div></div>';
+      days.forEach((d, i) => { head += `<div class="cal__dh${d.getTime() === today.getTime() ? ' today' : ''}">${DOW[i]}<span class="dnum">${d.getDate()}</span></div>`; });
+      head += '</div>';
+      const colH = (eH - sH) * 44;
+      let axis = '<div class="cal__axis">';
+      for (let h = sH; h < eH; h++) axis += `<div class="cal__hr">${String(h).padStart(2, '0')}</div>`;
+      axis += '</div>';
+      let cols = '';
+      for (let i = 0; i < 7; i++) cols += `<div class="cal__col" data-day="${i}" style="height:${colH}px"></div>`;
+      el.innerHTML = head + `<div class="cal__grid">${axis}${cols}</div>`;
+
+      const colEls = el.querySelectorAll('.cal__col');
+      const dayIndex = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return Math.round((x.getTime() - start.getTime()) / 86400000); };
+      const hhmm = (d) => d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      function place(d, durMin, cls) {
+        const idx = dayIndex(d); if (idx < 0 || idx > 6) return null;
+        const minTop = (d.getHours() * 60 + d.getMinutes()) - sH * 60;
+        const ev = document.createElement('div'); ev.className = 'cal__ev' + (cls ? ' ' + cls : '');
+        ev.style.top = Math.max(0, minTop * PX) + 'px'; ev.style.height = Math.max(16, durMin * PX) + 'px';
+        colEls[idx].append(ev); return ev;
+      }
+      busy.forEach((b) => { const s = new Date(b.start), e = new Date(b.end); const ev = place(s, (e - s) / 60000, 'busy'); if (ev) ev.innerHTML = '<span class="t">Belegt</span>'; });
+      appts.forEach((a) => {
+        const s = new Date(a.starts_at), e = new Date(a.ends_at || a.starts_at);
+        const ev = place(s, ((e - s) / 60000) || 30, ''); if (!ev) return;
+        const t = document.createElement('span'); t.className = 't'; t.textContent = hhmm(s) + ' ';
+        ev.append(t, document.createTextNode(a.customer_name || 'Termin'));
+        ev.title = 'Klicken zum Absagen';
+        ev.onclick = async () => {
+          if (!confirm('Termin am ' + s.toLocaleString('de-DE') + ' absagen?')) return;
+          await sb.from('appointments').update({ status: 'cancelled' }).eq('id', a.id);
+          toast('Termin abgesagt.'); renderWeek(); loadAll();
+        };
+      });
+    }
+    $('calPrev').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() - 7); renderWeek(); };
+    $('calNext').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() + 7); renderWeek(); };
+    $('calToday').onclick = () => { calStart = mondayOf(new Date()); renderWeek(); };
+
+    // ===== Chat-Widget: Wissens-Assistent =====
+    let waHistory = [], waLog = [], waBusy = false;
+    const WA_STARTERS = ['Was weißt du schon über uns?', 'Öffnungszeiten ergänzen', 'Unsere Leistungen eintragen', 'Wie funktioniert das hier?'];
+    const waKey = () => 'vocaris_wa_' + (tenant ? tenant.id : 'x');
+
+    function waEsc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    function waMd(t) {
+      let h = waEsc(t);
+      h = h.replace(/`([^`]+)`/g, '<code>$1</code>')
+           .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+           .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>')
+           .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      h = h.replace(/(?:^|\n)\s*[-•]\s+(.+)/g, '\n<li>$1</li>');
+      h = h.replace(/(<li>[\s\S]*?<\/li>)/g, (m) => '<ul>' + m.replace(/\n/g, '') + '</ul>');
+      return h.replace(/\n/g, '<br>').replace(/<\/ul><br>/g, '</ul>');
+    }
+    function waSave() { try { localStorage.setItem(waKey(), JSON.stringify({ h: waHistory, l: waLog })); } catch (_) {} }
+    function waBubble(role, text, markdown) {
+      const m = document.createElement('div'); m.className = 'wa-msg ' + role;
+      if (markdown) m.innerHTML = waMd(text); else m.textContent = text;
+      $('waChat').append(m); return m;
+    }
+    function waScroll() { const el = $('waChat'); el.scrollTop = el.scrollHeight; }
+    function waStarters() {
+      const el = $('waStarters'); el.innerHTML = ''; el.classList.toggle('hidden', waLog.length > 0);
+      if (waLog.length) return;
+      WA_STARTERS.forEach((s) => { const b = document.createElement('button'); b.className = 'wa-starter'; b.textContent = s; b.onclick = () => waSendText(s); el.append(b); });
+    }
+    function waEntries(parent, entries) {
+      const all = document.createElement('button'); all.className = 'btn sm'; all.style.margin = '8px 0 4px';
+      all.textContent = 'Alle ' + entries.length + ' übernehmen';
+      all.onclick = async () => { all.disabled = true; await addKbEntries(entries); waBubble('bot', '✓ ' + entries.length + ' Einträge übernommen — der Telefon-Assistent kennt sie jetzt.'); waScroll(); };
+      parent.append(document.createElement('br'), all);
+      entries.forEach((e) => {
+        const c = document.createElement('div'); c.className = 'wa-sug';
+        const cat = document.createElement('span'); cat.className = 'cat'; cat.textContent = e.category;
+        const t = document.createElement('b'); t.textContent = e.title;
+        const p = document.createElement('p'); p.textContent = e.content;
+        const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = 'Übernehmen';
+        b.onclick = async () => { b.disabled = true; await addKbEntry(e.category, e.title, e.content); b.textContent = '✓ übernommen'; };
+        c.append(cat, t, p, b); parent.append(c);
+      });
+    }
+    function waTyping() { const m = document.createElement('div'); m.className = 'wa-typing'; m.innerHTML = '<span></span><span></span><span></span>'; $('waChat').append(m); waScroll(); return m; }
+    async function waAsk() {
+      waBusy = true; $('waSend').disabled = true;
+      const typing = waTyping();
+      try {
+        const res = await apiFetch('/api/kb-chat', {
+          method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ messages: waHistory.slice(-16), department: currentDept }),
+        });
+        const d = await res.json(); typing.remove();
+        if (!res.ok) throw new Error(d.error || 'Fehler');
+        waHistory.push({ role: 'assistant', content: d.reply || '' });
+        waLog.push({ role: 'bot', text: d.reply || '' });
+        const m = waBubble('bot', d.reply || '', true);
+        if (d.entries && d.entries.length) waEntries(m, d.entries);
+        waSave();
+      } catch (err) { typing.remove(); waBubble('bot', 'Fehler: ' + err.message); }
+      waBusy = false; $('waSend').disabled = false; waScroll();
+    }
+    function waSendText(text) {
+      if (waBusy) return;
+      const t = (typeof text === 'string' ? text : $('waText').value).trim(); if (!t) return;
+      $('waText').value = ''; $('waText').style.height = 'auto';
+      waBubble('user', t); waLog.push({ role: 'user', text: t }); waStarters(); waScroll();
+      waHistory.push({ role: 'user', content: t });
+      waAsk();
+    }
+    function fileToBase64(file) {
+      return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(file); });
+    }
+    function waRestore() {
+      try {
+        const s = JSON.parse(localStorage.getItem(waKey()) || '{}');
+        waHistory = s.h || []; waLog = s.l || [];
+      } catch (_) { waHistory = []; waLog = []; }
+      $('waChat').innerHTML = '';
+      waLog.forEach((m) => waBubble(m.role, m.text, m.role === 'bot'));
+      waStarters(); waScroll();
+    }
+    function waReset() {
+      waHistory = []; waLog = []; try { localStorage.removeItem(waKey()); } catch (_) {}
+      $('waChat').innerHTML = ''; waStarters();
+    }
+    function waOpen(open) {
+      $('waPanel').classList.toggle('open', open);
+      $('waLauncher').classList.toggle('hidden', open);
+      if (open) { setTimeout(() => $('waText').focus(), 200); waScroll(); }
+    }
+    $('waLauncher').onclick = () => waOpen(true);
+    $('waClose').onclick = () => waOpen(false);
+    $('waNew').onclick = () => { if (confirm('Unterhaltung zurücksetzen?')) waReset(); };
+    $('waSend').onclick = () => waSendText();
+    $('waText').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waSendText(); } });
+    $('waText').addEventListener('input', () => { const t = $('waText'); t.style.height = 'auto'; t.style.height = Math.min(130, t.scrollHeight) + 'px'; });
+    $('waAttach').onclick = () => $('waFile').click();
+    $('waFile').onchange = async () => {
+      const f = $('waFile').files[0]; if (!f || waBusy) return;
+      if (f.size > 10 * 1024 * 1024) { waBubble('bot', 'Die Datei ist zu groß (max. 10 MB).'); waScroll(); $('waFile').value = ''; return; }
+      waBubble('user', '📎 ' + f.name); waLog.push({ role: 'user', text: '📎 ' + f.name }); waStarters(); waScroll();
+      waBusy = true; $('waSend').disabled = true;
+      const typing = waTyping();
+      try {
+        const data = await fileToBase64(f);
+        const res = await apiFetch('/api/parse-file', {
+          method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ filename: f.name, mimetype: f.type, data }),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Fehler');
+        waHistory.push({ role: 'user', content: 'Ich habe das Dokument „' + f.name + '" hochgeladen. Inhalt:\n' + d.text });
+        typing.remove(); waBusy = false; $('waSend').disabled = false;
+        await waAsk();
+      } catch (err) { typing.remove(); waBusy = false; $('waSend').disabled = false; waBubble('bot', 'Fehler: ' + err.message); waScroll(); }
+      $('waFile').value = '';
+    };
+
+    setupTemplates();
+    sb.auth.getSession().then(({ data }) => { data.session ? showApp(data.session) : showAuth(); });
+  </script>
+</body>
+</html>
