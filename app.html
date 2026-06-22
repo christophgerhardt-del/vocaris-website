@@ -786,15 +786,26 @@
             <label>E-Mail an Adresse</label>
             <input id="whEmail" placeholder="name@firma.de" />
 
-            <label style="margin-top:14px">Eigener Webhook <span class="muted">(JSON, z.B. Zapier/Make/CRM)</span></label>
-            <input id="whUrl" placeholder="https://hooks.zapier.com/… oder deine eigene Adresse" />
-            <label>Signatur-Schlüssel <span class="muted">(Echtheit prüfen via Header <code>X-Vocaris-Signature: sha256=HMAC(Body)</code>)</span></label>
-            <div class="grid2">
+            <label style="margin-top:14px">Zapier / Make / n8n <span class="muted">(verbindet jedes CRM – Salesforce, HubSpot, Pipedrive, …)</span></label>
+            <input id="whUrl" placeholder="https://hooks.zapier.com/… (Webhook-URL aus Zapier/Make einfügen)" />
+            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Lege in Zapier/Make einen „Webhook → Catch Hook" an, füge die URL hier ein → von dort fließen Leads in <b>jedes</b> Tool. JSON-Format, Echtheit per Header <code>X-Vocaris-Signature</code>.</p>
+            <div class="grid2" style="margin-top:6px">
               <div style="flex:3"><input id="whSecret" readonly /></div>
-              <div><button id="whRegen" class="btn" style="width:100%">Neu generieren</button></div>
+              <div><button id="whRegen" class="btn" style="width:100%">Schlüssel neu</button></div>
             </div>
 
-            <div class="stack" style="margin-top:14px">
+            <label style="margin-top:18px">CRM direkt anbinden <span class="muted">(optional – legt Leads automatisch an)</span></label>
+            <div class="grid2">
+              <div><label style="margin-top:6px">HubSpot Private-App-Token</label><input id="whHubspot" placeholder="pat-eu1-… (leer = aus)" /></div>
+              <div><label style="margin-top:6px">Salesforce Org-ID (Web-to-Lead)</label><input id="whSfOid" placeholder="00D… (leer = aus)" /></div>
+            </div>
+            <div class="grid2">
+              <div><label>Pipedrive API-Token</label><input id="whPipeToken" placeholder="leer = aus" /></div>
+              <div><label>Pipedrive Firmen-Subdomain</label><input id="whPipeDomain" placeholder="z.B. meinefirma (von meinefirma.pipedrive.com)" /></div>
+            </div>
+            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Bei jeder aufgenommenen Nachricht / jedem Termin wird automatisch ein Lead/Kontakt angelegt. HubSpot: Einstellungen → Integrationen → Private Apps (Scope crm.objects.contacts write). Salesforce: Setup → Web-to-Lead → Org-ID. Pipedrive: Einstellungen → API.</p>
+
+            <div class="stack" style="margin-top:16px">
               <button id="whSave" class="btn btn--primary">Speichern</button>
               <button id="whTest" class="btn">Test senden</button>
             </div>
@@ -1066,6 +1077,10 @@
       $('whEmail').value = wh?.email_to ?? ($('userEmail').textContent || '');
       $('whUrl').value = wh?.url ?? '';
       $('whSecret').value = wh?.secret || genSecret();
+      $('whHubspot').value = wh?.hubspot_token ?? '';
+      $('whSfOid').value = wh?.salesforce_oid ?? '';
+      $('whPipeToken').value = wh?.pipedrive_token ?? '';
+      $('whPipeDomain').value = wh?.pipedrive_domain ?? '';
 
       // Termine
       $('bkEnabled').checked = bk?.enabled ?? false;
@@ -1992,6 +2007,10 @@
         slack_url: $('whSlack').value.trim(), teams_url: $('whTeams').value.trim(),
         telegram_token: $('whTgToken').value.trim(), telegram_chat_id: $('whTgChat').value.trim(),
         email_to: $('whEmail').value.trim(),
+        hubspot_token: $('whHubspot').value.trim() || null,
+        salesforce_oid: $('whSfOid').value.trim() || null,
+        pipedrive_token: $('whPipeToken').value.trim() || null,
+        pipedrive_domain: $('whPipeDomain').value.trim().replace(/\.pipedrive\.com.*$/i, '').replace(/^https?:\/\//, '') || null,
       }, { onConflict: 'tenant_id' });
       $('whSave').disabled = false;
       $('whHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
