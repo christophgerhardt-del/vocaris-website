@@ -224,6 +224,8 @@
     .cal__ev .t { font-weight: 700; }
     .cal__ev.busy { background: repeating-linear-gradient(45deg, #d7dae2, #d7dae2 6px, #eceef3 6px, #eceef3 12px);
       color: var(--ink-soft); box-shadow: none; cursor: default; }
+    .cal__ev.manual { background: repeating-linear-gradient(45deg, #ffd9d2, #ffd9d2 6px, #fff1ee 6px, #fff1ee 12px);
+      color: var(--accent-3); box-shadow: none; cursor: pointer; }
     label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin: 14px 0 5px; }
     input, textarea, select { width: 100%; font: inherit; color: var(--ink); background: var(--paper);
       border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; }
@@ -681,7 +683,21 @@
               </div>
             </div>
             <div id="calWeek"><span class="muted">Lade Kalender …</span></div>
-            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12.5px">Indigo = Vocaris-Termine · schraffiert = belegt (aus dem verbundenen Kalender).</p>
+            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12.5px">Indigo = Vocaris-Termine · grau schraffiert = belegt (verbundener Kalender) · coral schraffiert = manuell gesperrt (zum Freigeben klicken). <b>Tipp:</b> in eine freie Stelle im Kalender klicken sperrt diese Stunde.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Belegte Zeiten sperren</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Ohne verbundenen Kalender hier eintragen, wann du <b>nicht</b> buchbar bist (Urlaub, Meetings, freie Tage). Vocaris vergibt in diesen Zeiten keine Termine. Deine <b>freien</b> Zeiten ergeben sich aus den Öffnungszeiten (unter „Assistent").</p>
+            <div class="grid2">
+              <div><label>Datum</label><input id="bbDate" type="date" /></div>
+              <div><label>Von</label><input id="bbFrom" type="time" /></div>
+              <div><label>Bis</label><input id="bbTo" type="time" /></div>
+            </div>
+            <label>Notiz (optional)</label><input id="bbNote" placeholder="z.B. Urlaub, Teammeeting" />
+            <div class="stack" style="margin-top:12px"><button id="bbAdd" class="btn btn--primary">Zeit sperren</button></div>
+            <p class="muted" id="bbHint" style="margin-top:8px"></p>
+            <div id="bbList" style="margin-top:8px"></div>
           </div>
 
           <div class="panel">
@@ -1064,6 +1080,7 @@
       renderMessages(msgs ?? []);
       loadCalendarStatus();
       renderWeek();
+      renderBusyList();
       waRestore();
       await loadLive();
       ensureRealtime(tenant.id);
@@ -2094,14 +2111,16 @@
       const last = new Date(end); last.setDate(last.getDate() - 1);
       $('calTitle').textContent = fmt(start) + ' – ' + fmt(last) + ' ' + start.getFullYear();
 
-      let appts = [], busy = [];
+      let appts = [], busy = [], blocks = [];
       try {
-        const [r1, r2] = await Promise.all([
+        const [r1, r2, r3] = await Promise.all([
           sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
             .gte('starts_at', start.toISOString()).lt('starts_at', end.toISOString()),
           calApi('busy', { from: start.toISOString(), to: end.toISOString() }),
+          sb.from('busy_blocks').select('*').eq('tenant_id', tenant.id)
+            .lt('starts_at', end.toISOString()).gt('ends_at', start.toISOString()),
         ]);
-        appts = r1.data || []; busy = (r2 && r2.busy) || [];
+        appts = r1.data || []; busy = (r2 && r2.busy) || []; blocks = r3.data || [];
       } catch { /* offline/Fehler → leer */ }
 
       const days = []; for (let i = 0; i < 7; i++) { const d = new Date(start); d.setDate(d.getDate() + i); days.push(d); }
@@ -2128,6 +2147,32 @@
         colEls[idx].append(ev); return ev;
       }
       busy.forEach((b) => { const s = new Date(b.start), e = new Date(b.end); const ev = place(s, (e - s) / 60000, 'busy'); if (ev) ev.innerHTML = '<span class="t">Belegt</span>'; });
+      blocks.forEach((b) => {
+        const s = new Date(b.starts_at), e = new Date(b.ends_at);
+        const ev = place(s, (e - s) / 60000, 'manual'); if (!ev) return;
+        ev.innerHTML = '<span class="t">Gesperrt</span>';
+        ev.title = (b.note ? b.note + ' · ' : '') + 'Klicken zum Freigeben';
+        ev.onclick = async (evt) => {
+          evt.stopPropagation();
+          if (!confirm('Sperrung am ' + s.toLocaleString('de-DE') + ' aufheben?')) return;
+          await sb.from('busy_blocks').delete().eq('id', b.id);
+          toast('Freigegeben.'); renderWeek(); renderBusyList();
+        };
+      });
+      // Klick auf freie Stelle im Tag → diese Stunde sperren.
+      colEls.forEach((col, idx) => {
+        col.addEventListener('click', (e) => {
+          if (e.target !== col) return; // nur leere Fläche, nicht auf Termine/Sperren
+          const y = e.clientY - col.getBoundingClientRect().top;
+          let minutes = Math.round((y / PX + sH * 60) / 30) * 30; // auf halbe Stunde runden
+          const day = new Date(start); day.setDate(day.getDate() + idx);
+          day.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+          const endD = new Date(day.getTime() + 60 * 60000);
+          if (!confirm('Diese Stunde als belegt sperren?\n' + day.toLocaleString('de-DE'))) return;
+          sb.from('busy_blocks').insert({ tenant_id: tenant.id, starts_at: day.toISOString(), ends_at: endD.toISOString(), note: null })
+            .then(({ error }) => { if (error) toast('Fehler: ' + error.message, 'err'); else { toast('Zeit gesperrt.'); renderWeek(); renderBusyList(); } });
+        });
+      });
       appts.forEach((a) => {
         const s = new Date(a.starts_at), e = new Date(a.ends_at || a.starts_at);
         const ev = place(s, ((e - s) / 60000) || 30, ''); if (!ev) return;
@@ -2144,6 +2189,40 @@
     $('calPrev').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() - 7); renderWeek(); };
     $('calNext').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() + 7); renderWeek(); };
     $('calToday').onclick = () => { calStart = mondayOf(new Date()); renderWeek(); };
+
+    // ---- Belegt-Zeiten (manuelle Sperren, falls kein Kalender verbunden) ----
+    $('bbAdd').onclick = async () => {
+      if (!tenant) return;
+      const date = $('bbDate').value, from = $('bbFrom').value, to = $('bbTo').value;
+      if (!date || !from || !to) { $('bbHint').textContent = 'Bitte Datum, Von und Bis angeben.'; return; }
+      const startD = new Date(date + 'T' + from), endD = new Date(date + 'T' + to);
+      if (!(endD > startD)) { $('bbHint').textContent = '„Bis" muss nach „Von" liegen.'; return; }
+      $('bbAdd').disabled = true;
+      const { error } = await sb.from('busy_blocks').insert({
+        tenant_id: tenant.id, starts_at: startD.toISOString(), ends_at: endD.toISOString(),
+        note: $('bbNote').value.trim() || null,
+      });
+      $('bbAdd').disabled = false;
+      if (error) { $('bbHint').textContent = 'Fehler: ' + error.message; return; }
+      $('bbHint').textContent = ''; $('bbFrom').value = ''; $('bbTo').value = ''; $('bbNote').value = '';
+      toast('Zeit gesperrt.'); renderBusyList(); renderWeek();
+    };
+    async function renderBusyList() {
+      const el = $('bbList'); if (!el || !tenant) return;
+      const { data } = await sb.from('busy_blocks').select('*').eq('tenant_id', tenant.id)
+        .gte('ends_at', new Date().toISOString()).order('starts_at').limit(50);
+      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:13px">Keine gesperrten Zeiten. Frei buchbar nach deinen Öffnungszeiten.</p>'; return; }
+      el.innerHTML = '<p class="muted" style="font-size:12.5px;margin-bottom:6px">Kommende Sperren:</p>';
+      const f = (iso) => new Date(iso).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      data.forEach((b) => {
+        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
+        const txt = document.createElement('span');
+        txt.textContent = f(b.starts_at) + ' – ' + new Date(b.ends_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr' + (b.note ? ' · ' + b.note : '');
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Freigeben'; del.style.float = 'right';
+        del.onclick = async () => { await sb.from('busy_blocks').delete().eq('id', b.id); toast('Freigegeben.'); renderBusyList(); renderWeek(); };
+        row.append(del, txt); el.append(row);
+      });
+    }
 
     // ===== Chat-Widget: Wissens-Assistent =====
     let waHistory = [], waLog = [], waBusy = false;
