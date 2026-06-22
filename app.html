@@ -128,6 +128,12 @@
     .panel { background: var(--white); border: 1px solid var(--line); border-radius: var(--r);
       padding: 24px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
     .panel h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 14px; letter-spacing: -.01em; }
+    .if-h { display: flex; align-items: center; gap: 9px; }
+    .if-h svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+    .if-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+    @media (max-width: 560px) { .if-grid { grid-template-columns: 1fr; } }
+    .if-details { margin-top: 14px; }
+    .if-details summary { cursor: pointer; font-size: 13px; color: var(--accent-ink); font-weight: 500; }
     .panel.muted { color: var(--ink-faint); text-align: center; padding: 34px 24px; font-size: 14px; }
     /* ===== Chat-Widget (Wissens-Assistent, rechter Rand) ===== */
     .wa-launcher { position: fixed; right: 22px; bottom: 22px; z-index: 60; display: flex; align-items: center; gap: 9px;
@@ -756,67 +762,67 @@
         <!-- Schnittstellen / Webhook -->
         <section id="sec-webhooks" class="section hidden">
           <h1 class="pagehead">Schnittstellen</h1>
-          <p class="pagesub">Vocaris meldet jedes Ereignis (z.B. eine aufgenommene Nachricht) an deine Ziele — Slack, Teams, Telegram, E-Mail oder einen eigenen Webhook (Zapier/Make/CRM).</p>
+          <p class="pagesub">Leite Anliegen, Termine und offene Fragen automatisch dorthin, wo dein Team arbeitet — Benachrichtigungen, CRM oder Automatisierung.</p>
 
+          <!-- 1 · Aktivierung & Ereignisse -->
           <div class="panel">
-            <label class="chk"><input type="checkbox" id="whEnabled" /> <b>Schnittstellen aktiv</b></label>
-            <label style="margin-top:10px">Welche Ereignisse senden?</label>
-            <label class="chk"><input type="checkbox" id="whMsg" /> <b>Neue Nachricht</b> – Rückruf/Anliegen aufgenommen <span class="muted">(message.captured)</span></label>
-            <label class="chk"><input type="checkbox" id="whGap" /> <b>Offene Frage</b> – konnte nicht beantwortet werden <span class="muted">(gap.created)</span></label>
-            <label class="chk"><input type="checkbox" id="whCall" /> <b>Anruf beendet</b> <span class="muted">(call.ended)</span></label>
-            <label class="chk"><input type="checkbox" id="whAppt" /> <b>Termin gebucht</b> <span class="muted">(appointment.booked)</span></label>
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Aktivierung & Ereignisse</h3>
+            <label class="chk"><input type="checkbox" id="whEnabled" /> <b>Schnittstellen aktiv</b> <span class="muted">– Hauptschalter für Benachrichtigungen & Webhook</span></label>
+            <p class="muted" style="margin:14px 0 8px">Welche Ereignisse sollen ausgelöst werden?</p>
+            <div class="if-grid">
+              <label class="chk"><input type="checkbox" id="whMsg" /> <b>Neue Nachricht / Lead</b> <span class="muted">– Rückruf/Anliegen aufgenommen</span></label>
+              <label class="chk"><input type="checkbox" id="whAppt" /> <b>Termin gebucht</b></label>
+              <label class="chk"><input type="checkbox" id="whGap" /> <b>Offene Frage</b> <span class="muted">– nicht beantwortet</span></label>
+              <label class="chk"><input type="checkbox" id="whCall" /> <b>Anruf beendet</b></label>
+            </div>
           </div>
 
+          <!-- 2 · Team-Benachrichtigungen -->
           <div class="panel">
-            <h3>Ziele</h3>
-            <p class="muted" style="margin-bottom:14px">Trag nur ein, was du nutzen willst — leere Felder werden ignoriert. Die oben gewählten Ereignisse gehen an alle eingetragenen Ziele.</p>
-
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Team-Benachrichtigungen</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Sofort-Hinweis, sobald etwas reinkommt. Trag nur ein, was du nutzt — leere Felder werden ignoriert.</p>
+            <label style="margin-top:0">E-Mail</label>
+            <input id="whEmail" placeholder="name@firma.de" />
             <label>Slack <span class="muted">(eingehender Webhook)</span></label>
             <input id="whSlack" placeholder="https://hooks.slack.com/services/…" />
-
             <label>Microsoft Teams <span class="muted">(eingehender Webhook)</span></label>
             <input id="whTeams" placeholder="https://….webhook.office.com/…" />
-
             <label>Telegram <span class="muted">(Bot-Token von @BotFather + Chat-ID)</span></label>
             <div class="grid2">
               <div style="flex:2"><input id="whTgToken" placeholder="123456:ABC-DEF… (Bot-Token)" /></div>
               <div><input id="whTgChat" placeholder="Chat-ID, z.B. 12345678" /></div>
             </div>
+          </div>
 
-            <label>E-Mail an Adresse</label>
-            <input id="whEmail" placeholder="name@firma.de" />
-
-            <label style="margin-top:14px">Zapier / Make / n8n <span class="muted">(verbindet jedes CRM – Salesforce, HubSpot, Pipedrive, …)</span></label>
-            <input id="whUrl" placeholder="https://hooks.zapier.com/… (Webhook-URL aus Zapier/Make einfügen)" />
-            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Lege in Zapier/Make einen „Webhook → Catch Hook" an, füge die URL hier ein → von dort fließen Leads in <b>jedes</b> Tool. JSON-Format, Echtheit per Header <code>X-Vocaris-Signature</code>.</p>
-            <div class="grid2" style="margin-top:6px">
-              <div style="flex:3"><input id="whSecret" readonly /></div>
-              <div><button id="whRegen" class="btn" style="width:100%">Schlüssel neu</button></div>
-            </div>
-
-            <label style="margin-top:18px">CRM direkt anbinden <span class="muted">(nativ, ohne Zwischendienst – beliebig viele)</span></label>
-            <p class="muted" style="text-align:left;padding:0;margin:0 0 8px;font-size:12.5px">Bei jeder aufgenommenen Nachricht / jedem Termin wird automatisch ein Lead/Kontakt angelegt. Wähle ein CRM, trag die Zugangsdaten ein, „CRM verbinden". Mehrere möglich.</p>
+          <!-- 3 · CRM-Anbindung -->
+          <div class="panel">
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>CRM-Anbindung <span class="muted" style="font-weight:400;font-size:13px">(legt automatisch Leads an)</span></h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Bei jeder Nachricht / jedem Termin wird ein Lead/Kontakt im CRM angelegt. CRM wählen, Zugangsdaten eintragen, „CRM verbinden". Mehrere möglich.</p>
             <div class="grid2">
-              <div><label style="margin-top:0">CRM</label>
-                <select id="crmProvider"></select></div>
+              <div><label style="margin-top:0">CRM</label><select id="crmProvider"></select></div>
               <div></div>
             </div>
             <div id="crmFields" class="grid2"></div>
             <div class="stack" style="margin-top:10px"><button id="crmAdd" class="btn">CRM verbinden</button></div>
             <p class="muted" id="crmHint" style="margin-top:6px;font-size:12.5px"></p>
             <div id="crmList" style="margin-top:8px"></div>
-
-            <div class="stack" style="margin-top:16px">
-              <button id="whSave" class="btn btn--primary">Speichern</button>
-              <button id="whTest" class="btn">Test senden</button>
-            </div>
-            <p class="muted" id="whHint" style="margin-top:8px"></p>
           </div>
 
+          <!-- 4 · Automatisierung & eigener Webhook -->
           <div class="panel">
-            <h3>Beispiel-Payload (eigener Webhook)</h3>
-            <p class="muted" style="margin-bottom:10px">POST, <code>Content-Type: application/json</code>, signiert per <code>X-Vocaris-Signature</code>:</p>
-            <code class="codebox">{
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Automatisierung & eigener Webhook</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Über <b>Zapier / Make / n8n</b> erreichst du jedes Tool (auch CRMs, die oben nicht gelistet sind) — oder gib einen eigenen Endpunkt an.</p>
+            <label style="margin-top:0">Zapier / Make / n8n / eigener Webhook (URL)</label>
+            <input id="whUrl" placeholder="https://hooks.zapier.com/… (Catch-Hook-URL einfügen)" />
+            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">In Zapier/Make „Webhook → Catch Hook" anlegen, URL hier einfügen. JSON-POST, Echtheit per Header <code>X-Vocaris-Signature: sha256=HMAC(Body)</code>.</p>
+            <label>Signatur-Schlüssel</label>
+            <div class="grid2">
+              <div style="flex:3"><input id="whSecret" readonly /></div>
+              <div><button id="whRegen" class="btn" style="width:100%">Schlüssel neu</button></div>
+            </div>
+            <details class="if-details">
+              <summary>Beispiel-Payload anzeigen</summary>
+              <code class="codebox" style="margin-top:8px">{
   "event": "message.captured",
   "occurred_at": "2026-06-18T12:00:00.000Z",
   "data": {
@@ -827,6 +833,17 @@
     "urgency": "mittel"
   }
 }</code>
+            </details>
+          </div>
+
+          <!-- Aktionen -->
+          <div class="panel">
+            <div class="stack">
+              <button id="whSave" class="btn btn--primary">Speichern</button>
+              <button id="whTest" class="btn">Test senden</button>
+            </div>
+            <p class="muted" id="whHint" style="margin-top:8px"></p>
+            <p class="muted" style="text-align:left;padding:0;margin-top:6px;font-size:12px">„Speichern" sichert Ereignisse, Benachrichtigungen & Webhook. CRM-Verbindungen werden direkt beim „CRM verbinden" gespeichert. „Test senden" prüft alle aktiven Ziele (legt ggf. einen Test-Lead an).</p>
           </div>
         </section>
 
