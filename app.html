@@ -794,16 +794,17 @@
               <div><button id="whRegen" class="btn" style="width:100%">Schlüssel neu</button></div>
             </div>
 
-            <label style="margin-top:18px">CRM direkt anbinden <span class="muted">(optional – legt Leads automatisch an)</span></label>
+            <label style="margin-top:18px">CRM direkt anbinden <span class="muted">(nativ, ohne Zwischendienst – beliebig viele)</span></label>
+            <p class="muted" style="text-align:left;padding:0;margin:0 0 8px;font-size:12.5px">Bei jeder aufgenommenen Nachricht / jedem Termin wird automatisch ein Lead/Kontakt angelegt. Wähle ein CRM, trag die Zugangsdaten ein, „CRM verbinden". Mehrere möglich.</p>
             <div class="grid2">
-              <div><label style="margin-top:6px">HubSpot Private-App-Token</label><input id="whHubspot" placeholder="pat-eu1-… (leer = aus)" /></div>
-              <div><label style="margin-top:6px">Salesforce Org-ID (Web-to-Lead)</label><input id="whSfOid" placeholder="00D… (leer = aus)" /></div>
+              <div><label style="margin-top:0">CRM</label>
+                <select id="crmProvider"></select></div>
+              <div></div>
             </div>
-            <div class="grid2">
-              <div><label>Pipedrive API-Token</label><input id="whPipeToken" placeholder="leer = aus" /></div>
-              <div><label>Pipedrive Firmen-Subdomain</label><input id="whPipeDomain" placeholder="z.B. meinefirma (von meinefirma.pipedrive.com)" /></div>
-            </div>
-            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Bei jeder aufgenommenen Nachricht / jedem Termin wird automatisch ein Lead/Kontakt angelegt. HubSpot: Einstellungen → Integrationen → Private Apps (Scope crm.objects.contacts write). Salesforce: Setup → Web-to-Lead → Org-ID. Pipedrive: Einstellungen → API.</p>
+            <div id="crmFields" class="grid2"></div>
+            <div class="stack" style="margin-top:10px"><button id="crmAdd" class="btn">CRM verbinden</button></div>
+            <p class="muted" id="crmHint" style="margin-top:6px;font-size:12.5px"></p>
+            <div id="crmList" style="margin-top:8px"></div>
 
             <div class="stack" style="margin-top:16px">
               <button id="whSave" class="btn btn--primary">Speichern</button>
@@ -1077,10 +1078,7 @@
       $('whEmail').value = wh?.email_to ?? ($('userEmail').textContent || '');
       $('whUrl').value = wh?.url ?? '';
       $('whSecret').value = wh?.secret || genSecret();
-      $('whHubspot').value = wh?.hubspot_token ?? '';
-      $('whSfOid').value = wh?.salesforce_oid ?? '';
-      $('whPipeToken').value = wh?.pipedrive_token ?? '';
-      $('whPipeDomain').value = wh?.pipedrive_domain ?? '';
+      renderCrmList();
 
       // Termine
       $('bkEnabled').checked = bk?.enabled ?? false;
@@ -2007,10 +2005,6 @@
         slack_url: $('whSlack').value.trim(), teams_url: $('whTeams').value.trim(),
         telegram_token: $('whTgToken').value.trim(), telegram_chat_id: $('whTgChat').value.trim(),
         email_to: $('whEmail').value.trim(),
-        hubspot_token: $('whHubspot').value.trim() || null,
-        salesforce_oid: $('whSfOid').value.trim() || null,
-        pipedrive_token: $('whPipeToken').value.trim() || null,
-        pipedrive_domain: $('whPipeDomain').value.trim().replace(/\.pipedrive\.com.*$/i, '').replace(/^https?:\/\//, '') || null,
       }, { onConflict: 'tenant_id' });
       $('whSave').disabled = false;
       $('whHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
@@ -2034,6 +2028,62 @@
       } catch (e) { $('whHint').textContent = 'Fehler: ' + e.message; }
       $('whTest').disabled = false;
     };
+
+    // ---- CRM-Verbindungen (Provider-Registry) ----
+    const CRM_SCHEMA = {
+      hubspot: { label: 'HubSpot', fields: [['token', 'Private-App-Token', 'pat-…']] },
+      pipedrive: { label: 'Pipedrive', fields: [['token', 'API-Token', ''], ['domain', 'Subdomain', 'meinefirma']] },
+      salesforce: { label: 'Salesforce (Web-to-Lead)', fields: [['oid', 'Org-ID', '00D…']] },
+      zoho: { label: 'Zoho CRM', fields: [['region', 'Region (eu/com/in/com.au)', 'eu'], ['clientId', 'Client-ID', ''], ['clientSecret', 'Client-Secret', ''], ['refreshToken', 'Refresh-Token', '']] },
+      activecampaign: { label: 'ActiveCampaign', fields: [['base', 'API-URL', 'https://xxx.api-us1.com'], ['apiKey', 'API-Key', '']] },
+      freshsales: { label: 'Freshsales (Freshworks)', fields: [['domain', 'Domain', 'meinefirma'], ['apiKey', 'API-Key', '']] },
+      brevo: { label: 'Brevo (Sendinblue)', fields: [['apiKey', 'API-Key', 'xkeysib-…']] },
+      close: { label: 'Close', fields: [['apiKey', 'API-Key', '']] },
+      capsule: { label: 'Capsule CRM', fields: [['token', 'API-Token (Bearer)', '']] },
+    };
+    (function initCrmSelect() {
+      const sel = $('crmProvider'); if (!sel) return;
+      sel.innerHTML = Object.entries(CRM_SCHEMA).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+      sel.onchange = renderCrmFields; renderCrmFields();
+    })();
+    function renderCrmFields() {
+      const sel = $('crmProvider'), box = $('crmFields'); if (!sel || !box) return;
+      const schema = CRM_SCHEMA[sel.value]; box.innerHTML = '';
+      schema.fields.forEach(([key, label, ph]) => {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<label style="margin-top:6px">${label}</label>`;
+        const inp = document.createElement('input'); inp.dataset.k = key; inp.placeholder = ph || '';
+        wrap.append(inp); box.append(wrap);
+      });
+    }
+    $('crmAdd').onclick = async () => {
+      if (!tenant) return;
+      const provider = $('crmProvider').value;
+      const config = {};
+      let missing = false;
+      $('crmFields').querySelectorAll('input').forEach((inp) => { const v = inp.value.trim(); if (!v) missing = true; config[inp.dataset.k] = v; });
+      if (missing) { $('crmHint').textContent = 'Bitte alle Felder ausfüllen.'; return; }
+      $('crmAdd').disabled = true;
+      const { error } = await sb.from('crm_connections').insert({ tenant_id: tenant.id, provider, config });
+      $('crmAdd').disabled = false;
+      if (error) { $('crmHint').textContent = 'Fehler: ' + error.message; return; }
+      $('crmHint').textContent = 'Verbunden. Mit „Test senden" oben prüfst du, ob ein Lead ankommt.';
+      $('crmFields').querySelectorAll('input').forEach((i) => (i.value = ''));
+      renderCrmList();
+    };
+    async function renderCrmList() {
+      const el = $('crmList'); if (!el || !tenant) return;
+      const { data } = await sb.from('crm_connections').select('*').eq('tenant_id', tenant.id).order('created_at');
+      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Noch kein CRM verbunden.</p>'; return; }
+      el.innerHTML = '';
+      data.forEach((c) => {
+        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
+        const txt = document.createElement('span'); txt.textContent = (CRM_SCHEMA[c.provider]?.label || c.provider) + (c.enabled ? '' : ' (aus)');
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Trennen'; del.style.float = 'right';
+        del.onclick = async () => { if (!confirm('Diese CRM-Verbindung trennen?')) return; await sb.from('crm_connections').delete().eq('id', c.id); toast('Getrennt.'); renderCrmList(); };
+        row.append(del, txt); el.append(row);
+      });
+    }
 
     // ---- Termine ----
     $('bkSave').onclick = async () => {
