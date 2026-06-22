@@ -14,35 +14,56 @@
     body { background: var(--paper-2); }
     /* ---- Login (Split-Screen) ---- */
     .login { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
-    .login__brand { position: relative; color: #fff; padding: 44px 48px; display: flex; flex-direction: column;
-      overflow: hidden; background: linear-gradient(150deg, var(--accent) 0%, var(--accent-2) 58%, #5b21b6 100%); }
-    .login__brand::before { content: ''; position: absolute; inset: 0;
-      background: radial-gradient(720px 420px at 82% 8%, rgba(255,255,255,.20), transparent 60%),
-                  radial-gradient(560px 420px at 10% 100%, rgba(255,255,255,.10), transparent 60%); }
+    .login__brand { position: relative; color: #fff; padding: 48px 52px; display: flex; flex-direction: column;
+      gap: 8px; overflow: hidden; background: linear-gradient(150deg, #4f46e5 0%, #7c3aed 56%, #5b21b6 100%); }
+    .login__brand::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(760px 460px at 84% 4%, rgba(255,255,255,.22), transparent 60%),
+                  radial-gradient(620px 480px at 6% 104%, rgba(255,107,91,.30), transparent 58%); }
     .login__logo { position: relative; display: flex; align-items: center; gap: 10px; color: #fff;
       text-decoration: none; font-weight: 700; font-size: 19px; letter-spacing: -.01em; }
     .login__logo svg { width: 26px; height: 26px; }
-    .login__pitch { position: relative; margin: auto 0; max-width: 31ch; }
-    .login__pitch h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 3.6vw, 44px);
-      line-height: 1.06; margin-bottom: 18px; letter-spacing: -.01em; }
-    .login__pitch p { color: rgba(255,255,255,.86); font-size: 16px; line-height: 1.55; margin-bottom: 30px; }
-    .login__feats { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+    .login__pitch { position: relative; margin: auto 0; max-width: 33ch; }
+    .login__badge { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600;
+      color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+      padding: 6px 13px; border-radius: 100px; margin-bottom: 22px; }
+    .login__badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
+      box-shadow: 0 0 0 0 rgba(74,222,128,.6); animation: lgPing 1.8s infinite; }
+    @keyframes lgPing { 0%{box-shadow:0 0 0 0 rgba(74,222,128,.55);} 70%{box-shadow:0 0 0 7px rgba(74,222,128,0);} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0);} }
+    .login__pitch h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 3.4vw, 46px);
+      line-height: 1.1; margin: 0 0 16px; letter-spacing: -.01em; }
+    .login__pitch h2 em { font-style: italic; color: #ffd9d1; }
+    .login__pitch p { color: rgba(255,255,255,.88); font-size: 16px; line-height: 1.6; margin: 0 0 28px; }
+    .login__feats { list-style: none; display: flex; flex-direction: column; gap: 14px; padding: 0; margin: 0; }
     .login__feats li { display: flex; align-items: center; gap: 13px; font-size: 15px; color: rgba(255,255,255,.96); }
-    .login__feats .ic { width: 30px; height: 30px; flex: none; border-radius: 9px; display: grid; place-items: center;
-      background: rgba(255,255,255,.16); }
+    .login__feats .ic { width: 32px; height: 32px; flex: none; border-radius: 10px; display: grid; place-items: center;
+      background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.12); }
     .login__feats svg { width: 17px; height: 17px; }
+    .login__wave { position: relative; display: flex; align-items: center; gap: 4px; height: 40px; margin-top: 30px;
+      max-width: 320px; opacity: .85; }
+    .login__wave span { flex: 1; border-radius: 3px; background: rgba(255,255,255,.55);
+      transform-origin: center; animation: lgBar 1.1s ease-in-out infinite; }
+    @keyframes lgBar { 0%,100%{ transform: scaleY(.22);} 50%{ transform: scaleY(1);} }
     .login__foot { position: relative; color: rgba(255,255,255,.72); font-size: 13px; margin-top: 30px; }
     .login__main { display: flex; align-items: center; justify-content: center; padding: 40px 24px; background: var(--white); }
-    .login__card { width: 100%; max-width: 380px; }
-    .login__card h1 { font-family: var(--serif); font-weight: 400; font-size: 33px; margin-bottom: 6px; letter-spacing: -.01em; }
-    .login__sub { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 28px; }
-    .login__card label { margin-top: 16px; }
-    .login__card input { padding: 12px 14px; border-radius: 12px; }
-    .login__submit { width: 100%; justify-content: center; margin-top: 24px; font-size: 15px; padding: 13px 18px; }
+    .login__card { width: 100%; max-width: 384px; }
+    .login__card h1 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin: 0 0 6px; letter-spacing: -.01em; }
+    .login__sub { color: var(--ink-soft); font-size: 14.5px; margin: 0 0 28px; }
+    .login__card label { margin-top: 16px; font-size: 13px; }
+    .login__card input { padding: 13px 15px; border-radius: 12px; transition: border-color .15s, box-shadow .15s, background .15s; }
+    .login__card input:focus { outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); background: var(--white); }
+    .login__submit { width: 100%; justify-content: center; margin-top: 26px; font-size: 15px; padding: 14px 18px;
+      box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent) 75%, transparent); }
     .login__err { color: var(--accent-3); font-size: 13.5px; margin-top: 12px; min-height: 1.1em; font-weight: 500; }
-    .login__alt { margin-top: 24px; font-size: 14px; color: var(--ink-faint); }
+    .login__alt { margin-top: 22px; font-size: 14px; color: var(--ink-faint); }
     .login__alt a { color: var(--accent); font-weight: 600; text-decoration: none; }
     .login__alt a:hover { text-decoration: underline; }
+    .login__divider { display: flex; align-items: center; gap: 12px; margin: 26px 0 0; color: var(--ink-faint); font-size: 12.5px; }
+    .login__divider::before, .login__divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    .login__trust { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .login__trust span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500;
+      color: var(--ink-soft); background: var(--paper); border: 1px solid var(--line); padding: 5px 11px; border-radius: 100px; }
+    .login__trust svg { width: 13px; height: 13px; color: var(--accent); }
     .pw { position: relative; }
     .pw input { padding-right: 44px; }
     .pw__toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: 0;
@@ -53,6 +74,9 @@
       .login__brand { display: none; }
       .login__main { display: block; min-height: 100vh; padding: 48px 22px; }
       .login__card { width: 100%; max-width: 420px; margin: 0 auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .login__wave span, .login__badge .dot, .hero-card__wave span, .hero-pill .dot { animation: none; }
     }
     /* ---- Sidebar-Feinschliff ---- */
     .nav-group { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
@@ -70,12 +94,15 @@
     .side .brand { display: flex; align-items: center; gap: 10px; padding: 6px 10px 18px;
       color: var(--ink); text-decoration: none; font-weight: 700; font-size: 18px; }
     .side .brand .m { color: var(--accent); display: flex; }
-    .nav-item { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+    .nav-item { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
       background: none; border: 0; border-radius: var(--r-sm); padding: 11px 12px; cursor: pointer;
-      color: var(--ink-soft); font: inherit; font-weight: 500; font-size: 14.5px; }
+      color: var(--ink-soft); font: inherit; font-weight: 500; font-size: 14.5px; transition: background .14s, color .14s; }
     .nav-item:hover { background: var(--paper-2); color: var(--ink); }
-    .nav-item.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
+    .nav-item.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); font-weight: 600; }
+    .nav-item.active::before { content: ''; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 3px;
+      border-radius: 0 3px 3px 0; background: linear-gradient(180deg, var(--accent), var(--accent-2)); }
     .nav-item svg { width: 18px; height: 18px; flex: none; opacity: .8; }
+    .nav-item.active svg { opacity: 1; }
     .gap-badge { margin-left: auto; background: var(--accent-3); color: #fff; font-size: 11px;
       font-weight: 700; border-radius: 999px; padding: 1px 7px; }
     .call-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r);
@@ -161,8 +188,14 @@
     /* Gradient-Begrüßungskarte (Übersicht) */
     .hero-card { position: relative; overflow: hidden; border-radius: var(--r); padding: 28px 30px; margin-bottom: 18px;
       color: #fff; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 68%, #5b21b6 100%); box-shadow: var(--shadow); }
-    .hero-card::before { content: ''; position: absolute; inset: 0;
-      background: radial-gradient(540px 280px at 88% -10%, rgba(255,255,255,.22), transparent 60%); }
+    .hero-card::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(540px 280px at 88% -10%, rgba(255,255,255,.22), transparent 60%),
+                  radial-gradient(460px 320px at 102% 120%, rgba(255,107,91,.32), transparent 60%); }
+    .hero-card__wave { position: absolute; right: 26px; top: 50%; transform: translateY(-50%); display: flex;
+      align-items: center; gap: 4px; height: 46px; width: 180px; opacity: .5; pointer-events: none; }
+    .hero-card__wave span { flex: 1; border-radius: 3px; background: rgba(255,255,255,.7); transform-origin: center;
+      animation: lgBar 1.1s ease-in-out infinite; }
+    @media (max-width: 720px) { .hero-card__wave { display: none; } }
     .hero-card > * { position: relative; }
     .hero-card .eyebrow2 { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.82); }
     .hero-card h2 { font-family: var(--serif); font-weight: 400; font-size: 30px; margin: 5px 0 14px; letter-spacing: -.01em; }
@@ -342,13 +375,15 @@
           Vocaris
         </a>
         <div class="login__pitch">
-          <h2>Dein KI-Telefon­assistent.</h2>
+          <span class="login__badge"><span class="dot"></span> Live · dein Assistent ist erreichbar</span>
+          <h2>Willkommen bei deinem <em>KI-Telefonassistenten.</em></h2>
           <p>Nimmt Anrufe an, beantwortet Fragen, bucht Termine und nimmt Rückrufe auf — rund um die Uhr, in unter einer Sekunde.</p>
           <ul class="login__feats">
             <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>Antwortet sofort, ohne Warteschleife</li>
             <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>Termine &amp; Rückrufe automatisch</li>
             <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7L12 5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7L12 19"/></svg></span>Slack, E-Mail, Kalender &amp; CRM</li>
           </ul>
+          <div class="login__wave" id="loginWave" aria-hidden="true"></div>
         </div>
         <p class="login__foot">© Vocaris · entwickelt in München</p>
       </aside>
@@ -369,6 +404,12 @@
           <button id="authBtn" class="btn btn--primary login__submit">Anmelden</button>
           <p id="authMsg" class="login__err"></p>
           <p class="login__alt"><a href="#" id="forgotPw">Passwort vergessen?</a></p>
+          <div class="login__divider">sicher &amp; DSGVO-konform</div>
+          <div class="login__trust">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> DSGVO</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> TLS-verschlüsselt</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> EU-Hosting</span>
+          </div>
           <p class="login__alt">Noch keinen Zugang? <a href="https://vocaris.eu/#contact">Demo anfragen →</a></p>
         </div>
       </main>
@@ -416,6 +457,7 @@
             <span class="eyebrow2">Dein KI-Telefonassistent</span>
             <h2 id="ovSub">—</h2>
             <span id="ovStatus" class="hero-pill">—</span>
+            <div class="hero-card__wave" id="ovWave" aria-hidden="true"></div>
           </div>
           <div class="stats">
             <div class="stat">
@@ -443,7 +485,7 @@
           <div class="panel">
             <h3>So testest du deinen Assistenten</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Pflege unter <b>Wissensdatenbank</b>, worüber er Auskunft geben soll, und passe unter <b>Assistent</b> Begrüßung, Öffnungszeiten und Stimme an. Änderungen wirken sofort beim nächsten Anruf.</p>
-            <button id="wizStartBtn" class="btn btn--primary">🚀 Einrichtungs-Assistent starten</button>
+            <button id="wizStartBtn" class="btn btn--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;margin-right:7px;vertical-align:-3px"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l1.9 5.1L20 10l-5.1 1.9L13 17l-1.9-5.1L6 10l5.1-1.9L13 3z"/></svg>Einrichtungs-Assistent starten</button>
           </div>
         </section>
 
@@ -496,7 +538,7 @@
           <div class="panel">
             <h3>Dokumente hochladen</h3>
             <p class="muted" style="margin-bottom:12px">Lade ein oder mehrere Dokumente hoch (PDF, Word, Excel) — Vocaris liest sie, holt sich die wichtigsten Infos und legt sie automatisch als Einträge in der oben gewählten Abteilung an.</p>
-            <div id="docDrop" class="doc-drop">📄 Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
+            <div id="docDrop" class="doc-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:22px;height:22px;vertical-align:-5px;margin-right:8px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
             <input type="file" id="docFiles" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
             <p class="muted" id="docHint" style="margin-top:10px"></p>
           </div>
@@ -741,7 +783,7 @@
           <p class="pagesub">So koppelst du deine bestehende Geschäftsnummer mit Vocaris — du behältst deine Nummer. Du kannst mehrere Nummern hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
           <div id="numbers"></div>
           <div class="panel">
-            <label style="margin-top:0">☎️ Festnetz / Telefonanlage</label>
+            <label style="margin-top:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:-2px;margin-right:6px;color:var(--accent)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Festnetz / Telefonanlage</label>
             <p class="muted" style="text-align:left;padding:0">Richte die Rufumleitung im Online-Portal deines Anbieters (z.B. Telekom, Vodafone, 1&amp;1, sipgate) auf die jeweilige Vocaris-Nummer ein — meist unter „Anrufweiterleitung" bzw. „Rufumleitung". Bei einer Telefonanlage in deren Weiterleitungs-Einstellungen. Umleitung am Handy wieder aufheben: <code style="background:var(--paper-2);border:1px solid var(--line);border-radius:7px;padding:3px 8px">##002#</code></p>
           </div>
         </section>
@@ -2237,6 +2279,21 @@
 
     setupTemplates();
     sb.auth.getSession().then(({ data }) => { data.session ? showApp(data.session) : showAuth(); });
+  </script>
+  <script>
+    (function () {
+      function fillWave(el, n) {
+        if (!el) return;
+        var html = '';
+        for (var i = 0; i < n; i++) {
+          var d = (i % 7) * 0.09, dur = 0.9 + (i % 5) * 0.13;
+          html += '<span style="animation-delay:' + d.toFixed(2) + 's;animation-duration:' + dur.toFixed(2) + 's"></span>';
+        }
+        el.innerHTML = html;
+      }
+      fillWave(document.getElementById('loginWave'), 34);
+      fillWave(document.getElementById('ovWave'), 22);
+    })();
   </script>
 </body>
 </html>
