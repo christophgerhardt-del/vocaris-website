@@ -226,6 +226,7 @@
       color: var(--ink-soft); box-shadow: none; cursor: default; }
     .cal__ev.manual { background: repeating-linear-gradient(45deg, #ffd9d2, #ffd9d2 6px, #fff1ee 6px, #fff1ee 12px);
       color: var(--accent-3); box-shadow: none; cursor: pointer; }
+    .cal__ev.manual.recurring { border: 1px dashed var(--accent-3); cursor: default; }
     label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin: 14px 0 5px; }
     input, textarea, select { width: 100%; font: inherit; color: var(--ink); background: var(--paper);
       border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; }
@@ -687,16 +688,40 @@
           </div>
 
           <div class="panel">
-            <h3>Belegte Zeiten sperren</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Ohne verbundenen Kalender hier eintragen, wann du <b>nicht</b> buchbar bist (Urlaub, Meetings, freie Tage). Vocaris vergibt in diesen Zeiten keine Termine. Deine <b>freien</b> Zeiten ergeben sich aus den Öffnungszeiten (unter „Assistent").</p>
-            <div class="grid2">
-              <div><label>Datum</label><input id="bbDate" type="date" /></div>
-              <div><label>Von</label><input id="bbFrom" type="time" /></div>
-              <div><label>Bis</label><input id="bbTo" type="time" /></div>
+            <h3>Verfügbarkeit & Sperren</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Deine <b>freien</b> Zeiten kommen aus den Öffnungszeiten (unter „Assistent"). Hier sperrst du Zeiten, in denen Vocaris <b>keine</b> Termine vergeben soll.</p>
+            <div class="deptbar" style="margin-bottom:16px">
+              <button class="deptseg active" data-bbmode="once" type="button">Einmalig / Urlaub</button>
+              <button class="deptseg" data-bbmode="weekly" type="button">Wöchentlich</button>
             </div>
-            <label>Notiz (optional)</label><input id="bbNote" placeholder="z.B. Urlaub, Teammeeting" />
-            <div class="stack" style="margin-top:12px"><button id="bbAdd" class="btn btn--primary">Zeit sperren</button></div>
-            <p class="muted" id="bbHint" style="margin-top:8px"></p>
+
+            <div id="bbOnce">
+              <div class="grid2">
+                <div><label style="margin-top:0">Von Datum</label><input id="bbDate" type="date" /></div>
+                <div><label style="margin-top:0">Bis Datum <span class="muted">(optional)</span></label><input id="bbDateEnd" type="date" /></div>
+              </div>
+              <label class="chk" style="margin-top:12px"><input type="checkbox" id="bbAllDay" /> Ganztägig (ganze Tage sperren)</label>
+              <div class="grid2" id="bbTimes">
+                <div><label>Von</label><input id="bbFrom" type="time" /></div>
+                <div><label>Bis</label><input id="bbTo" type="time" /></div>
+              </div>
+              <label>Notiz (optional)</label><input id="bbNote" placeholder="z.B. Urlaub, Fortbildung" />
+              <div class="stack" style="margin-top:12px"><button id="bbAdd" class="btn btn--primary">Zeit sperren</button></div>
+            </div>
+
+            <div id="bbWeekly" class="hidden">
+              <label style="margin-top:0">Wochentage</label>
+              <div class="branch-chips" id="bbDays"></div>
+              <label class="chk" style="margin-top:6px"><input type="checkbox" id="rbAllDay" /> Ganztägig (ganzer Tag)</label>
+              <div class="grid2" id="rbTimes">
+                <div><label>Von</label><input id="rbFrom" type="time" /></div>
+                <div><label>Bis</label><input id="rbTo" type="time" /></div>
+              </div>
+              <label>Notiz (optional)</label><input id="rbNote" placeholder="z.B. Mittagspause, Teammeeting" />
+              <div class="stack" style="margin-top:12px"><button id="rbAdd" class="btn btn--primary">Wöchentlich sperren</button></div>
+            </div>
+
+            <p class="muted" id="bbHint" style="margin-top:10px"></p>
             <div id="bbList" style="margin-top:8px"></div>
           </div>
 
@@ -2111,16 +2136,17 @@
       const last = new Date(end); last.setDate(last.getDate() - 1);
       $('calTitle').textContent = fmt(start) + ' – ' + fmt(last) + ' ' + start.getFullYear();
 
-      let appts = [], busy = [], blocks = [];
+      let appts = [], busy = [], blocks = [], recurring = [];
       try {
-        const [r1, r2, r3] = await Promise.all([
+        const [r1, r2, r3, r4] = await Promise.all([
           sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
             .gte('starts_at', start.toISOString()).lt('starts_at', end.toISOString()),
           calApi('busy', { from: start.toISOString(), to: end.toISOString() }),
           sb.from('busy_blocks').select('*').eq('tenant_id', tenant.id)
             .lt('starts_at', end.toISOString()).gt('ends_at', start.toISOString()),
+          sb.from('recurring_blocks').select('*').eq('tenant_id', tenant.id),
         ]);
-        appts = r1.data || []; busy = (r2 && r2.busy) || []; blocks = r3.data || [];
+        appts = r1.data || []; busy = (r2 && r2.busy) || []; blocks = r3.data || []; recurring = r4.data || [];
       } catch { /* offline/Fehler → leer */ }
 
       const days = []; for (let i = 0; i < 7; i++) { const d = new Date(start); d.setDate(d.getDate() + i); days.push(d); }
@@ -2147,17 +2173,37 @@
         colEls[idx].append(ev); return ev;
       }
       busy.forEach((b) => { const s = new Date(b.start), e = new Date(b.end); const ev = place(s, (e - s) / 60000, 'busy'); if (ev) ev.innerHTML = '<span class="t">Belegt</span>'; });
+      // Band über einen (Teil-)Tag rendern – für mehrtägige/ganztägige & wiederkehrende Sperren.
+      function placeBand(idx, startMin, endMin, cls, html, onClick) {
+        if (idx < 0 || idx > 6) return;
+        const top = Math.max(0, startMin - sH * 60) * PX;
+        const bot = (Math.min(endMin, eH * 60) - sH * 60) * PX;
+        if (bot <= top) return;
+        const ev = document.createElement('div'); ev.className = 'cal__ev ' + cls;
+        ev.style.top = top + 'px'; ev.style.height = Math.max(14, bot - top) + 'px';
+        ev.innerHTML = html; if (onClick) ev.onclick = onClick;
+        colEls[idx].append(ev);
+      }
+      const DAY_MS = 86400000;
       blocks.forEach((b) => {
-        const s = new Date(b.starts_at), e = new Date(b.ends_at);
-        const ev = place(s, (e - s) / 60000, 'manual'); if (!ev) return;
-        ev.innerHTML = '<span class="t">Gesperrt</span>';
-        ev.title = (b.note ? b.note + ' · ' : '') + 'Klicken zum Freigeben';
-        ev.onclick = async (evt) => {
-          evt.stopPropagation();
-          if (!confirm('Sperrung am ' + s.toLocaleString('de-DE') + ' aufheben?')) return;
-          await sb.from('busy_blocks').delete().eq('id', b.id);
-          toast('Freigegeben.'); renderWeek(); renderBusyList();
-        };
+        const bs = new Date(b.starts_at).getTime(), be = new Date(b.ends_at).getTime();
+        for (let i = 0; i < 7; i++) {
+          const ds = new Date(days[i]); ds.setHours(0, 0, 0, 0);
+          const dStart = ds.getTime(), dEnd = dStart + DAY_MS;
+          const os = Math.max(bs, dStart), oe = Math.min(be, dEnd);
+          if (oe <= os) continue;
+          placeBand(i, (os - dStart) / 60000, (oe - dStart) / 60000, 'manual',
+            '<span class="t">Gesperrt</span>',
+            async (evt) => { evt.stopPropagation(); if (!confirm('Sperrung aufheben?')) return; await sb.from('busy_blocks').delete().eq('id', b.id); toast('Freigegeben.'); renderWeek(); renderBusyList(); });
+        }
+      });
+      const WD = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      recurring.forEach((r) => {
+        for (let i = 0; i < 7; i++) {
+          if (WD[days[i].getDay()] !== r.weekday) continue;
+          const [fh, fm] = r.from_time.split(':').map(Number), [th, tm] = r.to_time.split(':').map(Number);
+          placeBand(i, fh * 60 + fm, th * 60 + tm, 'manual recurring', '<span class="t">Wöchentlich</span>', null);
+        }
       });
       // Klick auf freie Stelle im Tag → diese Stunde sperren.
       colEls.forEach((col, idx) => {
@@ -2190,38 +2236,101 @@
     $('calNext').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() + 7); renderWeek(); };
     $('calToday').onclick = () => { calStart = mondayOf(new Date()); renderWeek(); };
 
-    // ---- Belegt-Zeiten (manuelle Sperren, falls kein Kalender verbunden) ----
+    // ---- Verfügbarkeit & Sperren (einmalig/Urlaub + wöchentlich) ----
+    const BB_DAYNAME = { mon: 'Montag', tue: 'Dienstag', wed: 'Mittwoch', thu: 'Donnerstag', fri: 'Freitag', sat: 'Samstag', sun: 'Sonntag' };
+    let rbSelDays = new Set();
+    document.querySelectorAll('[data-bbmode]').forEach((b) => {
+      b.onclick = () => {
+        document.querySelectorAll('[data-bbmode]').forEach((x) => x.classList.toggle('active', x === b));
+        const once = b.dataset.bbmode === 'once';
+        $('bbOnce').classList.toggle('hidden', !once);
+        $('bbWeekly').classList.toggle('hidden', once);
+      };
+    });
+    $('bbAllDay').onchange = () => $('bbTimes').classList.toggle('hidden', $('bbAllDay').checked);
+    $('rbAllDay').onchange = () => $('rbTimes').classList.toggle('hidden', $('rbAllDay').checked);
+    (function renderBbDays() {
+      const el = $('bbDays'); if (!el) return; el.innerHTML = '';
+      H_DAYS.forEach(([k, lbl]) => {
+        const c = document.createElement('button'); c.type = 'button'; c.className = 'branch-chip'; c.textContent = lbl;
+        c.onclick = () => { if (rbSelDays.has(k)) { rbSelDays.delete(k); c.classList.remove('active'); } else { rbSelDays.add(k); c.classList.add('active'); } };
+        el.append(c);
+      });
+    })();
     $('bbAdd').onclick = async () => {
       if (!tenant) return;
-      const date = $('bbDate').value, from = $('bbFrom').value, to = $('bbTo').value;
-      if (!date || !from || !to) { $('bbHint').textContent = 'Bitte Datum, Von und Bis angeben.'; return; }
-      const startD = new Date(date + 'T' + from), endD = new Date(date + 'T' + to);
-      if (!(endD > startD)) { $('bbHint').textContent = '„Bis" muss nach „Von" liegen.'; return; }
+      const d1 = $('bbDate').value; if (!d1) { $('bbHint').textContent = 'Bitte ein Datum wählen.'; return; }
+      const d2 = $('bbDateEnd').value || d1;
+      let startD, endD;
+      if ($('bbAllDay').checked) { startD = new Date(d1 + 'T00:00'); endD = new Date(d2 + 'T23:59:59'); }
+      else {
+        const from = $('bbFrom').value, to = $('bbTo').value;
+        if (!from || !to) { $('bbHint').textContent = 'Bitte Von und Bis angeben (oder „Ganztägig").'; return; }
+        startD = new Date(d1 + 'T' + from); endD = new Date(d2 + 'T' + to);
+      }
+      if (!(endD > startD)) { $('bbHint').textContent = 'Das Ende muss nach dem Beginn liegen.'; return; }
       $('bbAdd').disabled = true;
-      const { error } = await sb.from('busy_blocks').insert({
-        tenant_id: tenant.id, starts_at: startD.toISOString(), ends_at: endD.toISOString(),
-        note: $('bbNote').value.trim() || null,
-      });
+      const { error } = await sb.from('busy_blocks').insert({ tenant_id: tenant.id, starts_at: startD.toISOString(), ends_at: endD.toISOString(), note: $('bbNote').value.trim() || null });
       $('bbAdd').disabled = false;
       if (error) { $('bbHint').textContent = 'Fehler: ' + error.message; return; }
-      $('bbHint').textContent = ''; $('bbFrom').value = ''; $('bbTo').value = ''; $('bbNote').value = '';
+      $('bbHint').textContent = ''; $('bbDateEnd').value = ''; $('bbFrom').value = ''; $('bbTo').value = ''; $('bbNote').value = '';
       toast('Zeit gesperrt.'); renderBusyList(); renderWeek();
+    };
+    $('rbAdd').onclick = async () => {
+      if (!tenant) return;
+      if (!rbSelDays.size) { $('bbHint').textContent = 'Bitte mindestens einen Wochentag wählen.'; return; }
+      const allDay = $('rbAllDay').checked;
+      const from = allDay ? '00:00' : $('rbFrom').value, to = allDay ? '23:59' : $('rbTo').value;
+      if (!from || !to || from >= to) { $('bbHint').textContent = 'Bitte gültige Von/Bis-Zeit angeben (oder „Ganztägig").'; return; }
+      $('rbAdd').disabled = true;
+      const rows = [...rbSelDays].map((wd) => ({ tenant_id: tenant.id, weekday: wd, from_time: from, to_time: to, note: $('rbNote').value.trim() || null }));
+      const { error } = await sb.from('recurring_blocks').insert(rows);
+      $('rbAdd').disabled = false;
+      if (error) { $('bbHint').textContent = 'Fehler: ' + error.message; return; }
+      $('bbHint').textContent = ''; rbSelDays.clear();
+      document.querySelectorAll('#bbDays .branch-chip').forEach((c) => c.classList.remove('active'));
+      $('rbFrom').value = ''; $('rbTo').value = ''; $('rbNote').value = '';
+      toast('Wöchentliche Sperre gespeichert.'); renderBusyList(); renderWeek();
     };
     async function renderBusyList() {
       const el = $('bbList'); if (!el || !tenant) return;
-      const { data } = await sb.from('busy_blocks').select('*').eq('tenant_id', tenant.id)
-        .gte('ends_at', new Date().toISOString()).order('starts_at').limit(50);
-      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:13px">Keine gesperrten Zeiten. Frei buchbar nach deinen Öffnungszeiten.</p>'; return; }
-      el.innerHTML = '<p class="muted" style="font-size:12.5px;margin-bottom:6px">Kommende Sperren:</p>';
-      const f = (iso) => new Date(iso).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-      data.forEach((b) => {
+      const [{ data: once }, { data: rec }] = await Promise.all([
+        sb.from('busy_blocks').select('*').eq('tenant_id', tenant.id).gte('ends_at', new Date().toISOString()).order('starts_at').limit(50),
+        sb.from('recurring_blocks').select('*').eq('tenant_id', tenant.id),
+      ]);
+      el.innerHTML = '';
+      const ord = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 7 };
+      const mkRow = (label, onDel) => {
         const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
-        const txt = document.createElement('span');
-        txt.textContent = f(b.starts_at) + ' – ' + new Date(b.ends_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr' + (b.note ? ' · ' + b.note : '');
+        const txt = document.createElement('span'); txt.textContent = label;
         const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Freigeben'; del.style.float = 'right';
-        del.onclick = async () => { await sb.from('busy_blocks').delete().eq('id', b.id); toast('Freigegeben.'); renderBusyList(); renderWeek(); };
-        row.append(del, txt); el.append(row);
-      });
+        del.onclick = onDel; row.append(del, txt); el.append(row);
+      };
+      if (rec && rec.length) {
+        const h = document.createElement('p'); h.className = 'muted'; h.style.cssText = 'font-size:12.5px;margin:4px 0 6px'; h.textContent = 'Wöchentlich:'; el.append(h);
+        [...rec].sort((a, b) => ord[a.weekday] - ord[b.weekday]).forEach((b) => {
+          const allDay = b.from_time === '00:00' && (b.to_time === '23:59' || b.to_time === '24:00');
+          mkRow((BB_DAYNAME[b.weekday] || b.weekday) + ' · ' + (allDay ? 'ganztägig' : b.from_time + '–' + b.to_time + ' Uhr') + (b.note ? ' · ' + b.note : ''),
+            async () => { await sb.from('recurring_blocks').delete().eq('id', b.id); toast('Gelöscht.'); renderBusyList(); renderWeek(); });
+        });
+      }
+      if (once && once.length) {
+        const h = document.createElement('p'); h.className = 'muted'; h.style.cssText = 'font-size:12.5px;margin:12px 0 6px'; h.textContent = 'Einmalig / Urlaub:'; el.append(h);
+        once.forEach((b) => {
+          const s = new Date(b.starts_at), e = new Date(b.ends_at);
+          const allDay = s.getHours() === 0 && s.getMinutes() === 0 && e.getHours() === 23;
+          const span = s.toDateString() !== e.toDateString();
+          let label;
+          if (allDay && span) label = s.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' – ' + e.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' · ganztägig';
+          else if (allDay) label = s.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' · ganztägig';
+          else label = s.toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' – ' + e.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+          if (b.note) label += ' · ' + b.note;
+          mkRow(label, async () => { await sb.from('busy_blocks').delete().eq('id', b.id); toast('Freigegeben.'); renderBusyList(); renderWeek(); });
+        });
+      }
+      if ((!rec || !rec.length) && (!once || !once.length)) {
+        el.innerHTML = '<p class="muted" style="font-size:13px">Keine Sperren. Frei buchbar nach deinen Öffnungszeiten.</p>';
+      }
     }
 
     // ===== Chat-Widget: Wissens-Assistent =====
