@@ -492,6 +492,12 @@
             <div id="statChart" class="statchart"></div>
           </div>
           <div class="panel">
+            <h3>Kosten &amp; Marge – letzte 30 Tage</h3>
+            <div id="costSummary" class="statsum"></div>
+            <div id="costBreak" class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:13px"></div>
+            <p class="muted" style="text-align:left;padding:0;margin-top:8px;font-size:12px">Geschätzte Anbieterkosten je Anruf (Telefonie, Spracherkennung, Sprachausgabe, KI). Hilft beim Festlegen deiner Verkaufspreise.</p>
+          </div>
+          <div class="panel">
             <h3>So testest du deinen Assistenten</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Pflege unter <b>Wissensdatenbank</b>, worüber er Auskunft geben soll, und passe unter <b>Assistent</b> Begrüßung, Öffnungszeiten und Stimme an. Änderungen wirken sofort beim nächsten Anruf.</p>
             <button id="wizStartBtn" class="btn btn--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;margin-right:7px;vertical-align:-3px"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l1.9 5.1L20 10l-5.1 1.9L13 17l-1.9-5.1L6 10l5.1-1.9L13 3z"/></svg>Einrichtungs-Assistent starten</button>
@@ -852,6 +858,28 @@
           <h1 class="pagehead">Telefonnummer</h1>
           <p class="pagesub">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
           <div id="numbers"></div>
+
+          <div class="panel" style="margin-top:18px">
+            <h3>Neue Nummer hinzufügen</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Such dir eine freie Rufnummer und ordne sie einer Abteilung zu. Sie wird automatisch mit deinem Assistenten verbunden.</p>
+            <div class="if-grid">
+              <label>Land<input id="numCountry" value="DE" maxlength="2" style="text-transform:uppercase"></label>
+              <label>Vorwahl (optional)<input id="numArea" placeholder="z.B. 89" inputmode="numeric"></label>
+              <label>Abteilung
+                <select id="numDept">
+                  <option value="general">Allgemein</option>
+                  <option value="vertrieb">Vertrieb</option>
+                  <option value="support">Support</option>
+                </select>
+              </label>
+            </div>
+            <div class="stack" style="margin-top:12px">
+              <button id="numSearchBtn" class="btn btn--primary" type="button">Freie Nummern suchen</button>
+            </div>
+            <p class="muted" id="numHint" style="text-align:left;padding:0;margin-top:8px;font-size:13px"></p>
+            <div id="numResults" style="margin-top:12px"></div>
+            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12px">Hinweis: Deutsche Rufnummern erfordern bei der Bestellung einen Adressnachweis (Regulatory-Prüfung). Die Nummer wird automatisch aktiv, sobald die Prüfung durch ist.</p>
+          </div>
         </section>
       </div>
     </main>
@@ -1191,6 +1219,55 @@
         wrap.append(card);
       });
     }
+
+    // ---- Self-Service: neue Nummer suchen & buchen ----
+    function numAuth() { return { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }; }
+    async function numSearch() {
+      const hint = $('numHint'), out = $('numResults'), btn = $('numSearchBtn');
+      const country = ($('numCountry').value || 'DE').trim().toUpperCase();
+      const areaCode = ($('numArea').value || '').replace(/\D/g, '');
+      btn.disabled = true; hint.textContent = 'Suche freie Nummern …'; out.innerHTML = '';
+      try {
+        const res = await apiFetch('/api/numbers/search', { method: 'POST', headers: numAuth(), body: JSON.stringify({ country, areaCode }) });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Fehler bei der Suche.');
+        const list = d.numbers || [];
+        if (!list.length) { hint.textContent = 'Keine freien Nummern gefunden. Versuch es ohne Vorwahl oder mit einem anderen Land.'; return; }
+        hint.textContent = list.length + ' freie Nummer(n) gefunden:';
+        out.innerHTML = '';
+        list.forEach((n) => {
+          const cost = n.monthlyCost ? (n.monthlyCost + ' ' + (n.currency || '') + '/Mon.') : '';
+          const row = document.createElement('div'); row.className = 'numcard'; row.style.marginBottom = '10px';
+          row.innerHTML =
+            '<div class="numhead"><span class="bignum"><span>' + n.phoneNumber + '</span></span>' +
+            (cost ? '<span class="muted" style="font-size:13px">' + cost + '</span>' : '') +
+            (n.regulatoryRequired ? '<span class="dept-badge support">Nachweis nötig</span>' : '') + '</div>' +
+            '<button class="btn btn--primary sm" type="button" style="margin-top:12px">Diese Nummer buchen</button>';
+          row.querySelector('button').onclick = () => numOrder(n.phoneNumber, row.querySelector('button'));
+          out.append(row);
+        });
+      } catch (e) {
+        hint.textContent = e.message || 'Suche fehlgeschlagen.';
+      } finally { btn.disabled = false; }
+    }
+    async function numOrder(phoneNumber, btn) {
+      const dep = $('numDept').value;
+      if (!confirm('Nummer ' + phoneNumber + ' für die Abteilung „' + (DEPT_LABEL[dep] || 'Allgemein') + '" buchen? Es können laufende Kosten beim Anbieter entstehen.')) return;
+      btn.disabled = true; btn.textContent = 'Wird gebucht …';
+      try {
+        const res = await apiFetch('/api/numbers/order', { method: 'POST', headers: numAuth(), body: JSON.stringify({ phoneNumber, department: dep }) });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Bestellung fehlgeschlagen.');
+        toast(d.message || 'Nummer gebucht.');
+        $('numHint').textContent = d.message || 'Nummer gebucht.';
+        $('numResults').innerHTML = '';
+        loadAll();
+      } catch (e) {
+        toast(e.message || 'Bestellung fehlgeschlagen.');
+        btn.disabled = false; btn.textContent = 'Diese Nummer buchen';
+      }
+    }
+    $('numSearchBtn')?.addEventListener('click', numSearch);
 
     // ---- Live-Anrufe (Echtzeit) ----
     async function loadLive() {
@@ -1838,6 +1915,34 @@
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
       ]);
       renderStats(calls ?? [], leads ?? 0);
+      loadCosts();
+    }
+
+    // ---- Kosten / Marge (vom Backend, da Tarif-Kalkulation serverseitig) ----
+    async function loadCosts() {
+      const sum = $('costSummary'), brk = $('costBreak');
+      if (!sum) return;
+      try {
+        const res = await apiFetch('/api/cost-stats', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ days: 30 }),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Fehler');
+        const eur = (n) => (n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+        const c = d.cost || {};
+        sum.innerHTML =
+          '<div><div class="n">' + eur(c.total) + '</div><div class="l">Gesamtkosten</div></div>' +
+          '<div><div class="n">' + eur(d.avgPerCall) + '</div><div class="l">Ø je Anruf</div></div>' +
+          '<div><div class="n">' + (d.calls || 0) + '</div><div class="l">Anrufe (30 Tage)</div></div>' +
+          '<div><div class="n">' + Math.round((d.totalSeconds || 0) / 60) + ' Min</div><div class="l">Gesprächszeit</div></div>';
+        brk.textContent = 'Aufschlüsselung: Telefonie ' + eur(c.telnyx) + ' · Spracherkennung ' + eur(c.deepgram) +
+          ' · Sprachausgabe ' + eur(c.tts) + ' · KI ' + eur(c.llm) + '.';
+      } catch (e) {
+        sum.innerHTML = '<div class="muted" style="padding:6px">Kosten werden erfasst, sobald Anrufe eingehen.</div>';
+        brk.textContent = '';
+      }
     }
     function renderStats(calls, leads) {
       const days = [], now = new Date();
