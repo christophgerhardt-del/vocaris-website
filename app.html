@@ -657,6 +657,26 @@
               </div>
             </div>
             <p class="muted" style="margin-top:6px">Voice-ID findest du in ElevenLabs bei der Stimme („Copy Voice ID").</p>
+
+            <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
+              <input type="checkbox" id="fwdEnabled" style="width:auto;margin:0">
+              <span>Rufumleitung an einen Menschen aktivieren</span>
+            </label>
+            <p class="muted" style="margin-top:4px">Wenn der Anrufer eine Person sprechen möchte (oder der Assistent nicht weiterhelfen kann), verbindet er direkt zur hinterlegten Nummer.</p>
+            <div class="grid2" style="margin-top:8px">
+              <div style="flex:2">
+                <label>Weiterleiten an (Telefonnummer)</label>
+                <input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" />
+              </div>
+              <div>
+                <label>Wann</label>
+                <select id="fwdHours">
+                  <option value="true">Nur während der Öffnungszeiten</option>
+                  <option value="false">Immer (rund um die Uhr)</option>
+                </select>
+              </div>
+            </div>
+
             <div class="stack"><button id="saveBtn" class="btn btn--primary">Speichern</button></div>
           </div>
         </section>
@@ -1191,6 +1211,9 @@
       $('persona').value = cfg?.persona ?? '';
       $('language').value = cfg?.language ?? 'de';
       $('voiceId').value = cfg?.voice_id ?? '';
+      $('fwdEnabled').checked = cfg?.forward_enabled ?? false;
+      $('fwdNumber').value = cfg?.forward_number ?? '';
+      $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
       renderKb(kb ?? []);
     }
 
@@ -1429,6 +1452,9 @@
           behavior_rules: $('behaviorRules').value.trim(),
           guardrails: $('guardrails').value.trim(),
           closing: $('closing').value.trim(),
+          forward_enabled: $('fwdEnabled').checked,
+          forward_number: $('fwdNumber').value.trim() || null,
+          forward_business_hours_only: $('fwdHours').value === 'true',
         }, { onConflict: 'tenant_id,department' }),
       ]);
       $('saveBtn').disabled = false;
