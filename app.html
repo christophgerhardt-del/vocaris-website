@@ -965,6 +965,14 @@
               <div class="stack" style="margin-top:10px"><button id="rsAddEl" class="btn" type="button">Element hinzufügen</button></div>
             </div>
           </div>
+
+          <div class="panel" style="margin-top:14px">
+            <h3>Tischplan automatisch erkennen (KI)</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Lade ein <b>Foto</b> oder eine <b>PDF</b> deines bestehenden Tischplans/Grundrisses hoch — die KI erkennt Tische (Form, Plätze, Position) und Elemente wie Eingang/Toilette und legt sie automatisch an.</p>
+            <input id="rsPlanFile" type="file" accept="image/*,application/pdf" style="display:none">
+            <div class="stack"><button id="rsImportBtn" class="btn btn--primary" type="button">Foto / PDF hochladen</button></div>
+            <p class="muted" id="rsImportHint" style="text-align:left;padding:0;margin-top:8px;font-size:13px"></p>
+          </div>
         </section>
 
         <!-- Reservierungen (Restaurant-Modus) -->
@@ -1894,6 +1902,60 @@
       $('rsElLabel').value = ''; toast('Element hinzugefügt.'); loadRestaurant();
     });
     $('rsGotoPlan')?.addEventListener('click', () => { document.querySelector('.nav-item[data-target="sec-floorplan"]')?.click(); });
+
+    // ---- Tischplan per KI aus Foto/PDF erkennen ----
+    function fileToB64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); }); }
+    function imageToB64(file, maxPx) {
+      return new Promise((res, rej) => {
+        const img = new Image(); const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h); URL.revokeObjectURL(url);
+          res(c.toDataURL('image/jpeg', 0.9).split(',')[1]);
+        };
+        img.onerror = rej; img.src = url;
+      });
+    }
+    async function importPlan(file) {
+      const hint = $('rsImportHint'), btn = $('rsImportBtn');
+      const isPdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
+      btn.disabled = true; hint.textContent = 'Erkenne Tischplan … das kann 10–25 Sekunden dauern.';
+      try {
+        let data, mimetype;
+        if (isPdf) { if (file.size > 9e6) { hint.textContent = 'PDF zu groß (max. ~9 MB).'; btn.disabled = false; return; } data = await fileToB64(file); mimetype = 'application/pdf'; }
+        else { data = await imageToB64(file, 1600); mimetype = 'image/jpeg'; }
+        const r = await apiFetch('/api/restaurant/import-plan', { method: 'POST', headers: numAuth(), body: JSON.stringify({ data, mimetype }) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Erkennung fehlgeschlagen.');
+        const tabs = d.tables || [], els = d.elements || [];
+        if (!confirm(tabs.length + ' Tische und ' + els.length + ' Elemente erkannt. In den Plan übernehmen? (Bestehende bleiben erhalten.)')) { hint.textContent = ''; btn.disabled = false; return; }
+        const plan = $('rsPlan'); const pw = plan.clientWidth || 900, ph = plan.clientHeight || 500;
+        const mapX = (x) => Math.max(0, Math.min(pw - 130, Math.round((Number(x) || 0) / 1000 * (pw - 130))));
+        const mapY = (y) => Math.max(0, Math.min(ph - 90, Math.round((Number(y) || 0) / 1000 * (ph - 90))));
+        const tRows = tabs.map((t, i) => ({
+          tenant_id: tenant.id, name: (t.name && String(t.name).trim()) || ('Tisch ' + (i + 1)),
+          seats: Math.max(1, parseInt(t.seats, 10) || 2),
+          shape: ['round', 'square', 'rect', 'bench'].includes(t.shape) ? t.shape : 'round',
+          area: ['innen', 'draussen', 'bar'].includes(t.area) ? t.area : 'innen',
+          pos_x: mapX(t.x), pos_y: mapY(t.y),
+        }));
+        const eRows = els.map((e) => ({
+          tenant_id: tenant.id, kind: ['entrance', 'toilet', 'bar', 'kitchen', 'wall', 'label'].includes(e.kind) ? e.kind : 'label',
+          label: e.label || null, area: 'innen', pos_x: mapX(e.x), pos_y: mapY(e.y),
+          width: e.kind === 'wall' ? 140 : 100, height: e.kind === 'wall' ? 16 : 52,
+        }));
+        if (tRows.length) { const { error } = await sb.from('restaurant_tables').insert(tRows); if (error) throw new Error(error.message); }
+        if (eRows.length) await sb.from('floor_elements').insert(eRows);
+        hint.textContent = tabs.length + ' Tische und ' + els.length + ' Elemente übernommen.';
+        toast('Tischplan erkannt und übernommen.');
+        loadRestaurant();
+      } catch (e) { hint.textContent = e.message || 'Fehler bei der Erkennung.'; }
+      finally { btn.disabled = false; $('rsPlanFile').value = ''; }
+    }
+    $('rsImportBtn')?.addEventListener('click', () => $('rsPlanFile')?.click());
+    $('rsPlanFile')?.addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; if (f) importPlan(f); });
     $('rsCheckBtn')?.addEventListener('click', async () => {
       const date = $('rsResDate').value, party = Math.max(1, parseInt($('rsResParty').value, 10) || 2);
       const out = $('rsTimes'); if (!date) { toast('Bitte ein Datum wählen.'); return; }
