@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vocaris für Restaurants — KI nimmt Reservierungen am Telefon an</title>
+  <meta name="description" content="Vocaris für Restaurants: Der KI-Telefonassistent nimmt Tischreservierungen rund um die Uhr entgegen, verwaltet einen visuellen Tischplan, erkennt Pläne aus Foto/PDF, schickt Erinnerungen und lässt Gäste online buchen. DSGVO-konform, EU-Hosting." />
+  <meta name="theme-color" content="#fafaf7" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Vocaris für Restaurants — KI nimmt Reservierungen am Telefon an" />
+  <meta property="og:description" content="KI-Telefonreservierung, visueller Tischplan, Online-Buchung & Erinnerungen für Restaurants." />
+  <meta property="og:image" content="assets/og.svg" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- ───────────────────────── Nav ───────────────────────── -->
+  <header class="nav" id="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="index.html" aria-label="Vocaris Startseite">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28" width="28" height="28"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand__name">Vocaris</span>
+      </a>
+      <nav class="nav__links" aria-label="Hauptnavigation">
+        <a href="#funktionen">Funktionen</a>
+        <a href="#tischplan">Tischplan</a>
+        <a href="#so">So funktioniert's</a>
+        <a href="#preise">Preise</a>
+        <a href="#faq">FAQ</a>
+        <a href="index.html">Für alle Branchen</a>
+      </nav>
+      <div class="nav__cta">
+        <a class="btn btn--ghost" href="app.html">Anmelden</a>
+        <a class="btn btn--primary" href="#kontakt">Demo buchen</a>
+      </div>
+      <button class="nav__burger" id="burger" aria-label="Menü" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ───────────────────────── Hero ───────────────────────── -->
+    <section class="section">
+      <div class="container">
+        <header class="section__head reveal" style="max-width:780px">
+          <span class="kicker">Für Restaurants</span>
+          <h2 class="display">Ihr Restaurant verpasst nie wieder eine Reservierung.</h2>
+          <p class="section__sub">Vocaris geht ans Telefon, wenn Sie im Service stehen — nimmt Tischreservierungen
+            entgegen, prüft freie Tische auf Ihrem Plan, schickt Bestätigung &amp; Erinnerung und lässt Gäste auch
+            online buchen. Rund um die Uhr, natürliche Stimme, DSGVO-konform.</p>
+          <div class="hero__cta" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+            <a class="btn btn--primary btn--lg" href="#kontakt"><i data-lucide="phone-call"></i> Kostenlose Demo</a>
+            <a class="btn btn--ghost btn--lg" href="#preise">Preise ansehen →</a>
+          </div>
+        </header>
+        <div class="reveal" style="margin-top:34px">
+          <img src="assets/tischplan.png" alt="Visueller Tischplan in Vocaris: Tische mit Stühlen, Bereiche drinnen/draußen, Haupteingang und Toilette" loading="lazy"
+               style="width:100%;border:1px solid var(--line,#e6e0d6);border-radius:18px;box-shadow:0 30px 60px -30px #0003" />
+          <p class="section__sub" style="text-align:center;margin-top:12px;font-size:14px;opacity:.8">Der visuelle Tischplan — per Drag &amp; Drop, mit echten Tischformen, Bereichen und Live-Belegung.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── Funktionen ───────────────────────── -->
+    <section class="section section--soft" id="funktionen">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">Funktionen</span>
+          <h2 class="display display--sm">Ein komplettes Reservierungssystem — am Telefon und online.</h2>
+          <p class="section__sub">Alles, was ein professionelles Reservierungstool kann — plus eine KI, die wirklich ans Telefon geht.</p>
+        </header>
+        <div class="bento">
+          <article class="card card--wide reveal">
+            <div class="card__icon"><i data-lucide="phone-call"></i></div>
+            <h3>Reservierung am Telefon</h3>
+            <p>Der Gast ruft an, nennt Datum, Uhrzeit und Personenzahl — Vocaris prüft freie Tische, berücksichtigt
+              den Wunsch-Bereich (drinnen/draußen) und reserviert. In unter einer Sekunde, mit natürlicher Stimme,
+              jederzeit unterbrechbar.</p>
+          </article>
+          <article class="card card--accent reveal">
+            <div class="card__icon"><i data-lucide="layout-grid"></i></div>
+            <h3>Visueller Tischplan</h3>
+            <p>Tische per Drag &amp; Drop anordnen — echte Formen (rund, eckig, Bank), Stühle, frei skalierbar,
+              getrennt nach Bereich. Mit Live-Belegung: belegt rot, frei grün.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="scan-line"></i></div>
+            <h3>Plan per KI erkennen</h3>
+            <p>Foto oder PDF Ihres bestehenden Tischplans hochladen — die KI erkennt Tische, Plätze und Elemente
+              wie Eingang und Toilette und legt sie automatisch an.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="users"></i></div>
+            <h3>Tische kombinieren</h3>
+            <p>Große Gruppe? Vocaris legt automatisch passende Tische zusammen — am Telefon und im Dashboard.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="globe"></i></div>
+            <h3>Online-Buchung für Gäste</h3>
+            <p>Eigene Buchungsseite mit Ihrem Link — teilen Sie ihn auf Website &amp; Google-Profil. Gäste
+              reservieren selbst, inklusive Einwilligung und Stornolink.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="bell-ring"></i></div>
+            <h3>Erinnerungen = weniger No-Shows</h3>
+            <p>Automatische Bestätigung und Erinnerung per E-Mail und SMS — einstellbar, z. B. 24 Stunden und
+              2 Stunden vorher.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="list-checks"></i></div>
+            <h3>Tagesansicht &amp; Walk-ins</h3>
+            <p>Gästeliste nach Uhrzeit, Suche nach Name, Status-Workflow (eingetroffen → am Tisch → fertig,
+              No-Show). Laufkundschaft mit einem Klick an den Tisch setzen.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="gauge"></i></div>
+            <h3>Auslastungssteuerung</h3>
+            <p>Begrenzen Sie gleichzeitige Gäste (Pacing), damit die Küche nicht überrannt wird. Feiertage &amp;
+              Ruhetage als Sonderschließungen.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="user-round-check"></i></div>
+            <h3>Weiterleiten an einen Menschen</h3>
+            <p>Wenn der Gast eine Person sprechen möchte, verbindet Vocaris während der Geschäftszeiten direkt
+              an Ihre Nummer.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon"><i data-lucide="shield-check"></i></div>
+            <h3>DSGVO &amp; Transparenz</h3>
+            <p>EU-Hosting, automatische Löschfristen für Gästedaten und ein optionaler KI-/Aufzeichnungs-Hinweis
+              zu Gesprächsbeginn.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── Tischplan-Showcase ───────────────────────── -->
+    <section class="section" id="tischplan">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">Tischplan-Designer</span>
+          <h2 class="display display--sm">Ihr Restaurant — wie es wirklich aussieht.</h2>
+          <p class="section__sub">Bauen Sie Ihren Grundriss einmal nach (oder lassen Sie ihn aus einem Foto erkennen) —
+            danach sieht jeder im Team sofort, was frei ist.</p>
+        </header>
+        <div class="vgrid reveal">
+          <div class="card"><div class="card__icon"><i data-lucide="shapes"></i></div><h3>Echte Formen</h3><p>Runde, quadratische und rechteckige Tische sowie Bänke — mit gezeichneten Stühlen entsprechend der Platzzahl.</p></div>
+          <div class="card"><div class="card__icon"><i data-lucide="trees"></i></div><h3>Drinnen &amp; Draußen</h3><p>Bereiche für Innenraum, Terrasse und Bar — die KI berücksichtigt den Wunsch des Gastes.</p></div>
+          <div class="card"><div class="card__icon"><i data-lucide="move"></i></div><h3>Frei anordnen</h3><p>Drag &amp; Drop, drehen, skalieren. Eingang, Toilette, Garderobe, Treppe &amp; Deko platzieren.</p></div>
+          <div class="card"><div class="card__icon"><i data-lucide="clock"></i></div><h3>Belegung &amp; Timeline</h3><p>Live-Belegung zu jeder Uhrzeit und eine Tages-Timeline je Tisch über den ganzen Abend.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── So funktioniert's ───────────────────────── -->
+    <section class="section section--soft" id="so">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">So funktioniert's</span>
+          <h2 class="display display--sm">In 15 Minuten startklar.</h2>
+        </header>
+        <div class="vgrid reveal">
+          <div class="card"><div class="card__icon"><i data-lucide="upload"></i></div><h3>1 · Einrichten</h3><p>Tischplan anlegen oder per Foto/PDF erkennen lassen, Öffnungszeiten &amp; Persona festlegen. Wir helfen beim Onboarding.</p></div>
+          <div class="card"><div class="card__icon"><i data-lucide="phone"></i></div><h3>2 · Nummer verbinden</h3><p>Neue Rufnummer über uns oder bestehende anbinden. Ab dann nimmt Vocaris jeden Anruf entgegen.</p></div>
+          <div class="card"><div class="card__icon"><i data-lucide="calendar-check"></i></div><h3>3 · Reservierungen laufen</h3><p>Gäste reservieren per Telefon und online, bekommen Erinnerungen — Sie sehen alles im Dashboard.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── Preise ───────────────────────── -->
+    <section class="section" id="preise">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="kicker">Preise</span>
+          <h2 class="display display--sm">Faire Pakete für jede Restaurantgröße.</h2>
+          <p class="section__sub">Alle Pakete enthalten KI-Telefonreservierung, den visuellen Tischplan und E-Mail-Erinnerungen.
+            Monatlich kündbar. Preise zzgl. MwSt.</p>
+        </header>
+        <div class="prices reveal">
+          <article class="price">
+            <h3>Starter</h3>
+            <p class="price__for">Für kleine Lokale &amp; Cafés</p>
+            <div class="price__tag"><span>€</span>100<small>/Monat</small></div>
+            <p class="price__meta">inkl. ~150 Anrufe/Monat · 1 Rufnummer</p>
+            <ul class="ticks">
+              <li>KI-Telefonreservierung rund um die Uhr</li>
+              <li>Visueller Tischplan (Drag &amp; Drop)</li>
+              <li>E-Mail-Bestätigung &amp; -Erinnerung</li>
+              <li>Tagesansicht &amp; Walk-ins</li>
+              <li>E-Mail-Support</li>
+            </ul>
+            <a class="btn btn--ghost btn--block" href="#kontakt">Demo buchen</a>
+          </article>
+
+          <article class="price price--featured">
+            <span class="price__badge">Beliebt</span>
+            <h3>Pro</h3>
+            <p class="price__for">Der Standard fürs volle Haus</p>
+            <div class="price__tag"><span>€</span>200<small>/Monat</small></div>
+            <p class="price__meta">inkl. ~500 Anrufe/Monat · 1 Rufnummer</p>
+            <ul class="ticks">
+              <li>Alles aus Starter</li>
+              <li>Online-Buchungsseite für Gäste</li>
+              <li>SMS-Erinnerungen &amp; Stornolink</li>
+              <li>Tische kombinieren &amp; Auslastungssteuerung</li>
+              <li>KI-Tischplan-Erkennung (Foto/PDF)</li>
+              <li>Weiterleitung an einen Menschen</li>
+              <li>Prioritäts-Support</li>
+            </ul>
+            <a class="btn btn--primary btn--block" href="#kontakt">Demo buchen</a>
+          </article>
+
+          <article class="price">
+            <h3>Premium</h3>
+            <p class="price__for">Für mehrere Standorte &amp; hohes Volumen</p>
+            <div class="price__tag"><span>€</span>350<small>/Monat</small></div>
+            <p class="price__meta">inkl. ~1.200 Anrufe/Monat · mehrere Rufnummern</p>
+            <ul class="ticks">
+              <li>Alles aus Pro</li>
+              <li>Mehrere Standorte &amp; Rufnummern</li>
+              <li>Eigene Stimme &amp; Persona</li>
+              <li>Individuelle Löschfristen &amp; AVV</li>
+              <li>Dedizierter Ansprechpartner</li>
+            </ul>
+            <a class="btn btn--ghost btn--block" href="#kontakt">Kontakt aufnehmen</a>
+          </article>
+        </div>
+        <p class="section__sub reveal" style="text-align:center;margin-top:18px;font-size:14px;opacity:.8">
+          Mehr Anrufe als enthalten? Kleine, faire Überschreitungsgebühr — kein Vertragsrisiko.
+        </p>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── FAQ ───────────────────────── -->
+    <section class="section section--soft" id="faq">
+      <div class="container faq">
+        <header class="section__head reveal">
+          <span class="kicker">FAQ</span>
+          <h2 class="display display--sm">Häufige Fragen</h2>
+        </header>
+        <div class="faq__list reveal">
+          <details class="qa"><summary>Ersetzt Vocaris ein Reservierungstool wie OpenTable?</summary>
+            <p>Vocaris ist beides: ein vollwertiges Reservierungssystem mit Tischplan, Online-Buchung und
+              Erinnerungen — <em>und</em> die KI, die zusätzlich das Telefon übernimmt. Genau die Anrufe, die
+              klassische Buchungs-Widgets nicht abdecken.</p></details>
+          <details class="qa"><summary>Merkt der Gast, dass er mit einer KI spricht?</summary>
+            <p>Die Stimme ist natürlich und antwortet in Echtzeit. Sie können einen kurzen Hinweis zu
+              Gesprächsbeginn aktivieren, dass ein digitaler Assistent spricht — das schafft Vertrauen und ist
+              je nach Region rechtlich geboten.</p></details>
+          <details class="qa"><summary>Wie viele No-Shows spart das?</summary>
+            <p>Automatische Erinnerungen per E-Mail und SMS reduzieren No-Shows spürbar, und der Stornolink
+              macht es Gästen leicht, rechtzeitig abzusagen — so wird der Tisch wieder frei.</p></details>
+          <details class="qa"><summary>Kann ich meinen bestehenden Tischplan übernehmen?</summary>
+            <p>Ja. Laden Sie ein Foto oder eine PDF hoch — die KI erkennt Tische, Plätze und Elemente und legt
+              den Plan automatisch an. Feinschliff per Drag &amp; Drop.</p></details>
+          <details class="qa"><summary>Brauche ich eine neue Telefonnummer?</summary>
+            <p>Nein. Sie können eine neue Nummer über uns bereitstellen lassen oder Ihre bestehende anbinden.</p></details>
+          <details class="qa"><summary>Wie steht es um den Datenschutz?</summary>
+            <p>EU-Hosting, DSGVO-konform, mit automatischen Löschfristen für Gästedaten und Auftragsverarbeitung
+              auf Wunsch.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── Final CTA ───────────────────────── -->
+    <section class="cta" id="kontakt">
+      <div class="container cta__inner reveal">
+        <h2 class="display display--sm">Lassen Sie Vocaris ans Telefon gehen.</h2>
+        <p>Kostenlose Demo — wir richten in 15 Minuten einen Test-Assistenten mit Ihrem Tischplan ein,
+          den Sie selbst anrufen können.</p>
+        <form class="cta__form" id="leadForm" novalidate>
+          <input type="text" name="name" placeholder="Ihr Name / Restaurant" required aria-label="Name" />
+          <input type="email" name="email" placeholder="E-Mail-Adresse" required aria-label="E-Mail" />
+          <button class="btn btn--primary btn--lg" type="submit">Demo anfragen →</button>
+        </form>
+        <p class="cta__hint" id="formHint">Keine Kreditkarte nötig · Antwort innerhalb eines Werktags</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ───────────────────────── Footer ───────────────────────── -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div class="footer__brand">
+        <span class="brand"><span class="brand__name">Vocaris</span></span>
+        <p>KI-Telefonassistent für Restaurants: Reservierungen, Tischplan, Online-Buchung &amp; Erinnerungen. In der EU gehostet.</p>
+        <span class="footer__made">⬤ Made in the EU</span>
+      </div>
+      <nav class="footer__col"><h5>Restaurant</h5>
+        <a href="#funktionen">Funktionen</a><a href="#tischplan">Tischplan</a><a href="#preise">Preise</a><a href="#faq">FAQ</a>
+      </nav>
+      <nav class="footer__col"><h5>Unternehmen</h5>
+        <a href="#kontakt">Demo buchen</a><a href="index.html">Für alle Branchen</a><a href="app.html">Anmelden</a>
+      </nav>
+      <nav class="footer__col"><h5>Rechtliches</h5>
+        <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a>
+      </nav>
+    </div>
+    <div class="container footer__bottom">
+      <span>© <span id="year">2026</span> Vocaris</span>
+      <span>Built on Telnyx · Deepgram · Claude · ElevenLabs</span>
+    </div>
+  </footer>
+
+  <script src="assets/lucide.min.js"></script>
+  <script src="app.js"></script>
+  <script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>
