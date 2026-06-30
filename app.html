@@ -948,8 +948,16 @@
             <div id="rsPlan" style="position:relative;height:400px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background-color:#fbfaf7;background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
             <p class="muted" id="rsPlanHint" style="text-align:left;padding:0;margin-top:8px;font-size:12px"></p>
             <div class="if-grid" style="margin-top:12px">
-              <label>Tischname<input id="rsTblName" placeholder="z.B. Tisch 1 / Fenster"></label>
-              <label>Plätze<input id="rsTblSeats" type="number" min="1" value="2"></label>
+              <label>Name<input id="rsTblName" placeholder="z.B. Tisch 1 / Fenster"></label>
+              <label>Plätze / Stühle<input id="rsTblSeats" type="number" min="1" value="2"></label>
+              <label>Form
+                <select id="rsTblShape">
+                  <option value="round">Rund</option>
+                  <option value="square">Quadratisch</option>
+                  <option value="rect">Rechteckig</option>
+                  <option value="bench">Bank</option>
+                </select>
+              </label>
               <label>Bereich
                 <select id="rsTblArea">
                   <option value="innen">Drinnen</option>
@@ -1435,6 +1443,97 @@
       });
     }
 
+    // Tisch-/Stuhl-Geometrie ---------------------------------------------------
+    const T_PAD = 18; // Platz für Stühle rund um die Tischfläche
+    function tableDims(shape, rotation) {
+      let tw, th;
+      if (shape === 'round' || shape === 'square') { tw = 60; th = 60; }
+      else if (shape === 'bench') { tw = 140; th = 24; }
+      else { tw = 120; th = 60; } // rect
+      if (rotation === 90 && (shape === 'rect' || shape === 'bench')) { const t = tw; tw = th; th = t; }
+      return { tw, th };
+    }
+    function perimPoint(tt, W, H) {
+      const per = 2 * (W + H); let d = tt * per;
+      if (d < W) return { x: d, y: 0, nx: 0, ny: -1 };
+      d -= W; if (d < H) return { x: W, y: d, nx: 1, ny: 0 };
+      d -= H; if (d < W) return { x: W - d, y: H, nx: 0, ny: 1 };
+      d -= W; return { x: 0, y: H - d, nx: -1, ny: 0 };
+    }
+    function chairEl(cx, cy, occ) {
+      const c = document.createElement('div');
+      c.style.cssText = 'position:absolute;left:' + (cx - 7) + 'px;top:' + (cy - 7) + 'px;width:14px;height:14px;border-radius:5px;pointer-events:none;background:' +
+        (occ ? '#e8bcb4' : '#c9a987') + ';border:1px solid ' + (occ ? '#d99a8e' : '#a9855f') + '';
+      return c;
+    }
+    function drawChairs(box, shape, seats, tw, th, occ, rotation) {
+      const cx0 = T_PAD + tw / 2, cy0 = T_PAD + th / 2;
+      if (shape === 'round') {
+        const R = tw / 2 + 10;
+        for (let i = 0; i < seats; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / seats; box.append(chairEl(cx0 + R * Math.cos(a), cy0 + R * Math.sin(a), occ)); }
+      } else if (shape === 'bench') {
+        // Stühle auf der langen Seite (oben, bzw. links wenn gedreht).
+        for (let i = 0; i < seats; i++) {
+          if (rotation === 90) box.append(chairEl(T_PAD - 10, T_PAD + (i + 0.5) * th / seats, occ));
+          else box.append(chairEl(T_PAD + (i + 0.5) * tw / seats, T_PAD - 10, occ));
+        }
+      } else {
+        for (let i = 0; i < seats; i++) { const p = perimPoint((i + 0.5) / seats, tw, th); box.append(chairEl(T_PAD + p.x + p.nx * 11, T_PAD + p.y + p.ny * 11, occ)); }
+      }
+    }
+
+    function buildTableEl(t, plan) {
+      const shape = t.shape || 'round', rot = t.rotation || 0, seats = Math.max(1, t.seats || 1);
+      const occ = rsOcc.has(t.id);
+      const { tw, th } = tableDims(shape, rot);
+      const W = tw + T_PAD * 2, H = th + T_PAD * 2;
+      const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
+      const x = Math.max(0, Math.min(pw - W, t.pos_x ?? 40));
+      const y = Math.max(0, Math.min(ph - H, t.pos_y ?? 40));
+      const box = document.createElement('div');
+      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:' + W + 'px;height:' + H + 'px;cursor:grab;touch-action:none;user-select:none';
+
+      drawChairs(box, shape, seats, tw, th, occ, rot);
+
+      const surf = document.createElement('div');
+      const radius = shape === 'round' ? '50%' : (shape === 'bench' ? '6px' : '11px');
+      const border = occ ? '#e0533d' : '#3f7d63';
+      const bg = occ ? '#fdecea' : '#ffffff';
+      surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;width:' + tw + 'px;height:' + th + 'px;border:2px solid ' + border +
+        ';background:' + bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none';
+      surf.innerHTML = '<b style="font-size:12px">' + (t.name || 'Tisch') + '</b>' +
+        (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666">' + seats + (occ ? ' · belegt' : '') + '</span>');
+      box.append(surf);
+
+      const del = document.createElement('button');
+      del.className = 'ptCtl'; del.title = 'Entfernen'; del.textContent = '✕';
+      del.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:11px;line-height:1;z-index:3';
+      del.onclick = async (e) => {
+        e.stopPropagation();
+        if (!confirm('Tisch „' + (t.name || '') + '" entfernen?')) return;
+        await sb.from('restaurant_tables').delete().eq('id', t.id);
+        toast('Tisch entfernt.'); loadRestaurant();
+      };
+      box.append(del);
+
+      if (shape === 'rect' || shape === 'bench') {
+        const rotBtn = document.createElement('button');
+        rotBtn.className = 'ptCtl'; rotBtn.title = 'Drehen'; rotBtn.textContent = '⟳';
+        rotBtn.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;border:none;background:#3f7d63;color:#fff;cursor:pointer;font-size:12px;line-height:1;z-index:3';
+        rotBtn.onclick = async (e) => {
+          e.stopPropagation();
+          const nr = rot === 90 ? 0 : 90; t.rotation = nr;
+          await sb.from('restaurant_tables').update({ rotation: nr }).eq('id', t.id);
+          renderRsPlan();
+        };
+        box.append(rotBtn);
+      }
+
+      box.ondblclick = () => editTable(t);
+      makeTableDraggable(box, t, plan);
+      return box;
+    }
+
     function renderRsPlan() {
       const plan = $('rsPlan'); if (!plan) return;
       plan.innerHTML = '';
@@ -1443,34 +1542,14 @@
         plan.innerHTML = '<div class="muted" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">Noch keine Tische in diesem Bereich. Unten anlegen.</div>';
         return;
       }
-      const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
-      tables.forEach((t) => {
-        const box = document.createElement('div');
-        const occupied = rsOcc.has(t.id);
-        const x = Math.max(0, Math.min(pw - 124, t.pos_x ?? 40));
-        const y = Math.max(0, Math.min(ph - 70, t.pos_y ?? 40));
-        const border = occupied ? '#e0533d' : '#2f8f63';
-        const bg = occupied ? '#fdecea' : '#eaf7f0';
-        box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:120px;height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;box-shadow:0 2px 8px #0000001a;border:2px solid ' + border + ';background:' + bg + ';color:#222;font-size:13px;touch-action:none';
-        box.innerHTML = '<b style="pointer-events:none">' + (t.name || 'Tisch') + '</b><span style="pointer-events:none;font-size:12px;color:#555">' + (t.seats || 0) + ' Plätze' + (occupied ? ' · belegt' : '') + '</span>' +
-          '<button class="ptDel" title="Tisch entfernen" style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:12px;line-height:1">✕</button>';
-        box.querySelector('.ptDel').onclick = async (e) => {
-          e.stopPropagation();
-          if (!confirm('Tisch „' + (t.name || '') + '" entfernen?')) return;
-          await sb.from('restaurant_tables').delete().eq('id', t.id);
-          toast('Tisch entfernt.'); loadRestaurant();
-        };
-        box.ondblclick = () => editTable(t);
-        makeTableDraggable(box, t, plan);
-        plan.append(box);
-      });
-      $('rsPlanHint').textContent = 'Tipp: Tisch ziehen zum Anordnen · Doppelklick zum Bearbeiten · ✕ zum Entfernen.';
+      tables.forEach((t) => plan.append(buildTableEl(t, plan)));
+      if (!rsOcc.size) $('rsPlanHint').textContent = 'Tipp: Tisch ziehen zum Anordnen · Doppelklick zum Bearbeiten · ⟳ drehen · ✕ entfernen.';
     }
 
     function makeTableDraggable(box, t, plan) {
       let sx, sy, ox, oy, moved = false, dragging = false;
       box.addEventListener('pointerdown', (e) => {
-        if (e.target.classList.contains('ptDel')) return;
+        if (e.target.classList.contains('ptCtl')) return;
         dragging = true; moved = false; box.setPointerCapture(e.pointerId);
         sx = e.clientX; sy = e.clientY; ox = box.offsetLeft; oy = box.offsetTop;
         box.style.zIndex = '20'; box.style.cursor = 'grabbing';
@@ -1496,11 +1575,13 @@
     }
 
     async function editTable(t) {
-      const name = prompt('Tischname:', t.name || ''); if (name === null) return;
-      const seats = parseInt(prompt('Plätze:', t.seats || 2), 10);
+      const name = prompt('Name:', t.name || ''); if (name === null) return;
+      const seats = parseInt(prompt('Plätze / Stühle:', t.seats || 2), 10);
+      const shape = (prompt('Form (round / square / rect / bench):', t.shape || 'round') || 'round').toLowerCase().trim();
       const area = (prompt('Bereich (innen / draussen / bar):', t.area || 'innen') || 'innen').toLowerCase().trim();
       const { error } = await sb.from('restaurant_tables').update({
         name: name.trim() || t.name, seats: Math.max(1, seats || t.seats || 2),
+        shape: ['round', 'square', 'rect', 'bench'].includes(shape) ? shape : (t.shape || 'round'),
         area: ['innen', 'draussen', 'bar'].includes(area) ? area : (area || 'innen'),
       }).eq('id', t.id);
       toast(error ? ('Fehler: ' + error.message) : 'Tisch aktualisiert.');
@@ -1562,10 +1643,11 @@
       const name = $('rsTblName').value.trim();
       const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);
       const area = $('rsTblArea').value || 'innen';
+      const shape = $('rsTblShape').value || 'round';
       if (!name) { toast('Bitte einen Tischnamen angeben.'); return; }
       const n = rsTablesData.filter((t) => (t.area || 'innen') === area).length;
-      const pos_x = 30 + (n % 4) * 150, pos_y = 30 + Math.floor(n / 4) * 110;
-      const { error } = await sb.from('restaurant_tables').insert({ tenant_id: tenant.id, name, seats, area, pos_x, pos_y });
+      const pos_x = 30 + (n % 4) * 160, pos_y = 30 + Math.floor(n / 4) * 130;
+      const { error } = await sb.from('restaurant_tables').insert({ tenant_id: tenant.id, name, seats, area, shape, pos_x, pos_y });
       if (error) { toast('Fehler: ' + error.message); return; }
       $('rsTblName').value = ''; rsArea = area; toast('Tisch hinzugefügt.'); loadRestaurant();
     });
