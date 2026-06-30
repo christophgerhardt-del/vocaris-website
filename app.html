@@ -917,7 +917,18 @@
         <section id="sec-floorplan" class="section hidden">
           <h1 class="pagehead">Tischplan</h1>
           <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
-          <div id="rsAreaTabs" class="branch-chips" style="margin-bottom:10px"></div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+            <div id="rsAreaTabs" class="branch-chips" style="margin:0"></div>
+            <button id="rsEditToggle" class="btn btn--ghost sm" type="button" style="margin-left:auto"><i data-lucide="pencil" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px"></i>Plan bearbeiten</button>
+          </div>
+          <div id="rsAreaManage" class="panel hidden" style="margin:0 0 10px">
+            <h4 style="margin:0 0 8px">Bereiche verwalten</h4>
+            <div id="rsAreaList" style="display:flex;flex-direction:column;gap:6px"></div>
+            <div class="if-grid" style="margin-top:10px">
+              <label>Neuer Bereich<input id="rsAreaNew" placeholder="z.B. Wintergarten"></label>
+            </div>
+            <div class="stack" style="margin-top:8px"><button id="rsAreaAdd" class="btn btn--ghost sm" type="button">Bereich hinzufügen</button></div>
+          </div>
           <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:8px">
             <label style="width:150px">Belegung am<input id="rsPlanDate" type="date" style="width:100%"></label>
             <div style="flex:1;min-width:240px">
@@ -933,6 +944,7 @@
           <div id="rsPlan" style="position:relative;height:calc(100vh - 250px);min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background-color:#fbfaf7;background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
           <p class="muted" id="rsPlanHint" style="text-align:left;padding:0;margin-top:8px;font-size:12px"></p>
 
+          <div id="rsEditPanels" class="hidden">
           <div class="grid2" style="margin-top:14px;align-items:start">
             <div class="panel" style="margin:0">
               <h3>Tisch hinzufügen</h3>
@@ -989,6 +1001,7 @@
             <div class="stack"><button id="rsImportBtn" class="btn btn--primary" type="button">Foto / PDF hochladen</button></div>
             <p class="muted" id="rsImportHint" style="text-align:left;padding:0;margin-top:8px;font-size:13px"></p>
           </div>
+          </div><!-- /rsEditPanels -->
         </section>
 
         <!-- Tisch-Aktions-Dialog (Klick auf einen Tisch im Plan) -->
@@ -1555,6 +1568,7 @@
       if (cfg?.public_token) $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
       rsSeatingMin = cfg?.seating_minutes ?? 120;
       rsHours = ac?.business_hours ?? {};
+      rsAreas = (cfg?.areas && cfg.areas.length) ? cfg.areas.slice() : ['Drinnen', 'Draußen', 'Bar'];
       rsTablesData = tbls ?? [];
       rsTableStatus = new Map();
       // Welche Tische gehören zu welcher Reservierung (für Anzeige zusammengelegter Tische)?
@@ -1564,9 +1578,9 @@
         const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', resIds);
         for (const j of jt ?? []) (rsResTblMap[j.reservation_id] ||= []).push(j.table_id);
       }
-      const areas = [...new Set(rsTablesData.map((t) => t.area || 'innen'))];
-      if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0] || 'innen';
-      renderAreaTabs(); renderRsPlan(); fillWalkTables();
+      const areas = allAreas();
+      if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0];
+      fillAreaSelects(); renderAreaTabs(); renderRsPlan(); fillWalkTables();
       renderRsList(res ?? []);
       const today = new Date().toISOString().slice(0, 10);
       if (!$('rsResDate').value) $('rsResDate').value = today;
@@ -1579,6 +1593,7 @@
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
     let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
+    let rsEditMode = false, rsAreas = []; // Bearbeitungsmodus + frei definierbare Bereiche
     const OCC_COL = { seated: { b: '#e0533d', bg: '#fdecea' }, booked: { b: '#d98a3d', bg: '#fdf3e6' } };
     const EL_META = {
       entrance: { icon: '🚪', name: 'Haupteingang', bg: '#e8eef6', bd: '#b7c4d6' },
@@ -1615,13 +1630,24 @@
     const AREA_LABEL = { innen: 'Drinnen', draussen: 'Draußen', bar: 'Bar' };
     function areaName(a) { return AREA_LABEL[a] || (a ? a.charAt(0).toUpperCase() + a.slice(1) : 'Bereich'); }
 
+    function allAreas() {
+      const set = rsAreas.slice();
+      for (const x of [...rsTablesData, ...rsElements]) if (x.area && !set.includes(x.area)) set.push(x.area);
+      return set.length ? set : ['Drinnen'];
+    }
+    function fillAreaSelects() {
+      const opts = allAreas().map((a) => '<option value="' + a + '">' + areaName(a) + '</option>').join('');
+      ['rsTblArea', 'rsResArea'].forEach((id) => {
+        const sel = $(id); if (!sel) return;
+        const cur = sel.value;
+        const lead = id === 'rsResArea' ? '<option value="">egal</option>' : '';
+        sel.innerHTML = lead + opts;
+        if (cur && allAreas().includes(cur)) sel.value = cur;
+      });
+    }
     function renderAreaTabs() {
       const wrap = $('rsAreaTabs'); if (!wrap) return;
-      const areas = [...new Set([
-        ...rsTablesData.map((t) => t.area || 'innen'),
-        ...rsElements.map((e) => e.area || 'innen'),
-      ])];
-      if (!areas.length) areas.push('innen');
+      const areas = allAreas();
       wrap.innerHTML = '';
       areas.forEach((a) => {
         const b = document.createElement('button');
@@ -1685,7 +1711,7 @@
       const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), t.pos_x ?? 40));
       const y = Math.max(0, Math.min(ph - (th + T_PAD * 2), t.pos_y ?? 40));
       const box = document.createElement('div');
-      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:grab;touch-action:none;user-select:none';
+      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:' + (rsEditMode ? 'grab' : 'pointer') + ';touch-action:none;user-select:none';
 
       const chairs = document.createElement('div');
       chairs.style.cssText = 'position:absolute;inset:0;pointer-events:none';
@@ -1702,66 +1728,62 @@
       if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
       box.append(surf);
 
-      // Resize-Anfasser (unten rechts).
-      const grip = document.createElement('div');
-      grip.className = 'ptCtl';
-      grip.style.cssText = 'position:absolute;width:16px;height:16px;border-radius:4px;background:#3f7d63;border:2px solid #fff;cursor:nwse-resize;z-index:3';
-      box.append(grip);
+      // Resize-Anfasser — nur im Bearbeitungsmodus.
+      let grip = null;
+      if (rsEditMode) {
+        grip = document.createElement('div');
+        grip.className = 'ptCtl';
+        grip.style.cssText = 'position:absolute;width:16px;height:16px;border-radius:4px;background:#3f7d63;border:2px solid #fff;cursor:nwse-resize;z-index:3';
+        box.append(grip);
+      }
 
       // Layout (auch live beim Resizen aufgerufen).
       function layout(ntw, nth) {
         tw = ntw; th = nth;
         box.style.width = (tw + T_PAD * 2) + 'px'; box.style.height = (th + T_PAD * 2) + 'px';
         surf.style.width = tw + 'px'; surf.style.height = th + 'px';
-        grip.style.left = (T_PAD + tw - 8) + 'px'; grip.style.top = (T_PAD + th - 8) + 'px';
+        if (grip) { grip.style.left = (T_PAD + tw - 8) + 'px'; grip.style.top = (T_PAD + th - 8) + 'px'; }
         chairs.innerHTML = ''; drawChairs(chairs, shape, seats, tw, th, occ, rot);
       }
       layout(tw, th);
 
-      const del = document.createElement('button');
-      del.className = 'ptCtl'; del.title = 'Entfernen'; del.textContent = '✕';
-      del.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:11px;line-height:1;z-index:3';
-      del.onclick = async (e) => {
-        e.stopPropagation();
-        const n = await futureResForTable(t.id);
-        const msg = n
-          ? 'Achtung: ' + n + ' künftige Reservierung(en) an „' + (t.name || 'Tisch') + '". Trotzdem entfernen? Diese Reservierungen verlieren dann ihren Tisch.'
-          : 'Tisch „' + (t.name || '') + '" entfernen?';
-        if (!confirm(msg)) return;
-        await sb.from('restaurant_tables').delete().eq('id', t.id);
-        toast('Tisch entfernt.'); loadRestaurant();
-      };
-      box.append(del);
+      if (rsEditMode) {
+        const del = document.createElement('button');
+        del.className = 'ptCtl'; del.title = 'Entfernen'; del.textContent = '✕';
+        del.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:11px;line-height:1;z-index:3';
+        del.onclick = (e) => { e.stopPropagation(); deleteTable(t); };
+        box.append(del);
 
-      if (shape === 'rect' || shape === 'bench') {
-        const rotBtn = document.createElement('button');
-        rotBtn.className = 'ptCtl'; rotBtn.title = 'Drehen'; rotBtn.textContent = '⟳';
-        rotBtn.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;border:none;background:#3f7d63;color:#fff;cursor:pointer;font-size:12px;line-height:1;z-index:3';
-        rotBtn.onclick = async (e) => {
-          e.stopPropagation();
-          const nr = rot === 90 ? 0 : 90; t.rotation = nr;
-          await sb.from('restaurant_tables').update({ rotation: nr }).eq('id', t.id);
-          renderRsPlan();
-        };
-        box.append(rotBtn);
+        if (shape === 'rect' || shape === 'bench') {
+          const rotBtn = document.createElement('button');
+          rotBtn.className = 'ptCtl'; rotBtn.title = 'Drehen'; rotBtn.textContent = '⟳';
+          rotBtn.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;border:none;background:#3f7d63;color:#fff;cursor:pointer;font-size:12px;line-height:1;z-index:3';
+          rotBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const nr = rot === 90 ? 0 : 90; t.rotation = nr;
+            await sb.from('restaurant_tables').update({ rotation: nr }).eq('id', t.id);
+            renderRsPlan();
+          };
+          box.append(rotBtn);
+        }
+
+        // Resize-Logik: live, speichert Basismaße (rotationsbereinigt).
+        let rsx, rsy, rtw, rth, resizing = false;
+        grip.addEventListener('pointerdown', (e) => {
+          e.stopPropagation(); resizing = true; grip.setPointerCapture(e.pointerId);
+          rsx = e.clientX; rsy = e.clientY; rtw = tw; rth = th;
+        });
+        grip.addEventListener('pointermove', (e) => {
+          if (!resizing) return;
+          layout(Math.max(40, rtw + (e.clientX - rsx)), Math.max(24, rth + (e.clientY - rsy)));
+        });
+        grip.addEventListener('pointerup', async (e) => {
+          if (!resizing) return; resizing = false; grip.releasePointerCapture(e.pointerId);
+          const baseW = rot === 90 ? th : tw, baseH = rot === 90 ? tw : th;
+          t.width = baseW; t.height = baseH;
+          await sb.from('restaurant_tables').update({ width: baseW, height: baseH }).eq('id', t.id);
+        });
       }
-
-      // Resize-Logik: aktualisiert live, speichert Basismaße (rotationsbereinigt).
-      let rsx, rsy, rtw, rth, resizing = false;
-      grip.addEventListener('pointerdown', (e) => {
-        e.stopPropagation(); resizing = true; grip.setPointerCapture(e.pointerId);
-        rsx = e.clientX; rsy = e.clientY; rtw = tw; rth = th;
-      });
-      grip.addEventListener('pointermove', (e) => {
-        if (!resizing) return;
-        layout(Math.max(40, rtw + (e.clientX - rsx)), Math.max(24, rth + (e.clientY - rsy)));
-      });
-      grip.addEventListener('pointerup', async (e) => {
-        if (!resizing) return; resizing = false; grip.releasePointerCapture(e.pointerId);
-        const baseW = rot === 90 ? th : tw, baseH = rot === 90 ? tw : th;
-        t.width = baseW; t.height = baseH;
-        await sb.from('restaurant_tables').update({ width: baseW, height: baseH }).eq('id', t.id);
-      });
 
       makeTableDraggable(box, t, plan, () => openTableModal(t));
       return box;
@@ -1813,13 +1835,14 @@
       const x = Math.max(0, Math.min(pw - w, el.pos_x ?? 40));
       const y = Math.max(0, Math.min(ph - h, el.pos_y ?? 40));
       const box = document.createElement('div');
-      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:grab;touch-action:none;user-select:none;z-index:1';
+      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:' + (rsEditMode ? 'grab' : 'default') + ';touch-action:none;user-select:none;z-index:1';
       const surf = document.createElement('div');
       surf.style.cssText = 'width:' + w + 'px;height:' + h + 'px;border:1px dashed ' + meta.bd + ';background:' + meta.bg +
         ';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1;color:#444;font-size:12px;font-weight:600;overflow:hidden;pointer-events:none';
       if (el.kind === 'wall') surf.innerHTML = '';
       else { const labelText = el.label || meta.name; surf.innerHTML = (meta.icon ? '<span style="font-size:18px">' + meta.icon + '</span>' : '') + '<span>' + labelText + '</span>'; }
       box.append(surf);
+      if (!rsEditMode) return box; // Ansichtsmodus: statisch
 
       const del = document.createElement('button');
       del.className = 'ptCtl'; del.title = 'Entfernen'; del.textContent = '✕';
@@ -1867,7 +1890,7 @@
         box.style.zIndex = '20'; box.style.cursor = 'grabbing';
       });
       box.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
+        if (!dragging || !rsEditMode) return; // im Ansichtsmodus nicht verschieben
         const dx = e.clientX - sx, dy = e.clientY - sy;
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
         const nx = Math.max(0, Math.min(plan.clientWidth - box.offsetWidth, ox + dx));
@@ -1877,7 +1900,7 @@
       box.addEventListener('pointerup', async (e) => {
         if (!dragging) return;
         dragging = false; box.releasePointerCapture(e.pointerId);
-        box.style.zIndex = ''; box.style.cursor = 'grab';
+        box.style.zIndex = ''; box.style.cursor = rsEditMode ? 'grab' : 'pointer';
         if (moved) {
           const px = Math.round(box.offsetLeft), py = Math.round(box.offsetTop);
           t.pos_x = px; t.pos_y = py;
@@ -1890,11 +1913,11 @@
       const name = prompt('Name:', t.name || ''); if (name === null) return;
       const seats = parseInt(prompt('Plätze / Stühle:', t.seats || 2), 10);
       const shape = (prompt('Form (round / square / rect / bench):', t.shape || 'round') || 'round').toLowerCase().trim();
-      const area = (prompt('Bereich (innen / draussen / bar):', t.area || 'innen') || 'innen').toLowerCase().trim();
+      const area = (prompt('Bereich (' + allAreas().join(' / ') + '):', t.area || rsArea) || '').trim();
       const { error } = await sb.from('restaurant_tables').update({
         name: name.trim() || t.name, seats: Math.max(1, seats || t.seats || 2),
         shape: ['round', 'square', 'rect', 'bench'].includes(shape) ? shape : (t.shape || 'round'),
-        area: ['innen', 'draussen', 'bar'].includes(area) ? area : (area || 'innen'),
+        area: area || t.area || rsAreas[0] || 'Drinnen',
       }).eq('id', t.id);
       toast(error ? ('Fehler: ' + error.message) : 'Tisch aktualisiert.');
       loadRestaurant();
@@ -1949,6 +1972,62 @@
     $('rsPlanDate')?.addEventListener('change', () => loadDayOccupancy($('rsPlanDate').value));
     $('rsPlanSlider')?.addEventListener('input', applyOccupancyAt);
 
+    // ---- Bearbeitungsmodus ----
+    function setEditMode(on) {
+      rsEditMode = on;
+      $('rsEditPanels')?.classList.toggle('hidden', !on);
+      $('rsAreaManage')?.classList.toggle('hidden', !on);
+      const plan = $('rsPlan'); if (plan) plan.style.boxShadow = on ? 'inset 0 0 0 2px var(--accent)' : 'none';
+      const btn = $('rsEditToggle');
+      if (btn) btn.innerHTML = on
+        ? '<i data-lucide="check" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px"></i>Bearbeiten beenden'
+        : '<i data-lucide="pencil" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px"></i>Plan bearbeiten';
+      if (on) renderAreaList();
+      renderRsPlan();
+      window.lucide && lucide.createIcons();
+    }
+    $('rsEditToggle')?.addEventListener('click', () => setEditMode(!rsEditMode));
+
+    // ---- Bereiche verwalten ----
+    function renderAreaList() {
+      const el = $('rsAreaList'); if (!el) return;
+      el.innerHTML = '';
+      rsAreas.forEach((a, i) => {
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:center';
+        const inp = document.createElement('input'); inp.value = a; inp.style.flex = '1';
+        inp.onchange = () => renameArea(i, inp.value.trim());
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Entfernen';
+        del.onclick = () => removeArea(i);
+        row.append(inp, del); el.append(row);
+      });
+    }
+    async function saveAreas() { await sb.from('restaurant_config').update({ areas: rsAreas }).eq('tenant_id', tenant.id); }
+    async function renameArea(i, name) {
+      const old = rsAreas[i];
+      if (!name || name === old) { renderAreaList(); return; }
+      if (rsAreas.includes(name)) { toast('Bereich existiert schon.'); renderAreaList(); return; }
+      rsAreas[i] = name; await saveAreas();
+      await sb.from('restaurant_tables').update({ area: name }).eq('tenant_id', tenant.id).eq('area', old);
+      await sb.from('floor_elements').update({ area: name }).eq('tenant_id', tenant.id).eq('area', old);
+      if (rsArea === old) rsArea = name;
+      toast('Bereich umbenannt.'); loadRestaurant();
+    }
+    async function removeArea(i) {
+      const a = rsAreas[i];
+      const n = rsTablesData.filter((t) => (t.area || '') === a).length + rsElements.filter((e) => (e.area || '') === a).length;
+      if (n) { toast('Im Bereich „' + a + '" liegen noch ' + n + ' Tische/Elemente — erst verschieben oder entfernen.'); return; }
+      if (rsAreas.length <= 1) { toast('Mindestens ein Bereich nötig.'); return; }
+      rsAreas.splice(i, 1); await saveAreas();
+      toast('Bereich entfernt.'); loadRestaurant();
+    }
+    $('rsAreaAdd')?.addEventListener('click', async () => {
+      const name = ($('rsAreaNew').value || '').trim();
+      if (!name) { toast('Bitte einen Namen eingeben.'); return; }
+      if (rsAreas.includes(name)) { toast('Bereich existiert schon.'); return; }
+      rsAreas.push(name); await saveAreas();
+      $('rsAreaNew').value = ''; rsArea = name; toast('Bereich hinzugefügt.'); loadRestaurant();
+    });
+
     // ---- Tisch-Aktions-Dialog (Klick auf Tisch im Plan) ----
     function closeTableModal() { const m = $('rsTblModal'); if (m) m.style.display = 'none'; }
     $('rsTblClose')?.addEventListener('click', closeTableModal);
@@ -1972,7 +2051,7 @@
       else html += '<div class="if-grid"><label>Personen<input id="rsQpParty" type="number" min="1" value="' + Math.min(t.seats || 2, 2) + '"></label><label>Name (optional)<input id="rsQpName" placeholder="Gast"></label></div>' +
         '<label style="margin-top:8px">Telefon oder E-Mail (optional)<input id="rsQpContact" placeholder="für Bestätigung"></label>' +
         '<div class="stack" style="margin-top:12px;gap:8px"><button id="rsQpReserve" class="btn btn--primary" type="button">Für ' + timeLabel + ' Uhr reservieren</button><button id="rsQpWalk" class="btn" type="button">Walk-in jetzt setzen</button></div>';
-      html += '<div style="display:flex;gap:8px;margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button id="rsTblEdit" class="btn btn--ghost sm" type="button">Bearbeiten</button><button id="rsTblDel" class="btn btn--ghost sm" type="button">Tisch entfernen</button></div>';
+      if (rsEditMode) html += '<div style="display:flex;gap:8px;margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button id="rsTblEdit" class="btn btn--ghost sm" type="button">Bearbeiten</button><button id="rsTblDel" class="btn btn--ghost sm" type="button">Tisch entfernen</button></div>';
       body.innerHTML = html;
       if (here.length) {
         const wrap = body.querySelector('#rsTblRes');
@@ -1992,8 +2071,10 @@
         body.querySelector('#rsQpReserve').onclick = () => quickReserve(t, date, timeLabel);
         body.querySelector('#rsQpWalk').onclick = () => quickWalkin(t);
       }
-      body.querySelector('#rsTblEdit').onclick = () => { closeTableModal(); editTable(t); };
-      body.querySelector('#rsTblDel').onclick = () => deleteTable(t);
+      if (rsEditMode) {
+        body.querySelector('#rsTblEdit').onclick = () => { closeTableModal(); editTable(t); };
+        body.querySelector('#rsTblDel').onclick = () => deleteTable(t);
+      }
       $('rsTblModal').style.display = 'flex';
     }
     async function quickReserve(t, date, timeLabel) {
