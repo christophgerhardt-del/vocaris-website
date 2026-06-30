@@ -918,11 +918,17 @@
           <h1 class="pagehead">Tischplan</h1>
           <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
           <div id="rsAreaTabs" class="branch-chips" style="margin-bottom:10px"></div>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px">
-            <label style="width:170px">Belegung am<input id="rsPlanDate" type="date" style="width:100%"></label>
-            <label style="width:100px">um<input id="rsPlanTime" placeholder="19:00" style="width:100%"></label>
-            <button id="rsPlanShow" class="btn btn--ghost sm" type="button">Belegung anzeigen</button>
-            <button id="rsPlanClear" class="btn btn--ghost sm" type="button">Zurücksetzen</button>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:8px">
+            <label style="width:150px">Belegung am<input id="rsPlanDate" type="date" style="width:100%"></label>
+            <div style="flex:1;min-width:240px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted,#7a756c)"><span>Uhrzeit ziehen</span><b id="rsPlanTimeLabel">—</b></div>
+              <input id="rsPlanSlider" type="range" min="660" max="1380" step="15" value="1140" style="width:100%">
+            </div>
+            <div id="rsLegend" style="display:flex;gap:14px;font-size:12px;align-items:center;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:#fff;border:2px solid #3f7d63"></i>frei</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:#fdf3e6;border:2px solid #d98a3d"></i>reserviert</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:#fdecea;border:2px solid #e0533d"></i>am Tisch</span>
+            </div>
           </div>
           <div id="rsPlan" style="position:relative;height:calc(100vh - 250px);min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background-color:#fbfaf7;background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
           <p class="muted" id="rsPlanHint" style="text-align:left;padding:0;margin-top:8px;font-size:12px"></p>
@@ -1090,7 +1096,10 @@
           <div class="panel" style="margin-top:18px">
             <h3>Gästeliste (Tagesansicht)</h3>
             <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px">
-              <label style="width:170px">Tag<input id="rsDayDate" type="date" style="width:100%"></label>
+              <button id="rsDayPrev" class="btn btn--ghost sm" type="button" title="Vortag">‹</button>
+              <label style="width:150px">Tag<input id="rsDayDate" type="date" style="width:100%"></label>
+              <button id="rsDayNext" class="btn btn--ghost sm" type="button" title="Folgetag">›</button>
+              <button id="rsDayToday" class="btn btn--ghost sm" type="button">Heute</button>
               <label style="flex:1;min-width:150px">Suche (Name)<input id="rsDaySearch" placeholder="Name…" style="width:100%"></label>
               <button id="rsDayShow" class="btn btn--ghost sm" type="button">Anzeigen</button>
             </div>
@@ -1538,7 +1547,7 @@
       rsSeatingMin = cfg?.seating_minutes ?? 120;
       rsHours = ac?.business_hours ?? {};
       rsTablesData = tbls ?? [];
-      rsOcc = new Set();
+      rsTableStatus = new Map();
       // Welche Tische gehören zu welcher Reservierung (für Anzeige zusammengelegter Tische)?
       rsResTblMap = {};
       const resIds = (res ?? []).map((r) => r.id);
@@ -1555,9 +1564,13 @@
       if (!$('rsPlanDate').value) $('rsPlanDate').value = today;
       if ($('rsTlDate') && !$('rsTlDate').value) $('rsTlDate').value = today;
       if ($('rsDayDate') && !$('rsDayDate').value) $('rsDayDate').value = today;
+      if ($('rsPlanDate')) loadDayOccupancy($('rsPlanDate').value); // Live-Belegung sofort
+      if ($('rsDayDate')) renderDayView();                          // Tages-Cockpit sofort
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
-    let rsTablesData = [], rsArea = '', rsOcc = new Set(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
+    let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
+    let rsDayRes = []; // gecachte Reservierungen des gewählten Tages (für den Zeit-Schieber)
+    const OCC_COL = { seated: { b: '#e0533d', bg: '#fdecea' }, booked: { b: '#d98a3d', bg: '#fdf3e6' } };
     const EL_META = {
       entrance: { icon: '🚪', name: 'Haupteingang', bg: '#e8eef6', bd: '#b7c4d6' },
       toilet: { icon: '🚻', name: 'Toilette', bg: '#e8eef6', bd: '#b7c4d6' },
@@ -1656,7 +1669,8 @@
 
     function buildTableEl(t, plan) {
       const shape = t.shape || 'round', rot = t.rotation || 0, seats = Math.max(1, t.seats || 1);
-      const occ = rsOcc.has(t.id);
+      const st = rsTableStatus.get(t.id); // { status:'seated'|'booked', label } oder undefined
+      const occ = !!st;
       let { tw, th } = dispDims(t);
       const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
       const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), t.pos_x ?? 40));
@@ -1670,12 +1684,13 @@
 
       const surf = document.createElement('div');
       const radius = shape === 'round' ? '50%' : (shape === 'bench' ? '6px' : '11px');
-      const border = occ ? '#e0533d' : '#3f7d63';
-      const bg = occ ? '#fdecea' : '#ffffff';
-      surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + border +
-        ';background:' + bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none;overflow:hidden';
-      surf.innerHTML = '<b style="font-size:12px">' + (t.name || 'Tisch') + '</b>' +
-        (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666">' + seats + (occ ? ' · belegt' : '') + '</span>');
+      const col = st ? OCC_COL[st.status] : { b: '#3f7d63', bg: '#ffffff' };
+      surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + col.b +
+        ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
+      const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (seats + 'P');
+      surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + (t.name || 'Tisch') + '</b>' +
+        (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666;pointer-events:none">' + sub + '</span>');
+      if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
       box.append(surf);
 
       // Resize-Anfasser (unten rechts).
@@ -1755,7 +1770,7 @@
       }
       els.forEach((e) => plan.append(buildElementEl(e, plan)));
       tables.forEach((t) => plan.append(buildTableEl(t, plan)));
-      if (!rsOcc.size) $('rsPlanHint').textContent = 'Tipp: ziehen zum Anordnen · Tisch: Doppelklick bearbeiten · ⟳ drehen · Ecke ziehen = Größe · ✕ entfernen.';
+      if (!rsTableStatus.size) $('rsPlanHint').textContent = 'Tipp: ziehen zum Anordnen · Tisch: Doppelklick bearbeiten · ⟳ drehen · Ecke ziehen = Größe · ✕ entfernen.';
     }
 
     function buildElementEl(el, plan) {
@@ -1852,34 +1867,53 @@
       loadRestaurant();
     }
 
-    async function rsShowOccupancy() {
-      const date = $('rsPlanDate').value, time = ($('rsPlanTime').value || '').trim();
-      if (!date || !/^\d{1,2}:\d{2}$/.test(time)) { toast('Bitte Datum und Uhrzeit (HH:MM) angeben.'); return; }
-      // Reservierungen des Tages laden und Überschneidung mit [t, t+Sitzdauer) prüfen.
-      const dayStart = new Date(date + 'T00:00:00').toISOString();
-      const dayEnd = new Date(date + 'T23:59:59').toISOString();
-      const { data } = await sb.from('reservations').select('id, table_id, starts_at, ends_at')
-        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated']).gte('starts_at', dayStart).lte('starts_at', dayEnd);
-      const [h, m] = time.split(':').map(Number);
-      const start = new Date(date + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00').getTime();
-      const end = start + rsSeatingMin * 60000;
-      const overlap = (data ?? []).filter((r) => {
-        const s = new Date(r.starts_at).getTime();
-        const e = r.ends_at ? new Date(r.ends_at).getTime() : s + rsSeatingMin * 60000;
-        return start < e && end > s;
+    function minToHHMM(min) { return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0'); }
+    // Reservierungen des Tages EINMAL laden + Tisch-Verknüpfungen cachen.
+    async function loadDayOccupancy(date) {
+      rsDayRes = [];
+      if (!date) { renderRsPlan(); return; }
+      const { data } = await sb.from('reservations').select('id, table_id, starts_at, ends_at, status, party_size, customer_name')
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated'])
+        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString());
+      const rows = data ?? [];
+      const map = {}; const ids = rows.map((r) => r.id);
+      if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt || []) (map[j.reservation_id] ||= []).push(j.table_id); }
+      rsDayRes = rows.map((r) => {
+        const s = new Date(r.starts_at).getTime(), e = r.ends_at ? new Date(r.ends_at).getTime() : s + rsSeatingMin * 60000;
+        const tids = (map[r.id] && map[r.id].length) ? map[r.id] : (r.table_id ? [r.table_id] : []);
+        return { s, e, status: r.status, name: r.customer_name, party: r.party_size, tids };
       });
-      rsOcc = new Set();
-      for (const r of overlap) if (r.table_id) rsOcc.add(r.table_id);
-      const ids = overlap.map((r) => r.id);
-      if (ids.length) {
-        const { data: jt } = await sb.from('reservation_tables').select('table_id').in('reservation_id', ids);
-        for (const j of jt ?? []) if (j.table_id) rsOcc.add(j.table_id);
+      // Slider-Bereich auf die Öffnungszeiten des Tages setzen.
+      const { lo, hi } = dayInterval(date);
+      const sl = $('rsPlanSlider'); sl.min = lo; sl.max = hi; sl.step = 15;
+      // Standard: aktuelle Uhrzeit, falls heute & im Fenster; sonst Mitte des Abends.
+      const now = new Date(); let def = Math.round((hi + lo) / 2 / 15) * 15;
+      if (date === now.toISOString().slice(0, 10)) { const nm = now.getHours() * 60 + now.getMinutes(); if (nm >= lo && nm <= hi) def = Math.round(nm / 15) * 15; }
+      sl.value = Math.min(hi, Math.max(lo, def));
+      applyOccupancyAt();
+    }
+    function applyOccupancyAt() {
+      const date = $('rsPlanDate').value; if (!date) return;
+      const min = parseInt($('rsPlanSlider').value, 10) || 0;
+      $('rsPlanTimeLabel').textContent = minToHHMM(min) + ' Uhr';
+      const start = new Date(date + 'T' + minToHHMM(min) + ':00').getTime(), end = start + rsSeatingMin * 60000;
+      rsTableStatus = new Map();
+      for (const r of rsDayRes) {
+        if (!(start < r.e && end > r.s)) continue;
+        const lbl = (r.name || 'Gast') + ' · ' + (r.party || '?') + 'P · ' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes());
+        for (const tid of r.tids) {
+          const prev = rsTableStatus.get(tid);
+          // „seated" (am Tisch) hat Vorrang vor „booked".
+          if (!prev || (prev.status === 'booked' && r.status === 'seated')) rsTableStatus.set(tid, { status: r.status, label: lbl });
+        }
       }
       renderRsPlan();
-      $('rsPlanHint').textContent = rsOcc.size + ' Tisch(e) zu dieser Zeit belegt (rot), restliche frei (grün).';
+      const seated = [...rsTableStatus.values()].filter((v) => v.status === 'seated').length;
+      const booked = rsTableStatus.size - seated;
+      $('rsPlanHint').textContent = 'Um ' + minToHHMM(min) + ' Uhr: ' + booked + ' reserviert, ' + seated + ' am Tisch · ' + Math.max(0, rsTablesData.filter((t) => (t.area || 'innen') === rsArea).length - rsTablesData.filter((t) => (t.area || 'innen') === rsArea && rsTableStatus.has(t.id)).length) + ' frei (im Bereich).';
     }
-    $('rsPlanShow')?.addEventListener('click', rsShowOccupancy);
-    $('rsPlanClear')?.addEventListener('click', () => { rsOcc = new Set(); renderRsPlan(); $('rsPlanHint').textContent = ''; });
+    $('rsPlanDate')?.addEventListener('change', () => loadDayOccupancy($('rsPlanDate').value));
+    $('rsPlanSlider')?.addEventListener('input', applyOccupancyAt);
     const STATUS_COLOR = { booked: '#3f7d63', seated: '#2563eb', no_show: '#e0533d', cancelled: '#888', completed: '#888' };
     const SRC_LABEL = { assistant: '  (telefonisch)', public: '  (online)', walkin: '  (Walk-in)', dashboard: '' };
     function resItemNode(r, map) {
@@ -1942,7 +1976,15 @@
       loadRestaurant();
       if ($('rsDayDate').value === new Date().toISOString().slice(0, 10)) renderDayView();
     }
+    function shiftDay(days) {
+      const d = new Date(($('rsDayDate').value || new Date().toISOString().slice(0, 10)) + 'T12:00:00');
+      d.setDate(d.getDate() + days); $('rsDayDate').value = d.toISOString().slice(0, 10); renderDayView();
+    }
     $('rsDayShow')?.addEventListener('click', renderDayView);
+    $('rsDayDate')?.addEventListener('change', renderDayView);
+    $('rsDayPrev')?.addEventListener('click', () => shiftDay(-1));
+    $('rsDayNext')?.addEventListener('click', () => shiftDay(1));
+    $('rsDayToday')?.addEventListener('click', () => { $('rsDayDate').value = new Date().toISOString().slice(0, 10); renderDayView(); });
     $('rsDaySearch')?.addEventListener('input', () => { if ($('rsDayDate').value) renderDayView(); });
     $('rsWalkBtn')?.addEventListener('click', doWalkin);
 
