@@ -991,6 +991,15 @@
           </div>
         </section>
 
+        <!-- Tisch-Aktions-Dialog (Klick auf einen Tisch im Plan) -->
+        <div id="rsTblModal" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center">
+          <div id="rsTblBackdrop" style="position:absolute;inset:0;background:#0006"></div>
+          <div style="position:relative;background:#fff;border-radius:16px;padding:22px;width:min(440px,92vw);max-height:88vh;overflow:auto;box-shadow:0 30px 60px -20px #0007">
+            <button id="rsTblClose" type="button" style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;border:none;background:var(--paper-2,#f3efe7);cursor:pointer">✕</button>
+            <div id="rsTblBody"></div>
+          </div>
+        </div>
+
         <!-- Reservierungen (Restaurant-Modus) -->
         <section id="sec-restaurant" class="section hidden">
           <h1 class="pagehead">Reservierungen</h1>
@@ -1569,7 +1578,7 @@
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
-    let rsDayRes = []; // gecachte Reservierungen des gewählten Tages (für den Zeit-Schieber)
+    let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
     const OCC_COL = { seated: { b: '#e0533d', bg: '#fdecea' }, booked: { b: '#d98a3d', bg: '#fdf3e6' } };
     const EL_META = {
       entrance: { icon: '🚪', name: 'Haupteingang', bg: '#e8eef6', bd: '#b7c4d6' },
@@ -1754,8 +1763,7 @@
         await sb.from('restaurant_tables').update({ width: baseW, height: baseH }).eq('id', t.id);
       });
 
-      box.ondblclick = () => editTable(t);
-      makeTableDraggable(box, t, plan);
+      makeTableDraggable(box, t, plan, () => openTableModal(t));
       return box;
     }
 
@@ -1768,9 +1776,34 @@
         plan.innerHTML = '<div class="muted" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">Noch nichts in diesem Bereich. Unten Tische oder Elemente anlegen.</div>';
         return;
       }
+      // Verbindungslinien für zusammengelegte Tische (hinter die Tische zeichnen).
+      if (rsCombos.length) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0');
+        let drew = false;
+        for (const c of rsCombos) {
+          const pts = c.tids.map((id) => tables.find((t) => t.id === id)).filter(Boolean).map((t) => tableCenter(t, plan));
+          if (pts.length < 2) continue; drew = true;
+          const col = c.status === 'seated' ? '#e0533d' : '#d98a3d';
+          for (let i = 0; i < pts.length - 1; i++) {
+            const ln = document.createElementNS(ns, 'line');
+            ln.setAttribute('x1', pts[i].x); ln.setAttribute('y1', pts[i].y); ln.setAttribute('x2', pts[i + 1].x); ln.setAttribute('y2', pts[i + 1].y);
+            ln.setAttribute('stroke', col); ln.setAttribute('stroke-width', '3.5'); ln.setAttribute('stroke-dasharray', '7 5'); ln.setAttribute('stroke-linecap', 'round'); ln.setAttribute('opacity', '0.75');
+            svg.append(ln);
+          }
+        }
+        if (drew) plan.append(svg);
+      }
       els.forEach((e) => plan.append(buildElementEl(e, plan)));
       tables.forEach((t) => plan.append(buildTableEl(t, plan)));
-      if (!rsTableStatus.size) $('rsPlanHint').textContent = 'Tipp: ziehen zum Anordnen · Tisch: Doppelklick bearbeiten · ⟳ drehen · Ecke ziehen = Größe · ✕ entfernen.';
+      if (!rsTableStatus.size) $('rsPlanHint').textContent = 'Tipp: Tisch antippen für Reservierung/Details · ziehen zum Anordnen · ⟳ drehen · Ecke ziehen = Größe.';
+    }
+    function tableCenter(t, plan) {
+      const { tw, th } = dispDims(t); const W = tw + T_PAD * 2, H = th + T_PAD * 2;
+      const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
+      const x = Math.max(0, Math.min(pw - W, t.pos_x ?? 40)), y = Math.max(0, Math.min(ph - H, t.pos_y ?? 40));
+      return { x: x + W / 2, y: y + H / 2 };
     }
 
     function buildElementEl(el, plan) {
@@ -1825,7 +1858,7 @@
       return box;
     }
 
-    function makeTableDraggable(box, t, plan) {
+    function makeTableDraggable(box, t, plan, onClick) {
       let sx, sy, ox, oy, moved = false, dragging = false;
       box.addEventListener('pointerdown', (e) => {
         if (e.target.classList.contains('ptCtl')) return;
@@ -1849,7 +1882,7 @@
           const px = Math.round(box.offsetLeft), py = Math.round(box.offsetTop);
           t.pos_x = px; t.pos_y = py;
           await sb.from('restaurant_tables').update({ pos_x: px, pos_y: py }).eq('id', t.id);
-        }
+        } else if (onClick) { onClick(); } // Klick ohne Ziehen → Tisch-Aktionen
       });
     }
 
@@ -1881,7 +1914,7 @@
       rsDayRes = rows.map((r) => {
         const s = new Date(r.starts_at).getTime(), e = r.ends_at ? new Date(r.ends_at).getTime() : s + rsSeatingMin * 60000;
         const tids = (map[r.id] && map[r.id].length) ? map[r.id] : (r.table_id ? [r.table_id] : []);
-        return { s, e, status: r.status, name: r.customer_name, party: r.party_size, tids };
+        return { id: r.id, s, e, status: r.status, name: r.customer_name, party: r.party_size, tids };
       });
       // Slider-Bereich auf die Öffnungszeiten des Tages setzen.
       const { lo, hi } = dayInterval(date);
@@ -1897,7 +1930,7 @@
       const min = parseInt($('rsPlanSlider').value, 10) || 0;
       $('rsPlanTimeLabel').textContent = minToHHMM(min) + ' Uhr';
       const start = new Date(date + 'T' + minToHHMM(min) + ':00').getTime(), end = start + rsSeatingMin * 60000;
-      rsTableStatus = new Map();
+      rsTableStatus = new Map(); rsCombos = [];
       for (const r of rsDayRes) {
         if (!(start < r.e && end > r.s)) continue;
         const lbl = (r.name || 'Gast') + ' · ' + (r.party || '?') + 'P · ' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes());
@@ -1906,6 +1939,7 @@
           // „seated" (am Tisch) hat Vorrang vor „booked".
           if (!prev || (prev.status === 'booked' && r.status === 'seated')) rsTableStatus.set(tid, { status: r.status, label: lbl });
         }
+        if (r.tids.length > 1) rsCombos.push({ tids: r.tids.slice(), status: r.status }); // zusammengelegt
       }
       renderRsPlan();
       const seated = [...rsTableStatus.values()].filter((v) => v.status === 'seated').length;
@@ -1914,6 +1948,72 @@
     }
     $('rsPlanDate')?.addEventListener('change', () => loadDayOccupancy($('rsPlanDate').value));
     $('rsPlanSlider')?.addEventListener('input', applyOccupancyAt);
+
+    // ---- Tisch-Aktions-Dialog (Klick auf Tisch im Plan) ----
+    function closeTableModal() { const m = $('rsTblModal'); if (m) m.style.display = 'none'; }
+    $('rsTblClose')?.addEventListener('click', closeTableModal);
+    $('rsTblBackdrop')?.addEventListener('click', closeTableModal);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTableModal(); });
+
+    async function deleteTable(t) {
+      const n = await futureResForTable(t.id);
+      const msg = n ? ('Achtung: ' + n + ' künftige Reservierung(en) an „' + (t.name || 'Tisch') + '". Trotzdem entfernen?') : ('Tisch „' + (t.name || '') + '" entfernen?');
+      if (!confirm(msg)) return;
+      await sb.from('restaurant_tables').delete().eq('id', t.id); toast('Tisch entfernt.'); closeTableModal(); loadRestaurant();
+    }
+    function openTableModal(t) {
+      const body = $('rsTblBody'); if (!body) return;
+      const date = $('rsPlanDate').value || new Date().toISOString().slice(0, 10);
+      const min = parseInt($('rsPlanSlider').value, 10) || 1140, timeLabel = minToHHMM(min);
+      const start = new Date(date + 'T' + timeLabel + ':00').getTime(), end = start + rsSeatingMin * 60000;
+      const here = rsDayRes.filter((r) => r.tids.includes(t.id) && start < r.e && end > r.s);
+      let html = '<h3 style="margin:0 0 2px">' + (t.name || 'Tisch') + '</h3><p class="muted" style="margin:0 0 14px;font-size:13px">' + (t.seats || 0) + ' Plätze · ' + areaName(t.area || 'innen') + ' · ' + date + ' um ' + timeLabel + ' Uhr</p>';
+      if (here.length) html += '<div id="rsTblRes"></div>';
+      else html += '<div class="if-grid"><label>Personen<input id="rsQpParty" type="number" min="1" value="' + Math.min(t.seats || 2, 2) + '"></label><label>Name (optional)<input id="rsQpName" placeholder="Gast"></label></div>' +
+        '<label style="margin-top:8px">Telefon oder E-Mail (optional)<input id="rsQpContact" placeholder="für Bestätigung"></label>' +
+        '<div class="stack" style="margin-top:12px;gap:8px"><button id="rsQpReserve" class="btn btn--primary" type="button">Für ' + timeLabel + ' Uhr reservieren</button><button id="rsQpWalk" class="btn" type="button">Walk-in jetzt setzen</button></div>';
+      html += '<div style="display:flex;gap:8px;margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button id="rsTblEdit" class="btn btn--ghost sm" type="button">Bearbeiten</button><button id="rsTblDel" class="btn btn--ghost sm" type="button">Tisch entfernen</button></div>';
+      body.innerHTML = html;
+      if (here.length) {
+        const wrap = body.querySelector('#rsTblRes');
+        here.forEach((r) => {
+          const div = document.createElement('div'); div.className = 'item';
+          const stcol = STATUS_COLOR[r.status] || '#888';
+          div.innerHTML = '<h4 style="margin:0">' + (r.name || 'Ohne Namen') + ' · ' + (r.party || '?') + 'P <span style="font-size:11px;color:#fff;background:' + stcol + ';border-radius:999px;padding:2px 8px;margin-left:6px">' + (RES_STATUS[r.status] || r.status) + '</span></h4><p style="margin:4px 0 0">' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes()) + ' Uhr</p>';
+          const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+          const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { await setResStatus(r.id, s); closeTableModal(); }; return b; };
+          if (r.status === 'booked') bar.append(mk('Eingetroffen', 'seated'));
+          if (r.status === 'seated') bar.append(mk('Abschließen', 'completed'));
+          if (r.status === 'booked') bar.append(mk('No-Show', 'no_show'));
+          bar.append(mk('Stornieren', 'cancelled'));
+          div.append(bar); wrap.append(div);
+        });
+      } else {
+        body.querySelector('#rsQpReserve').onclick = () => quickReserve(t, date, timeLabel);
+        body.querySelector('#rsQpWalk').onclick = () => quickWalkin(t);
+      }
+      body.querySelector('#rsTblEdit').onclick = () => { closeTableModal(); editTable(t); };
+      body.querySelector('#rsTblDel').onclick = () => deleteTable(t);
+      $('rsTblModal').style.display = 'flex';
+    }
+    async function quickReserve(t, date, timeLabel) {
+      const party = Math.max(1, parseInt($('rsQpParty').value, 10) || 2);
+      const name = $('rsQpName').value.trim(), contact = $('rsQpContact').value.trim();
+      const start = new Date(date + 'T' + timeLabel + ':00'), end = new Date(start.getTime() + rsSeatingMin * 60000);
+      const email = /@/.test(contact) ? contact : null, phone = (contact && !/@/.test(contact)) ? contact : null;
+      const { data, error } = await sb.from('reservations').insert({ tenant_id: tenant.id, table_id: t.id, starts_at: start.toISOString(), ends_at: end.toISOString(), party_size: party, customer_name: name || null, customer_phone: phone, customer_email: email, source: 'dashboard', status: 'booked' }).select('id').single();
+      if (error) { toast('Fehler: ' + error.message); return; }
+      await sb.from('reservation_tables').insert({ reservation_id: data.id, table_id: t.id });
+      toast('Reserviert.'); closeTableModal(); loadRestaurant();
+    }
+    async function quickWalkin(t) {
+      const party = Math.max(1, parseInt($('rsQpParty').value, 10) || 2), name = $('rsQpName').value.trim();
+      const now = new Date(), end = new Date(now.getTime() + rsSeatingMin * 60000);
+      const { data, error } = await sb.from('reservations').insert({ tenant_id: tenant.id, table_id: t.id, starts_at: now.toISOString(), ends_at: end.toISOString(), party_size: party, customer_name: name || null, source: 'walkin', status: 'seated' }).select('id').single();
+      if (error) { toast('Fehler: ' + error.message); return; }
+      await sb.from('reservation_tables').insert({ reservation_id: data.id, table_id: t.id });
+      toast('Walk-in gesetzt.'); closeTableModal(); loadRestaurant();
+    }
     const STATUS_COLOR = { booked: '#3f7d63', seated: '#2563eb', no_show: '#e0533d', cancelled: '#888', completed: '#888' };
     const SRC_LABEL = { assistant: '  (telefonisch)', public: '  (online)', walkin: '  (Walk-in)', dashboard: '' };
     function resItemNode(r, map) {
