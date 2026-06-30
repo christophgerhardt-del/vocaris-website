@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tisch reservieren</title>
+<style>
+  :root { --accent:#c0552f; --ink:#23211e; --muted:#7a756c; --line:#e6e0d6; --paper:#fbfaf7; --paper2:#f3efe7; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper2); color:var(--ink); }
+  .wrap { max-width:520px; margin:0 auto; padding:28px 18px 60px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:0 16px 40px -24px #0003; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:15px; }
+  label { display:block; font-size:13px; font-weight:600; margin:12px 0 5px; }
+  input, select, textarea { width:100%; font:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent); }
+  .row { display:flex; gap:12px; } .row > * { flex:1; }
+  .btn { font:inherit; font-weight:600; padding:12px 18px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  .btn--primary { background:var(--accent); border-color:var(--accent); color:#fff; width:100%; margin-top:18px; padding:14px; font-size:16px; }
+  .btn[disabled] { opacity:.6; cursor:default; }
+  .times { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .time { padding:8px 14px; border:1px solid var(--line); border-radius:999px; background:var(--paper); cursor:pointer; font-weight:600; font-size:14px; }
+  .time.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .muted { color:var(--muted); font-size:13px; }
+  .hint { margin-top:12px; font-size:14px; min-height:1.2em; }
+  .ok { color:#2f8f63; } .err { color:var(--accent); }
+  .consent { display:flex; gap:9px; align-items:flex-start; margin-top:14px; font-size:13px; color:var(--muted); }
+  .consent input { width:auto; margin-top:2px; }
+  .done { text-align:center; padding:10px 0; }
+  .done .big { font-size:40px; }
+  .foot { text-align:center; margin-top:18px; font-size:12px; color:var(--muted); }
+  .foot a { color:var(--muted); }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="loading" class="muted">Lädt …</div>
+
+      <!-- Buchung -->
+      <div id="booking" class="hidden">
+        <h1 id="rName">Tisch reservieren</h1>
+        <p class="sub">Wähle Datum, Personenzahl und eine freie Zeit.</p>
+        <div class="row">
+          <div><label>Datum</label><input id="date" type="date"></div>
+          <div><label>Personen</label><input id="party" type="number" min="1" value="2"></div>
+        </div>
+        <label>Bereich (optional)</label>
+        <select id="area"><option value="">egal</option><option value="innen">Drinnen</option><option value="draussen">Draußen</option><option value="bar">Bar</option></select>
+        <button id="checkBtn" class="btn" type="button" style="margin-top:14px">Freie Zeiten anzeigen</button>
+        <div id="times" class="times"></div>
+
+        <div id="details" class="hidden">
+          <label>Name</label><input id="name" placeholder="Ihr Name">
+          <div class="row">
+            <div><label>E-Mail</label><input id="email" type="email" placeholder="für die Bestätigung"></div>
+            <div><label>Telefon</label><input id="phone" placeholder="optional"></div>
+          </div>
+          <label>Anmerkung (optional)</label><textarea id="notes" rows="2" placeholder="z.B. Kinderstuhl, Allergie, Anlass"></textarea>
+          <label class="consent"><input id="consent" type="checkbox"><span>Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Reservierung gespeichert und verarbeitet werden.</span></label>
+          <button id="reserveBtn" class="btn btn--primary" type="button">Jetzt reservieren</button>
+        </div>
+        <p id="hint" class="hint"></p>
+      </div>
+
+      <!-- Bestätigung -->
+      <div id="confirmed" class="hidden done">
+        <div class="big">✅</div>
+        <h1>Reserviert!</h1>
+        <p id="confirmMsg" class="sub"></p>
+      </div>
+
+      <!-- Storno -->
+      <div id="storno" class="hidden">
+        <h1>Reservierung stornieren</h1>
+        <p class="sub">Möchtest du deine Reservierung wirklich absagen?</p>
+        <button id="cancelBtn" class="btn btn--primary" type="button">Reservierung stornieren</button>
+        <p id="stornoHint" class="hint"></p>
+      </div>
+
+      <div class="foot">Reservierung über <a href="https://vocaris.eu" target="_blank" rel="noopener">Vocaris</a></div>
+    </div>
+  </div>
+
+<script>
+  const API = 'https://ki-anruf.onrender.com';
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const token = params.get('r') || '';
+  const storno = params.get('storno') || '';
+  let selectedTime = '';
+
+  function show(id) { ['loading','booking','confirmed','storno'].forEach((x) => $(x).classList.toggle('hidden', x !== id)); }
+
+  async function api(path, body) {
+    const r = await fetch(API + path, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Es ist ein Fehler aufgetreten.');
+    return d;
+  }
+
+  async function initBooking() {
+    try {
+      const info = await api('/api/public/info', { token });
+      $('rName').textContent = info.name ? ('Tisch reservieren – ' + info.name) : 'Tisch reservieren';
+      $('date').min = new Date().toISOString().slice(0,10);
+      $('date').value = new Date().toISOString().slice(0,10);
+      show('booking');
+    } catch (e) {
+      $('loading').innerHTML = '<p class="err">' + e.message + '</p><p class="muted">Bitte ruf uns für eine Reservierung an.</p>';
+    }
+  }
+
+  $('checkBtn').onclick = async () => {
+    const date = $('date').value, party = Math.max(1, parseInt($('party').value,10) || 2);
+    if (!date) { $('hint').textContent = 'Bitte ein Datum wählen.'; return; }
+    $('times').innerHTML = '<span class="muted">Suche …</span>'; $('details').classList.add('hidden'); selectedTime = '';
+    try {
+      const d = await api('/api/public/availability', { token, date, partySize: party });
+      const slots = d.slots || [];
+      if (!slots.length) { $('times').innerHTML = '<span class="muted">Keine freien Zeiten an dem Tag. Versuch ein anderes Datum.</span>'; return; }
+      $('times').innerHTML = '';
+      slots.forEach((s) => {
+        const b = document.createElement('button'); b.type='button'; b.className='time'; b.textContent = s.label;
+        b.onclick = () => { selectedTime = s.label; document.querySelectorAll('.time').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); $('details').classList.remove('hidden'); };
+        $('times').append(b);
+      });
+    } catch (e) { $('times').innerHTML = '<span class="err">' + e.message + '</span>'; }
+  };
+
+  $('reserveBtn').onclick = async () => {
+    if (!selectedTime) { $('hint').textContent = 'Bitte eine Zeit wählen.'; return; }
+    const body = { token, date: $('date').value, time: selectedTime, partySize: Math.max(1, parseInt($('party').value,10) || 2),
+      name: $('name').value.trim(), email: $('email').value.trim(), phone: $('phone').value.trim(),
+      notes: $('notes').value.trim(), area: $('area').value || undefined, consent: $('consent').checked };
+    if (!body.name) { $('hint').textContent = 'Bitte deinen Namen angeben.'; return; }
+    if (!body.email && !body.phone) { $('hint').textContent = 'Bitte E-Mail oder Telefon angeben.'; return; }
+    if (!body.consent) { $('hint').textContent = 'Bitte der Speicherung zustimmen.'; return; }
+    $('reserveBtn').disabled = true; $('hint').textContent = 'Reserviere …';
+    try {
+      const d = await api('/api/public/reserve', body);
+      if (!d.ok) throw new Error(d.message || 'Reservierung nicht möglich.');
+      $('confirmMsg').textContent = d.message || 'Wir freuen uns auf deinen Besuch!';
+      show('confirmed');
+    } catch (e) { $('hint').textContent = e.message; $('reserveBtn').disabled = false; }
+  };
+
+  $('cancelBtn').onclick = async () => {
+    $('cancelBtn').disabled = true; $('stornoHint').textContent = 'Storniere …';
+    try { const d = await api('/api/public/cancel', { token: storno }); $('stornoHint').innerHTML = '<span class="ok">' + (d.message || 'Storniert.') + '</span>'; }
+    catch (e) { $('stornoHint').innerHTML = '<span class="err">' + e.message + '</span>'; $('cancelBtn').disabled = false; }
+  };
+
+  if (storno) { show('storno'); }
+  else if (token) { initBooking(); }
+  else { $('loading').innerHTML = '<p class="err">Ungültiger Link.</p>'; }
+</script>
+</body>
+</html>

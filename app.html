@@ -1002,6 +1002,32 @@
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemSms" style="width:auto;margin:0"><span>Erinnerung per SMS</span></label>
             </div>
             <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
+
+            <div class="grid2" style="margin-top:12px">
+              <div>
+                <label>Max. gleichzeitige Gäste (Pacing)</label>
+                <input id="rsMaxCovers" type="number" min="0" value="0">
+                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Begrenzt, wie viele Gäste zur selben Zeit reserviert sein dürfen.</p>
+              </div>
+              <div>
+                <label>Daten löschen nach (Tagen)</label>
+                <input id="rsRetention" type="number" min="0" value="0">
+                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">DSGVO: 0 = aus. Vergangene Reservierungen (mit Gastdaten) werden danach automatisch gelöscht.</p>
+              </div>
+            </div>
+            <label style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
+            <input id="rsClosedDates" placeholder="z.B. 2026-12-24, 2026-12-25">
+            <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">An diesen Tagen sind keine Reservierungen möglich (Feiertage, Betriebsferien). Der wöchentliche Ruhetag kommt aus den Öffnungszeiten.</p>
+
+            <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
+            <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="rsPublicLink" readonly style="flex:1;background:var(--paper-2)">
+                <button id="rsCopyLink" class="btn btn--ghost sm" type="button">Kopieren</button>
+              </div>
+              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Link auf deiner Website/Google-Profil teilen — Gäste reservieren selbst. (Erst „Speichern", dann ist der Link aktiv.)</p>
+            </div>
+
             <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
           </div>
 
@@ -1469,6 +1495,12 @@
       $('rsReminderHours').value = (cfg?.reminder_hours ?? [24, 2]).join(', ');
       $('rsRemEmail').checked = cfg?.reminder_email ?? true;
       $('rsRemSms').checked = cfg?.reminder_sms ?? false;
+      $('rsMaxCovers').value = cfg?.max_covers_per_slot ?? 0;
+      $('rsRetention').value = cfg?.retention_days ?? 0;
+      $('rsClosedDates').value = (cfg?.closed_dates ?? []).join(', ');
+      $('rsPublicBooking').checked = cfg?.public_booking ?? false;
+      $('rsPublicWrap').classList.toggle('hidden', !(cfg?.public_booking));
+      if (cfg?.public_token) $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
       rsSeatingMin = cfg?.seating_minutes ?? 120;
       rsHours = ac?.business_hours ?? {};
       rsTablesData = tbls ?? [];
@@ -1873,14 +1905,23 @@
     $('rsTlShow')?.addEventListener('click', renderTimeline);
     $('rsSaveCfg')?.addEventListener('click', async () => {
       const hours = ($('rsReminderHours').value || '').split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n > 0).slice(0, 2);
+      const closed = ($('rsClosedDates').value || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s));
       const { error } = await sb.from('restaurant_config').upsert({
         tenant_id: tenant.id, enabled: $('rsEnabled').checked,
         seating_minutes: Math.max(30, parseInt($('rsSeating').value, 10) || 120),
         reminder_email: $('rsRemEmail').checked, reminder_sms: $('rsRemSms').checked,
-        reminder_hours: hours.length ? hours : [24, 2], updated_at: new Date().toISOString(),
+        reminder_hours: hours.length ? hours : [24, 2],
+        max_covers_per_slot: Math.max(0, parseInt($('rsMaxCovers').value, 10) || 0),
+        retention_days: Math.max(0, parseInt($('rsRetention').value, 10) || 0),
+        closed_dates: closed,
+        public_booking: $('rsPublicBooking').checked,
+        updated_at: new Date().toISOString(),
       }, { onConflict: 'tenant_id' });
       toast(error ? ('Fehler: ' + error.message) : 'Gespeichert.');
+      if (!error) loadRestaurant();
     });
+    $('rsPublicBooking')?.addEventListener('change', () => { $('rsPublicWrap').classList.toggle('hidden', !$('rsPublicBooking').checked); });
+    $('rsCopyLink')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsPublicLink').value); toast('Link kopiert.'); });
     $('rsAddTable')?.addEventListener('click', async () => {
       const name = $('rsTblName').value.trim();
       const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);
