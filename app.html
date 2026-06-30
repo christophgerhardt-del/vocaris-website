@@ -441,6 +441,7 @@
         <div class="nav-group">Funktionen</div>
         <button class="nav-item" data-target="sec-number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Telefonnummer</button>
         <button class="nav-item" data-target="sec-booking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
+        <button class="nav-item" data-target="sec-restaurant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7a3 3 0 0 0 6 0V2"/><line x1="6" y1="9" x2="6" y2="22"/><path d="M16 2a4 4 0 0 0-4 4v6h4"/><line x1="16" y1="12" x2="16" y2="22"/></svg>Reservierungen</button>
         <button class="nav-item" data-target="sec-webhooks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Schnittstellen</button>
       </nav>
       <div class="foot">
@@ -879,7 +880,7 @@
           <p class="pagesub">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
           <div id="numbers"></div>
 
-          <div class="panel" style="margin-top:18px">
+          <div class="panel" style="margin-top:18px" id="numAddPanel">
             <h3>Neue Nummer hinzufügen</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Such dir eine freie Rufnummer und ordne sie einer Abteilung zu. Sie wird automatisch mit deinem Assistenten verbunden.</p>
             <div class="if-grid">
@@ -899,6 +900,75 @@
             <p class="muted" id="numHint" style="text-align:left;padding:0;margin-top:8px;font-size:13px"></p>
             <div id="numResults" style="margin-top:12px"></div>
             <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12px">Hinweis: Deutsche Rufnummern erfordern bei der Bestellung einen Adressnachweis (Regulatory-Prüfung). Die Nummer wird automatisch aktiv, sobald die Prüfung durch ist.</p>
+          </div>
+        </section>
+
+        <!-- Reservierungen (Restaurant-Modus) -->
+        <section id="sec-restaurant" class="section hidden">
+          <h1 class="pagehead">Reservierungen</h1>
+          <p class="pagesub">Restaurant-Modus: Vocaris nimmt am Telefon Tischreservierungen entgegen, prüft freie Tische und verschickt Bestätigung und Erinnerung.</p>
+
+          <div class="panel">
+            <h3>Restaurant-Modus</h3>
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="rsEnabled" style="width:auto;margin:0">
+              <span>Tischreservierung aktivieren</span>
+            </label>
+            <p class="muted" style="text-align:left;padding:0;margin-top:4px">Wenn aktiv, kann der Assistent Tische reservieren (statt Termine). Die Öffnungszeiten stellst du unter <b>Assistent</b> ein.</p>
+            <div class="grid2" style="margin-top:10px">
+              <div>
+                <label>Sitzdauer je Tisch (Minuten)</label>
+                <input id="rsSeating" type="number" min="30" step="15" value="120">
+              </div>
+              <div>
+                <label>Erinnerungen vorher (Stunden)</label>
+                <input id="rsReminderHours" placeholder="z.B. 24, 2">
+              </div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemEmail" style="width:auto;margin:0"><span>Erinnerung per E-Mail</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemSms" style="width:auto;margin:0"><span>Erinnerung per SMS</span></label>
+            </div>
+            <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
+            <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <h3>Tische</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Lege deine Tische mit Personenzahl an. Die KI ordnet jede Reservierung einem passenden freien Tisch zu.</p>
+            <div id="rsTables"></div>
+            <div class="if-grid" style="margin-top:10px">
+              <label>Tischname<input id="rsTblName" placeholder="z.B. Tisch 1 / Fenster"></label>
+              <label>Plätze<input id="rsTblSeats" type="number" min="1" value="2"></label>
+            </div>
+            <div class="stack" style="margin-top:10px"><button id="rsAddTable" class="btn" type="button">Tisch hinzufügen</button></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <h3>Reservierung anlegen</h3>
+            <div class="if-grid">
+              <label>Datum<input id="rsResDate" type="date"></label>
+              <label>Personen<input id="rsResParty" type="number" min="1" value="2"></label>
+            </div>
+            <div class="stack" style="margin-top:10px">
+              <button id="rsCheckBtn" class="btn" type="button">Freie Zeiten anzeigen</button>
+            </div>
+            <div id="rsTimes" style="margin-top:10px"></div>
+            <div class="if-grid" style="margin-top:10px">
+              <label>Name<input id="rsResName" placeholder="Name des Gastes"></label>
+              <label>Uhrzeit<input id="rsResTime" placeholder="HH:MM"></label>
+              <label>Telefon (für SMS)<input id="rsResPhone" placeholder="+49…"></label>
+              <label>E-Mail (für Bestätigung)<input id="rsResEmail" placeholder="gast@beispiel.de"></label>
+            </div>
+            <label style="margin-top:8px">Anliegen (optional)</label>
+            <input id="rsResNotes" placeholder="z.B. Fensterplatz, Geburtstag">
+            <div class="stack" style="margin-top:12px"><button id="rsReserveBtn" class="btn btn--primary" type="button">Reservieren</button></div>
+            <p class="muted" id="rsResHint" style="text-align:left;padding:0;margin-top:8px"></p>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <h3>Kommende Reservierungen</h3>
+            <div id="rsList"></div>
           </div>
         </section>
       </div>
@@ -1000,7 +1070,7 @@
     }
     const TITLES = { 'sec-overview': 'Übersicht', 'sec-messages': 'Anrufe & Nachrichten',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
-      'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine' };
+      'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen' };
 
     function toast(msg, kind = '') {
       const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + kind;
@@ -1184,6 +1254,7 @@
       loadCalendarStatus();
       renderWeek();
       renderBusyList();
+      loadRestaurant();
       waRestore();
       await loadLive();
       ensureRealtime(tenant.id);
@@ -1291,6 +1362,114 @@
       }
     }
     $('numSearchBtn')?.addEventListener('click', numSearch);
+
+    // ---- Restaurant: Reservierungen ----
+    async function loadRestaurant() {
+      if (!tenant || !$('rsEnabled')) return;
+      const [{ data: cfg }, { data: tbls }, { data: res }] = await Promise.all([
+        sb.from('restaurant_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
+        sb.from('restaurant_tables').select('*').eq('tenant_id', tenant.id).order('created_at'),
+        sb.from('reservations').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
+          .gte('starts_at', new Date(Date.now() - 2 * 36e5).toISOString()).order('starts_at').limit(100),
+      ]);
+      $('rsEnabled').checked = cfg?.enabled ?? false;
+      $('rsSeating').value = cfg?.seating_minutes ?? 120;
+      $('rsReminderHours').value = (cfg?.reminder_hours ?? [24, 2]).join(', ');
+      $('rsRemEmail').checked = cfg?.reminder_email ?? true;
+      $('rsRemSms').checked = cfg?.reminder_sms ?? false;
+      renderRsTables(tbls ?? []);
+      renderRsList(res ?? []);
+      if (!$('rsResDate').value) $('rsResDate').value = new Date().toISOString().slice(0, 10);
+    }
+    function renderRsTables(tbls) {
+      const el = $('rsTables');
+      if (!tbls.length) { el.innerHTML = '<span class="muted">Noch keine Tische angelegt.</span>'; return; }
+      el.innerHTML = '';
+      tbls.forEach((t) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)';
+        row.innerHTML = '<span><b>' + (t.name || 'Tisch') + '</b> · ' + (t.seats || 0) + ' Plätze' + (t.active ? '' : ' <span class="muted">(inaktiv)</span>') + '</span>';
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Entfernen';
+        del.onclick = async () => {
+          if (!confirm('Tisch „' + (t.name || '') + '" entfernen?')) return;
+          await sb.from('restaurant_tables').delete().eq('id', t.id);
+          toast('Tisch entfernt.'); loadRestaurant();
+        };
+        row.append(del); el.append(row);
+      });
+    }
+    function renderRsList(items) {
+      const el = $('rsList');
+      if (!items.length) { el.innerHTML = '<span class="muted">Keine kommenden Reservierungen.</span>'; return; }
+      el.innerHTML = '';
+      for (const r of items) {
+        const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const div = document.createElement('div'); div.className = 'item';
+        const h = document.createElement('h4'); h.textContent = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen');
+        const p = document.createElement('p');
+        p.textContent = [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (r.source === 'assistant' ? '  (telefonisch)' : '');
+        const cancel = document.createElement('button'); cancel.className = 'btn btn--ghost sm'; cancel.style.marginTop = '6px'; cancel.textContent = 'Stornieren';
+        cancel.onclick = async () => {
+          if (!confirm('Reservierung stornieren?')) return;
+          await sb.from('reservations').update({ status: 'cancelled' }).eq('id', r.id);
+          toast('Storniert.'); loadRestaurant();
+        };
+        div.append(h, p, cancel); el.append(div);
+      }
+    }
+    $('rsSaveCfg')?.addEventListener('click', async () => {
+      const hours = ($('rsReminderHours').value || '').split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n > 0).slice(0, 2);
+      const { error } = await sb.from('restaurant_config').upsert({
+        tenant_id: tenant.id, enabled: $('rsEnabled').checked,
+        seating_minutes: Math.max(30, parseInt($('rsSeating').value, 10) || 120),
+        reminder_email: $('rsRemEmail').checked, reminder_sms: $('rsRemSms').checked,
+        reminder_hours: hours.length ? hours : [24, 2], updated_at: new Date().toISOString(),
+      }, { onConflict: 'tenant_id' });
+      toast(error ? ('Fehler: ' + error.message) : 'Gespeichert.');
+    });
+    $('rsAddTable')?.addEventListener('click', async () => {
+      const name = $('rsTblName').value.trim();
+      const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);
+      if (!name) { toast('Bitte einen Tischnamen angeben.'); return; }
+      const { error } = await sb.from('restaurant_tables').insert({ tenant_id: tenant.id, name, seats });
+      if (error) { toast('Fehler: ' + error.message); return; }
+      $('rsTblName').value = ''; toast('Tisch hinzugefügt.'); loadRestaurant();
+    });
+    $('rsCheckBtn')?.addEventListener('click', async () => {
+      const date = $('rsResDate').value, party = Math.max(1, parseInt($('rsResParty').value, 10) || 2);
+      const out = $('rsTimes'); if (!date) { toast('Bitte ein Datum wählen.'); return; }
+      out.innerHTML = '<span class="muted">Suche …</span>';
+      try {
+        const r = await apiFetch('/api/restaurant/availability', { method: 'POST', headers: numAuth(), body: JSON.stringify({ date, partySize: party }) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Fehler');
+        const slots = d.slots || [];
+        if (!slots.length) { out.innerHTML = '<span class="muted">Keine freien Tische an dem Tag.</span>'; return; }
+        out.innerHTML = '';
+        slots.forEach((s) => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--ghost sm'; b.style.margin = '0 6px 6px 0'; b.textContent = s.label;
+          b.onclick = () => { $('rsResTime').value = s.label; };
+          out.append(b);
+        });
+      } catch (e) { out.innerHTML = '<span class="muted">' + (e.message || 'Fehler') + '</span>'; }
+    });
+    $('rsReserveBtn')?.addEventListener('click', async () => {
+      const hint = $('rsResHint');
+      const body = {
+        date: $('rsResDate').value, time: $('rsResTime').value.trim(),
+        partySize: Math.max(1, parseInt($('rsResParty').value, 10) || 2),
+        name: $('rsResName').value.trim(), phone: $('rsResPhone').value.trim(),
+        email: $('rsResEmail').value.trim(), notes: $('rsResNotes').value.trim(),
+      };
+      if (!body.date || !body.time) { hint.textContent = 'Bitte Datum und Uhrzeit angeben.'; return; }
+      hint.textContent = 'Reserviere …';
+      try {
+        const r = await apiFetch('/api/restaurant/reserve', { method: 'POST', headers: numAuth(), body: JSON.stringify(body) });
+        const d = await r.json();
+        hint.textContent = d.message || (r.ok ? 'Reserviert.' : 'Fehler.');
+        if (r.ok && d.ok) { $('rsResName').value = ''; $('rsResTime').value = ''; $('rsResPhone').value = ''; $('rsResEmail').value = ''; $('rsResNotes').value = ''; loadRestaurant(); }
+      } catch (e) { hint.textContent = e.message || 'Fehler.'; }
+    });
 
     // ---- Live-Anrufe (Echtzeit) ----
     async function loadLive() {
