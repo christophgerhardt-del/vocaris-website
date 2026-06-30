@@ -261,6 +261,8 @@
       border-radius: 10px; padding: 12px 14px; color: var(--ink); overflow-x: auto; }
     .chip { display: inline-block; background: var(--paper-2); border: 1px solid var(--line);
       border-radius: 999px; padding: 8px 15px; font-size: 14px; font-weight: 600; }
+    button.chip { font: inherit; font-weight: 600; cursor: pointer; }
+    button.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     /* Abteilungs-Umschalter (Allgemein / Vertrieb / Support) */
     .deptbar { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 18px;
       background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; }
@@ -934,12 +936,27 @@
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <h3>Tische</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Lege deine Tische mit Personenzahl an. Die KI ordnet jede Reservierung einem passenden freien Tisch zu.</p>
-            <div id="rsTables"></div>
-            <div class="if-grid" style="margin-top:10px">
+            <h3>Tischplan</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Ordne deine Tische per <b>Drag &amp; Drop</b> an – getrennt nach Bereich (drinnen, draußen, Bar). Die KI ordnet jede Reservierung einem passenden freien Tisch zu und berücksichtigt den Wunsch-Bereich.</p>
+            <div id="rsAreaTabs" class="branch-chips" style="margin-bottom:10px"></div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px">
+              <label style="flex:1;min-width:160px">Belegung am<input id="rsPlanDate" type="date" style="width:100%"></label>
+              <label style="width:110px">um<input id="rsPlanTime" placeholder="19:00" style="width:100%"></label>
+              <button id="rsPlanShow" class="btn btn--ghost sm" type="button">Belegung anzeigen</button>
+              <button id="rsPlanClear" class="btn btn--ghost sm" type="button">Zurücksetzen</button>
+            </div>
+            <div id="rsPlan" style="position:relative;height:400px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background-color:#fbfaf7;background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
+            <p class="muted" id="rsPlanHint" style="text-align:left;padding:0;margin-top:8px;font-size:12px"></p>
+            <div class="if-grid" style="margin-top:12px">
               <label>Tischname<input id="rsTblName" placeholder="z.B. Tisch 1 / Fenster"></label>
               <label>Plätze<input id="rsTblSeats" type="number" min="1" value="2"></label>
+              <label>Bereich
+                <select id="rsTblArea">
+                  <option value="innen">Drinnen</option>
+                  <option value="draussen">Draußen</option>
+                  <option value="bar">Bar</option>
+                </select>
+              </label>
             </div>
             <div class="stack" style="margin-top:10px"><button id="rsAddTable" class="btn" type="button">Tisch hinzufügen</button></div>
           </div>
@@ -949,6 +966,14 @@
             <div class="if-grid">
               <label>Datum<input id="rsResDate" type="date"></label>
               <label>Personen<input id="rsResParty" type="number" min="1" value="2"></label>
+              <label>Bereich (optional)
+                <select id="rsResArea">
+                  <option value="">egal</option>
+                  <option value="innen">Drinnen</option>
+                  <option value="draussen">Draußen</option>
+                  <option value="bar">Bar</option>
+                </select>
+              </label>
             </div>
             <div class="stack" style="margin-top:10px">
               <button id="rsCheckBtn" class="btn" type="button">Freie Zeiten anzeigen</button>
@@ -1082,6 +1107,8 @@
       b.onclick = () => {
         document.querySelectorAll('.section').forEach((s) => s.classList.toggle('hidden', s.id !== b.dataset.target));
         document.querySelectorAll('.nav-item').forEach((n) => n.classList.toggle('active', n === b));
+        // Tischplan erst rendern, wenn sichtbar (sonst clientWidth = 0).
+        if (b.dataset.target === 'sec-restaurant' && typeof renderRsPlan === 'function') renderRsPlan();
       };
     });
 
@@ -1377,27 +1404,131 @@
       $('rsReminderHours').value = (cfg?.reminder_hours ?? [24, 2]).join(', ');
       $('rsRemEmail').checked = cfg?.reminder_email ?? true;
       $('rsRemSms').checked = cfg?.reminder_sms ?? false;
-      renderRsTables(tbls ?? []);
+      rsSeatingMin = cfg?.seating_minutes ?? 120;
+      rsTablesData = tbls ?? [];
+      rsOcc = new Set();
+      const areas = [...new Set(rsTablesData.map((t) => t.area || 'innen'))];
+      if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0] || 'innen';
+      renderAreaTabs(); renderRsPlan();
       renderRsList(res ?? []);
-      if (!$('rsResDate').value) $('rsResDate').value = new Date().toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      if (!$('rsResDate').value) $('rsResDate').value = today;
+      if (!$('rsPlanDate').value) $('rsPlanDate').value = today;
     }
-    function renderRsTables(tbls) {
-      const el = $('rsTables');
-      if (!tbls.length) { el.innerHTML = '<span class="muted">Noch keine Tische angelegt.</span>'; return; }
-      el.innerHTML = '';
-      tbls.forEach((t) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)';
-        row.innerHTML = '<span><b>' + (t.name || 'Tisch') + '</b> · ' + (t.seats || 0) + ' Plätze' + (t.active ? '' : ' <span class="muted">(inaktiv)</span>') + '</span>';
-        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Entfernen';
-        del.onclick = async () => {
+    // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
+    let rsTablesData = [], rsArea = '', rsOcc = new Set(), rsSeatingMin = 120;
+    const AREA_LABEL = { innen: 'Drinnen', draussen: 'Draußen', bar: 'Bar' };
+    function areaName(a) { return AREA_LABEL[a] || (a ? a.charAt(0).toUpperCase() + a.slice(1) : 'Bereich'); }
+
+    function renderAreaTabs() {
+      const wrap = $('rsAreaTabs'); if (!wrap) return;
+      const areas = [...new Set(rsTablesData.map((t) => t.area || 'innen'))];
+      if (!areas.length) areas.push('innen');
+      wrap.innerHTML = '';
+      areas.forEach((a) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'chip' + (a === rsArea ? ' active' : '');
+        const n = rsTablesData.filter((t) => (t.area || 'innen') === a).length;
+        b.textContent = areaName(a) + ' (' + n + ')';
+        b.onclick = () => { rsArea = a; renderAreaTabs(); renderRsPlan(); };
+        wrap.append(b);
+      });
+    }
+
+    function renderRsPlan() {
+      const plan = $('rsPlan'); if (!plan) return;
+      plan.innerHTML = '';
+      const tables = rsTablesData.filter((t) => (t.area || 'innen') === rsArea);
+      if (!tables.length) {
+        plan.innerHTML = '<div class="muted" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">Noch keine Tische in diesem Bereich. Unten anlegen.</div>';
+        return;
+      }
+      const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
+      tables.forEach((t) => {
+        const box = document.createElement('div');
+        const occupied = rsOcc.has(t.id);
+        const x = Math.max(0, Math.min(pw - 124, t.pos_x ?? 40));
+        const y = Math.max(0, Math.min(ph - 70, t.pos_y ?? 40));
+        const border = occupied ? '#e0533d' : '#2f8f63';
+        const bg = occupied ? '#fdecea' : '#eaf7f0';
+        box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:120px;height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;box-shadow:0 2px 8px #0000001a;border:2px solid ' + border + ';background:' + bg + ';color:#222;font-size:13px;touch-action:none';
+        box.innerHTML = '<b style="pointer-events:none">' + (t.name || 'Tisch') + '</b><span style="pointer-events:none;font-size:12px;color:#555">' + (t.seats || 0) + ' Plätze' + (occupied ? ' · belegt' : '') + '</span>' +
+          '<button class="ptDel" title="Tisch entfernen" style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:12px;line-height:1">✕</button>';
+        box.querySelector('.ptDel').onclick = async (e) => {
+          e.stopPropagation();
           if (!confirm('Tisch „' + (t.name || '') + '" entfernen?')) return;
           await sb.from('restaurant_tables').delete().eq('id', t.id);
           toast('Tisch entfernt.'); loadRestaurant();
         };
-        row.append(del); el.append(row);
+        box.ondblclick = () => editTable(t);
+        makeTableDraggable(box, t, plan);
+        plan.append(box);
+      });
+      $('rsPlanHint').textContent = 'Tipp: Tisch ziehen zum Anordnen · Doppelklick zum Bearbeiten · ✕ zum Entfernen.';
+    }
+
+    function makeTableDraggable(box, t, plan) {
+      let sx, sy, ox, oy, moved = false, dragging = false;
+      box.addEventListener('pointerdown', (e) => {
+        if (e.target.classList.contains('ptDel')) return;
+        dragging = true; moved = false; box.setPointerCapture(e.pointerId);
+        sx = e.clientX; sy = e.clientY; ox = box.offsetLeft; oy = box.offsetTop;
+        box.style.zIndex = '20'; box.style.cursor = 'grabbing';
+      });
+      box.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+        const nx = Math.max(0, Math.min(plan.clientWidth - box.offsetWidth, ox + dx));
+        const ny = Math.max(0, Math.min(plan.clientHeight - box.offsetHeight, oy + dy));
+        box.style.left = nx + 'px'; box.style.top = ny + 'px';
+      });
+      box.addEventListener('pointerup', async (e) => {
+        if (!dragging) return;
+        dragging = false; box.releasePointerCapture(e.pointerId);
+        box.style.zIndex = ''; box.style.cursor = 'grab';
+        if (moved) {
+          const px = Math.round(box.offsetLeft), py = Math.round(box.offsetTop);
+          t.pos_x = px; t.pos_y = py;
+          await sb.from('restaurant_tables').update({ pos_x: px, pos_y: py }).eq('id', t.id);
+        }
       });
     }
+
+    async function editTable(t) {
+      const name = prompt('Tischname:', t.name || ''); if (name === null) return;
+      const seats = parseInt(prompt('Plätze:', t.seats || 2), 10);
+      const area = (prompt('Bereich (innen / draussen / bar):', t.area || 'innen') || 'innen').toLowerCase().trim();
+      const { error } = await sb.from('restaurant_tables').update({
+        name: name.trim() || t.name, seats: Math.max(1, seats || t.seats || 2),
+        area: ['innen', 'draussen', 'bar'].includes(area) ? area : (area || 'innen'),
+      }).eq('id', t.id);
+      toast(error ? ('Fehler: ' + error.message) : 'Tisch aktualisiert.');
+      loadRestaurant();
+    }
+
+    async function rsShowOccupancy() {
+      const date = $('rsPlanDate').value, time = ($('rsPlanTime').value || '').trim();
+      if (!date || !/^\d{1,2}:\d{2}$/.test(time)) { toast('Bitte Datum und Uhrzeit (HH:MM) angeben.'); return; }
+      // Reservierungen des Tages laden und Überschneidung mit [t, t+Sitzdauer) prüfen.
+      const dayStart = new Date(date + 'T00:00:00').toISOString();
+      const dayEnd = new Date(date + 'T23:59:59').toISOString();
+      const { data } = await sb.from('reservations').select('table_id, starts_at, ends_at')
+        .eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', dayStart).lte('starts_at', dayEnd);
+      const [h, m] = time.split(':').map(Number);
+      const start = new Date(date + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00').getTime();
+      const end = start + rsSeatingMin * 60000;
+      rsOcc = new Set();
+      for (const r of data ?? []) {
+        const s = new Date(r.starts_at).getTime();
+        const e = r.ends_at ? new Date(r.ends_at).getTime() : s + rsSeatingMin * 60000;
+        if (start < e && end > s && r.table_id) rsOcc.add(r.table_id);
+      }
+      renderRsPlan();
+      $('rsPlanHint').textContent = rsOcc.size + ' Tisch(e) zu dieser Zeit belegt (rot), restliche frei (grün).';
+    }
+    $('rsPlanShow')?.addEventListener('click', rsShowOccupancy);
+    $('rsPlanClear')?.addEventListener('click', () => { rsOcc = new Set(); renderRsPlan(); $('rsPlanHint').textContent = ''; });
     function renderRsList(items) {
       const el = $('rsList');
       if (!items.length) { el.innerHTML = '<span class="muted">Keine kommenden Reservierungen.</span>'; return; }
@@ -1430,10 +1561,13 @@
     $('rsAddTable')?.addEventListener('click', async () => {
       const name = $('rsTblName').value.trim();
       const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);
+      const area = $('rsTblArea').value || 'innen';
       if (!name) { toast('Bitte einen Tischnamen angeben.'); return; }
-      const { error } = await sb.from('restaurant_tables').insert({ tenant_id: tenant.id, name, seats });
+      const n = rsTablesData.filter((t) => (t.area || 'innen') === area).length;
+      const pos_x = 30 + (n % 4) * 150, pos_y = 30 + Math.floor(n / 4) * 110;
+      const { error } = await sb.from('restaurant_tables').insert({ tenant_id: tenant.id, name, seats, area, pos_x, pos_y });
       if (error) { toast('Fehler: ' + error.message); return; }
-      $('rsTblName').value = ''; toast('Tisch hinzugefügt.'); loadRestaurant();
+      $('rsTblName').value = ''; rsArea = area; toast('Tisch hinzugefügt.'); loadRestaurant();
     });
     $('rsCheckBtn')?.addEventListener('click', async () => {
       const date = $('rsResDate').value, party = Math.max(1, parseInt($('rsResParty').value, 10) || 2);
@@ -1460,6 +1594,7 @@
         partySize: Math.max(1, parseInt($('rsResParty').value, 10) || 2),
         name: $('rsResName').value.trim(), phone: $('rsResPhone').value.trim(),
         email: $('rsResEmail').value.trim(), notes: $('rsResNotes').value.trim(),
+        area: $('rsResArea').value || undefined,
       };
       if (!body.date || !body.time) { hint.textContent = 'Bitte Datum und Uhrzeit angeben.'; return; }
       hint.textContent = 'Reserviere …';
