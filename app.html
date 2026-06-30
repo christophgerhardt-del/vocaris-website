@@ -682,6 +682,12 @@
               </div>
             </div>
 
+            <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
+              <input type="checkbox" id="asDisclosure" style="width:auto;margin:0">
+              <span>KI-/Aufzeichnungs-Hinweis zu Gesprächsbeginn ansagen</span>
+            </label>
+            <p class="muted" style="margin-top:4px">Empfohlen für DE: Der Assistent sagt zu Beginn einen kurzen Satz, dass das Gespräch von einem digitalen Assistenten geführt und verarbeitet wird. Gilt für alle Abteilungen.</p>
+
             <div class="stack"><button id="saveBtn" class="btn btn--primary">Speichern</button></div>
           </div>
         </section>
@@ -956,6 +962,10 @@
                     <option value="toilet">Toilette</option>
                     <option value="bar">Bar / Theke</option>
                     <option value="kitchen">Küche</option>
+                    <option value="stairs">Treppe</option>
+                    <option value="wardrobe">Garderobe</option>
+                    <option value="plant">Pflanze / Deko</option>
+                    <option value="window">Fenster</option>
                     <option value="wall">Trennwand</option>
                     <option value="label">Beschriftung</option>
                   </select>
@@ -1075,6 +1085,25 @@
             <input id="rsResNotes" placeholder="z.B. Fensterplatz, Geburtstag">
             <div class="stack" style="margin-top:12px"><button id="rsReserveBtn" class="btn btn--primary" type="button">Reservieren</button></div>
             <p class="muted" id="rsResHint" style="text-align:left;padding:0;margin-top:8px"></p>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <h3>Gästeliste (Tagesansicht)</h3>
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px">
+              <label style="width:170px">Tag<input id="rsDayDate" type="date" style="width:100%"></label>
+              <label style="flex:1;min-width:150px">Suche (Name)<input id="rsDaySearch" placeholder="Name…" style="width:100%"></label>
+              <button id="rsDayShow" class="btn btn--ghost sm" type="button">Anzeigen</button>
+            </div>
+            <div id="rsDayList"><span class="muted">Tag wählen und „Anzeigen".</span></div>
+            <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+              <h4 style="margin:0 0 8px">Walk-in (Laufkundschaft, jetzt setzen)</h4>
+              <div class="if-grid">
+                <label>Personen<input id="rsWalkParty" type="number" min="1" value="2"></label>
+                <label>Tisch<select id="rsWalkTable"></select></label>
+                <label>Name (optional)<input id="rsWalkName" placeholder="Name"></label>
+              </div>
+              <div class="stack" style="margin-top:8px"><button id="rsWalkBtn" class="btn" type="button">Walk-in an Tisch setzen</button></div>
+            </div>
           </div>
 
           <div class="panel" style="margin-top:18px">
@@ -1400,6 +1429,11 @@
       $('fwdEnabled').checked = cfg?.forward_enabled ?? false;
       $('fwdNumber').value = cfg?.forward_number ?? '';
       $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
+      // KI-Hinweis ist org-weit → immer aus der general-Zeile.
+      if ($('asDisclosure')) {
+        if (currentDept === 'general') $('asDisclosure').checked = cfg?.ai_disclosure ?? false;
+        else { const { data: gen } = await sb.from('assistant_config').select('ai_disclosure').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(); $('asDisclosure').checked = gen?.ai_disclosure ?? false; }
+      }
       renderKb(kb ?? []);
     }
 
@@ -1514,12 +1548,13 @@
       }
       const areas = [...new Set(rsTablesData.map((t) => t.area || 'innen'))];
       if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0] || 'innen';
-      renderAreaTabs(); renderRsPlan();
+      renderAreaTabs(); renderRsPlan(); fillWalkTables();
       renderRsList(res ?? []);
       const today = new Date().toISOString().slice(0, 10);
       if (!$('rsResDate').value) $('rsResDate').value = today;
       if (!$('rsPlanDate').value) $('rsPlanDate').value = today;
       if ($('rsTlDate') && !$('rsTlDate').value) $('rsTlDate').value = today;
+      if ($('rsDayDate') && !$('rsDayDate').value) $('rsDayDate').value = today;
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsOcc = new Set(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
@@ -1528,13 +1563,27 @@
       toilet: { icon: '🚻', name: 'Toilette', bg: '#e8eef6', bd: '#b7c4d6' },
       bar: { icon: '🍸', name: 'Bar', bg: '#f3ecdd', bd: '#d8c8a6' },
       kitchen: { icon: '🍳', name: 'Küche', bg: '#f3ecdd', bd: '#d8c8a6' },
+      stairs: { icon: '🪜', name: 'Treppe', bg: '#eef1f4', bd: '#cfd5dc' },
+      wardrobe: { icon: '🧥', name: 'Garderobe', bg: '#eef1f4', bd: '#cfd5dc' },
+      plant: { icon: '🪴', name: 'Pflanze / Deko', bg: '#e9f2e8', bd: '#bcd6bb' },
+      window: { icon: '🪟', name: 'Fenster', bg: '#e8eef6', bd: '#b7c4d6' },
       wall: { icon: '', name: 'Trennwand', bg: '#cfc7b8', bd: '#b3a892' },
       label: { icon: '🏷️', name: 'Beschriftung', bg: '#eef1f4', bd: '#cfd5dc' },
     };
-    function tableNamesFor(r) {
-      const ids = (rsResTblMap[r.id] && rsResTblMap[r.id].length) ? rsResTblMap[r.id] : (r.table_id ? [r.table_id] : []);
+    function tableNamesFor(r, map) {
+      map = map || rsResTblMap;
+      const ids = (map[r.id] && map[r.id].length) ? map[r.id] : (r.table_id ? [r.table_id] : []);
       const names = ids.map((id) => { const t = rsTablesData.find((x) => x.id === id); return t ? t.name : null; }).filter(Boolean);
       return names.length ? names.join(' + ') : '—';
+    }
+    async function futureResForTable(tableId) {
+      const nowIso = new Date().toISOString(); const ids = new Set();
+      const { data: a } = await sb.from('reservations').select('id').eq('tenant_id', tenant.id).eq('table_id', tableId).in('status', ['booked', 'seated']).gte('starts_at', nowIso);
+      (a || []).forEach((r) => ids.add(r.id));
+      const { data: j } = await sb.from('reservation_tables').select('reservation_id').eq('table_id', tableId);
+      const rids = (j || []).map((x) => x.reservation_id);
+      if (rids.length) { const { data: b } = await sb.from('reservations').select('id').in('id', rids).in('status', ['booked', 'seated']).gte('starts_at', nowIso); (b || []).forEach((r) => ids.add(r.id)); }
+      return ids.size;
     }
     const RES_STATUS = { booked: 'Reserviert', seated: 'Am Tisch', no_show: 'No-Show', cancelled: 'Storniert', completed: 'Abgeschlossen' };
     async function setResStatus(id, status) {
@@ -1650,7 +1699,11 @@
       del.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:#e0533d;color:#fff;cursor:pointer;font-size:11px;line-height:1;z-index:3';
       del.onclick = async (e) => {
         e.stopPropagation();
-        if (!confirm('Tisch „' + (t.name || '') + '" entfernen?')) return;
+        const n = await futureResForTable(t.id);
+        const msg = n
+          ? 'Achtung: ' + n + ' künftige Reservierung(en) an „' + (t.name || 'Tisch') + '". Trotzdem entfernen? Diese Reservierungen verlieren dann ihren Tisch.'
+          : 'Tisch „' + (t.name || '') + '" entfernen?';
+        if (!confirm(msg)) return;
         await sb.from('restaurant_tables').delete().eq('id', t.id);
         toast('Tisch entfernt.'); loadRestaurant();
       };
@@ -1828,31 +1881,70 @@
     $('rsPlanShow')?.addEventListener('click', rsShowOccupancy);
     $('rsPlanClear')?.addEventListener('click', () => { rsOcc = new Set(); renderRsPlan(); $('rsPlanHint').textContent = ''; });
     const STATUS_COLOR = { booked: '#3f7d63', seated: '#2563eb', no_show: '#e0533d', cancelled: '#888', completed: '#888' };
+    const SRC_LABEL = { assistant: '  (telefonisch)', public: '  (online)', walkin: '  (Walk-in)', dashboard: '' };
+    function resItemNode(r, map) {
+      const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const div = document.createElement('div'); div.className = 'item';
+      const st = r.status || 'booked';
+      const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
+      const h = document.createElement('h4');
+      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge;
+      const p = document.createElement('p');
+      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
+      div.append(h, p);
+      const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+      const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
+      if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
+      if (st === 'seated') bar.append(mkBtn('Abschließen', () => setResStatus(r.id, 'completed')));
+      if (st === 'booked') bar.append(mkBtn('No-Show', () => setResStatus(r.id, 'no_show')));
+      if (st === 'booked' || st === 'seated') bar.append(mkBtn('Stornieren', () => { if (confirm('Reservierung stornieren?')) setResStatus(r.id, 'cancelled'); }));
+      div.append(bar);
+      return div;
+    }
     function renderRsList(items) {
       const el = $('rsList');
       if (!items.length) { el.innerHTML = '<span class="muted">Keine kommenden Reservierungen.</span>'; return; }
       el.innerHTML = '';
-      for (const r of items) {
-        const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-        const div = document.createElement('div'); div.className = 'item';
-        const st = r.status || 'booked';
-        const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
-        const h = document.createElement('h4');
-        h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge;
-        const p = document.createElement('p');
-        p.textContent = 'Tisch: ' + tableNamesFor(r) + ' · ' + [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (r.source === 'assistant' ? '  (telefonisch)' : '');
-        div.append(h, p);
-        // Status-Workflow
-        const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
-        const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
-        if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
-        if (st === 'seated') bar.append(mkBtn('Abschließen', () => setResStatus(r.id, 'completed')));
-        if (st === 'booked') bar.append(mkBtn('No-Show', () => setResStatus(r.id, 'no_show')));
-        if (st === 'booked' || st === 'seated') bar.append(mkBtn('Stornieren', () => { if (confirm('Reservierung stornieren?')) setResStatus(r.id, 'cancelled'); }));
-        div.append(bar);
-        el.append(div);
-      }
+      for (const r of items) el.append(resItemNode(r));
     }
+
+    // ---- Host-Tagesansicht + Walk-ins ----
+    async function renderDayView() {
+      const date = $('rsDayDate').value; if (!date) { toast('Bitte einen Tag wählen.'); return; }
+      const q = ($('rsDaySearch').value || '').trim().toLowerCase();
+      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
+      const map = {}; const ids = (res || []).map((r) => r.id);
+      if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt || []) (map[j.reservation_id] ||= []).push(j.table_id); }
+      let items = (res || []).filter((r) => r.status !== 'cancelled');
+      if (q) items = items.filter((r) => (r.customer_name || '').toLowerCase().includes(q));
+      const el = $('rsDayList');
+      const covers = items.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
+      if (!items.length) { el.innerHTML = '<span class="muted">Keine Reservierungen an dem Tag.</span>'; return; }
+      el.innerHTML = '<p class="muted" style="margin:0 0 8px;font-size:13px">' + items.length + ' Reservierung(en) · ' + covers + ' Gäste</p>';
+      for (const r of items) el.append(resItemNode(r, map));
+    }
+    function fillWalkTables() {
+      const ws = $('rsWalkTable'); if (!ws) return;
+      ws.innerHTML = rsTablesData.map((t) => '<option value="' + t.id + '">' + t.name + ' (' + (t.seats || 0) + 'P, ' + areaName(t.area || 'innen') + ')</option>').join('');
+    }
+    async function doWalkin() {
+      const party = Math.max(1, parseInt($('rsWalkParty').value, 10) || 2);
+      const tid = $('rsWalkTable').value; if (!tid) { toast('Bitte einen Tisch wählen.'); return; }
+      const now = new Date(), end = new Date(now.getTime() + rsSeatingMin * 60000);
+      const { data, error } = await sb.from('reservations').insert({
+        tenant_id: tenant.id, table_id: tid, starts_at: now.toISOString(), ends_at: end.toISOString(),
+        party_size: party, customer_name: $('rsWalkName').value.trim() || null, source: 'walkin', status: 'seated',
+      }).select('id').single();
+      if (error) { toast('Fehler: ' + error.message); return; }
+      await sb.from('reservation_tables').insert({ reservation_id: data.id, table_id: tid });
+      toast('Walk-in gesetzt.'); $('rsWalkName').value = '';
+      loadRestaurant();
+      if ($('rsDayDate').value === new Date().toISOString().slice(0, 10)) renderDayView();
+    }
+    $('rsDayShow')?.addEventListener('click', renderDayView);
+    $('rsDaySearch')?.addEventListener('input', () => { if ($('rsDayDate').value) renderDayView(); });
+    $('rsWalkBtn')?.addEventListener('click', doWalkin);
 
     // ---- Tages-Timeline (Reservierungen je Tisch) ----
     function dayInterval(dateStr) {
@@ -1983,7 +2075,7 @@
           pos_x: mapX(t.x), pos_y: mapY(t.y),
         }));
         const eRows = els.map((e) => ({
-          tenant_id: tenant.id, kind: ['entrance', 'toilet', 'bar', 'kitchen', 'wall', 'label'].includes(e.kind) ? e.kind : 'label',
+          tenant_id: tenant.id, kind: EL_META[e.kind] ? e.kind : 'label',
           label: e.label || null, area: 'innen', pos_x: mapX(e.x), pos_y: mapY(e.y),
           width: e.kind === 'wall' ? 140 : 100, height: e.kind === 'wall' ? 16 : 52,
         }));
@@ -2199,6 +2291,8 @@
           forward_business_hours_only: $('fwdHours').value === 'true',
         }, { onConflict: 'tenant_id,department' }),
       ]);
+      // KI-/Aufzeichnungs-Hinweis ist org-weit → immer auf die general-Zeile schreiben.
+      if ($('asDisclosure')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', ai_disclosure: $('asDisclosure').checked }, { onConflict: 'tenant_id,department' });
       $('saveBtn').disabled = false;
       const err = r1.error || r2.error;
       if (err) return toast('Fehler: ' + err.message, 'err');
