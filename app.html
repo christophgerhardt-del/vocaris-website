@@ -970,6 +970,16 @@
           </div>
 
           <div class="panel" style="margin-top:18px">
+            <h3>Tages-Timeline</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Reservierungen je Tisch über den Tag — als Balken (Farbe = Status). Zusammengelegte Tische erscheinen in mehreren Zeilen.</p>
+            <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px">
+              <label style="width:180px">Tag<input id="rsTlDate" type="date" style="width:100%"></label>
+              <button id="rsTlShow" class="btn btn--ghost sm" type="button">Anzeigen</button>
+            </div>
+            <div id="rsTimeline" style="overflow-x:auto"><span class="muted">Tag wählen und „Anzeigen".</span></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
             <h3>Reservierung anlegen</h3>
             <div class="if-grid">
               <label>Datum<input id="rsResDate" type="date"></label>
@@ -1401,11 +1411,12 @@
     // ---- Restaurant: Reservierungen ----
     async function loadRestaurant() {
       if (!tenant || !$('rsEnabled')) return;
-      const [{ data: cfg }, { data: tbls }, { data: res }] = await Promise.all([
+      const [{ data: cfg }, { data: tbls }, { data: res }, { data: ac }] = await Promise.all([
         sb.from('restaurant_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
         sb.from('restaurant_tables').select('*').eq('tenant_id', tenant.id).order('created_at'),
-        sb.from('reservations').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
-          .gte('starts_at', new Date(Date.now() - 2 * 36e5).toISOString()).order('starts_at').limit(100),
+        sb.from('reservations').select('*').eq('tenant_id', tenant.id).in('status', ['booked', 'seated'])
+          .gte('starts_at', new Date(Date.now() - 4 * 36e5).toISOString()).order('starts_at').limit(200),
+        sb.from('assistant_config').select('business_hours').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
       ]);
       $('rsEnabled').checked = cfg?.enabled ?? false;
       $('rsSeating').value = cfg?.seating_minutes ?? 120;
@@ -1413,8 +1424,16 @@
       $('rsRemEmail').checked = cfg?.reminder_email ?? true;
       $('rsRemSms').checked = cfg?.reminder_sms ?? false;
       rsSeatingMin = cfg?.seating_minutes ?? 120;
+      rsHours = ac?.business_hours ?? {};
       rsTablesData = tbls ?? [];
       rsOcc = new Set();
+      // Welche Tische gehören zu welcher Reservierung (für Anzeige zusammengelegter Tische)?
+      rsResTblMap = {};
+      const resIds = (res ?? []).map((r) => r.id);
+      if (resIds.length) {
+        const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', resIds);
+        for (const j of jt ?? []) (rsResTblMap[j.reservation_id] ||= []).push(j.table_id);
+      }
       const areas = [...new Set(rsTablesData.map((t) => t.area || 'innen'))];
       if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0] || 'innen';
       renderAreaTabs(); renderRsPlan();
@@ -1422,9 +1441,20 @@
       const today = new Date().toISOString().slice(0, 10);
       if (!$('rsResDate').value) $('rsResDate').value = today;
       if (!$('rsPlanDate').value) $('rsPlanDate').value = today;
+      if ($('rsTlDate') && !$('rsTlDate').value) $('rsTlDate').value = today;
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
-    let rsTablesData = [], rsArea = '', rsOcc = new Set(), rsSeatingMin = 120;
+    let rsTablesData = [], rsArea = '', rsOcc = new Set(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {};
+    function tableNamesFor(r) {
+      const ids = (rsResTblMap[r.id] && rsResTblMap[r.id].length) ? rsResTblMap[r.id] : (r.table_id ? [r.table_id] : []);
+      const names = ids.map((id) => { const t = rsTablesData.find((x) => x.id === id); return t ? t.name : null; }).filter(Boolean);
+      return names.length ? names.join(' + ') : '—';
+    }
+    const RES_STATUS = { booked: 'Reserviert', seated: 'Am Tisch', no_show: 'No-Show', cancelled: 'Storniert', completed: 'Abgeschlossen' };
+    async function setResStatus(id, status) {
+      await sb.from('reservations').update({ status }).eq('id', id);
+      toast(RES_STATUS[status] ? (RES_STATUS[status] + '.') : 'Aktualisiert.'); loadRestaurant();
+    }
     const AREA_LABEL = { innen: 'Drinnen', draussen: 'Draußen', bar: 'Bar' };
     function areaName(a) { return AREA_LABEL[a] || (a ? a.charAt(0).toUpperCase() + a.slice(1) : 'Bereich'); }
 
@@ -1445,13 +1475,18 @@
 
     // Tisch-/Stuhl-Geometrie ---------------------------------------------------
     const T_PAD = 18; // Platz für Stühle rund um die Tischfläche
-    function tableDims(shape, rotation) {
-      let tw, th;
-      if (shape === 'round' || shape === 'square') { tw = 60; th = 60; }
-      else if (shape === 'bench') { tw = 140; th = 24; }
-      else { tw = 120; th = 60; } // rect
-      if (rotation === 90 && (shape === 'rect' || shape === 'bench')) { const t = tw; tw = th; th = t; }
-      return { tw, th };
+    function shapeDefaults(shape) {
+      if (shape === 'round' || shape === 'square') return { w: 60, h: 60 };
+      if (shape === 'bench') return { w: 140, h: 24 };
+      return { w: 120, h: 60 }; // rect
+    }
+    function baseDims(t) {
+      const d = shapeDefaults(t.shape || 'round');
+      return { w: t.width || d.w, h: t.height || d.h };
+    }
+    function dispDims(t) {
+      const { w, h } = baseDims(t);
+      return ((t.rotation || 0) === 90) ? { tw: h, th: w } : { tw: w, th: h };
     }
     function perimPoint(tt, W, H) {
       const per = 2 * (W + H); let d = tt * per;
@@ -1466,44 +1501,60 @@
         (occ ? '#e8bcb4' : '#c9a987') + ';border:1px solid ' + (occ ? '#d99a8e' : '#a9855f') + '';
       return c;
     }
-    function drawChairs(box, shape, seats, tw, th, occ, rotation) {
+    function drawChairs(layer, shape, seats, tw, th, occ, rotation) {
       const cx0 = T_PAD + tw / 2, cy0 = T_PAD + th / 2;
       if (shape === 'round') {
-        const R = tw / 2 + 10;
-        for (let i = 0; i < seats; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / seats; box.append(chairEl(cx0 + R * Math.cos(a), cy0 + R * Math.sin(a), occ)); }
+        const rx = tw / 2 + 10, ry = th / 2 + 10; // Ellipse (falls frei skaliert)
+        for (let i = 0; i < seats; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / seats; layer.append(chairEl(cx0 + rx * Math.cos(a), cy0 + ry * Math.sin(a), occ)); }
       } else if (shape === 'bench') {
-        // Stühle auf der langen Seite (oben, bzw. links wenn gedreht).
         for (let i = 0; i < seats; i++) {
-          if (rotation === 90) box.append(chairEl(T_PAD - 10, T_PAD + (i + 0.5) * th / seats, occ));
-          else box.append(chairEl(T_PAD + (i + 0.5) * tw / seats, T_PAD - 10, occ));
+          if (rotation === 90) layer.append(chairEl(T_PAD - 10, T_PAD + (i + 0.5) * th / seats, occ));
+          else layer.append(chairEl(T_PAD + (i + 0.5) * tw / seats, T_PAD - 10, occ));
         }
       } else {
-        for (let i = 0; i < seats; i++) { const p = perimPoint((i + 0.5) / seats, tw, th); box.append(chairEl(T_PAD + p.x + p.nx * 11, T_PAD + p.y + p.ny * 11, occ)); }
+        for (let i = 0; i < seats; i++) { const p = perimPoint((i + 0.5) / seats, tw, th); layer.append(chairEl(T_PAD + p.x + p.nx * 11, T_PAD + p.y + p.ny * 11, occ)); }
       }
     }
 
     function buildTableEl(t, plan) {
       const shape = t.shape || 'round', rot = t.rotation || 0, seats = Math.max(1, t.seats || 1);
       const occ = rsOcc.has(t.id);
-      const { tw, th } = tableDims(shape, rot);
-      const W = tw + T_PAD * 2, H = th + T_PAD * 2;
+      let { tw, th } = dispDims(t);
       const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
-      const x = Math.max(0, Math.min(pw - W, t.pos_x ?? 40));
-      const y = Math.max(0, Math.min(ph - H, t.pos_y ?? 40));
+      const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), t.pos_x ?? 40));
+      const y = Math.max(0, Math.min(ph - (th + T_PAD * 2), t.pos_y ?? 40));
       const box = document.createElement('div');
-      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:' + W + 'px;height:' + H + 'px;cursor:grab;touch-action:none;user-select:none';
+      box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:grab;touch-action:none;user-select:none';
 
-      drawChairs(box, shape, seats, tw, th, occ, rot);
+      const chairs = document.createElement('div');
+      chairs.style.cssText = 'position:absolute;inset:0;pointer-events:none';
+      box.append(chairs);
 
       const surf = document.createElement('div');
       const radius = shape === 'round' ? '50%' : (shape === 'bench' ? '6px' : '11px');
       const border = occ ? '#e0533d' : '#3f7d63';
       const bg = occ ? '#fdecea' : '#ffffff';
-      surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;width:' + tw + 'px;height:' + th + 'px;border:2px solid ' + border +
-        ';background:' + bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none';
+      surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + border +
+        ';background:' + bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none;overflow:hidden';
       surf.innerHTML = '<b style="font-size:12px">' + (t.name || 'Tisch') + '</b>' +
         (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666">' + seats + (occ ? ' · belegt' : '') + '</span>');
       box.append(surf);
+
+      // Resize-Anfasser (unten rechts).
+      const grip = document.createElement('div');
+      grip.className = 'ptCtl';
+      grip.style.cssText = 'position:absolute;width:16px;height:16px;border-radius:4px;background:#3f7d63;border:2px solid #fff;cursor:nwse-resize;z-index:3';
+      box.append(grip);
+
+      // Layout (auch live beim Resizen aufgerufen).
+      function layout(ntw, nth) {
+        tw = ntw; th = nth;
+        box.style.width = (tw + T_PAD * 2) + 'px'; box.style.height = (th + T_PAD * 2) + 'px';
+        surf.style.width = tw + 'px'; surf.style.height = th + 'px';
+        grip.style.left = (T_PAD + tw - 8) + 'px'; grip.style.top = (T_PAD + th - 8) + 'px';
+        chairs.innerHTML = ''; drawChairs(chairs, shape, seats, tw, th, occ, rot);
+      }
+      layout(tw, th);
 
       const del = document.createElement('button');
       del.className = 'ptCtl'; del.title = 'Entfernen'; del.textContent = '✕';
@@ -1528,6 +1579,23 @@
         };
         box.append(rotBtn);
       }
+
+      // Resize-Logik: aktualisiert live, speichert Basismaße (rotationsbereinigt).
+      let rsx, rsy, rtw, rth, resizing = false;
+      grip.addEventListener('pointerdown', (e) => {
+        e.stopPropagation(); resizing = true; grip.setPointerCapture(e.pointerId);
+        rsx = e.clientX; rsy = e.clientY; rtw = tw; rth = th;
+      });
+      grip.addEventListener('pointermove', (e) => {
+        if (!resizing) return;
+        layout(Math.max(40, rtw + (e.clientX - rsx)), Math.max(24, rth + (e.clientY - rsy)));
+      });
+      grip.addEventListener('pointerup', async (e) => {
+        if (!resizing) return; resizing = false; grip.releasePointerCapture(e.pointerId);
+        const baseW = rot === 90 ? th : tw, baseH = rot === 90 ? tw : th;
+        t.width = baseW; t.height = baseH;
+        await sb.from('restaurant_tables').update({ width: baseW, height: baseH }).eq('id', t.id);
+      });
 
       box.ondblclick = () => editTable(t);
       makeTableDraggable(box, t, plan);
@@ -1594,22 +1662,29 @@
       // Reservierungen des Tages laden und Überschneidung mit [t, t+Sitzdauer) prüfen.
       const dayStart = new Date(date + 'T00:00:00').toISOString();
       const dayEnd = new Date(date + 'T23:59:59').toISOString();
-      const { data } = await sb.from('reservations').select('table_id, starts_at, ends_at')
-        .eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', dayStart).lte('starts_at', dayEnd);
+      const { data } = await sb.from('reservations').select('id, table_id, starts_at, ends_at')
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated']).gte('starts_at', dayStart).lte('starts_at', dayEnd);
       const [h, m] = time.split(':').map(Number);
       const start = new Date(date + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00').getTime();
       const end = start + rsSeatingMin * 60000;
-      rsOcc = new Set();
-      for (const r of data ?? []) {
+      const overlap = (data ?? []).filter((r) => {
         const s = new Date(r.starts_at).getTime();
         const e = r.ends_at ? new Date(r.ends_at).getTime() : s + rsSeatingMin * 60000;
-        if (start < e && end > s && r.table_id) rsOcc.add(r.table_id);
+        return start < e && end > s;
+      });
+      rsOcc = new Set();
+      for (const r of overlap) if (r.table_id) rsOcc.add(r.table_id);
+      const ids = overlap.map((r) => r.id);
+      if (ids.length) {
+        const { data: jt } = await sb.from('reservation_tables').select('table_id').in('reservation_id', ids);
+        for (const j of jt ?? []) if (j.table_id) rsOcc.add(j.table_id);
       }
       renderRsPlan();
       $('rsPlanHint').textContent = rsOcc.size + ' Tisch(e) zu dieser Zeit belegt (rot), restliche frei (grün).';
     }
     $('rsPlanShow')?.addEventListener('click', rsShowOccupancy);
     $('rsPlanClear')?.addEventListener('click', () => { rsOcc = new Set(); renderRsPlan(); $('rsPlanHint').textContent = ''; });
+    const STATUS_COLOR = { booked: '#3f7d63', seated: '#2563eb', no_show: '#e0533d', cancelled: '#888', completed: '#888' };
     function renderRsList(items) {
       const el = $('rsList');
       if (!items.length) { el.innerHTML = '<span class="muted">Keine kommenden Reservierungen.</span>'; return; }
@@ -1617,18 +1692,74 @@
       for (const r of items) {
         const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
         const div = document.createElement('div'); div.className = 'item';
-        const h = document.createElement('h4'); h.textContent = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen');
+        const st = r.status || 'booked';
+        const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
+        const h = document.createElement('h4');
+        h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge;
         const p = document.createElement('p');
-        p.textContent = [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (r.source === 'assistant' ? '  (telefonisch)' : '');
-        const cancel = document.createElement('button'); cancel.className = 'btn btn--ghost sm'; cancel.style.marginTop = '6px'; cancel.textContent = 'Stornieren';
-        cancel.onclick = async () => {
-          if (!confirm('Reservierung stornieren?')) return;
-          await sb.from('reservations').update({ status: 'cancelled' }).eq('id', r.id);
-          toast('Storniert.'); loadRestaurant();
-        };
-        div.append(h, p, cancel); el.append(div);
+        p.textContent = 'Tisch: ' + tableNamesFor(r) + ' · ' + [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (r.source === 'assistant' ? '  (telefonisch)' : '');
+        div.append(h, p);
+        // Status-Workflow
+        const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+        const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
+        if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
+        if (st === 'seated') bar.append(mkBtn('Abschließen', () => setResStatus(r.id, 'completed')));
+        if (st === 'booked') bar.append(mkBtn('No-Show', () => setResStatus(r.id, 'no_show')));
+        if (st === 'booked' || st === 'seated') bar.append(mkBtn('Stornieren', () => { if (confirm('Reservierung stornieren?')) setResStatus(r.id, 'cancelled'); }));
+        div.append(bar);
+        el.append(div);
       }
     }
+
+    // ---- Tages-Timeline (Reservierungen je Tisch) ----
+    function dayInterval(dateStr) {
+      const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      const wd = DAYS[new Date(dateStr + 'T12:00:00').getDay()];
+      const iv = (rsHours && rsHours[wd]) || [];
+      let lo = 24 * 60, hi = 0;
+      for (const [a, b] of iv) { const [ah, am] = a.split(':').map(Number), [bh, bm] = b.split(':').map(Number); lo = Math.min(lo, ah * 60 + am); hi = Math.max(hi, bh * 60 + bm); }
+      if (hi <= lo) { lo = 11 * 60; hi = 23 * 60; } // Fallback, falls keine Öffnungszeiten
+      return { lo: Math.floor(lo / 60) * 60, hi: Math.ceil(hi / 60) * 60 };
+    }
+    async function renderTimeline() {
+      const wrap = $('rsTimeline'); if (!wrap) return;
+      const date = $('rsTlDate').value; if (!date) { toast('Bitte einen Tag wählen.'); return; }
+      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+        .in('status', ['booked', 'seated', 'completed'])
+        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString());
+      const map = {};
+      const ids = (res ?? []).map((r) => r.id);
+      if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt ?? []) (map[j.table_id] ||= []).push(j.reservation_id); }
+      // Fallback: Haupttisch, falls keine Verknüpfung
+      for (const r of res ?? []) if (r.table_id && !(map[r.table_id] || []).includes(r.id)) (map[r.table_id] ||= []).push(r.id);
+      const resById = Object.fromEntries((res ?? []).map((r) => [r.id, r]));
+      const { lo, hi } = dayInterval(date);
+      const span = hi - lo;
+      const PXMIN = Math.max(1.4, 760 / span); // px pro Minute
+      const tables = [...rsTablesData].sort((a, b) => (a.area || '').localeCompare(b.area || '') || (a.name || '').localeCompare(b.name || ''));
+      if (!tables.length) { wrap.innerHTML = '<span class="muted">Keine Tische angelegt.</span>'; return; }
+      // Kopf (Stundenraster)
+      let head = '<div style="display:flex;min-width:' + (140 + span * PXMIN) + 'px;border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:4px"><div style="width:140px;flex:none"></div><div style="position:relative;flex:1;height:18px">';
+      for (let mn = lo; mn <= hi; mn += 60) { const left = (mn - lo) * PXMIN; head += '<span style="position:absolute;left:' + left + 'px;font-size:11px;color:#888;transform:translateX(-50%)">' + String(mn / 60).padStart(2, '0') + '</span>'; }
+      head += '</div></div>';
+      let rows = '';
+      for (const t of tables) {
+        rows += '<div style="display:flex;min-width:' + (140 + span * PXMIN) + 'px;align-items:center;margin-bottom:4px">' +
+          '<div style="width:140px;flex:none;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (t.name || 'Tisch') + ' <span style="color:#999;font-weight:400">' + (t.seats || 0) + 'P</span></div>' +
+          '<div style="position:relative;flex:1;height:30px;background:#fbfaf7;border-radius:6px;border:1px solid var(--line)">';
+        for (const rid of (map[t.id] || [])) {
+          const r = resById[rid]; if (!r) continue;
+          const s = new Date(r.starts_at), e = r.ends_at ? new Date(r.ends_at) : new Date(s.getTime() + rsSeatingMin * 60000);
+          const sMin = s.getHours() * 60 + s.getMinutes(), eMin = e.getHours() * 60 + e.getMinutes();
+          const left = Math.max(0, (sMin - lo) * PXMIN), width = Math.max(14, (Math.min(eMin, hi) - sMin) * PXMIN);
+          const col = STATUS_COLOR[r.status] || '#3f7d63';
+          rows += '<div title="' + (r.customer_name || '') + ' · ' + (r.party_size || '?') + 'P" style="position:absolute;left:' + left + 'px;top:3px;height:24px;width:' + width + 'px;background:' + col + ';opacity:.9;border-radius:5px;color:#fff;font-size:11px;line-height:24px;padding:0 6px;overflow:hidden;white-space:nowrap">' + (r.customer_name || (r.party_size + 'P')) + '</div>';
+        }
+        rows += '</div></div>';
+      }
+      wrap.innerHTML = head + rows;
+    }
+    $('rsTlShow')?.addEventListener('click', renderTimeline);
     $('rsSaveCfg')?.addEventListener('click', async () => {
       const hours = ($('rsReminderHours').value || '').split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n > 0).slice(0, 2);
       const { error } = await sb.from('restaurant_config').upsert({
