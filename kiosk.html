@@ -7,15 +7,15 @@
 <meta name="apple-mobile-web-app-title" content="Reservierungen">
 <title>Vocaris Kiosk</title>
 <style>
-  :root { --accent:#c0552f; --ink:#23211e; --muted:#7a756c; --line:#e3ddd2; --paper:#fbfaf7; --paper2:#f1ede5; }
+  :root { --accent:#4f46e5; --accent-2:#7c3aed; --accent-3:#ff6b5b; --ink:#14161a; --muted:#6b7280; --line:#e6e4f0; --paper:#ffffff; --paper2:#faf9f6; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { margin:0; height:100%; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper2); color:var(--ink); overscroll-behavior:none; }
+  html,body { margin:0; height:100%; font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper2); color:var(--ink); overscroll-behavior:none; }
   .bar { display:flex; align-items:center; gap:10px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:0; z-index:5; }
   .bar h1 { font-size:18px; margin:0; font-weight:700; }
   .spacer { margin-left:auto; }
   .btn { font:inherit; font-weight:600; padding:12px 16px; border-radius:12px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:16px; }
   .btn:active { transform:scale(.98); }
-  .btn--pri { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn--pri { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border-color:var(--accent); color:#fff; }
   .btn--sm { padding:9px 13px; font-size:15px; }
   .seg { display:inline-flex; background:var(--paper2); border:1px solid var(--line); border-radius:12px; padding:4px; }
   .seg button { border:0; background:transparent; font:inherit; font-weight:600; font-size:16px; padding:9px 16px; border-radius:9px; cursor:pointer; color:var(--muted); }
@@ -50,10 +50,30 @@
   .sheet .x { position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:50%; border:0; background:var(--paper2); font-size:18px; cursor:pointer; }
   .hint { margin-top:10px; font-size:14px; min-height:1.1em; }
   .times { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  /* PIN-Sperre */
+  #pinScreen { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:24px;
+               background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
+  #pinScreen.on { display:flex; }
+  .pincard { background:#fff; border-radius:22px; padding:30px 26px; width:100%; max-width:380px; text-align:center; box-shadow:0 20px 60px #0004; }
+  .pinlogo { font-weight:800; font-size:22px; letter-spacing:-.5px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:14px; }
+  .pincard h2 { margin:0 0 4px; font-size:20px; }
+  .pinmsg { color:var(--muted); font-size:14px; margin:0 0 18px; min-height:1.1em; }
+  .pinmsg.err { color:var(--accent-3); font-weight:600; }
+  #pinInput { text-align:center; font-size:26px; letter-spacing:8px; font-weight:700; margin-bottom:14px; }
 </style>
 </head>
 <body>
   <div id="lock" class="center" style="position:fixed">Kiosk wird geladen …</div>
+
+  <div id="pinScreen">
+    <div class="pincard">
+      <div class="pinlogo">Vocaris</div>
+      <h2>Kiosk entsperren</h2>
+      <p class="pinmsg" id="pinMsg">Bitte Passwort (PIN) eingeben.</p>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+      <button class="btn btn--pri" id="pinGo" style="width:100%">Öffnen</button>
+    </div>
+  </div>
 
   <div id="app" class="hidden">
     <div class="bar">
@@ -93,15 +113,23 @@ const API='https://ki-anruf.onrender.com';
 const $=(id)=>document.getElementById(id);
 const token=new URLSearchParams(location.search).get('k')||'';
 let D=null, date='', view='res', area='', combos=[];
+let pin=localStorage.getItem('vocaris_kiosk_pin_'+token)||'';
 
 function today(){ return new Date().toISOString().slice(0,10); }
-async function api(path, body){ const r=await fetch(API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({token},body||{}))}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||'Fehler'); return d; }
+async function api(path, body){ const r=await fetch(API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({token,pin},body||{}))}); const d=await r.json().catch(()=>({})); if(!r.ok){ const e=new Error(d.error||'Fehler'); e.needPin=!!d.needPin; e.status=r.status; throw e; } return d; }
+
+// ---- PIN-Sperre ----
+function showPin(msg,err){ $('pinMsg').textContent=msg||'Bitte Passwort (PIN) eingeben.'; $('pinMsg').classList.toggle('err',!!err); $('pinScreen').classList.add('on'); $('lock').classList.add('hidden'); setTimeout(()=>$('pinInput').focus(),50); }
+function hidePin(){ $('pinScreen').classList.remove('on'); }
+function submitPin(){ const v=($('pinInput').value||'').trim(); if(!v){ showPin('Bitte PIN eingeben.',true); return; } pin=v; localStorage.setItem('vocaris_kiosk_pin_'+token,v); hidePin(); $('pinInput').value=''; $('lock').textContent='Kiosk wird geladen …'; $('lock').classList.remove('hidden'); loadDay(date||today()); }
+$('pinGo').onclick=submitPin;
+$('pinInput').addEventListener('keydown',e=>{ if(e.key==='Enter')submitPin(); });
 
 async function loadDay(d){
   date=d; $('date').value=d;
   try{ D=await api('/api/kiosk/data',{date:d}); }
-  catch(e){ $('lock').textContent=e.message+' — bitte den Zugang im Admin prüfen.'; $('lock').classList.remove('hidden'); return; }
-  $('lock').classList.add('hidden'); $('app').classList.remove('hidden');
+  catch(e){ if(e.needPin){ pin=''; localStorage.removeItem('vocaris_kiosk_pin_'+token); showPin(e.message==='Falsche PIN.'?'Falsches Passwort. Bitte erneut versuchen.':'Bitte Passwort (PIN) eingeben.', e.message==='Falsche PIN.'); return; } $('lock').textContent=e.message+' — bitte den Zugang im Admin prüfen.'; $('lock').classList.remove('hidden'); return; }
+  hidePin(); $('lock').classList.add('hidden'); $('app').classList.remove('hidden');
   $('rname').textContent=D.name;
   if(!area || !D.areas.includes(area)) area=(D.areas&&D.areas[0])||'Drinnen';
   setSliderRange();
