@@ -1117,6 +1117,15 @@
                 <label style="margin-top:12px;display:block;font-size:13px;font-weight:600">In die eigene Website einbetten</label>
                 <div style="display:flex;gap:8px;align-items:flex-start"><textarea id="rsEmbedCode" readonly rows="2" style="flex:1;background:var(--paper-2);font-family:ui-monospace,monospace;font-size:12px;resize:vertical"></textarea><button id="rsCopyEmbed" class="btn btn--ghost sm" type="button">Kopieren</button></div>
                 <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Code an der gewünschten Stelle in die Website einfügen — die Reservierungsmaske erscheint direkt dort und passt ihre Höhe automatisch an.</p>
+                <div style="margin-top:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="margin:0;font-size:13px;font-weight:600">Vorschau</label><button id="rsPreviewRefresh" class="btn btn--ghost sm" type="button">Aktualisieren</button><span class="muted" style="font-size:12px">So sieht die Maske auf Ihrer Website aus.</span></div>
+                  <div style="border:1px dashed var(--line);border-radius:14px;padding:14px;background:repeating-linear-gradient(45deg,var(--paper-2),var(--paper-2) 10px,transparent 10px,transparent 20px)">
+                    <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px -16px #0004">
+                      <iframe id="rsEmbedPreview" title="Vorschau Reservierungsmaske" style="width:100%;border:0;display:block;height:640px" scrolling="no"></iframe>
+                    </div>
+                    <p class="muted" style="text-align:center;margin:10px 0 0;font-size:11px">Beispiel-Darstellung Ihrer Website (die Maske ist echt und live)</p>
+                  </div>
+                </div>
               </div>
               <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsKioskEnabled" style="width:auto;margin:0"><span>Kiosk-Modus fürs Personal aktivieren (iPad)</span></label>
               <div id="rsKioskWrap" class="hidden" style="margin-top:8px">
@@ -1579,6 +1588,7 @@
       if (cfg?.public_token) {
         $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
         $('rsEmbedCode').value = '<script src="https://vocaris.eu/embed.js" data-token="' + cfg.public_token + '" async><\/script>';
+        const pv = $('rsEmbedPreview'); if (pv) { const src = 'https://vocaris.eu/reservieren.html?embed=1&r=' + cfg.public_token; if (pv.src !== src) pv.src = src; }
       }
       $('rsKioskEnabled').checked = cfg?.kiosk_enabled ?? false;
       $('rsKioskWrap').classList.toggle('hidden', !(cfg?.kiosk_enabled));
@@ -2367,6 +2377,9 @@
       toast('Neuer Kiosk-Zugang erzeugt.');
     });
     $('rsCopyEmbed')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsEmbedCode').value); toast('Einbett-Code kopiert.'); });
+    $('rsPreviewRefresh')?.addEventListener('click', () => { const p = $('rsEmbedPreview'); if (p && p.src) p.src = p.src; });
+    // Auto-Höhe der Vorschau (die eingebettete Maske meldet ihre Höhe per postMessage).
+    window.addEventListener('message', (e) => { const d = e.data; if (d && d.type === 'vocaris:height' && d.height) { const p = $('rsEmbedPreview'); if (p) p.style.height = Math.max(420, d.height) + 'px'; } });
     $('rsAddTable')?.addEventListener('click', async () => {
       const name = $('rsTblName').value.trim();
       const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);

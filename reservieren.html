@@ -4,107 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tisch reservieren</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
-  :root { --accent:#c0552f; --ink:#23211e; --muted:#7a756c; --line:#e6e0d6; --paper:#fbfaf7; --paper2:#f3efe7; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper2); color:var(--ink); }
-  .wrap { max-width:520px; margin:0 auto; padding:28px 18px 60px; }
-  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:0 16px 40px -24px #0003; }
-  h1 { font-size:24px; margin:0 0 4px; }
-  .sub { color:var(--muted); margin:0 0 20px; font-size:15px; }
-  label { display:block; font-size:13px; font-weight:600; margin:12px 0 5px; }
-  input, select, textarea { width:100%; font:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
-  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent); }
+  :root {
+    --accent:#b8502e; --accent-2:#d98a3d; --ink:#2a2320; --muted:#8a8177; --line:#eae3d7;
+    --paper:#fdfcf9; --paper2:#f4efe6; --gold:#c99a4e; --ok:#2f8f63;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink);
+    background:radial-gradient(1200px 600px at 50% -10%, #efe7d8 0%, #f4efe6 45%, #efe9dd 100%); min-height:100vh; }
+  .wrap { max-width:560px; margin:0 auto; padding:40px 18px 64px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:24px; overflow:hidden; box-shadow:0 30px 70px -34px #3d2a1f66, 0 2px 8px -4px #0002; }
+  /* Hero */
+  .hero { position:relative; padding:34px 30px 30px; color:#fff; text-align:center; overflow:hidden;
+    background:linear-gradient(135deg,#3a2820 0%,#7a3d24 55%,#b8502e 100%); }
+  .hero::after { content:''; position:absolute; inset:0; background:radial-gradient(600px 200px at 50% -40%, #ffffff33, transparent 70%); pointer-events:none; }
+  .eyebrow { font-size:12px; letter-spacing:2.5px; text-transform:uppercase; font-weight:600; color:#ffffffcc; margin-bottom:8px; position:relative; }
+  .heroName { font-family:'Instrument Serif',Georgia,serif; font-size:38px; line-height:1.05; letter-spacing:.3px; position:relative; }
+  .heroSub { font-size:14px; color:#ffffffcc; margin-top:8px; position:relative; }
+  .body { padding:26px 30px 30px; }
+  /* Steps */
+  .step { display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); margin:2px 0 12px; }
+  .step .n { width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
+  h1 { font-family:'Instrument Serif',Georgia,serif; font-size:27px; margin:0 0 4px; font-weight:400; }
+  .sub { color:var(--muted); margin:0 0 18px; font-size:15px; }
+  label { display:block; font-size:12.5px; font-weight:600; margin:14px 0 6px; color:#5f574d; }
+  input, select, textarea { width:100%; font:inherit; padding:13px 14px; border:1px solid var(--line); border-radius:13px; background:var(--paper); transition:border-color .15s, box-shadow .15s; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 13%,transparent); }
   .row { display:flex; gap:12px; } .row > * { flex:1; }
-  .btn { font:inherit; font-weight:600; padding:12px 18px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; }
-  .btn--primary { background:var(--accent); border-color:var(--accent); color:#fff; width:100%; margin-top:18px; padding:14px; font-size:16px; }
-  .btn[disabled] { opacity:.6; cursor:default; }
-  .times { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .time { padding:8px 14px; border:1px solid var(--line); border-radius:999px; background:var(--paper); cursor:pointer; font-weight:600; font-size:14px; }
-  .time.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn { font:inherit; font-weight:600; padding:13px 18px; border-radius:13px; border:1px solid var(--line); background:#fff; cursor:pointer; transition:transform .06s, box-shadow .15s; }
+  .btn:active { transform:scale(.985); }
+  .btn--primary { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border:0; color:#fff; width:100%; margin-top:18px; padding:15px; font-size:16px; box-shadow:0 10px 24px -10px var(--accent); }
+  .btn--block { width:100%; }
+  .btn[disabled] { opacity:.55; cursor:default; }
+  .times { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+  .time { padding:10px 16px; border:1.5px solid var(--line); border-radius:12px; background:var(--paper); cursor:pointer; font-weight:600; font-size:15px; transition:all .12s; }
+  .time:hover { border-color:var(--accent-2); }
+  .time.sel { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border-color:transparent; color:#fff; box-shadow:0 6px 14px -8px var(--accent); }
   .muted { color:var(--muted); font-size:13px; }
   .hint { margin-top:12px; font-size:14px; min-height:1.2em; }
-  .ok { color:#2f8f63; } .err { color:var(--accent); }
-  .consent { display:flex; gap:9px; align-items:flex-start; margin-top:14px; font-size:13px; color:var(--muted); }
-  .consent input { width:auto; margin-top:2px; }
-  .done { text-align:center; padding:10px 0; }
-  .done .big { font-size:40px; }
+  .ok { color:var(--ok); font-weight:600; } .err { color:var(--accent); font-weight:600; }
+  .consent { display:flex; gap:10px; align-items:flex-start; margin-top:16px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .consent input { width:auto; margin-top:2px; accent-color:var(--accent); }
+  .divider { height:1px; background:var(--line); margin:18px 0; border:0; }
+  /* Bestätigung */
+  .done { text-align:center; padding:14px 0 6px; }
+  .checkmark { width:74px; height:74px; border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,#2f8f63,#57b78a); color:#fff; font-size:38px; box-shadow:0 14px 30px -12px #2f8f63aa; }
+  .summary { background:var(--paper2); border-radius:14px; padding:14px 16px; margin-top:14px; text-align:left; font-size:14px; line-height:1.9; }
   .foot { text-align:center; margin-top:18px; font-size:12px; color:var(--muted); }
-  .foot a { color:var(--muted); }
+  .foot a { color:var(--accent); text-decoration:none; font-weight:600; }
   .hidden { display:none; }
   /* Einbett-Modus: nahtlos in die Kunden-Website */
-  body.embed { background:transparent; }
+  body.embed { background:transparent; min-height:0; }
   body.embed .wrap { padding:0; max-width:none; }
-  body.embed .card { box-shadow:none; border:1px solid var(--line); }
+  body.embed .card { box-shadow:none; border:1px solid var(--line); border-radius:16px; }
   body.embed .foot { display:none; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div id="loading" class="muted">Lädt …</div>
+      <div class="hero">
+        <div class="eyebrow">✦ Tischreservierung</div>
+        <div id="heroName" class="heroName">Willkommen</div>
+        <div id="heroSub" class="heroSub">Reservieren Sie in wenigen Sekunden</div>
+      </div>
+      <div class="body">
+        <div id="loading" class="muted">Lädt …</div>
 
-      <!-- Buchung -->
-      <div id="booking" class="hidden">
-        <h1 id="rName">Tisch reservieren</h1>
-        <p class="sub">Wähle Datum, Personenzahl und eine freie Zeit.</p>
-        <div class="row">
-          <div><label>Datum</label><input id="date" type="date"></div>
-          <div><label>Personen</label><input id="party" type="number" min="1" value="2"></div>
-        </div>
-        <label>Bereich (optional)</label>
-        <select id="area"><option value="">egal</option><option value="innen">Drinnen</option><option value="draussen">Draußen</option><option value="bar">Bar</option></select>
-        <button id="checkBtn" class="btn" type="button" style="margin-top:14px">Freie Zeiten anzeigen</button>
-        <div id="times" class="times"></div>
-
-        <div id="details" class="hidden">
-          <label>Name</label><input id="name" placeholder="Ihr Name">
+        <!-- Buchung -->
+        <div id="booking" class="hidden">
+          <div class="step"><span class="n">1</span> Wann &amp; für wie viele?</div>
           <div class="row">
-            <div><label>E-Mail</label><input id="email" type="email" placeholder="für die Bestätigung"></div>
-            <div><label>Telefon</label><input id="phone" placeholder="optional"></div>
+            <div><label>Datum</label><input id="date" type="date"></div>
+            <div><label>Personen</label><input id="party" type="number" min="1" value="2"></div>
           </div>
-          <label>Anmerkung (optional)</label><textarea id="notes" rows="2" placeholder="z.B. Kinderstuhl, Allergie, Anlass"></textarea>
-          <label class="consent"><input id="consent" type="checkbox"><span>Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Reservierung gespeichert und verarbeitet werden.</span></label>
-          <button id="reserveBtn" class="btn btn--primary" type="button">Jetzt reservieren</button>
-        </div>
-        <p id="hint" class="hint"></p>
-      </div>
+          <label>Bereich (optional)</label>
+          <select id="area"><option value="">Egal – überrascht mich</option><option value="innen">Drinnen</option><option value="draussen">Draußen</option><option value="bar">Bar</option></select>
+          <button id="checkBtn" class="btn btn--block" type="button" style="margin-top:16px">Freie Zeiten anzeigen</button>
+          <div id="times" class="times"></div>
 
-      <!-- Bestätigung -->
-      <div id="confirmed" class="hidden done">
-        <div class="big">✅</div>
-        <h1>Reserviert!</h1>
-        <p id="confirmMsg" class="sub"></p>
-      </div>
-
-      <!-- Storno -->
-      <div id="storno" class="hidden">
-        <h1>Reservierung stornieren</h1>
-        <p class="sub">Möchtest du deine Reservierung wirklich absagen?</p>
-        <button id="cancelBtn" class="btn btn--primary" type="button">Reservierung stornieren</button>
-        <p id="stornoHint" class="hint"></p>
-      </div>
-
-      <!-- Verwalten (umbuchen / absagen) -->
-      <div id="manage" class="hidden">
-        <h1 id="mgTitle">Reservierung verwalten</h1>
-        <p class="sub" id="mgCurrent"></p>
-        <div id="mgArea">
-          <h3 style="margin:0 0 8px">Umbuchen</h3>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <label style="flex:1;min-width:140px">Neues Datum<input id="mgDate" type="date"></label>
-            <label style="flex:1;min-width:120px">Personen<input id="mgParty" type="number" min="1" value="2"></label>
+          <div id="details" class="hidden">
+            <hr class="divider">
+            <div class="step"><span class="n">2</span> Ihre Kontaktdaten</div>
+            <label>Name</label><input id="name" placeholder="Ihr Name">
+            <div class="row">
+              <div><label>E-Mail</label><input id="email" type="email" placeholder="für die Bestätigung"></div>
+              <div><label>Telefon</label><input id="phone" placeholder="optional"></div>
+            </div>
+            <label>Besondere Wünsche (optional)</label><textarea id="notes" rows="2" placeholder="z. B. Kinderstuhl, Allergie, Anlass, Fensterplatz"></textarea>
+            <label class="consent"><input id="consent" type="checkbox"><span>Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Reservierung gespeichert und verarbeitet werden.</span></label>
+            <button id="reserveBtn" class="btn btn--primary" type="button">Jetzt reservieren</button>
           </div>
-          <div class="stack" style="margin-top:10px"><button id="mgCheck" class="btn" type="button">Freie Zeiten anzeigen</button></div>
-          <div id="mgTimes" style="margin-top:10px"></div>
-          <button id="mgSave" class="btn btn--primary hidden" type="button" style="margin-top:10px">Umbuchung bestätigen</button>
-          <p id="mgHint" class="hint"></p>
-          <hr style="border:none;border-top:1px solid var(--line,#e6e4f0);margin:16px 0">
-          <button id="mgCancel" class="btn" type="button">Reservierung stornieren</button>
+          <p id="hint" class="hint"></p>
         </div>
-      </div>
 
-      <div class="foot">Reservierung über <a href="https://vocaris.eu" target="_blank" rel="noopener">Vocaris</a></div>
+        <!-- Bestätigung -->
+        <div id="confirmed" class="hidden done">
+          <div class="checkmark">✓</div>
+          <h1>Reserviert!</h1>
+          <p id="confirmMsg" class="sub"></p>
+        </div>
+
+        <!-- Storno -->
+        <div id="storno" class="hidden">
+          <h1>Reservierung stornieren</h1>
+          <p class="sub">Möchten Sie Ihre Reservierung wirklich absagen?</p>
+          <button id="cancelBtn" class="btn btn--primary" type="button">Reservierung stornieren</button>
+          <p id="stornoHint" class="hint"></p>
+        </div>
+
+        <!-- Verwalten (umbuchen / absagen) -->
+        <div id="manage" class="hidden">
+          <h1>Ihre Reservierung</h1>
+          <p class="sub" id="mgCurrent"></p>
+          <div id="mgArea">
+            <div class="step"><span class="n">↻</span> Umbuchen</div>
+            <div class="row">
+              <div><label>Neues Datum</label><input id="mgDate" type="date"></div>
+              <div><label>Personen</label><input id="mgParty" type="number" min="1" value="2"></div>
+            </div>
+            <button id="mgCheck" class="btn btn--block" type="button" style="margin-top:14px">Freie Zeiten anzeigen</button>
+            <div id="mgTimes" class="times"></div>
+            <button id="mgSave" class="btn btn--primary hidden" type="button">Umbuchung bestätigen</button>
+            <p id="mgHint" class="hint"></p>
+            <hr class="divider">
+            <button id="mgCancel" class="btn btn--block" type="button">Reservierung stornieren</button>
+          </div>
+        </div>
+
+        <div class="foot">Reservierung über <a href="https://vocaris.eu" target="_blank" rel="noopener">Vocaris</a></div>
+      </div>
     </div>
   </div>
 
@@ -139,7 +172,8 @@
   async function initBooking() {
     try {
       const info = await api('/api/public/info', { token });
-      $('rName').textContent = info.name ? ('Tisch reservieren – ' + info.name) : 'Tisch reservieren';
+      if (info.name) { $('heroName').textContent = info.name; document.title = 'Tisch reservieren – ' + info.name; }
+      $('heroSub').textContent = 'Reservieren Sie in wenigen Sekunden';
       $('date').min = new Date().toISOString().slice(0,10);
       $('date').value = new Date().toISOString().slice(0,10);
       show('booking');
@@ -193,7 +227,8 @@
   async function initManage() {
     try {
       const r = await api('/api/public/reservation', { token: manage });
-      $('mgTitle').textContent = 'Reservierung – ' + (r.restaurantName || '');
+      if (r.restaurantName) $('heroName').textContent = r.restaurantName;
+      $('heroSub').textContent = 'Reservierung verwalten';
       if (r.status === 'cancelled') { $('mgCurrent').innerHTML = '<span class="err">Diese Reservierung ist storniert.</span>'; $('mgArea').classList.add('hidden'); show('manage'); return; }
       const when = new Date(r.startISO).toLocaleString('de-DE', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
       $('mgCurrent').textContent = 'Aktuell: ' + when + ' Uhr · ' + r.party + ' ' + (r.party === 1 ? 'Person' : 'Personen');
@@ -234,7 +269,7 @@
   });
 
   if (manage) { initManage(); }
-  else if (storno) { show('storno'); }
+  else if (storno) { $('heroSub').textContent = 'Reservierung stornieren'; show('storno'); }
   else if (token) { initBooking(); }
   else { $('loading').innerHTML = '<p class="err">Ungültiger Link.</p>'; }
 </script>
