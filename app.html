@@ -557,6 +557,17 @@
           </div>
           <p class="dept-hint" id="kbDeptHint"></p>
 
+          <div class="panel hidden" id="menuPanel">
+            <h3>🍽 Speisekarte</h3>
+            <p class="muted" style="margin-bottom:12px">Lade deine Speisekarte als <b>PDF</b> oder <b>Foto</b> hoch. Vocaris liest sie aus, damit der Telefon-Assistent Fragen zu Gerichten, Preisen und z. B. vegetarischen/veganen Optionen beantworten kann.</p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button id="menuBtn" class="btn btn--primary" type="button">Speisekarte hochladen</button>
+              <span id="menuStatus" class="muted"></span>
+            </div>
+            <input type="file" id="menuFile" accept=".pdf,application/pdf,image/*" hidden />
+            <div id="menuPreview" style="margin-top:12px"></div>
+          </div>
+
           <div class="panel">
             <h3>Aus Website importieren</h3>
             <p class="muted" style="margin-bottom:12px">Gib die Adresse deiner Website an — Vocaris liest sie und schlägt fertige Wissens-Einträge vor. Du übernimmst nur, was passt.</p>
@@ -1270,9 +1281,12 @@
     const INDUSTRY_SECTIONS = {
       restaurant: ['sec-overview', 'sec-live', 'sec-messages', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-restaurant', 'sec-floorplan'],
     };
-    // Einzelne Elemente, die je Branche zusätzlich ausgeblendet werden.
+    // Einzelne Elemente, die je Branche zusätzlich aus-/eingeblendet werden.
     const INDUSTRY_HIDE_ELS = {
       restaurant: ['outboundCallPanel'], // Restaurant tätigt keine ausgehenden Anrufe aus dem Profil
+    };
+    const INDUSTRY_SHOW_ELS = {
+      restaurant: ['menuPanel'], // Speisekarte-Upload nur für Restaurants
     };
     function applyIndustry(industry) {
       const allow = INDUSTRY_SECTIONS[industry];
@@ -1285,6 +1299,7 @@
         }
       });
       for (const id of (INDUSTRY_HIDE_ELS[industry] || [])) $(id)?.classList.add('hidden');
+      for (const id of (INDUSTRY_SHOW_ELS[industry] || [])) $(id)?.classList.remove('hidden');
     }
 
     // ---- Navigation ----
@@ -1437,6 +1452,7 @@
       if (!tenant) { $('noTenant').classList.remove('hidden'); $('content').classList.add('hidden'); return; }
       $('noTenant').classList.add('hidden'); $('content').classList.remove('hidden');
       applyIndustry(tenant.industry || 'general');
+      if ((tenant.industry || '') === 'restaurant') updateMenuStatus();
 
       const nowIso = new Date().toISOString();
       const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
@@ -2488,6 +2504,35 @@
         img.onerror = rej; img.src = url;
       });
     }
+    // ---- Speisekarte hochladen (PDF oder Foto) ----
+    async function updateMenuStatus() {
+      if (!tenant || !$('menuStatus')) return;
+      const { data } = await sb.from('knowledge_base').select('content')
+        .eq('tenant_id', tenant.id).eq('category', 'Speisekarte').eq('title', 'Speisekarte').maybeSingle();
+      $('menuStatus').textContent = data ? ('✓ Speisekarte hinterlegt (' + (data.content || '').length + ' Zeichen)') : 'Noch keine Speisekarte hinterlegt.';
+    }
+    async function uploadMenu(file) {
+      const btn = $('menuBtn'), st = $('menuStatus'), pv = $('menuPreview');
+      const isImage = /^image\//i.test(file.type) || /\.(png|jpe?g|gif|webp|heic)$/i.test(file.name);
+      const isPdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
+      if (!isImage && !isPdf) { st.textContent = 'Bitte ein PDF oder ein Foto der Speisekarte wählen.'; return; }
+      btn.disabled = true; st.textContent = 'Speisekarte wird gelesen … das kann 10–25 Sekunden dauern.'; pv.innerHTML = '';
+      try {
+        let data, mimetype;
+        if (isImage) { data = await imageToB64(file, 2000); mimetype = 'image/jpeg'; }
+        else { if (file.size > 9e6) { st.textContent = 'PDF zu groß (max. ~9 MB).'; btn.disabled = false; return; } data = await fileToB64(file); mimetype = 'application/pdf'; }
+        const r = await apiFetch('/api/menu-upload', { method: 'POST', headers: numAuth(), body: JSON.stringify({ filename: file.name, mimetype, data }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error(d.error || 'Speisekarte konnte nicht gelesen werden.');
+        toast('Speisekarte gespeichert – der Assistent kann jetzt Auskunft geben.');
+        st.textContent = '✓ Speisekarte hinterlegt (' + d.chars + ' Zeichen)';
+        pv.innerHTML = '<div class="panel" style="background:var(--paper-2)"><div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">Erkannt (Auszug):</div><div style="white-space:pre-wrap;font-size:13px;max-height:220px;overflow:auto">' + (d.preview || '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])) + ' …</div></div>';
+        if (typeof loadDept === 'function') loadDept();
+      } catch (e) { st.textContent = e.message; }
+      finally { btn.disabled = false; }
+    }
+    $('menuBtn')?.addEventListener('click', () => $('menuFile').click());
+    $('menuFile')?.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) uploadMenu(f); e.target.value = ''; });
     async function importPlan(file) {
       const hint = $('rsImportHint'), btn = $('rsImportBtn');
       const isPdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
