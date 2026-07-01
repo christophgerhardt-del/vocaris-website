@@ -1059,11 +1059,19 @@
 
             <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
             <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
+              <label style="font-size:13px;font-weight:600">Direkter Buchungslink</label>
               <div style="display:flex;gap:8px;align-items:center">
                 <input id="rsPublicLink" readonly style="flex:1;background:var(--paper-2)">
                 <button id="rsCopyLink" class="btn btn--ghost sm" type="button">Kopieren</button>
               </div>
-              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Link auf deiner Website/Google-Profil teilen — Gäste reservieren selbst. (Erst „Speichern", dann ist der Link aktiv.)</p>
+              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Auf Website/Google-Profil teilen — Gäste reservieren selbst. (Erst „Speichern", dann ist der Link aktiv.)</p>
+
+              <label style="margin-top:12px;display:block;font-size:13px;font-weight:600">In die eigene Website einbetten</label>
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <textarea id="rsEmbedCode" readonly rows="2" style="flex:1;background:var(--paper-2);font-family:ui-monospace,monospace;font-size:12px;resize:vertical"></textarea>
+                <button id="rsCopyEmbed" class="btn btn--ghost sm" type="button">Kopieren</button>
+              </div>
+              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Code an der gewünschten Stelle in die Website einfügen — die Reservierungsmaske erscheint direkt dort und passt ihre Höhe automatisch an.</p>
             </div>
 
             <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
@@ -1565,7 +1573,10 @@
       $('rsClosedDates').value = (cfg?.closed_dates ?? []).join(', ');
       $('rsPublicBooking').checked = cfg?.public_booking ?? false;
       $('rsPublicWrap').classList.toggle('hidden', !(cfg?.public_booking));
-      if (cfg?.public_token) $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
+      if (cfg?.public_token) {
+        $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
+        $('rsEmbedCode').value = '<script src="https://vocaris.eu/embed.js" data-token="' + cfg.public_token + '" async><\/script>';
+      }
       rsSeatingMin = cfg?.seating_minutes ?? 120;
       rsHours = ac?.business_hours ?? {};
       rsAreas = (cfg?.areas && cfg.areas.length) ? cfg.areas.slice() : ['Drinnen', 'Draußen', 'Bar'];
@@ -2237,6 +2248,7 @@
     });
     $('rsPublicBooking')?.addEventListener('change', () => { $('rsPublicWrap').classList.toggle('hidden', !$('rsPublicBooking').checked); });
     $('rsCopyLink')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsPublicLink').value); toast('Link kopiert.'); });
+    $('rsCopyEmbed')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsEmbedCode').value); toast('Einbett-Code kopiert.'); });
     $('rsAddTable')?.addEventListener('click', async () => {
       const name = $('rsTblName').value.trim();
       const seats = Math.max(1, parseInt($('rsTblSeats').value, 10) || 2);

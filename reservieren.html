@@ -32,6 +32,11 @@
   .foot { text-align:center; margin-top:18px; font-size:12px; color:var(--muted); }
   .foot a { color:var(--muted); }
   .hidden { display:none; }
+  /* Einbett-Modus: nahtlos in die Kunden-Website */
+  body.embed { background:transparent; }
+  body.embed .wrap { padding:0; max-width:none; }
+  body.embed .card { box-shadow:none; border:1px solid var(--line); }
+  body.embed .foot { display:none; }
 </style>
 </head>
 <body>
@@ -90,7 +95,17 @@
   const params = new URLSearchParams(location.search);
   const token = params.get('r') || '';
   const storno = params.get('storno') || '';
+  const embed = params.has('embed');
   let selectedTime = '';
+
+  // Einbett-Modus: chromlos + Höhe an die Eltern-Seite melden (Auto-Resize).
+  function postHeight() { try { parent.postMessage({ type: 'vocaris:height', token, height: document.body.scrollHeight }, '*'); } catch (e) {} }
+  if (embed) {
+    document.body.classList.add('embed');
+    if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
+    window.addEventListener('load', postHeight);
+    setTimeout(postHeight, 300);
+  }
 
   function show(id) { ['loading','booking','confirmed','storno'].forEach((x) => $(x).classList.toggle('hidden', x !== id)); }
 
