@@ -82,8 +82,10 @@
             <div><label>Datum</label><input id="date" type="date"></div>
             <div><label>Personen</label><input id="party" type="number" min="1" value="2"></div>
           </div>
-          <label>Bereich (optional)</label>
-          <select id="area"><option value="">Egal – überrascht mich</option><option value="innen">Drinnen</option><option value="draussen">Draußen</option><option value="bar">Bar</option></select>
+          <div id="areaWrap" class="hidden">
+            <label>Bereich (optional)</label>
+            <select id="area"><option value="">Egal – überrascht mich</option></select>
+          </div>
           <button id="checkBtn" class="btn btn--block" type="button" style="margin-top:16px">Freie Zeiten anzeigen</button>
           <div id="times" class="times"></div>
 
@@ -174,6 +176,11 @@
       const info = await api('/api/public/info', { token });
       if (info.name) { $('heroName').textContent = info.name; document.title = 'Tisch reservieren – ' + info.name; }
       $('heroSub').textContent = 'Reservieren Sie in wenigen Sekunden';
+      // Bereiche aus der echten Konfiguration des Restaurants (nur mit Tischen).
+      const areas = Array.isArray(info.areas) ? info.areas : [];
+      const sel = $('area');
+      areas.forEach((a) => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.append(o); });
+      $('areaWrap').classList.toggle('hidden', areas.length < 2); // erst ab 2 Bereichen sinnvoll
       $('date').min = new Date().toISOString().slice(0,10);
       $('date').value = new Date().toISOString().slice(0,10);
       show('booking');
