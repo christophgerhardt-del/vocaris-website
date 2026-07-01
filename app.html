@@ -1016,100 +1016,45 @@
         <!-- Reservierungen (Restaurant-Modus) -->
         <section id="sec-restaurant" class="section hidden">
           <h1 class="pagehead">Reservierungen</h1>
-          <p class="pagesub">Restaurant-Modus: Vocaris nimmt am Telefon Tischreservierungen entgegen, prüft freie Tische und verschickt Bestätigung und Erinnerung.</p>
+          <p class="pagesub">Dein Tages-Cockpit: Reservierungen als Liste oder Timeline, direkt anlegen, Status pflegen. Einstellungen unten.</p>
 
+          <!-- Cockpit-Kopf: Tag + Ansicht + Aktionen -->
           <div class="panel">
-            <h3>Restaurant-Modus</h3>
-            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:6px">
-              <input type="checkbox" id="rsEnabled" style="width:auto;margin:0">
-              <span>Tischreservierung aktivieren</span>
-            </label>
-            <p class="muted" style="text-align:left;padding:0;margin-top:4px">Wenn aktiv, kann der Assistent Tische reservieren (statt Termine). Die Öffnungszeiten stellst du unter <b>Assistent</b> ein.</p>
-            <div class="grid2" style="margin-top:10px">
-              <div>
-                <label>Sitzdauer je Tisch (Minuten)</label>
-                <input id="rsSeating" type="number" min="30" step="15" value="120">
-              </div>
-              <div>
-                <label>Erinnerungen vorher (Stunden)</label>
-                <input id="rsReminderHours" placeholder="z.B. 24, 2">
-              </div>
-            </div>
-            <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemEmail" style="width:auto;margin:0"><span>Erinnerung per E-Mail</span></label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemSms" style="width:auto;margin:0"><span>Erinnerung per SMS</span></label>
-            </div>
-            <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
-
-            <div class="grid2" style="margin-top:12px">
-              <div>
-                <label>Max. gleichzeitige Gäste (Pacing)</label>
-                <input id="rsMaxCovers" type="number" min="0" value="0">
-                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Begrenzt, wie viele Gäste zur selben Zeit reserviert sein dürfen.</p>
-              </div>
-              <div>
-                <label>Daten löschen nach (Tagen)</label>
-                <input id="rsRetention" type="number" min="0" value="0">
-                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">DSGVO: 0 = aus. Vergangene Reservierungen (mit Gastdaten) werden danach automatisch gelöscht.</p>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button id="rsDayPrev" class="btn btn--ghost sm" type="button" title="Vortag">‹</button>
+              <input id="rsDayDate" type="date" style="width:160px">
+              <button id="rsDayNext" class="btn btn--ghost sm" type="button" title="Folgetag">›</button>
+              <button id="rsDayToday" class="btn btn--ghost sm" type="button">Heute</button>
+              <span id="rsDaySummary" class="muted" style="font-weight:600;margin-left:6px"></span>
+              <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <div class="deptbar" role="tablist">
+                  <button id="rsViewList" class="deptseg active" type="button">Liste</button>
+                  <button id="rsViewTimeline" class="deptseg" type="button">Timeline</button>
+                </div>
+                <button id="rsNewBtn" class="btn btn--primary sm" type="button">+ Reservierung</button>
+                <button id="rsWalkOpen" class="btn sm" type="button">Walk-in</button>
+                <button id="rsGotoPlan" class="btn btn--ghost sm" type="button">Tischplan</button>
               </div>
             </div>
-            <label style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
-            <input id="rsClosedDates" placeholder="z.B. 2026-12-24, 2026-12-25">
-            <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">An diesen Tagen sind keine Reservierungen möglich (Feiertage, Betriebsferien). Der wöchentliche Ruhetag kommt aus den Öffnungszeiten.</p>
-
-            <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
-            <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
-              <label style="font-size:13px;font-weight:600">Direkter Buchungslink</label>
-              <div style="display:flex;gap:8px;align-items:center">
-                <input id="rsPublicLink" readonly style="flex:1;background:var(--paper-2)">
-                <button id="rsCopyLink" class="btn btn--ghost sm" type="button">Kopieren</button>
-              </div>
-              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Auf Website/Google-Profil teilen — Gäste reservieren selbst. (Erst „Speichern", dann ist der Link aktiv.)</p>
-
-              <label style="margin-top:12px;display:block;font-size:13px;font-weight:600">In die eigene Website einbetten</label>
-              <div style="display:flex;gap:8px;align-items:flex-start">
-                <textarea id="rsEmbedCode" readonly rows="2" style="flex:1;background:var(--paper-2);font-family:ui-monospace,monospace;font-size:12px;resize:vertical"></textarea>
-                <button id="rsCopyEmbed" class="btn btn--ghost sm" type="button">Kopieren</button>
-              </div>
-              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Code an der gewünschten Stelle in die Website einfügen — die Reservierungsmaske erscheint direkt dort und passt ihre Höhe automatisch an.</p>
-            </div>
-
-            <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
+            <input id="rsDaySearch" placeholder="Nach Gast-Name suchen…" style="width:100%;max-width:340px;margin-top:10px">
+            <button id="rsDayShow" type="button" class="hidden"></button>
           </div>
 
-          <div class="panel" style="margin-top:18px">
-            <h3>Tischplan</h3>
-            <p class="muted" style="text-align:left;padding:0">Den Tischplan in voller Größe bearbeitest du links unter <b>Tischplan</b> — dort ordnest du Tische per Drag &amp; Drop an, legst Formen/Größen fest und siehst die Belegung.</p>
-            <div class="stack" style="margin-top:10px"><button id="rsGotoPlan" class="btn" type="button">Zum Tischplan</button></div>
+          <!-- Ansicht: Liste ODER Timeline -->
+          <div class="panel" style="margin-top:14px">
+            <div id="rsDayList"><span class="muted">Lädt …</span></div>
+            <div id="rsTimeline" class="hidden" style="overflow-x:auto"></div>
           </div>
 
-          <div class="panel" style="margin-top:18px">
-            <h3>Tages-Timeline</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:10px">Reservierungen je Tisch über den Tag — als Balken (Farbe = Status). Zusammengelegte Tische erscheinen in mehreren Zeilen.</p>
-            <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px">
-              <label style="width:180px">Tag<input id="rsTlDate" type="date" style="width:100%"></label>
-              <button id="rsTlShow" class="btn btn--ghost sm" type="button">Anzeigen</button>
-            </div>
-            <div id="rsTimeline" style="overflow-x:auto"><span class="muted">Tag wählen und „Anzeigen".</span></div>
-          </div>
-
-          <div class="panel" style="margin-top:18px">
+          <!-- Reservierung anlegen (einklappbar) -->
+          <div id="rsNewPanel" class="panel hidden" style="margin-top:14px">
             <h3>Reservierung anlegen</h3>
             <div class="if-grid">
               <label>Datum<input id="rsResDate" type="date"></label>
               <label>Personen<input id="rsResParty" type="number" min="1" value="2"></label>
-              <label>Bereich (optional)
-                <select id="rsResArea">
-                  <option value="">egal</option>
-                  <option value="innen">Drinnen</option>
-                  <option value="draussen">Draußen</option>
-                  <option value="bar">Bar</option>
-                </select>
-              </label>
+              <label>Bereich (optional)<select id="rsResArea"><option value="">egal</option></select></label>
             </div>
-            <div class="stack" style="margin-top:10px">
-              <button id="rsCheckBtn" class="btn" type="button">Freie Zeiten anzeigen</button>
-            </div>
+            <div class="stack" style="margin-top:10px"><button id="rsCheckBtn" class="btn" type="button">Freie Zeiten anzeigen</button></div>
             <div id="rsTimes" style="margin-top:10px"></div>
             <div class="if-grid" style="margin-top:10px">
               <label>Name<input id="rsResName" placeholder="Name des Gastes"></label>
@@ -1123,32 +1068,54 @@
             <p class="muted" id="rsResHint" style="text-align:left;padding:0;margin-top:8px"></p>
           </div>
 
-          <div class="panel" style="margin-top:18px">
-            <h3>Gästeliste (Tagesansicht)</h3>
-            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px">
-              <button id="rsDayPrev" class="btn btn--ghost sm" type="button" title="Vortag">‹</button>
-              <label style="width:150px">Tag<input id="rsDayDate" type="date" style="width:100%"></label>
-              <button id="rsDayNext" class="btn btn--ghost sm" type="button" title="Folgetag">›</button>
-              <button id="rsDayToday" class="btn btn--ghost sm" type="button">Heute</button>
-              <label style="flex:1;min-width:150px">Suche (Name)<input id="rsDaySearch" placeholder="Name…" style="width:100%"></label>
-              <button id="rsDayShow" class="btn btn--ghost sm" type="button">Anzeigen</button>
+          <!-- Walk-in (einklappbar) -->
+          <div id="rsWalkPanel" class="panel hidden" style="margin-top:14px">
+            <h3>Walk-in (Laufkundschaft, jetzt setzen)</h3>
+            <div class="if-grid">
+              <label>Personen<input id="rsWalkParty" type="number" min="1" value="2"></label>
+              <label>Tisch<select id="rsWalkTable"></select></label>
+              <label>Name (optional)<input id="rsWalkName" placeholder="Name"></label>
             </div>
-            <div id="rsDayList"><span class="muted">Tag wählen und „Anzeigen".</span></div>
-            <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-              <h4 style="margin:0 0 8px">Walk-in (Laufkundschaft, jetzt setzen)</h4>
-              <div class="if-grid">
-                <label>Personen<input id="rsWalkParty" type="number" min="1" value="2"></label>
-                <label>Tisch<select id="rsWalkTable"></select></label>
-                <label>Name (optional)<input id="rsWalkName" placeholder="Name"></label>
-              </div>
-              <div class="stack" style="margin-top:8px"><button id="rsWalkBtn" class="btn" type="button">Walk-in an Tisch setzen</button></div>
-            </div>
+            <div class="stack" style="margin-top:8px"><button id="rsWalkBtn" class="btn btn--primary" type="button">Walk-in an Tisch setzen</button></div>
           </div>
 
-          <div class="panel" style="margin-top:18px">
-            <h3>Kommende Reservierungen</h3>
-            <div id="rsList"></div>
-          </div>
+          <!-- Einstellungen (einklappbar) -->
+          <details class="panel" style="margin-top:14px">
+            <summary style="cursor:pointer;font-weight:700;font-size:16px;list-style:none">⚙︎ Einstellungen</summary>
+            <div style="margin-top:14px">
+              <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+                <input type="checkbox" id="rsEnabled" style="width:auto;margin:0">
+                <span>Tischreservierung aktivieren</span>
+              </label>
+              <p class="muted" style="text-align:left;padding:0;margin-top:4px">Wenn aktiv, kann der Assistent Tische reservieren (statt Termine). Die Öffnungszeiten stellst du unter <b>Assistent</b> ein.</p>
+              <div class="grid2" style="margin-top:10px">
+                <div><label>Sitzdauer je Tisch (Minuten)</label><input id="rsSeating" type="number" min="30" step="15" value="120"></div>
+                <div><label>Erinnerungen vorher (Stunden)</label><input id="rsReminderHours" placeholder="z.B. 24, 2"></div>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemEmail" style="width:auto;margin:0"><span>Erinnerung per E-Mail</span></label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemSms" style="width:auto;margin:0"><span>Erinnerung per SMS</span></label>
+              </div>
+              <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
+              <div class="grid2" style="margin-top:12px">
+                <div><label>Max. gleichzeitige Gäste (Pacing)</label><input id="rsMaxCovers" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Begrenzt, wie viele Gäste zur selben Zeit reserviert sein dürfen.</p></div>
+                <div><label>Daten löschen nach (Tagen)</label><input id="rsRetention" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">DSGVO: 0 = aus. Vergangene Reservierungen werden danach automatisch gelöscht.</p></div>
+              </div>
+              <label style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
+              <input id="rsClosedDates" placeholder="z.B. 2026-12-24, 2026-12-25">
+              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">An diesen Tagen sind keine Reservierungen möglich (Feiertage, Betriebsferien). Der wöchentliche Ruhetag kommt aus den Öffnungszeiten.</p>
+              <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
+              <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
+                <label style="font-size:13px;font-weight:600">Direkter Buchungslink</label>
+                <div style="display:flex;gap:8px;align-items:center"><input id="rsPublicLink" readonly style="flex:1;background:var(--paper-2)"><button id="rsCopyLink" class="btn btn--ghost sm" type="button">Kopieren</button></div>
+                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Auf Website/Google-Profil teilen — Gäste reservieren selbst. (Erst „Speichern", dann ist der Link aktiv.)</p>
+                <label style="margin-top:12px;display:block;font-size:13px;font-weight:600">In die eigene Website einbetten</label>
+                <div style="display:flex;gap:8px;align-items:flex-start"><textarea id="rsEmbedCode" readonly rows="2" style="flex:1;background:var(--paper-2);font-family:ui-monospace,monospace;font-size:12px;resize:vertical"></textarea><button id="rsCopyEmbed" class="btn btn--ghost sm" type="button">Kopieren</button></div>
+                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Code an der gewünschten Stelle in die Website einfügen — die Reservierungsmaske erscheint direkt dort und passt ihre Höhe automatisch an.</p>
+              </div>
+              <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
+            </div>
+          </details>
         </section>
       </div>
     </main>
@@ -1592,14 +1559,12 @@
       const areas = allAreas();
       if (!rsArea || !areas.includes(rsArea)) rsArea = areas[0];
       fillAreaSelects(); renderAreaTabs(); renderRsPlan(); fillWalkTables();
-      renderRsList(res ?? []);
       const today = new Date().toISOString().slice(0, 10);
       if (!$('rsResDate').value) $('rsResDate').value = today;
       if (!$('rsPlanDate').value) $('rsPlanDate').value = today;
-      if ($('rsTlDate') && !$('rsTlDate').value) $('rsTlDate').value = today;
       if ($('rsDayDate') && !$('rsDayDate').value) $('rsDayDate').value = today;
       if ($('rsPlanDate')) loadDayOccupancy($('rsPlanDate').value); // Live-Belegung sofort
-      if ($('rsDayDate')) renderDayView();                          // Tages-Cockpit sofort
+      if ($('rsDayDate')) refreshDay();                             // Tages-Cockpit sofort
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
@@ -2127,16 +2092,22 @@
       div.append(bar);
       return div;
     }
-    function renderRsList(items) {
-      const el = $('rsList');
-      if (!items.length) { el.innerHTML = '<span class="muted">Keine kommenden Reservierungen.</span>'; return; }
-      el.innerHTML = '';
-      for (const r of items) el.append(resItemNode(r));
+    // ---- Tages-Cockpit (Liste ⇄ Timeline) + Walk-ins ----
+    let rsDayView = 'list';
+    async function refreshDay() {
+      await renderDayView();                       // Zusammenfassung + Liste
+      if (rsDayView === 'timeline') await renderTimeline();
     }
-
-    // ---- Host-Tagesansicht + Walk-ins ----
+    function setDayView(v) {
+      rsDayView = v;
+      $('rsViewList')?.classList.toggle('active', v === 'list');
+      $('rsViewTimeline')?.classList.toggle('active', v === 'timeline');
+      $('rsDayList')?.classList.toggle('hidden', v !== 'list');
+      $('rsTimeline')?.classList.toggle('hidden', v !== 'timeline');
+      refreshDay();
+    }
     async function renderDayView() {
-      const date = $('rsDayDate').value; if (!date) { toast('Bitte einen Tag wählen.'); return; }
+      const date = $('rsDayDate').value; if (!date) return;
       const q = ($('rsDaySearch').value || '').trim().toLowerCase();
       const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
         .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
@@ -2144,10 +2115,11 @@
       if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt || []) (map[j.reservation_id] ||= []).push(j.table_id); }
       let items = (res || []).filter((r) => r.status !== 'cancelled');
       if (q) items = items.filter((r) => (r.customer_name || '').toLowerCase().includes(q));
-      const el = $('rsDayList');
       const covers = items.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
+      const sm = $('rsDaySummary'); if (sm) sm.textContent = items.length ? (items.length + ' Reservierung(en) · ' + covers + ' Gäste') : 'Keine Reservierungen';
+      const el = $('rsDayList');
       if (!items.length) { el.innerHTML = '<span class="muted">Keine Reservierungen an dem Tag.</span>'; return; }
-      el.innerHTML = '<p class="muted" style="margin:0 0 8px;font-size:13px">' + items.length + ' Reservierung(en) · ' + covers + ' Gäste</p>';
+      el.innerHTML = '';
       for (const r of items) el.append(resItemNode(r, map));
     }
     function fillWalkTables() {
@@ -2165,19 +2137,22 @@
       if (error) { toast('Fehler: ' + error.message); return; }
       await sb.from('reservation_tables').insert({ reservation_id: data.id, table_id: tid });
       toast('Walk-in gesetzt.'); $('rsWalkName').value = '';
+      $('rsWalkPanel')?.classList.add('hidden');
       loadRestaurant();
-      if ($('rsDayDate').value === new Date().toISOString().slice(0, 10)) renderDayView();
     }
     function shiftDay(days) {
       const d = new Date(($('rsDayDate').value || new Date().toISOString().slice(0, 10)) + 'T12:00:00');
-      d.setDate(d.getDate() + days); $('rsDayDate').value = d.toISOString().slice(0, 10); renderDayView();
+      d.setDate(d.getDate() + days); $('rsDayDate').value = d.toISOString().slice(0, 10); refreshDay();
     }
-    $('rsDayShow')?.addEventListener('click', renderDayView);
-    $('rsDayDate')?.addEventListener('change', renderDayView);
+    $('rsDayDate')?.addEventListener('change', refreshDay);
     $('rsDayPrev')?.addEventListener('click', () => shiftDay(-1));
     $('rsDayNext')?.addEventListener('click', () => shiftDay(1));
-    $('rsDayToday')?.addEventListener('click', () => { $('rsDayDate').value = new Date().toISOString().slice(0, 10); renderDayView(); });
-    $('rsDaySearch')?.addEventListener('input', () => { if ($('rsDayDate').value) renderDayView(); });
+    $('rsDayToday')?.addEventListener('click', () => { $('rsDayDate').value = new Date().toISOString().slice(0, 10); refreshDay(); });
+    $('rsDaySearch')?.addEventListener('input', () => { if ($('rsDayDate').value) refreshDay(); });
+    $('rsViewList')?.addEventListener('click', () => setDayView('list'));
+    $('rsViewTimeline')?.addEventListener('click', () => setDayView('timeline'));
+    $('rsNewBtn')?.addEventListener('click', () => { const p = $('rsNewPanel'); p.classList.toggle('hidden'); if (!p.classList.contains('hidden') && !$('rsResDate').value) $('rsResDate').value = $('rsDayDate').value; });
+    $('rsWalkOpen')?.addEventListener('click', () => $('rsWalkPanel')?.classList.toggle('hidden'));
     $('rsWalkBtn')?.addEventListener('click', doWalkin);
 
     // ---- Tages-Timeline (Reservierungen je Tisch) ----
@@ -2192,7 +2167,7 @@
     }
     async function renderTimeline() {
       const wrap = $('rsTimeline'); if (!wrap) return;
-      const date = $('rsTlDate').value; if (!date) { toast('Bitte einen Tag wählen.'); return; }
+      const date = $('rsDayDate').value; if (!date) return;
       const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
         .in('status', ['booked', 'seated', 'completed'])
         .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString());
@@ -2228,7 +2203,6 @@
       }
       wrap.innerHTML = head + rows;
     }
-    $('rsTlShow')?.addEventListener('click', renderTimeline);
     $('rsSaveCfg')?.addEventListener('click', async () => {
       const hours = ($('rsReminderHours').value || '').split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n > 0).slice(0, 2);
       const closed = ($('rsClosedDates').value || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s));
@@ -2357,7 +2331,7 @@
         const r = await apiFetch('/api/restaurant/reserve', { method: 'POST', headers: numAuth(), body: JSON.stringify(body) });
         const d = await r.json();
         hint.textContent = d.message || (r.ok ? 'Reserviert.' : 'Fehler.');
-        if (r.ok && d.ok) { $('rsResName').value = ''; $('rsResTime').value = ''; $('rsResPhone').value = ''; $('rsResEmail').value = ''; $('rsResNotes').value = ''; loadRestaurant(); }
+        if (r.ok && d.ok) { $('rsResName').value = ''; $('rsResTime').value = ''; $('rsResPhone').value = ''; $('rsResEmail').value = ''; $('rsResNotes').value = ''; $('rsTimes').innerHTML = ''; $('rsNewPanel')?.classList.add('hidden'); loadRestaurant(); }
       } catch (e) { hint.textContent = e.message || 'Fehler.'; }
     });
 
