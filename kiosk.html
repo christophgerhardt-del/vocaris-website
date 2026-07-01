@@ -204,13 +204,14 @@ function renderPlan(){
 function buildEl(el,plan){ const w=el.width||90,h=el.height||50; const pw=plan.clientWidth||700,ph=plan.clientHeight||500; const x=Math.max(0,Math.min(pw-w,el.pos_x??40)),y=Math.max(0,Math.min(ph-h,el.pos_y??40)); const box=document.createElement('div'); box.style.cssText='position:absolute;left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;border:1px dashed #b7c4d6;background:#eef2f7;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:600;color:#556;pointer-events:none;overflow:hidden'; box.textContent=el.kind==='wall'?'':(el.label||el.kind); return box; }
 function buildTable(t,plan){
   const shape=t.shape||'round',rot=t.rotation||0,seats=Math.max(1,t.seats||1); const st=statusMap.get(t.id); const occ=!!st;
+  const cleaning=!occ&&t.cleaning_until&&new Date(t.cleaning_until).getTime()>Date.now();
   const {tw,th}=disp(t); const W=tw+T_PAD*2,H=th+T_PAD*2; const pw=plan.clientWidth||700,ph=plan.clientHeight||500;
   const x=Math.max(0,Math.min(pw-W,t.pos_x??40)),y=Math.max(0,Math.min(ph-H,t.pos_y??40));
   const box=document.createElement('div'); box.style.cssText='position:absolute;left:'+x+'px;top:'+y+'px;width:'+W+'px;height:'+H+'px;cursor:pointer';
   const ch=document.createElement('div'); ch.style.cssText='position:absolute;inset:0;pointer-events:none'; box.append(ch); chairs(ch,shape,seats,tw,th,occ,rot);
-  const surf=document.createElement('div'); const col=st?OCC[st.status]:{b:'#3f7d63',bg:'#fff'}; const radius=shape==='round'?'50%':(shape==='bench'?'6px':'10px');
+  const surf=document.createElement('div'); const col=st?OCC[st.status]:(cleaning?{b:'#b08900',bg:'#fbf3d0'}:{b:'#3f7d63',bg:'#fff'}); const radius=shape==='round'?'50%':(shape==='bench'?'6px':'10px');
   surf.style.cssText='position:absolute;left:'+T_PAD+'px;top:'+T_PAD+'px;width:'+tw+'px;height:'+th+'px;border:2px solid '+col.b+';background:'+col.bg+';border-radius:'+radius+';box-shadow:0 3px 10px #0002;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none;overflow:hidden';
-  surf.innerHTML='<b style="font-size:12px">'+(t.name||'Tisch')+'</b>'+(shape==='bench'?'':'<span style="font-size:11px;color:#666">'+(occ?(st.status==='seated'?'am Tisch':'reserviert'):(seats+'P'))+'</span>');
+  surf.innerHTML='<b style="font-size:12px">'+(t.name||'Tisch')+'</b>'+(shape==='bench'?'':'<span style="font-size:11px;color:#666">'+(occ?(st.status==='seated'?'am Tisch':'reserviert'):(cleaning?'🧹 abräumen':(seats+'P')))+'</span>');
   box.append(surf);
   box.onclick=()=>openTable(t);
   return box;
@@ -229,7 +230,9 @@ function openTable(t){
     const s=new Date(r.starts_at).getTime(), e=r.ends_at?new Date(r.ends_at).getTime():s+(D.seatingMinutes||120)*60000;
     return start<e&&end>s;
   });
+  const cleaning=t.cleaning_until&&new Date(t.cleaning_until).getTime()>Date.now();
   let html='<h3>'+(t.name||'Tisch')+'</h3><p class="muted" style="margin:0 0 12px">'+(t.seats||0)+' Plätze · '+(t.area||'')+' · '+date+' um '+tl+' Uhr</p>';
+  if(!here.length&&cleaning) html+='<div style="background:#fbf3d0;border:1px solid #e6cf6a;border-radius:12px;padding:12px;margin-bottom:12px;font-size:15px">🧹 Tisch muss noch abgeräumt werden.<div style="margin-top:8px"><button class="btn btn--pri" id="mClean" style="width:100%">Abgeräumt – freigeben</button></div></div>';
   if(here.length){
     html+='<div id="hereList"></div>';
   } else {
@@ -245,6 +248,7 @@ function openTable(t){
     $('mReserve').onclick=()=>quickReserve(t,tl);
     $('mWalk').onclick=()=>quickWalk(t);
   }
+  const mc=$('mClean'); if(mc) mc.onclick=async()=>{ try{ await api('/api/kiosk/clean',{tableId:t.id}); closeModal(); await loadDay(date); }catch(e){ alert(e.message); } };
 }
 function actionBarSheet(r){ const bar=document.createElement('div'); bar.className='acts'; const mk=(l,s)=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.onclick=async()=>{try{await api('/api/kiosk/status',{reservationId:r.id,status:s});closeModal();await loadDay(date);}catch(e){alert(e.message);}};return b;}; if(r.status==='booked')bar.append(mk('Eingetroffen','seated')); if(r.status==='seated')bar.append(mk('Abschließen','completed')); if(r.status==='booked')bar.append(mk('No-Show','no_show')); if(r.status==='booked'||r.status==='seated')bar.append(mk('Stornieren','cancelled')); return bar; }
 async function quickReserve(t,tl){ const party=Math.max(1,parseInt($('mParty').value,10)||2); try{ const d=await api('/api/kiosk/reserve',{date,time:tl,partySize:party,name:$('mName').value.trim(),phone:$('mPhone').value.trim(),tableId:t.id}); if(!d.ok)throw new Error(d.message||'Fehler'); closeModal(); await loadDay(date); }catch(e){ $('mHint').textContent=e.message; } }

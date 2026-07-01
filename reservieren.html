@@ -85,6 +85,25 @@
         <p id="stornoHint" class="hint"></p>
       </div>
 
+      <!-- Verwalten (umbuchen / absagen) -->
+      <div id="manage" class="hidden">
+        <h1 id="mgTitle">Reservierung verwalten</h1>
+        <p class="sub" id="mgCurrent"></p>
+        <div id="mgArea">
+          <h3 style="margin:0 0 8px">Umbuchen</h3>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <label style="flex:1;min-width:140px">Neues Datum<input id="mgDate" type="date"></label>
+            <label style="flex:1;min-width:120px">Personen<input id="mgParty" type="number" min="1" value="2"></label>
+          </div>
+          <div class="stack" style="margin-top:10px"><button id="mgCheck" class="btn" type="button">Freie Zeiten anzeigen</button></div>
+          <div id="mgTimes" style="margin-top:10px"></div>
+          <button id="mgSave" class="btn btn--primary hidden" type="button" style="margin-top:10px">Umbuchung bestätigen</button>
+          <p id="mgHint" class="hint"></p>
+          <hr style="border:none;border-top:1px solid var(--line,#e6e4f0);margin:16px 0">
+          <button id="mgCancel" class="btn" type="button">Reservierung stornieren</button>
+        </div>
+      </div>
+
       <div class="foot">Reservierung über <a href="https://vocaris.eu" target="_blank" rel="noopener">Vocaris</a></div>
     </div>
   </div>
@@ -95,6 +114,7 @@
   const params = new URLSearchParams(location.search);
   const token = params.get('r') || '';
   const storno = params.get('storno') || '';
+  const manage = params.get('manage') || '';
   const embed = params.has('embed');
   let selectedTime = '';
 
@@ -107,7 +127,7 @@
     setTimeout(postHeight, 300);
   }
 
-  function show(id) { ['loading','booking','confirmed','storno'].forEach((x) => $(x).classList.toggle('hidden', x !== id)); }
+  function show(id) { ['loading','booking','confirmed','storno','manage'].forEach((x) => $(x).classList.toggle('hidden', x !== id)); }
 
   async function api(path, body) {
     const r = await fetch(API + path, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
@@ -168,7 +188,53 @@
     catch (e) { $('stornoHint').innerHTML = '<span class="err">' + e.message + '</span>'; $('cancelBtn').disabled = false; }
   };
 
-  if (storno) { show('storno'); }
+  // ---- Verwalten (umbuchen / stornieren) ----
+  let mgSelected = '';
+  async function initManage() {
+    try {
+      const r = await api('/api/public/reservation', { token: manage });
+      $('mgTitle').textContent = 'Reservierung – ' + (r.restaurantName || '');
+      if (r.status === 'cancelled') { $('mgCurrent').innerHTML = '<span class="err">Diese Reservierung ist storniert.</span>'; $('mgArea').classList.add('hidden'); show('manage'); return; }
+      const when = new Date(r.startISO).toLocaleString('de-DE', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+      $('mgCurrent').textContent = 'Aktuell: ' + when + ' Uhr · ' + r.party + ' ' + (r.party === 1 ? 'Person' : 'Personen');
+      $('mgDate').min = new Date().toISOString().slice(0,10);
+      $('mgDate').value = r.startISO.slice(0,10);
+      $('mgParty').value = r.party;
+      show('manage');
+    } catch (e) { $('loading').innerHTML = '<p class="err">' + e.message + '</p>'; }
+  }
+  $('mgCheck') && ($('mgCheck').onclick = async () => {
+    const date = $('mgDate').value, party = Math.max(1, parseInt($('mgParty').value,10) || 2);
+    if (!date) { $('mgHint').textContent = 'Bitte ein Datum wählen.'; return; }
+    $('mgTimes').innerHTML = '<span class="muted">Suche …</span>'; $('mgSave').classList.add('hidden'); mgSelected = '';
+    try {
+      const d = await api('/api/public/manage-availability', { token: manage, date, partySize: party });
+      const slots = d.slots || [];
+      if (!slots.length) { $('mgTimes').innerHTML = '<span class="muted">Keine freien Zeiten an dem Tag.</span>'; return; }
+      $('mgTimes').innerHTML = '';
+      slots.forEach((s) => { const b = document.createElement('button'); b.type='button'; b.className='time'; b.textContent = s.label;
+        b.onclick = () => { mgSelected = s.label; document.querySelectorAll('#mgTimes .time').forEach((x)=>x.classList.remove('sel')); b.classList.add('sel'); $('mgSave').classList.remove('hidden'); };
+        $('mgTimes').append(b); });
+    } catch (e) { $('mgTimes').innerHTML = '<span class="err">' + e.message + '</span>'; }
+  });
+  $('mgSave') && ($('mgSave').onclick = async () => {
+    if (!mgSelected) { $('mgHint').textContent = 'Bitte eine Zeit wählen.'; return; }
+    $('mgSave').disabled = true; $('mgHint').textContent = 'Wird umgebucht …';
+    try {
+      const d = await api('/api/public/change', { token: manage, datum: $('mgDate').value, uhrzeit: mgSelected, personen: Math.max(1, parseInt($('mgParty').value,10) || 2) });
+      if (!d.ok) throw new Error(d.message || 'Umbuchen nicht möglich.');
+      $('confirmMsg').textContent = d.message || 'Ihre Reservierung wurde geändert.'; show('confirmed');
+    } catch (e) { $('mgHint').innerHTML = '<span class="err">' + e.message + '</span>'; $('mgSave').disabled = false; }
+  });
+  $('mgCancel') && ($('mgCancel').onclick = async () => {
+    if (!confirm('Reservierung wirklich stornieren?')) return;
+    $('mgCancel').disabled = true; $('mgHint').textContent = 'Storniere …';
+    try { const d = await api('/api/public/cancel', { token: manage }); $('mgArea').innerHTML = '<span class="ok">' + (d.message || 'Storniert.') + '</span>'; }
+    catch (e) { $('mgHint').innerHTML = '<span class="err">' + e.message + '</span>'; $('mgCancel').disabled = false; }
+  });
+
+  if (manage) { initManage(); }
+  else if (storno) { show('storno'); }
   else if (token) { initBooking(); }
   else { $('loading').innerHTML = '<p class="err">Ungültiger Link.</p>'; }
 </script>

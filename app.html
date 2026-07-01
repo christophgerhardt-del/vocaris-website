@@ -1030,6 +1030,8 @@
                 <div class="deptbar" role="tablist">
                   <button id="rsViewList" class="deptseg active" type="button">Liste</button>
                   <button id="rsViewTimeline" class="deptseg" type="button">Timeline</button>
+                  <button id="rsViewWaitlist" class="deptseg" type="button">Warteliste <span id="rsWlBadge" class="gap-badge hidden"></span></button>
+                  <button id="rsViewAnalytics" class="deptseg" type="button">Auswertung</button>
                 </div>
                 <button id="rsNewBtn" class="btn btn--primary sm" type="button">+ Reservierung</button>
                 <button id="rsWalkOpen" class="btn sm" type="button">Walk-in</button>
@@ -1040,10 +1042,12 @@
             <button id="rsDayShow" type="button" class="hidden"></button>
           </div>
 
-          <!-- Ansicht: Liste ODER Timeline -->
+          <!-- Ansicht: Liste / Timeline / Warteliste / Auswertung -->
           <div class="panel" style="margin-top:14px">
             <div id="rsDayList"><span class="muted">Lädt …</span></div>
             <div id="rsTimeline" class="hidden" style="overflow-x:auto"></div>
+            <div id="rsWaitlist" class="hidden"></div>
+            <div id="rsAnalytics" class="hidden"></div>
           </div>
 
           <!-- Reservierung anlegen (einklappbar) -->
@@ -1603,6 +1607,16 @@
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [], rsKioskToken = null;
+    // Stammgäste: Telefonnummer (letzte 9 Ziffern) → Anzahl vergangener Besuche.
+    let rsGuestVisits = {}, rsGuestVisitsLoaded = false;
+    async function ensureGuestVisits() {
+      if (rsGuestVisitsLoaded) return;
+      rsGuestVisitsLoaded = true; rsGuestVisits = {};
+      const todayStart = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00').toISOString();
+      const { data } = await sb.from('reservations').select('customer_phone, status')
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed']).lt('starts_at', todayStart).limit(2000);
+      for (const r of data || []) { const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9); if (k.length >= 6) rsGuestVisits[k] = (rsGuestVisits[k] || 0) + 1; }
+    }
     function genToken() { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map((b) => b.toString(16).padStart(2, '0')).join(''); }
     let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
     let rsEditMode = false, rsAreas = []; // Bearbeitungsmodus + frei definierbare Bereiche
@@ -1718,6 +1732,8 @@
       const shape = t.shape || 'round', rot = t.rotation || 0, seats = Math.max(1, t.seats || 1);
       const st = rsTableStatus.get(t.id); // { status:'seated'|'booked', label } oder undefined
       const occ = !!st;
+      // „Abräumen": Tisch wurde gerade abgeschlossen (cleaning_until in der Zukunft) und ist sonst frei.
+      const cleaning = !occ && !rsEditMode && t.cleaning_until && new Date(t.cleaning_until).getTime() > Date.now();
       let { tw, th } = dispDims(t);
       const pw = plan.clientWidth || 700, ph = plan.clientHeight || 400;
       const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), t.pos_x ?? 40));
@@ -1731,10 +1747,10 @@
 
       const surf = document.createElement('div');
       const radius = shape === 'round' ? '50%' : (shape === 'bench' ? '6px' : '11px');
-      const col = st ? OCC_COL[st.status] : { b: '#3f7d63', bg: '#ffffff' };
+      const col = st ? OCC_COL[st.status] : (cleaning ? { b: '#b08900', bg: '#fbf3d0' } : { b: '#3f7d63', bg: '#ffffff' });
       surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + col.b +
         ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
-      const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (seats + 'P');
+      const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? '🧹 abräumen' : (seats + 'P'));
       surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + (t.name || 'Tisch') + '</b>' +
         (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666;pointer-events:none">' + sub + '</span>');
       if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
@@ -2058,7 +2074,9 @@
       const min = parseInt($('rsPlanSlider').value, 10) || 1140, timeLabel = minToHHMM(min);
       const start = new Date(date + 'T' + timeLabel + ':00').getTime(), end = start + rsSeatingMin * 60000;
       const here = rsDayRes.filter((r) => r.tids.includes(t.id) && start < r.e && end > r.s);
+      const cleaning = t.cleaning_until && new Date(t.cleaning_until).getTime() > Date.now();
       let html = '<h3 style="margin:0 0 2px">' + (t.name || 'Tisch') + '</h3><p class="muted" style="margin:0 0 14px;font-size:13px">' + (t.seats || 0) + ' Plätze · ' + areaName(t.area || 'innen') + ' · ' + date + ' um ' + timeLabel + ' Uhr</p>';
+      if (!here.length && cleaning) html += '<div style="background:#fbf3d0;border:1px solid #e6cf6a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px">🧹 Dieser Tisch muss noch abgeräumt werden.<div class="stack" style="margin-top:8px"><button id="rsTblClean" class="btn btn--primary sm" type="button">Abgeräumt – Tisch freigeben</button></div></div>';
       if (here.length) html += '<div id="rsTblRes"></div>';
       else html += '<div class="if-grid"><label>Personen<input id="rsQpParty" type="number" min="1" value="' + Math.min(t.seats || 2, 2) + '"></label><label>Name (optional)<input id="rsQpName" placeholder="Gast"></label></div>' +
         '<label style="margin-top:8px">Telefon oder E-Mail (optional)<input id="rsQpContact" placeholder="für Bestätigung"></label>' +
@@ -2080,6 +2098,8 @@
           div.append(bar); wrap.append(div);
         });
       } else {
+        const cb = body.querySelector('#rsTblClean');
+        if (cb) cb.onclick = async () => { await sb.from('restaurant_tables').update({ cleaning_until: null }).eq('id', t.id); toast('Tisch freigegeben.'); closeTableModal(); loadRestaurant(); };
         body.querySelector('#rsQpReserve').onclick = () => quickReserve(t, date, timeLabel);
         body.querySelector('#rsQpWalk').onclick = () => quickWalkin(t);
       }
@@ -2109,16 +2129,23 @@
     }
     const STATUS_COLOR = { booked: '#3f7d63', seated: '#2563eb', no_show: '#e0533d', cancelled: '#888', completed: '#888' };
     const SRC_LABEL = { assistant: '  (telefonisch)', public: '  (online)', walkin: '  (Walk-in)', dashboard: '' };
+    function guestVisitCount(phone) {
+      const k = (phone || '').replace(/\D/g, '').slice(-9);
+      return k.length >= 6 ? (rsGuestVisits[k] || 0) : 0;
+    }
     function resItemNode(r, map) {
       const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       const div = document.createElement('div'); div.className = 'item';
       const st = r.status || 'booked';
       const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
+      const visits = guestVisitCount(r.customer_phone);
+      const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#7c3aed;background:#f3effe;border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
       const h = document.createElement('h4');
-      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge;
+      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge + regular;
       const p = document.createElement('p');
-      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email, r.notes].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
+      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
+      if (r.notes) { const n = document.createElement('p'); n.style.cssText = 'margin-top:4px;color:#7c3aed;font-weight:600;font-size:13px'; n.textContent = '📝 ' + r.notes; div.append(n); }
       const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
       const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
       if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
@@ -2133,17 +2160,81 @@
     async function refreshDay() {
       await renderDayView();                       // Zusammenfassung + Liste
       if (rsDayView === 'timeline') await renderTimeline();
+      if (rsDayView === 'waitlist') await renderWaitlist();
+      if (rsDayView === 'analytics') await renderAnalytics();
+      await updateWaitlistBadge();
+    }
+    // ---- Warteliste ----
+    async function updateWaitlistBadge() {
+      const { count } = await sb.from('waitlist').select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id).eq('status', 'waiting').gte('wl_date', new Date().toISOString().slice(0, 10));
+      const b = $('rsWlBadge'); if (!b) return;
+      b.textContent = count || ''; b.classList.toggle('hidden', !count);
+    }
+    async function renderWaitlist() {
+      const box = $('rsWaitlist'); box.innerHTML = '<span class="muted">Lädt …</span>';
+      const { data } = await sb.from('waitlist').select('*').eq('tenant_id', tenant.id)
+        .gte('wl_date', new Date().toISOString().slice(0, 10)).order('wl_date').order('created_at');
+      const rows = (data || []).filter((w) => w.status === 'waiting' || w.status === 'notified');
+      if (!rows.length) { box.innerHTML = '<span class="muted">Keine Einträge auf der Warteliste. Ist mal ausgebucht, kann der Assistent Gäste hier vormerken und meldet sich automatisch, sobald etwas frei wird.</span>'; return; }
+      box.innerHTML = '';
+      for (const w of rows) {
+        const div = document.createElement('div'); div.className = 'item';
+        const nb = w.status === 'notified' ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:#2563eb;border-radius:999px;padding:2px 9px;margin-left:8px">benachrichtigt</span>' : '';
+        const h = document.createElement('h4');
+        h.innerHTML = new Date(w.wl_date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }) + (w.requested_time ? (' · ' + w.requested_time + ' Uhr') : '') + ' · ' + (w.party_size || '?') + ' Pers. · ' + (w.customer_name || 'Ohne Namen') + nb;
+        const p = document.createElement('p'); p.textContent = [w.customer_phone, w.customer_email, w.area, w.note].filter(Boolean).join(' · ') || '—';
+        div.append(h, p);
+        const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+        const mk = (l, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = fn; return b; };
+        bar.append(mk('Entfernen', async () => { await sb.from('waitlist').update({ status: 'cancelled' }).eq('id', w.id); toast('Von der Warteliste entfernt.'); renderWaitlist(); updateWaitlistBadge(); }));
+        div.append(bar); box.append(div);
+      }
+    }
+    // ---- Auswertung ----
+    async function renderAnalytics() {
+      const box = $('rsAnalytics'); box.innerHTML = '<span class="muted">Werte werden berechnet …</span>';
+      const since = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data } = await sb.from('reservations').select('starts_at, party_size, status, source')
+        .eq('tenant_id', tenant.id).gte('starts_at', since).limit(5000);
+      const rows = data || [];
+      const done = rows.filter((r) => r.status !== 'cancelled');
+      const noShow = rows.filter((r) => r.status === 'no_show').length;
+      const covers = done.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
+      const noShowRate = done.length ? Math.round((noShow / done.length) * 100) : 0;
+      const bySource = {}; for (const r of done) bySource[r.source || 'sonstige'] = (bySource[r.source || 'sonstige'] || 0) + 1;
+      const byHour = {}; for (const r of done) { const h = new Date(r.starts_at).getHours(); byHour[h] = (byHour[h] || 0) + 1; }
+      const peak = Object.entries(byHour).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([h]) => h + ':00').join(', ') || '—';
+      const days = Math.max(1, Math.round((Date.now() - new Date(since).getTime()) / 86400000));
+      const srcLbl = { assistant: 'Telefon', public: 'Online', walkin: 'Walk-in', dashboard: 'manuell' };
+      const stat = (label, val, sub) => '<div style="flex:1;min-width:150px;background:var(--paper-2);border-radius:12px;padding:14px 16px"><div style="font-size:26px;font-weight:800">' + val + '</div><div style="font-size:13px;color:var(--muted);font-weight:600">' + label + '</div>' + (sub ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + sub + '</div>' : '') + '</div>';
+      box.innerHTML =
+        '<p class="muted" style="margin:0 0 12px">Letzte 30 Tage</p>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
+        stat('Reservierungen', done.length, '≈ ' + (done.length / days).toFixed(1) + ' / Tag') +
+        stat('Gäste (Covers)', covers, '≈ ' + Math.round(covers / days) + ' / Tag') +
+        stat('No-Show-Quote', noShowRate + '%', noShow + ' No-Shows') +
+        stat('Stoßzeiten', peak, 'meiste Reservierungen') +
+        '</div>' +
+        '<div style="margin-top:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Nach Kanal</div>' +
+        Object.entries(bySource).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>' + (srcLbl[k] || k) + '</span><b>' + v + '</b></div>').join('') +
+        '</div>';
     }
     function setDayView(v) {
       rsDayView = v;
       $('rsViewList')?.classList.toggle('active', v === 'list');
       $('rsViewTimeline')?.classList.toggle('active', v === 'timeline');
+      $('rsViewWaitlist')?.classList.toggle('active', v === 'waitlist');
+      $('rsViewAnalytics')?.classList.toggle('active', v === 'analytics');
       $('rsDayList')?.classList.toggle('hidden', v !== 'list');
       $('rsTimeline')?.classList.toggle('hidden', v !== 'timeline');
+      $('rsWaitlist')?.classList.toggle('hidden', v !== 'waitlist');
+      $('rsAnalytics')?.classList.toggle('hidden', v !== 'analytics');
       refreshDay();
     }
     async function renderDayView() {
       const date = $('rsDayDate').value; if (!date) return;
+      await ensureGuestVisits();
       const q = ($('rsDaySearch').value || '').trim().toLowerCase();
       const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
         .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
@@ -2187,6 +2278,8 @@
     $('rsDaySearch')?.addEventListener('input', () => { if ($('rsDayDate').value) refreshDay(); });
     $('rsViewList')?.addEventListener('click', () => setDayView('list'));
     $('rsViewTimeline')?.addEventListener('click', () => setDayView('timeline'));
+    $('rsViewWaitlist')?.addEventListener('click', () => setDayView('waitlist'));
+    $('rsViewAnalytics')?.addEventListener('click', () => setDayView('analytics'));
     $('rsNewBtn')?.addEventListener('click', () => { const p = $('rsNewPanel'); p.classList.toggle('hidden'); if (!p.classList.contains('hidden') && !$('rsResDate').value) $('rsResDate').value = $('rsDayDate').value; });
     $('rsWalkOpen')?.addEventListener('click', () => $('rsWalkPanel')?.classList.toggle('hidden'));
     $('rsWalkBtn')?.addEventListener('click', doWalkin);
