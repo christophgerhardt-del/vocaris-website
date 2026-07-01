@@ -1099,6 +1099,7 @@
               <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemEmail" style="width:auto;margin:0"><span>Erinnerung per E-Mail</span></label>
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemSms" style="width:auto;margin:0"><span>Erinnerung per SMS</span></label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsMultilingual" style="width:auto;margin:0"><span>Mehrsprachiger Assistent (erkennt die Sprache des Anrufers automatisch)</span></label>
               </div>
               <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
               <div class="grid2" style="margin-top:12px">
@@ -1569,6 +1570,7 @@
       $('rsReminderHours').value = (cfg?.reminder_hours ?? [24, 2]).join(', ');
       $('rsRemEmail').checked = cfg?.reminder_email ?? true;
       $('rsRemSms').checked = cfg?.reminder_sms ?? false;
+      $('rsMultilingual').checked = cfg?.multilingual ?? false;
       $('rsMaxCovers').value = cfg?.max_covers_per_slot ?? 0;
       $('rsRetention').value = cfg?.retention_days ?? 0;
       $('rsClosedDates').value = (cfg?.closed_dates ?? []).join(', ');
@@ -2338,7 +2340,7 @@
       const { error } = await sb.from('restaurant_config').upsert({
         tenant_id: tenant.id, enabled: $('rsEnabled').checked,
         seating_minutes: Math.max(30, parseInt($('rsSeating').value, 10) || 120),
-        reminder_email: $('rsRemEmail').checked, reminder_sms: $('rsRemSms').checked,
+        reminder_email: $('rsRemEmail').checked, reminder_sms: $('rsRemSms').checked, multilingual: $('rsMultilingual').checked,
         reminder_hours: hours.length ? hours : [24, 2],
         max_covers_per_slot: Math.max(0, parseInt($('rsMaxCovers').value, 10) || 0),
         retention_days: Math.max(0, parseInt($('rsRetention').value, 10) || 0),
