@@ -1234,6 +1234,24 @@
       setTimeout(() => (t.className = 'toast'), 2600);
     }
 
+    // ---- Branchen-spezifischer Admin-Bereich ----
+    // Pro Branche eine Liste sichtbarer Bereiche. Nicht aufgeführte Branchen
+    // (inkl. 'general') zeigen ALLES (rückwärtskompatibel).
+    const INDUSTRY_SECTIONS = {
+      restaurant: ['sec-overview', 'sec-live', 'sec-messages', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-restaurant', 'sec-floorplan'],
+    };
+    function applyIndustry(industry) {
+      const allow = INDUSTRY_SECTIONS[industry];
+      document.querySelectorAll('.nav-item').forEach((b) => {
+        const show = !allow || allow.includes(b.dataset.target);
+        b.classList.toggle('hidden', !show);
+        // Ist der aktive Bereich ausgeblendet, auf Übersicht zurückspringen.
+        if (!show && b.classList.contains('active')) {
+          document.querySelector('.nav-item[data-target="sec-overview"]')?.click();
+        }
+      });
+    }
+
     // ---- Navigation ----
     document.querySelectorAll('.nav-item').forEach((b) => {
       b.onclick = () => {
@@ -1346,6 +1364,7 @@
       tenant = t;
       if (!tenant) { $('noTenant').classList.remove('hidden'); $('content').classList.add('hidden'); return; }
       $('noTenant').classList.add('hidden'); $('content').classList.remove('hidden');
+      applyIndustry(tenant.industry || 'general');
 
       const nowIso = new Date().toISOString();
       const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
