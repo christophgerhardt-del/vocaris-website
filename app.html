@@ -1113,6 +1113,14 @@
                 <div style="display:flex;gap:8px;align-items:flex-start"><textarea id="rsEmbedCode" readonly rows="2" style="flex:1;background:var(--paper-2);font-family:ui-monospace,monospace;font-size:12px;resize:vertical"></textarea><button id="rsCopyEmbed" class="btn btn--ghost sm" type="button">Kopieren</button></div>
                 <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Code an der gewünschten Stelle in die Website einfügen — die Reservierungsmaske erscheint direkt dort und passt ihre Höhe automatisch an.</p>
               </div>
+              <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsKioskEnabled" style="width:auto;margin:0"><span>Kiosk-Modus fürs Personal aktivieren (iPad)</span></label>
+              <div id="rsKioskWrap" class="hidden" style="margin-top:8px">
+                <label style="font-size:13px;font-weight:600">Kiosk-Zugang (Link fürs iPad)</label>
+                <div style="display:flex;gap:8px;align-items:center"><input id="rsKioskLink" readonly style="flex:1;background:var(--paper-2)"><button id="rsCopyKiosk" class="btn btn--ghost sm" type="button">Kopieren</button></div>
+                <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Link auf dem iPad öffnen (am besten zum Home-Bildschirm hinzufügen). Das Personal sieht nur Reservierungen &amp; Tischplan und kann arbeiten — keine Einstellungen, kein Admin-Zugang. Erst „Speichern", dann ist der Zugang aktiv.</p>
+                <div class="stack" style="margin-top:6px"><button id="rsKioskRegen" class="btn btn--ghost sm" type="button">Zugang neu erzeugen (alte Geräte abmelden)</button></div>
+              </div>
+
               <div class="stack" style="margin-top:12px"><button id="rsSaveCfg" class="btn btn--primary" type="button">Speichern</button></div>
             </div>
           </details>
@@ -1544,6 +1552,10 @@
         $('rsPublicLink').value = 'https://vocaris.eu/reservieren.html?r=' + cfg.public_token;
         $('rsEmbedCode').value = '<script src="https://vocaris.eu/embed.js" data-token="' + cfg.public_token + '" async><\/script>';
       }
+      $('rsKioskEnabled').checked = cfg?.kiosk_enabled ?? false;
+      $('rsKioskWrap').classList.toggle('hidden', !(cfg?.kiosk_enabled));
+      rsKioskToken = cfg?.kiosk_token ?? null;
+      if (rsKioskToken) $('rsKioskLink').value = 'https://vocaris.eu/kiosk.html?k=' + rsKioskToken;
       rsSeatingMin = cfg?.seating_minutes ?? 120;
       rsHours = ac?.business_hours ?? {};
       rsAreas = (cfg?.areas && cfg.areas.length) ? cfg.areas.slice() : ['Drinnen', 'Draußen', 'Bar'];
@@ -1567,7 +1579,8 @@
       if ($('rsDayDate')) refreshDay();                             // Tages-Cockpit sofort
     }
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
-    let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [];
+    let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [], rsKioskToken = null;
+    function genToken() { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map((b) => b.toString(16).padStart(2, '0')).join(''); }
     let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
     let rsEditMode = false, rsAreas = []; // Bearbeitungsmodus + frei definierbare Bereiche
     const OCC_COL = { seated: { b: '#e0533d', bg: '#fdecea' }, booked: { b: '#d98a3d', bg: '#fdf3e6' } };
@@ -2215,13 +2228,25 @@
         retention_days: Math.max(0, parseInt($('rsRetention').value, 10) || 0),
         closed_dates: closed,
         public_booking: $('rsPublicBooking').checked,
+        kiosk_enabled: $('rsKioskEnabled').checked,
+        kiosk_token: ($('rsKioskEnabled').checked && !rsKioskToken) ? genToken() : rsKioskToken,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'tenant_id' });
       toast(error ? ('Fehler: ' + error.message) : 'Gespeichert.');
       if (!error) loadRestaurant();
     });
     $('rsPublicBooking')?.addEventListener('change', () => { $('rsPublicWrap').classList.toggle('hidden', !$('rsPublicBooking').checked); });
+    $('rsKioskEnabled')?.addEventListener('change', () => { $('rsKioskWrap').classList.toggle('hidden', !$('rsKioskEnabled').checked); });
     $('rsCopyLink')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsPublicLink').value); toast('Link kopiert.'); });
+    $('rsCopyKiosk')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsKioskLink').value); toast('Kiosk-Link kopiert.'); });
+    $('rsKioskRegen')?.addEventListener('click', async () => {
+      if (!confirm('Neuen Kiosk-Zugang erzeugen? Alle bisher angemeldeten iPads/Geräte verlieren den Zugriff und müssen den neuen Link öffnen.')) return;
+      const tok = genToken();
+      const { error } = await sb.from('restaurant_config').upsert({ tenant_id: tenant.id, kiosk_token: tok, updated_at: new Date().toISOString() }, { onConflict: 'tenant_id' });
+      if (error) { toast('Fehler: ' + error.message); return; }
+      rsKioskToken = tok; $('rsKioskLink').value = 'https://vocaris.eu/kiosk.html?k=' + tok;
+      toast('Neuer Kiosk-Zugang erzeugt.');
+    });
     $('rsCopyEmbed')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsEmbedCode').value); toast('Einbett-Code kopiert.'); });
     $('rsAddTable')?.addEventListener('click', async () => {
       const name = $('rsTblName').value.trim();

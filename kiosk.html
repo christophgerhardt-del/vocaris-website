@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reservierungen">
+<title>Vocaris Kiosk</title>
+<style>
+  :root { --accent:#c0552f; --ink:#23211e; --muted:#7a756c; --line:#e3ddd2; --paper:#fbfaf7; --paper2:#f1ede5; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper2); color:var(--ink); overscroll-behavior:none; }
+  .bar { display:flex; align-items:center; gap:10px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:0; z-index:5; }
+  .bar h1 { font-size:18px; margin:0; font-weight:700; }
+  .spacer { margin-left:auto; }
+  .btn { font:inherit; font-weight:600; padding:12px 16px; border-radius:12px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:16px; }
+  .btn:active { transform:scale(.98); }
+  .btn--pri { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn--sm { padding:9px 13px; font-size:15px; }
+  .seg { display:inline-flex; background:var(--paper2); border:1px solid var(--line); border-radius:12px; padding:4px; }
+  .seg button { border:0; background:transparent; font:inherit; font-weight:600; font-size:16px; padding:9px 16px; border-radius:9px; cursor:pointer; color:var(--muted); }
+  .seg button.on { background:#fff; color:var(--accent); box-shadow:0 1px 3px #0002; }
+  .wrap { padding:14px; max-width:1100px; margin:0 auto; }
+  .sum { font-weight:700; font-size:16px; margin:2px 4px 12px; }
+  .item { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .item h4 { margin:0; font-size:17px; }
+  .item p { margin:6px 0 0; color:var(--muted); font-size:14px; }
+  .badge { display:inline-block; font-size:12px; font-weight:700; color:#fff; border-radius:999px; padding:3px 10px; margin-left:8px; vertical-align:2px; }
+  .acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:9px 15px; background:var(--paper); font-weight:600; font-size:15px; cursor:pointer; }
+  .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  #plan { position:relative; height:min(70vh,620px); border:1px solid var(--line); border-radius:16px; overflow:hidden; background-color:#fff;
+          background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px); background-size:28px 28px; touch-action:none; }
+  .legend { display:flex; gap:16px; font-size:13px; align-items:center; flex-wrap:wrap; margin:10px 2px; }
+  .legend i { width:12px; height:12px; border-radius:3px; display:inline-block; vertical-align:-1px; margin-right:5px; }
+  .slider { display:flex; align-items:center; gap:12px; margin:6px 2px 12px; }
+  .slider input { flex:1; height:30px; }
+  input, select { font:inherit; font-size:16px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--paper); width:100%; }
+  label { display:block; font-size:13px; font-weight:600; margin:10px 0 5px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .hidden { display:none !important; }
+  .center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); text-align:center; padding:20px; }
+  /* Modal */
+  #modal { position:fixed; inset:0; z-index:30; display:none; align-items:flex-end; justify-content:center; }
+  #modal.on { display:flex; }
+  .backdrop { position:absolute; inset:0; background:#0006; }
+  .sheet { position:relative; background:#fff; width:100%; max-width:560px; border-radius:20px 20px 0 0; padding:20px; max-height:86vh; overflow:auto; box-shadow:0 -10px 40px #0004; }
+  @media(min-width:600px){ #modal{align-items:center} .sheet{border-radius:20px} }
+  .sheet h3 { margin:0 0 4px; font-size:20px; }
+  .sheet .x { position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:50%; border:0; background:var(--paper2); font-size:18px; cursor:pointer; }
+  .hint { margin-top:10px; font-size:14px; min-height:1.1em; }
+  .times { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+</style>
+</head>
+<body>
+  <div id="lock" class="center" style="position:fixed">Kiosk wird geladen …</div>
+
+  <div id="app" class="hidden">
+    <div class="bar">
+      <button class="btn btn--sm" id="prev" title="Vortag">‹</button>
+      <input id="date" type="date" style="width:150px">
+      <button class="btn btn--sm" id="next" title="Folgetag">›</button>
+      <button class="btn btn--sm" id="today">Heute</button>
+      <h1 id="rname" style="margin-left:8px"></h1>
+      <div class="spacer"></div>
+      <div class="seg"><button id="vRes" class="on">Reservierungen</button><button id="vPlan">Tischplan</button></div>
+      <button class="btn btn--pri btn--sm" id="newBtn">+ Reservierung</button>
+    </div>
+
+    <div class="wrap">
+      <div id="viewRes">
+        <div class="sum" id="sum"></div>
+        <div id="list"></div>
+      </div>
+
+      <div id="viewPlan" class="hidden">
+        <div id="areaTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+        <div class="slider"><span class="muted" style="font-size:13px">Zeit</span><input id="slider" type="range" min="660" max="1380" step="15" value="1140"><b id="sliderLbl">—</b></div>
+        <div class="legend">
+          <span><i style="background:#fff;border:2px solid #3f7d63"></i>frei</span>
+          <span><i style="background:#fdf3e6;border:2px solid #d98a3d"></i>reserviert</span>
+          <span><i style="background:#fdecea;border:2px solid #e0533d"></i>am Tisch</span>
+        </div>
+        <div id="plan"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal"><div class="backdrop" id="mBack"></div><div class="sheet"><button class="x" id="mClose">✕</button><div id="mBody"></div></div></div>
+
+<script>
+const API='https://ki-anruf.onrender.com';
+const $=(id)=>document.getElementById(id);
+const token=new URLSearchParams(location.search).get('k')||'';
+let D=null, date='', view='res', area='', combos=[];
+
+function today(){ return new Date().toISOString().slice(0,10); }
+async function api(path, body){ const r=await fetch(API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({token},body||{}))}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||'Fehler'); return d; }
+
+async function loadDay(d){
+  date=d; $('date').value=d;
+  try{ D=await api('/api/kiosk/data',{date:d}); }
+  catch(e){ $('lock').textContent=e.message+' — bitte den Zugang im Admin prüfen.'; $('lock').classList.remove('hidden'); return; }
+  $('lock').classList.add('hidden'); $('app').classList.remove('hidden');
+  $('rname').textContent=D.name;
+  if(!area || !D.areas.includes(area)) area=(D.areas&&D.areas[0])||'Drinnen';
+  setSliderRange();
+  render();
+}
+function render(){ renderList(); renderAreaTabs(); applyOcc(); }
+
+// ---- Reservierungsliste ----
+const RES_STATUS={booked:'Reserviert',seated:'Am Tisch',no_show:'No-Show',completed:'Fertig'};
+const SC={booked:'#3f7d63',seated:'#2563eb',no_show:'#e0533d',completed:'#888'};
+function tableNames(r){ const names=(r.table_ids||[]).map(id=>{const t=D.tables.find(x=>x.id===id);return t?t.name:null;}).filter(Boolean); return names.length?names.join(' + '):'—'; }
+function hhmm(iso){ const dt=new Date(iso); return String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0'); }
+function renderList(){
+  const items=(D.reservations||[]).filter(r=>r.status!=='cancelled');
+  const covers=items.filter(r=>r.status!=='no_show').reduce((a,r)=>a+(r.party_size||0),0);
+  $('sum').textContent=items.length?(items.length+' Reservierung(en) · '+covers+' Gäste'):'Keine Reservierungen an dem Tag';
+  const el=$('list'); el.innerHTML='';
+  items.forEach(r=>{
+    const div=document.createElement('div'); div.className='item';
+    div.innerHTML='<h4>'+hhmm(r.starts_at)+' Uhr · '+(r.party_size||'?')+'P · '+(r.customer_name||'Ohne Namen')+'<span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+(RES_STATUS[r.status]||r.status)+'</span></h4>'+
+      '<p>Tisch: '+tableNames(r)+(r.customer_phone?(' · '+r.customer_phone):'')+'</p>';
+    div.append(actionBar(r));
+    el.append(div);
+  });
+}
+function actionBar(r){
+  const bar=document.createElement('div'); bar.className='acts';
+  const mk=(l,s)=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.onclick=()=>setStatus(r.id,s);return b;};
+  if(r.status==='booked') bar.append(mk('Eingetroffen','seated'));
+  if(r.status==='seated') bar.append(mk('Abschließen','completed'));
+  if(r.status==='booked') bar.append(mk('No-Show','no_show'));
+  if(r.status==='booked'||r.status==='seated') bar.append(mk('Stornieren','cancelled'));
+  return bar;
+}
+async function setStatus(id,status){ try{ await api('/api/kiosk/status',{reservationId:id,status}); await loadDay(date); }catch(e){ alert(e.message); } }
+
+// ---- Tischplan ----
+const T_PAD=16;
+const OCC={seated:{b:'#e0533d',bg:'#fdecea'},booked:{b:'#d98a3d',bg:'#fdf3e6'}};
+function shDef(s){ if(s==='round'||s==='square')return{w:56,h:56}; if(s==='bench')return{w:130,h:22}; return{w:110,h:56}; }
+function disp(t){ const d=shDef(t.shape||'round'); let w=t.width||d.w,h=t.height||d.h; if((t.rotation||0)===90&&(t.shape==='rect'||t.shape==='bench')){const x=w;w=h;h=x;} return {tw:w,th:h}; }
+function perim(tt,W,H){ const per=2*(W+H); let d=tt*per; if(d<W)return{x:d,y:0,nx:0,ny:-1}; d-=W; if(d<H)return{x:W,y:d,nx:1,ny:0}; d-=H; if(d<W)return{x:W-d,y:H,nx:0,ny:1}; d-=W; return{x:0,y:H-d,nx:-1,ny:0}; }
+function chair(cx,cy,occ){ const c=document.createElement('div'); c.style.cssText='position:absolute;left:'+(cx-6)+'px;top:'+(cy-6)+'px;width:13px;height:13px;border-radius:5px;pointer-events:none;background:'+(occ?'#e8bcb4':'#c9a987')+';border:1px solid '+(occ?'#d99a8e':'#a9855f'); return c; }
+function chairs(layer,shape,seats,tw,th,occ,rot){ const cx0=T_PAD+tw/2,cy0=T_PAD+th/2; if(shape==='round'){const rx=tw/2+9,ry=th/2+9; for(let i=0;i<seats;i++){const a=-Math.PI/2+i*2*Math.PI/seats; layer.append(chair(cx0+rx*Math.cos(a),cy0+ry*Math.sin(a),occ));}} else if(shape==='bench'){ for(let i=0;i<seats;i++){ if(rot===90)layer.append(chair(T_PAD-9,T_PAD+(i+0.5)*th/seats,occ)); else layer.append(chair(T_PAD+(i+0.5)*tw/seats,T_PAD-9,occ)); } } else { for(let i=0;i<seats;i++){const p=perim((i+0.5)/seats,tw,th); layer.append(chair(T_PAD+p.x+p.nx*10,T_PAD+p.y+p.ny*10,occ));} } }
+function tableCenter(t,plan){ const{tw,th}=disp(t); const W=tw+T_PAD*2,H=th+T_PAD*2; const pw=plan.clientWidth||700,ph=plan.clientHeight||500; const x=Math.max(0,Math.min(pw-W,t.pos_x??40)),y=Math.max(0,Math.min(ph-H,t.pos_y??40)); return{x:x+W/2,y:y+H/2}; }
+
+let statusMap=new Map();
+function renderAreaTabs(){
+  const tabs=$('areaTabs'); tabs.innerHTML='';
+  const areas=D.areas.slice(); for(const x of D.tables) if(x.area&&!areas.includes(x.area)) areas.push(x.area);
+  areas.forEach(a=>{ const b=document.createElement('button'); b.className='chip'+(a===area?' on':''); const n=D.tables.filter(t=>(t.area||'')===a).length; b.textContent=a+' ('+n+')'; b.onclick=()=>{area=a; renderAreaTabs(); renderPlan();}; tabs.append(b); });
+}
+function m2h(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+function dayInterval(){ const DAYS=['sun','mon','tue','wed','thu','fri','sat']; const wd=DAYS[new Date(date+'T12:00:00').getDay()]; const iv=(D.businessHours&&D.businessHours[wd])||[]; let lo=1440,hi=0; for(const[a,b]of iv){const[ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number); lo=Math.min(lo,ah*60+am); hi=Math.max(hi,bh*60+bm);} if(hi<=lo){lo=660;hi=1380;} return{lo:Math.floor(lo/60)*60,hi:Math.ceil(hi/60)*60}; }
+function setSliderRange(){ const{lo,hi}=dayInterval(); const s=$('slider'); s.min=lo; s.max=hi; s.step=15; const now=new Date(); let def=Math.round((lo+hi)/2/15)*15; if(date===today()){const nm=now.getHours()*60+now.getMinutes(); if(nm>=lo&&nm<=hi)def=Math.round(nm/15)*15;} s.value=Math.min(hi,Math.max(lo,def)); }
+function applyOcc(){
+  const min=parseInt($('slider').value,10)||0; $('sliderLbl').textContent=m2h(min)+' Uhr';
+  const start=new Date(date+'T'+m2h(min)+':00').getTime(), end=start+(D.seatingMinutes||120)*60000;
+  statusMap=new Map(); combos=[];
+  for(const r of (D.reservations||[])){ if(r.status!=='booked'&&r.status!=='seated')continue; const s=new Date(r.starts_at).getTime(),e=r.ends_at?new Date(r.ends_at).getTime():s+(D.seatingMinutes||120)*60000; if(!(start<e&&end>s))continue; const lbl=(r.customer_name||'Gast')+' · '+(r.party_size||'?')+'P · '+hhmm(r.starts_at); for(const tid of (r.table_ids||[])){ const prev=statusMap.get(tid); if(!prev||(prev.status==='booked'&&r.status==='seated')) statusMap.set(tid,{status:r.status,label:lbl,resId:r.id}); } if((r.table_ids||[]).length>1)combos.push({tids:r.table_ids,status:r.status}); }
+  renderPlan();
+}
+function renderPlan(){
+  const plan=$('plan'); plan.innerHTML='';
+  const tables=D.tables.filter(t=>(t.area||'')===area);
+  const els=(D.elements||[]).filter(e=>(e.area||'')===area);
+  if(!tables.length&&!els.length){ plan.innerHTML='<div class="center">Keine Tische in „'+area+'".</div>'; return; }
+  if(combos.length){ const ns='http://www.w3.org/2000/svg'; const svg=document.createElementNS(ns,'svg'); svg.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0'); let drew=false; for(const c of combos){ const pts=c.tids.map(id=>tables.find(t=>t.id===id)).filter(Boolean).map(t=>tableCenter(t,plan)); if(pts.length<2)continue; drew=true; const col=c.status==='seated'?'#e0533d':'#d98a3d'; for(let i=0;i<pts.length-1;i++){const ln=document.createElementNS(ns,'line'); ln.setAttribute('x1',pts[i].x);ln.setAttribute('y1',pts[i].y);ln.setAttribute('x2',pts[i+1].x);ln.setAttribute('y2',pts[i+1].y); ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','3.5');ln.setAttribute('stroke-dasharray','7 5');ln.setAttribute('stroke-linecap','round');ln.setAttribute('opacity','0.7'); svg.append(ln);} } if(drew)plan.append(svg); }
+  els.forEach(el=>plan.append(buildEl(el,plan)));
+  tables.forEach(t=>plan.append(buildTable(t,plan)));
+}
+function buildEl(el,plan){ const w=el.width||90,h=el.height||50; const pw=plan.clientWidth||700,ph=plan.clientHeight||500; const x=Math.max(0,Math.min(pw-w,el.pos_x??40)),y=Math.max(0,Math.min(ph-h,el.pos_y??40)); const box=document.createElement('div'); box.style.cssText='position:absolute;left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;border:1px dashed #b7c4d6;background:#eef2f7;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:600;color:#556;pointer-events:none;overflow:hidden'; box.textContent=el.kind==='wall'?'':(el.label||el.kind); return box; }
+function buildTable(t,plan){
+  const shape=t.shape||'round',rot=t.rotation||0,seats=Math.max(1,t.seats||1); const st=statusMap.get(t.id); const occ=!!st;
+  const {tw,th}=disp(t); const W=tw+T_PAD*2,H=th+T_PAD*2; const pw=plan.clientWidth||700,ph=plan.clientHeight||500;
+  const x=Math.max(0,Math.min(pw-W,t.pos_x??40)),y=Math.max(0,Math.min(ph-H,t.pos_y??40));
+  const box=document.createElement('div'); box.style.cssText='position:absolute;left:'+x+'px;top:'+y+'px;width:'+W+'px;height:'+H+'px;cursor:pointer';
+  const ch=document.createElement('div'); ch.style.cssText='position:absolute;inset:0;pointer-events:none'; box.append(ch); chairs(ch,shape,seats,tw,th,occ,rot);
+  const surf=document.createElement('div'); const col=st?OCC[st.status]:{b:'#3f7d63',bg:'#fff'}; const radius=shape==='round'?'50%':(shape==='bench'?'6px':'10px');
+  surf.style.cssText='position:absolute;left:'+T_PAD+'px;top:'+T_PAD+'px;width:'+tw+'px;height:'+th+'px;border:2px solid '+col.b+';background:'+col.bg+';border-radius:'+radius+';box-shadow:0 3px 10px #0002;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none;overflow:hidden';
+  surf.innerHTML='<b style="font-size:12px">'+(t.name||'Tisch')+'</b>'+(shape==='bench'?'':'<span style="font-size:11px;color:#666">'+(occ?(st.status==='seated'?'am Tisch':'reserviert'):(seats+'P'))+'</span>');
+  box.append(surf);
+  box.onclick=()=>openTable(t);
+  return box;
+}
+
+// ---- Tisch-Aktions-Sheet ----
+function openModal(html){ $('mBody').innerHTML=html; $('modal').classList.add('on'); }
+function closeModal(){ $('modal').classList.remove('on'); }
+$('mClose').onclick=closeModal; $('mBack').onclick=closeModal;
+function openTable(t){
+  const min=parseInt($('slider').value,10)||1140, tl=m2h(min);
+  const start=new Date(date+'T'+tl+':00').getTime(), end=start+(D.seatingMinutes||120)*60000;
+  const here=(D.reservations||[]).filter(r=>{
+    if(!(r.table_ids||[]).includes(t.id))return false;
+    if(r.status!=='booked'&&r.status!=='seated')return false;
+    const s=new Date(r.starts_at).getTime(), e=r.ends_at?new Date(r.ends_at).getTime():s+(D.seatingMinutes||120)*60000;
+    return start<e&&end>s;
+  });
+  let html='<h3>'+(t.name||'Tisch')+'</h3><p class="muted" style="margin:0 0 12px">'+(t.seats||0)+' Plätze · '+(t.area||'')+' · '+date+' um '+tl+' Uhr</p>';
+  if(here.length){
+    html+='<div id="hereList"></div>';
+  } else {
+    html+='<label>Personen</label><input id="mParty" type="number" min="1" value="'+Math.min(t.seats||2,2)+'"><label>Name (optional)</label><input id="mName" placeholder="Gast"><label>Telefon (optional)</label><input id="mPhone" placeholder="für SMS">'+
+      '<div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn--pri" style="flex:1" id="mReserve">Für '+tl+' Uhr reservieren</button><button class="btn" id="mWalk">Walk-in jetzt</button></div>';
+  }
+  html+='<p class="hint" id="mHint"></p>';
+  openModal(html);
+  if(here.length){
+    const wrap=$('hereList');
+    here.forEach(r=>{ const div=document.createElement('div'); div.className='item'; div.innerHTML='<h4>'+(r.customer_name||'Ohne Namen')+' · '+(r.party_size||'?')+'P <span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+(RES_STATUS[r.status]||r.status)+'</span></h4><p>'+hhmm(r.starts_at)+' Uhr</p>'; div.append(actionBarSheet(r)); wrap.append(div); });
+  } else {
+    $('mReserve').onclick=()=>quickReserve(t,tl);
+    $('mWalk').onclick=()=>quickWalk(t);
+  }
+}
+function actionBarSheet(r){ const bar=document.createElement('div'); bar.className='acts'; const mk=(l,s)=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.onclick=async()=>{try{await api('/api/kiosk/status',{reservationId:r.id,status:s});closeModal();await loadDay(date);}catch(e){alert(e.message);}};return b;}; if(r.status==='booked')bar.append(mk('Eingetroffen','seated')); if(r.status==='seated')bar.append(mk('Abschließen','completed')); if(r.status==='booked')bar.append(mk('No-Show','no_show')); if(r.status==='booked'||r.status==='seated')bar.append(mk('Stornieren','cancelled')); return bar; }
+async function quickReserve(t,tl){ const party=Math.max(1,parseInt($('mParty').value,10)||2); try{ const d=await api('/api/kiosk/reserve',{date,time:tl,partySize:party,name:$('mName').value.trim(),phone:$('mPhone').value.trim(),tableId:t.id}); if(!d.ok)throw new Error(d.message||'Fehler'); closeModal(); await loadDay(date); }catch(e){ $('mHint').textContent=e.message; } }
+async function quickWalk(t){ const party=Math.max(1,parseInt($('mParty').value,10)||2); try{ const d=await api('/api/kiosk/walkin',{tableId:t.id,partySize:party,name:$('mName').value.trim()}); if(!d.ok)throw new Error(d.message||'Fehler'); closeModal(); await loadDay(date); }catch(e){ $('mHint').textContent=e.message; } }
+
+// ---- Neue Reservierung (aus der Kopfzeile) ----
+function openNew(){
+  let html='<h3>Reservierung anlegen</h3><div class="grid"><div><label>Datum</label><input id="nDate" type="date" value="'+date+'"></div><div><label>Personen</label><input id="nParty" type="number" min="1" value="2"></div></div>'+
+    '<div style="margin-top:10px"><button class="btn" id="nCheck" style="width:100%">Freie Zeiten anzeigen</button></div><div class="times" id="nTimes"></div>'+
+    '<label>Name</label><input id="nName" placeholder="Gast"><label>Telefon / E-Mail (optional)</label><input id="nContact" placeholder="für Bestätigung">'+
+    '<button class="btn btn--pri" id="nReserve" style="width:100%;margin-top:14px">Reservieren</button><p class="hint" id="nHint"></p>';
+  openModal(html); let sel='';
+  $('nCheck').onclick=async()=>{ const d=$('nDate').value, p=Math.max(1,parseInt($('nParty').value,10)||2); $('nTimes').innerHTML='<span class="muted">Suche …</span>'; try{ const r=await api('/api/kiosk/availability',{date:d,partySize:p}); const sl=r.slots||[]; if(!sl.length){$('nTimes').innerHTML='<span class="muted">Keine freien Zeiten.</span>';return;} $('nTimes').innerHTML=''; sl.forEach(s=>{const b=document.createElement('button');b.className='chip';b.textContent=s.label;b.onclick=()=>{sel=s.label;[...$('nTimes').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('nTimes').append(b);}); }catch(e){$('nTimes').innerHTML='<span class="muted">'+e.message+'</span>';} };
+  $('nReserve').onclick=async()=>{ if(!sel){$('nHint').textContent='Bitte eine Zeit wählen.';return;} const c=$('nContact').value.trim(); try{ const d=await api('/api/kiosk/reserve',{date:$('nDate').value,time:sel,partySize:Math.max(1,parseInt($('nParty').value,10)||2),name:$('nName').value.trim(),phone:/@/.test(c)?'':c,email:/@/.test(c)?c:''}); if(!d.ok)throw new Error(d.message||'Fehler'); closeModal(); await loadDay($('nDate').value); }catch(e){$('nHint').textContent=e.message;} };
+}
+
+// ---- Steuerung ----
+function setView(v){ view=v; $('vRes').classList.toggle('on',v==='res'); $('vPlan').classList.toggle('on',v==='plan'); $('viewRes').classList.toggle('hidden',v!=='res'); $('viewPlan').classList.toggle('hidden',v!=='plan'); if(v==='plan')applyOcc(); }
+function shift(n){ const d=new Date(date+'T12:00:00'); d.setDate(d.getDate()+n); loadDay(d.toISOString().slice(0,10)); }
+$('prev').onclick=()=>shift(-1); $('next').onclick=()=>shift(1); $('today').onclick=()=>loadDay(today());
+$('date').onchange=()=>loadDay($('date').value);
+$('vRes').onclick=()=>setView('res'); $('vPlan').onclick=()=>setView('plan');
+$('slider').oninput=applyOcc;
+$('newBtn').onclick=openNew;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+if(!token){ $('lock').textContent='Kein Kiosk-Zugang. Bitte den Link aus dem Admin verwenden.'; }
+else { loadDay(today()); setInterval(()=>{ if(!$('modal').classList.contains('on')) loadDay(date); }, 60000); }
+</script>
+</body>
+</html>
