@@ -2604,10 +2604,15 @@
       div.append(tr);
       return div;
     }
+    // Ein Anruf gilt nur als „live", wenn er als aktiv markiert IST und nicht älter
+    // als 20 Min ist — so bleibt kein verwaister Anruf (z.B. nach Server-Neustart) ewig „aktiv".
+    function callIsActive(c) {
+      return c && c.status === 'active' && (Date.now() - new Date(c.started_at).getTime()) < 20 * 60000;
+    }
     function renderLive() {
       const arr = [...liveCalls.values()].sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
-      const active = arr.filter((x) => x.call.status === 'active');
-      const ended = arr.filter((x) => x.call.status !== 'active');
+      const active = arr.filter((x) => callIsActive(x.call));
+      const ended = arr.filter((x) => !callIsActive(x.call));
       $('liveBadge').textContent = active.length;
       $('liveBadge').classList.toggle('hidden', active.length === 0);
       $('liveActive').innerHTML = '';
@@ -2652,7 +2657,7 @@
     $('liveWidgetHead').onclick = () => { if (liveWidgetCollapsed) { liveWidgetCollapsed = false; $('liveWidget').classList.remove('collapsed'); } };
     function renderLiveWidget() {
       const arr = [...liveCalls.values()].sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
-      const active = arr.find((x) => x.call.status === 'active');
+      const active = arr.find((x) => callIsActive(x.call));
       if (active) {
         liveWidgetId = active.call.id; liveWidgetDismissed = false; // neuer Anruf → aufpoppen
         if (!notifiedCalls.has(active.call.id)) { notifiedCalls.add(active.call.id); notifyIncoming(active.call); }
@@ -2660,7 +2665,7 @@
       const focus = active || (liveWidgetId ? liveCalls.get(liveWidgetId) : null);
       const w = $('liveWidget');
       if (!focus || liveWidgetDismissed) { w.classList.add('hidden'); return; }
-      const isLive = focus.call.status === 'active';
+      const isLive = callIsActive(focus.call);
       w.classList.remove('hidden');
       $('liveWidgetDot').className = 'livew__dot' + (isLive ? '' : ' ended');
       $('liveWidgetWho').textContent = focus.call.caller_number || 'Anrufer';
