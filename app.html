@@ -1674,14 +1674,18 @@
     // ---- Tischplan (Drag & Drop, Bereiche, Belegung) ----
     let rsTablesData = [], rsArea = '', rsTableStatus = new Map(), rsSeatingMin = 120, rsHours = {}, rsResTblMap = {}, rsElements = [], rsKioskToken = null;
     // Stammgäste: Telefonnummer (letzte 9 Ziffern) → Anzahl vergangener Besuche.
-    let rsGuestVisits = {}, rsGuestVisitsLoaded = false;
+    let rsGuestVisits = {}, rsGuestNoShows = {}, rsGuestVisitsLoaded = false;
     async function ensureGuestVisits() {
       if (rsGuestVisitsLoaded) return;
-      rsGuestVisitsLoaded = true; rsGuestVisits = {};
+      rsGuestVisitsLoaded = true; rsGuestVisits = {}; rsGuestNoShows = {};
       const todayStart = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00').toISOString();
       const { data } = await sb.from('reservations').select('customer_phone, status')
-        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed']).lt('starts_at', todayStart).limit(2000);
-      for (const r of data || []) { const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9); if (k.length >= 6) rsGuestVisits[k] = (rsGuestVisits[k] || 0) + 1; }
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed', 'no_show']).lt('starts_at', todayStart).limit(2000);
+      for (const r of data || []) {
+        const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9); if (k.length < 6) continue;
+        if (r.status === 'no_show') rsGuestNoShows[k] = (rsGuestNoShows[k] || 0) + 1;
+        else rsGuestVisits[k] = (rsGuestVisits[k] || 0) + 1;
+      }
     }
     function genToken() { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map((b) => b.toString(16).padStart(2, '0')).join(''); }
     let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
@@ -2199,6 +2203,10 @@
       const k = (phone || '').replace(/\D/g, '').slice(-9);
       return k.length >= 6 ? (rsGuestVisits[k] || 0) : 0;
     }
+    function guestNoShowCount(phone) {
+      const k = (phone || '').replace(/\D/g, '').slice(-9);
+      return k.length >= 6 ? (rsGuestNoShows[k] || 0) : 0;
+    }
     function resItemNode(r, map) {
       const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       const div = document.createElement('div'); div.className = 'item';
@@ -2206,8 +2214,12 @@
       const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
       const visits = guestVisitCount(r.customer_phone);
       const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#7c3aed;background:#f3effe;border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
+      // No-Show-Historie: Gäste mit früheren No-Shows markieren (ab 2× = Wiederholungstäter, kräftiger).
+      const ns = guestNoShowCount(r.customer_phone);
+      const repeat = ns >= 2;
+      const nsBadge = ns > 0 ? '<span title="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
       const h = document.createElement('h4');
-      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge + regular;
+      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
       p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
