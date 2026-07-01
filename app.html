@@ -305,6 +305,18 @@
       color: var(--ink-soft); cursor: pointer; transition: border-color .15s, background .15s; }
     .doc-drop:hover, .doc-drop.drag-over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
     .doc-drop b { color: var(--accent-ink); }
+    /* Stimmen-Auswahl */
+    .voicegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+    .voicecard { display: flex; align-items: center; gap: 11px; border: 1.5px solid var(--line); border-radius: 13px; padding: 11px 12px; background: var(--white); cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+    .voicecard:hover { border-color: var(--accent); }
+    .voicecard.sel { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); background: color-mix(in srgb, var(--accent) 5%, transparent); }
+    .voicecard .play { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); font-size: 15px; display: flex; align-items: center; justify-content: center; }
+    .voicecard .play:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+    .voicecard .vmeta { min-width: 0; }
+    .voicecard .vname { font-weight: 700; font-size: 14px; }
+    .voicecard .vdesc { font-size: 12px; color: var(--muted); }
+    .voicecard .vcheck { margin-left: auto; color: var(--accent); font-weight: 700; opacity: 0; }
+    .voicecard.sel .vcheck { opacity: 1; }
     .pwmodal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
       background: rgba(20,18,24,.45); backdrop-filter: blur(2px); }
     .pwmodal.hidden { display: none; }
@@ -656,12 +668,16 @@
                 <label>Sprache</label>
                 <select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select>
               </div>
-              <div style="flex:2">
-                <label>Stimme (ElevenLabs Voice-ID)</label>
-                <input id="voiceId" placeholder="leer = Standardstimme" />
-              </div>
             </div>
-            <p class="muted" style="margin-top:6px">Voice-ID findest du in ElevenLabs bei der Stimme („Copy Voice ID").</p>
+            <label style="margin-top:14px">Stimme des Assistenten</label>
+            <p class="muted" style="margin:0 0 10px">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sind auf Deutsch.</p>
+            <div id="voicePicker" class="voicegrid"></div>
+            <audio id="voiceAudio" preload="none"></audio>
+            <details style="margin-top:10px">
+              <summary class="muted" style="cursor:pointer;font-size:13px">Eigene ElevenLabs-Stimme verwenden (Voice-ID)</summary>
+              <input id="voiceId" placeholder="leer = Standardstimme" style="margin-top:8px" />
+              <p class="muted" style="margin-top:6px">Voice-ID aus ElevenLabs („Copy Voice ID"). Überschreibt die Auswahl oben.</p>
+            </details>
 
             <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
               <input type="checkbox" id="fwdEnabled" style="width:auto;margin:0">
@@ -1372,6 +1388,43 @@
       else if (location.hash.indexOf('cal=err') >= 0) { toast('Kalender-Verbindung fehlgeschlagen.', 'err'); history.replaceState(null, '', 'app.html'); }
     }
 
+    // ---- Stimmen (mit Hörbeispiel) ----
+    const VOICES = [
+      { id: 'AnvlJBAqSLDzEevYr9Ap', name: 'Ava', desc: 'Weiblich · jung, lebhaft & freundlich' },
+      { id: 'duraok8mDDsn72TpG3r5', name: 'Monika', desc: 'Weiblich · warm & herzlich' },
+      { id: 'x9tGbxYQaoX72Y8bvqBh', name: 'Hatti', desc: 'Weiblich · ruhig & sanft' },
+      { id: 'TUKJhQmz3RPYBNAgC5A1', name: 'Helmut', desc: 'Männlich · seriös & professionell' },
+      { id: 'YYyi4prp0WCqZCPDNGu1', name: 'Adrian', desc: 'Männlich · freundlich & zugewandt' },
+      { id: 'kEOZcky6h2yXYqPyImH3', name: 'Achim', desc: 'Männlich · ruhig & geschäftlich' },
+    ];
+    let voicePlayingId = '';
+    function playVoiceSample(id, btn) {
+      const a = $('voiceAudio'); if (!a) return;
+      if (voicePlayingId === id && !a.paused) { a.pause(); return; }
+      voicePlayingId = id;
+      a.src = 'https://vocaris.eu/assets/voices/' + id + '.mp3';
+      a.play().catch(() => {});
+      document.querySelectorAll('#voicePicker .play').forEach((p) => (p.textContent = '▶'));
+      if (btn) btn.textContent = '⏸';
+      a.onended = () => { if (btn) btn.textContent = '▶'; voicePlayingId = ''; };
+    }
+    function renderVoicePicker() {
+      const box = $('voicePicker'); if (!box) return;
+      const cur = ($('voiceId').value || '').trim();
+      box.innerHTML = '';
+      VOICES.forEach((v) => {
+        const card = document.createElement('div'); card.className = 'voicecard' + (cur === v.id ? ' sel' : '');
+        card.innerHTML = '<button type="button" class="play" title="Hörbeispiel">▶</button>' +
+          '<div class="vmeta"><div class="vname">' + v.name + '</div><div class="vdesc">' + v.desc + '</div></div>' +
+          '<span class="vcheck">✓</span>';
+        card.onclick = () => { $('voiceId').value = v.id; renderVoicePicker(); };
+        const pb = card.querySelector('.play');
+        pb.onclick = (e) => { e.stopPropagation(); playVoiceSample(v.id, pb); };
+        box.append(card);
+      });
+    }
+    $('voiceId')?.addEventListener('input', renderVoicePicker);
+
     // ---- Daten ----
     async function loadAll() {
       const { data: t } = await sb.from('tenants').select('*').limit(1).maybeSingle();
@@ -1476,6 +1529,7 @@
       $('persona').value = cfg?.persona ?? '';
       $('language').value = cfg?.language ?? 'de';
       $('voiceId').value = cfg?.voice_id ?? '';
+      renderVoicePicker();
       $('fwdEnabled').checked = cfg?.forward_enabled ?? false;
       $('fwdNumber').value = cfg?.forward_number ?? '';
       $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
