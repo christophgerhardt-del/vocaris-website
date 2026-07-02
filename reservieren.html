@@ -99,6 +99,7 @@
             </div>
             <label>Besondere Wünsche (optional)</label><textarea id="notes" rows="2" placeholder="z. B. Kinderstuhl, Allergie, Anlass, Fensterplatz"></textarea>
             <label class="consent"><input id="consent" type="checkbox"><span>Ich bin einverstanden, dass meine Angaben zur Bearbeitung der Reservierung gespeichert und verarbeitet werden.</span></label>
+            <label class="consent"><input id="newsletter" type="checkbox"><span>Ja, ich möchte gelegentlich Neuigkeiten &amp; Angebote per E-Mail erhalten (jederzeit abbestellbar).</span></label>
             <button id="reserveBtn" class="btn btn--primary" type="button">Jetzt reservieren</button>
           </div>
           <p id="hint" class="hint"></p>
@@ -216,7 +217,8 @@
     if (!selectedTime) { $('hint').textContent = 'Bitte eine Zeit wählen.'; return; }
     const body = { token, date: $('date').value, time: selectedTime, partySize: Math.max(1, parseInt($('party').value,10) || 2),
       name: $('name').value.trim(), email: $('email').value.trim(), phone: $('phone').value.trim(),
-      notes: $('notes').value.trim(), area: $('area').value || undefined, consent: $('consent').checked };
+      notes: $('notes').value.trim(), area: $('area').value || undefined, consent: $('consent').checked,
+      newsletter: $('newsletter').checked };
     if (!body.name) { $('hint').textContent = 'Bitte deinen Namen angeben.'; return; }
     if (!body.email && !body.phone) { $('hint').textContent = 'Bitte E-Mail oder Telefon angeben.'; return; }
     if (!body.consent) { $('hint').textContent = 'Bitte der Speicherung zustimmen.'; return; }
