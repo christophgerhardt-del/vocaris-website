@@ -180,6 +180,9 @@
       const areas = Array.isArray(info.areas) ? info.areas : [];
       const sel = $('area');
       areas.forEach((a) => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.append(o); });
+      // Standard: „Drinnen" (bzw. der Innen-Bereich) vorwählen – Gast kann jederzeit umstellen.
+      const def = areas.find((a) => /drinnen|innen|indoor/i.test(a)) || areas[0];
+      if (def) sel.value = def;
       $('areaWrap').classList.toggle('hidden', areas.length < 2); // erst ab 2 Bereichen sinnvoll
       $('date').min = new Date().toISOString().slice(0,10);
       $('date').value = new Date().toISOString().slice(0,10);
