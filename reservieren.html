@@ -202,6 +202,7 @@
     $('times').innerHTML = '<span class="muted">Suche …</span>'; $('details').classList.add('hidden'); selectedTime = '';
     try {
       const d = await api('/api/public/availability', { token, date, partySize: party });
+      if (d.reason === 'group') { $('times').innerHTML = '<span class="muted">Für Gruppen ab ' + ((d.maxParty || party) + 1) + ' Personen nehmen wir die Reservierung gern persönlich am Telefon entgegen. Bitte ruf uns an.</span>'; return; }
       const slots = d.slots || [];
       if (!slots.length) { $('times').innerHTML = '<span class="muted">Keine freien Zeiten an dem Tag. Versuch ein anderes Datum.</span>'; return; }
       $('times').innerHTML = '';
