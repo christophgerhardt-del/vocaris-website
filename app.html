@@ -1171,15 +1171,20 @@
         <!-- Gäste / CRM (Restaurant-Modus) -->
         <section id="sec-guests" class="section hidden">
           <h1 class="pagehead">Gäste</h1>
-          <p class="pagesub">Deine Kundenliste – automatisch aus Reservierungen. Präferenzen pflegen (der Assistent kennt sie beim nächsten Anruf) und Newsletter-Einwilligungen verwalten.</p>
-          <div class="panel">
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <input id="guestSearch" placeholder="Nach Name, Telefon oder E-Mail suchen…" style="flex:1;min-width:220px">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:14px"><input type="checkbox" id="guestNlOnly" style="width:auto;margin:0"><span>nur Newsletter-Abonnenten</span></label>
+          <p class="pagesub">Deine Kundenkartei – automatisch aus Reservierungen. Öffne einen Gast für Stammdaten, Kennzeichnungen, Anmerkungen &amp; Newsletter. Der Assistent kennt diese Angaben beim nächsten Anruf.</p>
+          <!-- Listenansicht -->
+          <div id="guestListWrap">
+            <div class="panel">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input id="guestSearch" placeholder="Nach Name, Telefon oder E-Mail suchen…" style="flex:1;min-width:220px">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;font-size:14px"><input type="checkbox" id="guestNlOnly" style="width:auto;margin:0"><span>nur Newsletter-Abonnenten</span></label>
+              </div>
+              <div id="guestStats" class="muted" style="margin-top:10px;font-weight:600"></div>
             </div>
-            <div id="guestStats" class="muted" style="margin-top:10px;font-weight:600"></div>
+            <div class="panel" style="margin-top:14px"><div id="guestList"><span class="muted">Lädt …</span></div></div>
           </div>
-          <div class="panel" style="margin-top:14px"><div id="guestList"><span class="muted">Lädt …</span></div></div>
+          <!-- Detailansicht (ein Gast) -->
+          <div id="guestDetail" class="hidden"></div>
         </section>
       </div>
     </main>
@@ -2323,9 +2328,11 @@
       await updateWaitlistBadge();
     }
     // ---- Gäste / CRM ----
-    let guestData = [];
+    const GUEST_TAG_SUGGEST = ['Stammgast', 'VIP', 'Allergiker', 'Vegetarier', 'Veganer', 'Familie/Kind', 'Geburtstag', 'Firmenkunde', 'Weinliebhaber', 'Rollstuhl'];
+    let guestData = [], guestProfiles = {};
     async function loadGuests() {
       const list = $('guestList'); if (!list) return;
+      backToGuestList();
       list.innerHTML = '<span class="muted">Lädt …</span>';
       const { data: res } = await sb.from('reservations')
         .select('customer_name, customer_phone, customer_email, starts_at, status, notes')
@@ -2336,26 +2343,34 @@
       for (const r of (res || [])) {
         const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9);
         if (k.length < 6) continue;
-        const g = byKey[k] || (byKey[k] = { key: k, name: '', phone: r.customer_phone, email: '', visits: 0, noShows: 0, last: null, lastNotes: '' });
+        const g = byKey[k] || (byKey[k] = { key: k, name: '', phone: r.customer_phone, email: '', total: 0, done: 0, cancelled: 0, noShows: 0, visits: 0, last: null, lastNotes: '' });
         if (!g.name && r.customer_name) g.name = r.customer_name;
         if (!g.email && r.customer_email) g.email = r.customer_email;
         const past = new Date(r.starts_at).getTime() < now;
+        g.total++;
         if (r.status === 'no_show') g.noShows++;
-        else if (past && (r.status === 'completed' || r.status === 'seated' || r.status === 'booked')) g.visits++;
+        else if (r.status === 'cancelled') g.cancelled++;
+        else if (r.status === 'completed') { g.done++; if (past) g.visits++; }
+        else if (past && (r.status === 'seated' || r.status === 'booked')) g.visits++;
         if (!g.last && r.status !== 'cancelled') g.last = r.starts_at;
         if (!g.lastNotes && r.notes) g.lastNotes = r.notes;
       }
       const { data: profs } = await sb.from('guests').select('*').eq('tenant_id', tenant.id);
-      const profByKey = {};
+      guestProfiles = {};
       for (const p of (profs || [])) {
-        profByKey[p.phone_key] = p;
-        if (!byKey[p.phone_key]) byKey[p.phone_key] = { key: p.phone_key, name: p.name || '', phone: p.phone || '', email: p.email || '', visits: 0, noShows: 0, last: null, lastNotes: '' };
+        guestProfiles[p.phone_key] = p;
+        if (!byKey[p.phone_key]) byKey[p.phone_key] = { key: p.phone_key, name: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '), phone: p.phone || '', email: p.email || '', total: 0, done: 0, cancelled: 0, noShows: 0, visits: 0, last: null, lastNotes: '' };
       }
       guestData = Object.values(byKey).map((g) => {
-        const p = profByKey[g.key] || {};
-        return { ...g, preferences: p.preferences || '', newsletter: !!p.newsletter, email: g.email || p.email || '', name: g.name || p.name || '' };
+        const p = guestProfiles[g.key] || {};
+        const pname = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.name || '';
+        return { ...g, name: g.name || pname, email: g.email || p.email || '', phone: g.phone || p.phone || '', preferences: p.preferences || '', newsletter: !!p.newsletter, tags: Array.isArray(p.tags) ? p.tags : [] };
       }).sort((a, b) => (b.visits - a.visits) || String(a.name).localeCompare(String(b.name)));
       renderGuests();
+    }
+    function backToGuestList() {
+      $('guestDetail')?.classList.add('hidden');
+      $('guestListWrap')?.classList.remove('hidden');
     }
     function renderGuests() {
       const list = $('guestList'); if (!list) return;
@@ -2363,44 +2378,115 @@
       const nlOnly = $('guestNlOnly').checked;
       let items = guestData;
       if (nlOnly) items = items.filter((g) => g.newsletter);
-      if (q) items = items.filter((g) => (g.name + ' ' + g.phone + ' ' + g.email).toLowerCase().includes(q));
+      if (q) items = items.filter((g) => (g.name + ' ' + g.phone + ' ' + g.email + ' ' + (g.tags || []).join(' ')).toLowerCase().includes(q));
       const nl = guestData.filter((g) => g.newsletter).length;
       $('guestStats').textContent = guestData.length + ' Gäste · ' + nl + ' Newsletter-Abonnent' + (nl === 1 ? '' : 'en');
       if (!items.length) { list.innerHTML = '<span class="muted">Noch keine Gäste – sie entstehen automatisch aus Reservierungen.</span>'; return; }
       list.innerHTML = '';
-      for (const g of items) list.append(guestNode(g));
+      for (const g of items) list.append(guestRow(g));
     }
-    function guestNode(g) {
-      const div = document.createElement('div'); div.className = 'item';
+    function tagMini(t) { return '<span style="display:inline-block;font-size:11px;font-weight:600;color:#4f46e5;background:#eef0ff;border-radius:999px;padding:2px 9px;margin:4px 4px 0 0">' + t + '</span>'; }
+    function guestRow(g) {
+      const div = document.createElement('div'); div.className = 'item'; div.style.cursor = 'pointer';
       const lastLbl = g.last ? new Date(g.last).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
       const star = g.visits >= 2 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#7c3aed;background:#f3effe;border-radius:999px;padding:2px 9px;margin-left:8px">★ Stammgast</span>' : '';
       const repeat = g.noShows >= 2;
-      const ns = g.noShows > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + g.noShows + '× No-Show</span>' : '';
-      const h = document.createElement('h4'); h.innerHTML = (g.name || 'Ohne Namen') + star + ns;
+      const ns = g.noShows > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + g.noShows + '× No-Show</span>' : '';
+      const nl = g.newsletter ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#0a7d4b;background:#e5f6ee;border-radius:999px;padding:2px 9px;margin-left:6px">✉ Newsletter</span>' : '';
+      const h = document.createElement('h4'); h.innerHTML = (g.name || 'Ohne Namen') + star + ns + nl;
       const p = document.createElement('p');
-      p.textContent = [g.phone, g.email].filter(Boolean).join(' · ') + ' · ' + g.visits + ' Besuch' + (g.visits === 1 ? '' : 'e') + ' · zuletzt ' + lastLbl;
+      p.innerHTML = [g.phone, g.email].filter(Boolean).join(' · ') + ' · ' + g.visits + ' Besuch' + (g.visits === 1 ? '' : 'e') + ' · zuletzt ' + lastLbl + (g.tags && g.tags.length ? '<br>' + g.tags.map(tagMini).join('') : '');
       div.append(h, p);
-      const row = document.createElement('div'); row.style.cssText = 'margin-top:8px;display:flex;flex-direction:column;gap:8px';
-      const ta = document.createElement('textarea'); ta.rows = 2; ta.value = g.preferences || '';
-      ta.placeholder = 'Präferenzen (z. B. Fensterplatz, glutenfrei) – der Assistent kennt sie beim nächsten Anruf'; ta.style.cssText = 'width:100%';
-      const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:12px;align-items:center;flex-wrap:wrap';
-      const nlLabel = document.createElement('label'); nlLabel.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px';
-      const nlCb = document.createElement('input'); nlCb.type = 'checkbox'; nlCb.checked = !!g.newsletter; nlCb.style.cssText = 'width:auto;margin:0';
-      nlLabel.append(nlCb, document.createTextNode('Newsletter'));
-      const save = document.createElement('button'); save.className = 'btn btn--primary sm'; save.textContent = 'Speichern';
-      save.onclick = async () => {
-        save.disabled = true;
-        const patch = { tenant_id: tenant.id, phone_key: g.key, name: g.name || null, phone: g.phone || null, email: g.email || null,
-          preferences: ta.value.trim() || null, newsletter: nlCb.checked, newsletter_at: nlCb.checked ? new Date().toISOString() : null, updated_at: new Date().toISOString() };
-        const { error } = await sb.from('guests').upsert(patch, { onConflict: 'tenant_id,phone_key' });
-        save.disabled = false;
-        if (error) { toast('Fehler: ' + error.message, 'err'); return; }
-        g.preferences = ta.value.trim(); g.newsletter = nlCb.checked;
-        toast('Gast gespeichert.'); renderGuests();
-      };
-      bar.append(nlLabel, save);
-      row.append(ta, bar); div.append(row);
+      div.onclick = () => openGuest(g.key);
       return div;
+    }
+    function openGuest(key) {
+      const g = guestData.find((x) => x.key === key); if (!g) return;
+      const p = guestProfiles[key] || {};
+      const host = $('guestDetail'); if (!host) return;
+      $('guestListWrap').classList.add('hidden'); host.classList.remove('hidden');
+      const val = (x) => (x == null ? '' : String(x)).replace(/"/g, '&quot;');
+      const st = (label, value, accent) => '<div style="background:#fff;border:1px solid #e6e4f0;border-radius:12px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:800;color:' + (accent || '#14161a') + '">' + value + '</div><div style="font-size:11px;color:#8a8aa0;font-weight:600;text-transform:uppercase;letter-spacing:.03em">' + label + '</div></div>';
+      host.innerHTML =
+        '<div class="panel">' +
+          '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
+            '<button id="guestBack" class="btn btn--ghost sm" type="button">‹ Zurück</button>' +
+            '<h2 style="margin:0;font-size:18px">' + (g.name || 'Gast') + '</h2>' +
+            '<div style="margin-left:auto;display:flex;gap:8px"><button id="guestNewRes" class="btn sm" type="button">+ Reservierung anlegen</button><button id="guestSave" class="btn btn--primary sm" type="button">Speichern</button></div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px">' +
+            st('Gesamt', g.total) + st('Erfolgreich', g.done, '#0a7d4b') + st('Storniert', g.cancelled, '#888') + st('Nicht erschienen', g.noShows, g.noShows ? '#c0392b' : '#14161a') +
+          '</div>' +
+          '<div class="if-grid">' +
+            '<label>Anrede<select id="gd_anrede"><option value="">—</option>' + ['Herr', 'Frau', 'Divers'].map((o) => '<option' + (p.anrede === o ? ' selected' : '') + '>' + o + '</option>').join('') + '</select></label>' +
+            '<label>Geburtsdatum<input id="gd_birth" type="date" value="' + val(p.birthdate) + '"></label>' +
+            '<label>Vorname<input id="gd_first" value="' + val(p.first_name) + '" placeholder="Vorname"></label>' +
+            '<label>Nachname<input id="gd_last" value="' + val(p.last_name) + '" placeholder="Nachname"></label>' +
+            '<label>Telefon<input id="gd_phone" value="' + val(p.phone || g.phone) + '" placeholder="+49…"></label>' +
+            '<label>E-Mail<input id="gd_email" value="' + val(p.email || g.email) + '" placeholder="gast@…"></label>' +
+            '<label>Firma<input id="gd_company" value="' + val(p.company) + '" placeholder="optional"></label>' +
+            '<label>Straße<input id="gd_street" value="' + val(p.street) + '" placeholder="Straße"></label>' +
+            '<label>Hausnr.<input id="gd_house" value="' + val(p.house_no) + '" placeholder="Nr."></label>' +
+            '<label>PLZ<input id="gd_zip" value="' + val(p.zip) + '" placeholder="PLZ"></label>' +
+            '<label>Ort<input id="gd_city" value="' + val(p.city) + '" placeholder="Ort"></label>' +
+          '</div>' +
+          '<div style="margin-top:14px"><label style="font-weight:600;font-size:13px">Gast-Kennzeichnungen</label>' +
+            '<div id="gd_tags" style="margin:6px 0"></div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="gd_tagInput" list="gd_tagList" placeholder="Kennzeichnung hinzufügen…" style="max-width:220px"><datalist id="gd_tagList">' + GUEST_TAG_SUGGEST.map((t) => '<option value="' + t + '">').join('') + '</datalist><button id="gd_tagAdd" class="btn btn--ghost sm" type="button">+ hinzufügen</button></div>' +
+          '</div>' +
+          '<div style="margin-top:14px"><label style="font-weight:600;font-size:13px">Gastanmerkung (Präferenzen – kennt der Assistent beim nächsten Anruf)</label>' +
+            '<textarea id="gd_pref" rows="2" style="width:100%;margin-top:6px" placeholder="z. B. Fensterplatz, glutenfrei, sitzt gern draußen">' + val(p.preferences || g.preferences) + '</textarea></div>' +
+          '<label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:12px"><input type="checkbox" id="gd_newsletter" style="width:auto;margin:0"' + (g.newsletter ? ' checked' : '') + '><span>Newsletter: Gast möchte Neuigkeiten &amp; Angebote per E-Mail erhalten</span></label>' +
+        '</div>';
+      let tags = Array.isArray(g.tags) ? [...g.tags] : [];
+      function drawTags() {
+        const box = $('gd_tags');
+        box.innerHTML = tags.length ? tags.map((t, i) => '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#4f46e5;background:#eef0ff;border-radius:999px;padding:3px 6px 3px 11px;margin:0 6px 6px 0">' + t + '<button data-i="' + i + '" class="gd_tagx" type="button" style="border:0;background:#dfe2ff;color:#4f46e5;border-radius:999px;width:18px;height:18px;cursor:pointer;line-height:1;font-weight:700">×</button></span>').join('') : '<span class="muted" style="font-size:13px">Keine Kennzeichnungen</span>';
+        box.querySelectorAll('.gd_tagx').forEach((b) => (b.onclick = () => { tags.splice(+b.dataset.i, 1); drawTags(); }));
+      }
+      drawTags();
+      const addTag = () => { const v = ($('gd_tagInput').value || '').trim(); if (v && !tags.includes(v)) tags.push(v); $('gd_tagInput').value = ''; drawTags(); };
+      $('gd_tagAdd').onclick = addTag;
+      $('gd_tagInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
+      $('guestBack').onclick = backToGuestList;
+      $('guestNewRes').onclick = () => {
+        document.querySelector('.nav-item[data-target="sec-restaurant"]')?.click();
+        setTimeout(() => {
+          $('rsNewPanel')?.classList.remove('hidden');
+          if ($('rsResName')) $('rsResName').value = g.name || '';
+          if ($('rsResPhone')) $('rsResPhone').value = (p.phone || g.phone || '');
+          if ($('rsResEmail')) $('rsResEmail').value = (p.email || g.email || '');
+          if ($('rsResDate') && !$('rsResDate').value) $('rsResDate').value = $('rsDayDate')?.value || '';
+          $('rsResName')?.focus();
+        }, 80);
+      };
+      $('guestSave').onclick = async () => {
+        const btn = $('guestSave'); btn.disabled = true;
+        const first = $('gd_first').value.trim(), last = $('gd_last').value.trim();
+        const patch = {
+          tenant_id: tenant.id, phone_key: g.key,
+          anrede: $('gd_anrede').value || null,
+          first_name: first || null, last_name: last || null,
+          name: [first, last].filter(Boolean).join(' ') || g.name || null,
+          birthdate: $('gd_birth').value || null,
+          phone: $('gd_phone').value.trim() || g.phone || null,
+          email: $('gd_email').value.trim() || null,
+          company: $('gd_company').value.trim() || null,
+          street: $('gd_street').value.trim() || null,
+          house_no: $('gd_house').value.trim() || null,
+          zip: $('gd_zip').value.trim() || null,
+          city: $('gd_city').value.trim() || null,
+          tags: tags,
+          preferences: $('gd_pref').value.trim() || null,
+          newsletter: $('gd_newsletter').checked,
+          newsletter_at: $('gd_newsletter').checked ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await sb.from('guests').upsert(patch, { onConflict: 'tenant_id,phone_key' });
+        btn.disabled = false;
+        if (error) { toast('Fehler: ' + error.message, 'err'); return; }
+        toast('Gast gespeichert.'); await loadGuests();
+      };
     }
     $('guestSearch')?.addEventListener('input', renderGuests);
     $('guestNlOnly')?.addEventListener('change', renderGuests);
