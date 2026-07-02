@@ -1171,6 +1171,27 @@
                   <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Nur an Gäste mit hinterlegter E-Mail; jede Reservierung genau einmal.</p>
                 </div>
               </div>
+
+              <!-- Geburtstags-Automatik -->
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+                <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsBirthdayEnabled" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Geburtstags-Gruß automatisch senden</span></label>
+                <div id="rsBirthdayWrap" class="hidden" style="margin-top:10px">
+                  <label>Nachricht (optional)</label>
+                  <textarea id="rsBirthdayMsg" rows="2" placeholder="alles Gute zum Geburtstag! Kommen Sie doch auf ein Glas Sekt aufs Haus vorbei."></textarea>
+                  <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Wird am Geburtstag an Gäste mit hinterlegtem Geburtsdatum + E-Mail gesendet (einmal je Jahr). Geburtsdatum pflegst du in der Gäste-Kartei.</p>
+                </div>
+              </div>
+
+              <!-- Personal-Benachrichtigung -->
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+                <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsStaffNotify" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Team bei neuer/geänderter/stornierter Reservierung benachrichtigen</span></label>
+                <div id="rsStaffWrap" class="hidden" style="margin-top:10px">
+                  <label>Benachrichtigungs-E-Mail(s)</label>
+                  <input id="rsStaffEmail" placeholder="team@restaurant.de, chef@restaurant.de">
+                  <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Mehrere Adressen mit Komma trennen. Nur automatische Reservierungen (Telefon/Online) lösen eine Benachrichtigung aus.</p>
+                </div>
+              </div>
+
               <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
               <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
                 <label style="font-size:13px;font-weight:600">Direkter Buchungslink</label>
@@ -1211,6 +1232,25 @@
           <p class="pagesub">Deine Kundenkartei – automatisch aus Reservierungen. Öffne einen Gast für Stammdaten, Kennzeichnungen, Anmerkungen &amp; Newsletter. Der Assistent kennt diese Angaben beim nächsten Anruf.</p>
           <!-- Listenansicht -->
           <div id="guestListWrap">
+            <!-- Newsletter / Aktion senden -->
+            <div class="panel" style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div style="font-weight:700">📣 Newsletter / Aktion senden</div>
+                <span id="nlCount" class="muted" style="font-size:13px"></span>
+                <button id="nlToggle" class="btn btn--ghost sm" type="button" style="margin-left:auto">Verfassen</button>
+              </div>
+              <div id="nlCompose" class="hidden" style="margin-top:12px">
+                <label>Betreff</label>
+                <input id="nlSubject" placeholder="z. B. Unser neues Sommermenü ist da 🌞">
+                <label style="margin-top:10px">Nachricht</label>
+                <textarea id="nlMessage" rows="5" placeholder="Liebe Gäste,&#10;ab sofort gibt es bei uns…"></textarea>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+                  <button id="nlSend" class="btn btn--primary sm" type="button">An alle Abonnenten senden</button>
+                  <span class="muted" style="font-size:12px">Geht nur an Gäste mit Newsletter-Zustimmung + E-Mail. Abmelde-Link ist automatisch dabei.</span>
+                </div>
+                <p id="nlHint" class="muted" style="text-align:left;padding:0;margin-top:8px;font-size:13px"></p>
+              </div>
+            </div>
             <div class="panel">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <input id="guestSearch" placeholder="Nach Name, Telefon oder E-Mail suchen…" style="flex:1;min-width:220px">
@@ -1732,6 +1772,13 @@
       $('rsFeedbackUrl').value = cfg?.feedback_google_url ?? '';
       $('rsFeedbackDelay').value = cfg?.feedback_delay_hours ?? 3;
       $('rsFeedbackMsg').value = cfg?.feedback_message ?? '';
+      // Geburtstag + Personal-Benachrichtigung
+      $('rsBirthdayEnabled').checked = cfg?.birthday_enabled ?? false;
+      $('rsBirthdayWrap').classList.toggle('hidden', !(cfg?.birthday_enabled));
+      $('rsBirthdayMsg').value = cfg?.birthday_message ?? '';
+      $('rsStaffNotify').checked = cfg?.staff_notify_enabled ?? false;
+      $('rsStaffWrap').classList.toggle('hidden', !(cfg?.staff_notify_enabled));
+      $('rsStaffEmail').value = cfg?.staff_notify_email ?? '';
       $('rsPublicBooking').checked = cfg?.public_booking ?? false;
       $('rsPublicWrap').classList.toggle('hidden', !(cfg?.public_booking));
       if (cfg?.public_token) {
@@ -2431,6 +2478,7 @@
       if (q) items = items.filter((g) => (g.name + ' ' + g.phone + ' ' + g.email + ' ' + (g.tags || []).join(' ')).toLowerCase().includes(q));
       const nl = guestData.filter((g) => g.newsletter).length;
       $('guestStats').textContent = guestData.length + ' Gäste · ' + nl + ' Newsletter-Abonnent' + (nl === 1 ? '' : 'en');
+      const nlc = $('nlCount'); if (nlc) nlc.textContent = nl + ' Abonnent' + (nl === 1 ? '' : 'en');
       if (!items.length) { list.innerHTML = '<span class="muted">Noch keine Gäste – sie entstehen automatisch aus Reservierungen.</span>'; return; }
       list.innerHTML = '';
       for (const g of items) list.append(guestRow(g));
@@ -2540,6 +2588,27 @@
     }
     $('guestSearch')?.addEventListener('input', renderGuests);
     $('guestNlOnly')?.addEventListener('change', renderGuests);
+    // Newsletter / Aktion senden
+    $('nlToggle')?.addEventListener('click', () => {
+      const c = $('nlCompose'); const open = c.classList.toggle('hidden');
+      $('nlToggle').textContent = open ? 'Verfassen' : 'Zuklappen';
+    });
+    $('nlSend')?.addEventListener('click', async () => {
+      const subject = ($('nlSubject').value || '').trim(), message = ($('nlMessage').value || '').trim();
+      if (!subject || !message) { $('nlHint').textContent = 'Bitte Betreff und Nachricht ausfüllen.'; return; }
+      const nl = guestData.filter((g) => g.newsletter).length;
+      if (!confirm('Newsletter an ' + nl + ' Abonnenten senden?')) return;
+      const btn = $('nlSend'); btn.disabled = true; $('nlHint').textContent = 'Wird gesendet …';
+      try {
+        const r = await apiFetch('/api/newsletter/send', { method: 'POST', headers: numAuth(), body: JSON.stringify({ subject, message }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error(d.message || d.error || 'Versand fehlgeschlagen.');
+        $('nlHint').innerHTML = '<span style="color:#0a7d4b;font-weight:600">✓ ' + (d.message || 'Gesendet.') + '</span>';
+        toast('Newsletter gesendet.');
+        $('nlSubject').value = ''; $('nlMessage').value = '';
+      } catch (e) { $('nlHint').innerHTML = '<span style="color:#c0392b">' + e.message + '</span>'; }
+      finally { btn.disabled = false; }
+    });
 
     // ---- Warteliste ----
     async function updateWaitlistBadge() {
@@ -2755,6 +2824,10 @@
         feedback_google_url: ($('rsFeedbackUrl').value || '').trim() || null,
         feedback_delay_hours: Math.max(0, parseInt($('rsFeedbackDelay').value, 10) || 0),
         feedback_message: ($('rsFeedbackMsg').value || '').trim() || null,
+        birthday_enabled: $('rsBirthdayEnabled').checked,
+        birthday_message: ($('rsBirthdayMsg').value || '').trim() || null,
+        staff_notify_enabled: $('rsStaffNotify').checked,
+        staff_notify_email: ($('rsStaffEmail').value || '').trim() || null,
         public_booking: $('rsPublicBooking').checked,
         kiosk_enabled: $('rsKioskEnabled').checked,
         kiosk_token: ($('rsKioskEnabled').checked && !rsKioskToken) ? genToken() : rsKioskToken,
@@ -2765,6 +2838,8 @@
       if (!error) loadRestaurant();
     });
     $('rsFeedbackEnabled')?.addEventListener('change', () => { $('rsFeedbackWrap').classList.toggle('hidden', !$('rsFeedbackEnabled').checked); });
+    $('rsBirthdayEnabled')?.addEventListener('change', () => { $('rsBirthdayWrap').classList.toggle('hidden', !$('rsBirthdayEnabled').checked); });
+    $('rsStaffNotify')?.addEventListener('change', () => { $('rsStaffWrap').classList.toggle('hidden', !$('rsStaffNotify').checked); });
     $('rsPublicBooking')?.addEventListener('change', () => { $('rsPublicWrap').classList.toggle('hidden', !$('rsPublicBooking').checked); });
     $('rsKioskEnabled')?.addEventListener('change', () => { $('rsKioskWrap').classList.toggle('hidden', !$('rsKioskEnabled').checked); });
     $('rsCopyLink')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsPublicLink').value); toast('Link kopiert.'); });

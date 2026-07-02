@@ -103,6 +103,12 @@
             <button id="reserveBtn" class="btn btn--primary" type="button">Jetzt reservieren</button>
           </div>
           <p id="hint" class="hint"></p>
+
+          <!-- Speisekarte (falls hinterlegt) -->
+          <div id="menuBlock" class="hidden" style="margin-top:18px;border-top:1px solid rgba(0,0,0,.08);padding-top:14px">
+            <button id="menuToggle" type="button" class="btn btn--block" style="background:transparent;border:1px solid rgba(0,0,0,.14)">🍽 Speisekarte ansehen</button>
+            <div id="menuText" class="hidden" style="margin-top:12px;max-height:360px;overflow:auto;white-space:pre-wrap;font-size:14px;line-height:1.6;background:rgba(255,255,255,.6);border-radius:12px;padding:14px"></div>
+          </div>
         </div>
 
         <!-- Bestätigung -->
@@ -190,6 +196,16 @@
       $('areaWrap').classList.toggle('hidden', areas.length < 2); // erst ab 2 Bereichen sinnvoll
       $('date').min = new Date().toISOString().slice(0,10);
       $('date').value = new Date().toISOString().slice(0,10);
+      // Speisekarte (falls hinterlegt) anbieten.
+      if (info.menu && String(info.menu).trim()) {
+        $('menuText').textContent = String(info.menu).trim();
+        $('menuBlock').classList.remove('hidden');
+        $('menuToggle').onclick = () => {
+          const t = $('menuText'); const open = t.classList.toggle('hidden');
+          $('menuToggle').textContent = open ? '🍽 Speisekarte ansehen' : '🍽 Speisekarte ausblenden';
+          postHeight();
+        };
+      }
       show('booking');
     } catch (e) {
       $('loading').innerHTML = '<p class="err">' + e.message + '</p><p class="muted">Bitte ruf uns für eine Reservierung an.</p>';
