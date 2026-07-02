@@ -1134,6 +1134,43 @@
               <label style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
               <input id="rsClosedDates" placeholder="z.B. 2026-12-24, 2026-12-25">
               <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">An diesen Tagen sind keine Reservierungen möglich (Feiertage, Betriebsferien). Der wöchentliche Ruhetag kommt aus den Öffnungszeiten.</p>
+
+              <!-- Sonderöffnungszeiten (abweichende Zeiten an einzelnen Tagen) -->
+              <label style="margin-top:16px">Sonderöffnungszeiten (abweichende Zeiten je Tag)</label>
+              <textarea id="rsSpecialHours" rows="3" placeholder="2026-12-24: 11:00-15:00&#10;2026-12-31: 17:00-01:00&#10;2026-11-01: geschlossen" style="font-family:ui-monospace,monospace;font-size:13px"></textarea>
+              <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Eine Zeile je Tag: <code>Datum: HH:MM-HH:MM</code> (mehrere Zeiträume mit Komma) oder <code>Datum: geschlossen</code>. Überschreibt an dem Tag die regulären Öffnungszeiten – der Assistent beachtet das automatisch.</p>
+
+              <!-- Buchungsregeln & Pacing -->
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px">Buchungsregeln &amp; Pacing</div>
+                <div class="grid2">
+                  <div><label>Mindest-Vorlauf (Minuten)</label><input id="rsMinLead" type="number" min="0" value="30"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">So kurzfristig darf frühestens reserviert werden (alle Kanäle).</p></div>
+                  <div><label>Max. Reservierungen je 15-Min-Fenster</label><input id="rsMaxPerSlot" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. Verhindert, dass zu viele Gäste gleichzeitig eintreffen (Küche).</p></div>
+                </div>
+                <div class="grid2" style="margin-top:10px">
+                  <div><label>Online: Buchungsstopp (Std. vorher)</label><input id="rsCutoffHours" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. So kurzfristig sind online keine Buchungen mehr möglich (telefonisch schon).</p></div>
+                  <div><label>Online: max. Tage im Voraus</label><input id="rsMaxAdvance" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt.</p></div>
+                </div>
+                <div class="grid2" style="margin-top:10px">
+                  <div><label>Online: max. Personen pro Buchung</label><input id="rsMaxPartyOnline" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Größere Gruppen werden gebeten, anzurufen.</p></div>
+                </div>
+              </div>
+
+              <!-- Gäste-Feedback / Google-Bewertung -->
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+                <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsFeedbackEnabled" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Feedback &amp; Google-Bewertung nach dem Besuch senden</span></label>
+                <div id="rsFeedbackWrap" class="hidden" style="margin-top:10px">
+                  <label>Google-Bewertungslink</label>
+                  <input id="rsFeedbackUrl" placeholder="https://g.page/r/…/review">
+                  <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Aus dem Google-Unternehmensprofil: „Rezension schreiben" → Link teilen. Wird als Button in die Mail gesetzt.</p>
+                  <div class="grid2" style="margin-top:10px">
+                    <div><label>Senden nach (Std. nach Besuchsende)</label><input id="rsFeedbackDelay" type="number" min="0" value="3"></div>
+                  </div>
+                  <label style="margin-top:10px">Nachricht (optional)</label>
+                  <textarea id="rsFeedbackMsg" rows="2" placeholder="wir hoffen, es hat Ihnen geschmeckt! Über eine kurze Bewertung freuen wir uns sehr."></textarea>
+                  <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Nur an Gäste mit hinterlegter E-Mail; jede Reservierung genau einmal.</p>
+                </div>
+              </div>
               <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsPublicBooking" style="width:auto;margin:0"><span>Online-Reservierung für Gäste aktivieren (Buchungslink)</span></label>
               <div id="rsPublicWrap" class="hidden" style="margin-top:8px">
                 <label style="font-size:13px;font-weight:600">Direkter Buchungslink</label>
@@ -1682,6 +1719,19 @@
       $('rsMaxCovers').value = cfg?.max_covers_per_slot ?? 0;
       $('rsRetention').value = cfg?.retention_days ?? 0;
       $('rsClosedDates').value = (cfg?.closed_dates ?? []).join(', ');
+      // Buchungsregeln & Pacing
+      $('rsMinLead').value = cfg?.min_lead_minutes ?? 30;
+      $('rsMaxPerSlot').value = cfg?.max_res_per_slot ?? 0;
+      $('rsCutoffHours').value = cfg?.booking_cutoff_hours ?? 0;
+      $('rsMaxAdvance').value = cfg?.max_advance_days ?? 0;
+      $('rsMaxPartyOnline').value = cfg?.max_party_online ?? 0;
+      $('rsSpecialHours').value = specialHoursToText(cfg?.special_hours || {});
+      // Feedback / Google-Bewertung
+      $('rsFeedbackEnabled').checked = cfg?.feedback_enabled ?? false;
+      $('rsFeedbackWrap').classList.toggle('hidden', !(cfg?.feedback_enabled));
+      $('rsFeedbackUrl').value = cfg?.feedback_google_url ?? '';
+      $('rsFeedbackDelay').value = cfg?.feedback_delay_hours ?? 3;
+      $('rsFeedbackMsg').value = cfg?.feedback_message ?? '';
       $('rsPublicBooking').checked = cfg?.public_booking ?? false;
       $('rsPublicWrap').classList.toggle('hidden', !(cfg?.public_booking));
       if (cfg?.public_token) {
@@ -2659,6 +2709,31 @@
       }
       wrap.innerHTML = head + rows;
     }
+    // Sonderöffnungszeiten: Text ⇄ { "YYYY-MM-DD": [["HH:MM","HH:MM"], …] } ([] = geschlossen)
+    function specialHoursToText(map) {
+      return Object.keys(map || {}).sort().map((d) => {
+        const iv = map[d];
+        if (!Array.isArray(iv) || !iv.length) return d + ': geschlossen';
+        return d + ': ' + iv.map((p) => p[0] + '-' + p[1]).join(', ');
+      }).join('\n');
+    }
+    function parseSpecialHours(text) {
+      const out = {};
+      for (const line of (text || '').split('\n')) {
+        const s = line.trim(); if (!s) continue;
+        const i = s.indexOf(':'); if (i < 0) continue;
+        const date = s.slice(0, i).trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+        const rest = s.slice(i + 1).trim();
+        if (/^(geschlossen|zu|closed|\-)$/i.test(rest)) { out[date] = []; continue; }
+        const ivs = rest.split(',').map((p) => {
+          const m = p.trim().match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+          return m ? [m[1].padStart(5, '0'), m[2].padStart(5, '0')] : null;
+        }).filter(Boolean);
+        if (ivs.length) out[date] = ivs;
+      }
+      return out;
+    }
     $('rsSaveCfg')?.addEventListener('click', async () => {
       const hours = ($('rsReminderHours').value || '').split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => n > 0).slice(0, 2);
       const closed = ($('rsClosedDates').value || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s));
@@ -2670,6 +2745,16 @@
         max_covers_per_slot: Math.max(0, parseInt($('rsMaxCovers').value, 10) || 0),
         retention_days: Math.max(0, parseInt($('rsRetention').value, 10) || 0),
         closed_dates: closed,
+        special_hours: parseSpecialHours($('rsSpecialHours').value),
+        min_lead_minutes: Math.max(0, parseInt($('rsMinLead').value, 10) || 0),
+        max_res_per_slot: Math.max(0, parseInt($('rsMaxPerSlot').value, 10) || 0),
+        booking_cutoff_hours: Math.max(0, parseInt($('rsCutoffHours').value, 10) || 0),
+        max_advance_days: Math.max(0, parseInt($('rsMaxAdvance').value, 10) || 0),
+        max_party_online: Math.max(0, parseInt($('rsMaxPartyOnline').value, 10) || 0),
+        feedback_enabled: $('rsFeedbackEnabled').checked,
+        feedback_google_url: ($('rsFeedbackUrl').value || '').trim() || null,
+        feedback_delay_hours: Math.max(0, parseInt($('rsFeedbackDelay').value, 10) || 0),
+        feedback_message: ($('rsFeedbackMsg').value || '').trim() || null,
         public_booking: $('rsPublicBooking').checked,
         kiosk_enabled: $('rsKioskEnabled').checked,
         kiosk_token: ($('rsKioskEnabled').checked && !rsKioskToken) ? genToken() : rsKioskToken,
@@ -2679,6 +2764,7 @@
       toast(error ? ('Fehler: ' + error.message) : 'Gespeichert.');
       if (!error) loadRestaurant();
     });
+    $('rsFeedbackEnabled')?.addEventListener('change', () => { $('rsFeedbackWrap').classList.toggle('hidden', !$('rsFeedbackEnabled').checked); });
     $('rsPublicBooking')?.addEventListener('change', () => { $('rsPublicWrap').classList.toggle('hidden', !$('rsPublicBooking').checked); });
     $('rsKioskEnabled')?.addEventListener('change', () => { $('rsKioskWrap').classList.toggle('hidden', !$('rsKioskEnabled').checked); });
     $('rsCopyLink')?.addEventListener('click', () => { navigator.clipboard?.writeText($('rsPublicLink').value); toast('Link kopiert.'); });
