@@ -1063,6 +1063,9 @@
             <button id="rsDayShow" type="button" class="hidden"></button>
           </div>
 
+          <!-- Tages-Überblick auf einen Blick (KPIs) -->
+          <div id="rsDayKpis" class="rs-kpis hidden" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px"></div>
+
           <!-- Ansicht: Liste / Timeline / Warteliste / Auswertung -->
           <div class="panel" style="margin-top:14px">
             <div id="rsDayList"><span class="muted">Lädt …</span></div>
@@ -2255,8 +2258,45 @@
       return div;
     }
     // ---- Tages-Cockpit (Liste ⇄ Timeline) + Walk-ins ----
+    // ---- Tages-Überblick (KPI-Leiste) ----
+    async function renderDayKpis() {
+      const host = $('rsDayKpis'); if (!host) return;
+      const date = $('rsDayDate').value; if (!date) { host.classList.add('hidden'); return; }
+      await ensureGuestVisits();
+      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
+      const items = (res || []).filter((r) => r.status !== 'cancelled');
+      if (!items.length) { host.innerHTML = ''; host.classList.add('hidden'); return; }
+      const active = items.filter((r) => r.status !== 'no_show');
+      const covers = active.reduce((a, r) => a + (r.party_size || 0), 0);
+      const seated = items.filter((r) => r.status === 'seated').length;
+      const done = items.filter((r) => r.status === 'completed').length;
+      const now = Date.now();
+      const upcoming = items.filter((r) => r.status === 'booked' && new Date(r.starts_at).getTime() >= now)
+        .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))[0];
+      // Stoßzeit: Stunde mit den meisten Gästen
+      const byHour = {};
+      for (const r of active) { const h = new Date(r.starts_at).getHours(); byHour[h] = (byHour[h] || 0) + (r.party_size || 0); }
+      let peakH = null, peakC = 0; for (const h in byHour) if (byHour[h] > peakC) { peakC = byHour[h]; peakH = +h; }
+      const peakLbl = peakH != null ? (String(peakH).padStart(2, '0') + '–' + String(peakH + 1).padStart(2, '0') + ' Uhr') : '—';
+      // No-Show-Risiko: heutige, noch offene Gäste mit früheren No-Shows
+      const risky = items.filter((r) => r.status === 'booked' && guestNoShowCount(r.customer_phone) > 0).length;
+      const tile = (label, value, sub, accent) =>
+        '<div style="background:#fff;border:1px solid #e6e4f0;border-radius:14px;padding:12px 14px">' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8a8aa0">' + label + '</div>' +
+        '<div style="font-size:22px;font-weight:800;color:' + (accent || '#14161a') + ';margin-top:2px;line-height:1.15">' + value + '</div>' +
+        (sub ? '<div style="font-size:12px;color:#6b7280;margin-top:2px">' + sub + '</div>' : '') + '</div>';
+      host.innerHTML =
+        tile('Gäste', covers, items.length + ' Reservierung' + (items.length === 1 ? '' : 'en')) +
+        tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + upcoming.customer_name : '')) : 'keine offene', upcoming ? '#2563eb' : null) +
+        tile('Stoßzeit', peakLbl, peakH != null ? (peakC + ' Gäste') : '') +
+        tile('Am Tisch / fertig', seated + ' / ' + done, 'gerade / abgeschlossen') +
+        tile('No-Show-Risiko', risky, risky ? 'Gäste mit früheren No-Shows' : 'unauffällig', risky ? '#c0392b' : '#3f7d63');
+      host.classList.remove('hidden');
+    }
     let rsDayView = 'list';
     async function refreshDay() {
+      await renderDayKpis();                       // Überblick oben
       await renderDayView();                       // Zusammenfassung + Liste
       if (rsDayView === 'timeline') await renderTimeline();
       if (rsDayView === 'waitlist') await renderWaitlist();
