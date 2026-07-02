@@ -509,12 +509,6 @@
             <div id="statChart" class="statchart"></div>
           </div>
           <div class="panel">
-            <h3>Kosten &amp; Marge – letzte 30 Tage</h3>
-            <div id="costSummary" class="statsum"></div>
-            <div id="costBreak" class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:13px"></div>
-            <p class="muted" style="text-align:left;padding:0;margin-top:8px;font-size:12px">Geschätzte Anbieterkosten je Anruf (Telefonie, Spracherkennung, Sprachausgabe, KI). Hilft beim Festlegen deiner Verkaufspreise.</p>
-          </div>
-          <div class="panel">
             <h3>So testest du deinen Assistenten</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Pflege unter <b>Wissensdatenbank</b>, worüber er Auskunft geben soll, und passe unter <b>Assistent</b> Begrüßung, Öffnungszeiten und Stimme an. Änderungen wirken sofort beim nächsten Anruf.</p>
             <button id="wizStartBtn" class="btn btn--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;margin-right:7px;vertical-align:-3px"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l1.9 5.1L20 10l-5.1 1.9L13 17l-1.9-5.1L6 10l5.1-1.9L13 3z"/></svg>Einrichtungs-Assistent starten</button>
@@ -1288,6 +1282,11 @@
     const INDUSTRY_SHOW_ELS = {
       restaurant: ['menuPanel'], // Speisekarte-Upload nur für Restaurants
     };
+    // Ganze Element-Gruppen (per CSS-Selektor) je Branche ausblenden.
+    const INDUSTRY_HIDE_SEL = {
+      // Restaurant hat nur EINEN Bereich – kein Allgemein/Vertrieb/Support-Umschalter.
+      restaurant: ['[data-deptbar]', '.dept-hint'],
+    };
     function applyIndustry(industry) {
       const allow = INDUSTRY_SECTIONS[industry];
       document.querySelectorAll('.nav-item').forEach((b) => {
@@ -1300,6 +1299,7 @@
       });
       for (const id of (INDUSTRY_HIDE_ELS[industry] || [])) $(id)?.classList.add('hidden');
       for (const id of (INDUSTRY_SHOW_ELS[industry] || [])) $(id)?.classList.remove('hidden');
+      for (const sel of (INDUSTRY_HIDE_SEL[industry] || [])) document.querySelectorAll(sel).forEach((el) => el.classList.add('hidden'));
     }
 
     // ---- Navigation ----
@@ -3264,7 +3264,6 @@
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
       ]);
       renderStats(calls ?? [], leads ?? 0);
-      loadCosts();
     }
 
     // ---- Kosten / Marge (vom Backend, da Tarif-Kalkulation serverseitig) ----
