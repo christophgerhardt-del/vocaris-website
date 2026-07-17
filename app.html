@@ -1328,7 +1328,17 @@
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    const sb = createClient('https://nocsjyzmnskbyccrjayx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4');
+    // Impersonation-Modus: Öffnet ein Vocaris-Admin dieses Dashboard „als Firma"
+    // (?imp=<token_hash>), bekommt der Tab einen EIGENEN Storage-Key. Sonst würde
+    // die Firmen-Session über localStorage die Admin-Session im anderen Tab
+    // überschreiben (Supabase teilt Sessions tab-übergreifend). Normale Kunden
+    // (kein ?imp=) nutzen unverändert den Standard-Storage.
+    const IMP_HASH = new URLSearchParams(location.search).get('imp');
+    const IMP_NAME = new URLSearchParams(location.search).get('impname') || '';
+    const sb = createClient(
+      'https://nocsjyzmnskbyccrjayx.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
+      IMP_HASH ? { auth: { storageKey: 'sb-vocaris-imp', persistSession: true, autoRefreshToken: true } } : undefined);
     const $ = (id) => document.getElementById(id);
     let tenant = null, accessToken = null, realtimeChannel = null, bookingToken = '', calStart = null, bizHours = {};
     let currentDept = 'general';
@@ -4389,7 +4399,45 @@
     };
 
     setupTemplates();
-    sb.auth.getSession().then(({ data }) => { data.session ? showApp(data.session) : showAuth(); });
+    // Impersonation-Leiste einblenden (lila, oben fixiert) + Platz schaffen.
+    function showImpersonationBar(name) {
+      if (document.getElementById('impBar')) return;
+      const bar = document.createElement('div');
+      bar.id = 'impBar';
+      bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;' +
+        'gap:12px;padding:9px 18px;font:600 13.5px/1.3 Inter,system-ui,sans-serif;color:#fff;' +
+        'background:linear-gradient(135deg,#7c3aed,#5b21b6);box-shadow:0 4px 16px -4px rgba(40,36,90,.5)';
+      bar.innerHTML = '<span style="font-size:15px">◎</span><span>Du bearbeitest <b>' +
+        (name ? name.replace(/[<>&"]/g, '') : 'diese Firma') + '</b> als Vocaris-Admin</span>' +
+        '<a href="admin.html" style="margin-left:auto;color:#fff;background:rgba(255,255,255,.18);' +
+        'border:1px solid rgba(255,255,255,.3);padding:5px 13px;border-radius:100px;text-decoration:none">← Zurück zum Super-Dashboard</a>';
+      document.body.prepend(bar);
+      document.body.style.paddingTop = '40px';
+    }
+
+    async function boot() {
+      if (IMP_HASH) {
+        // Anmelde-Token (Magiclink) gegen eine echte Firmen-Session tauschen.
+        try {
+          const { data, error } = await sb.auth.verifyOtp({ token_hash: IMP_HASH, type: 'magiclink' });
+          if (error || !data.session) throw error || new Error('kein Session');
+          // token_hash ist einmalig – aus der URL entfernen, damit ein Reload nicht scheitert.
+          history.replaceState(null, '', 'app.html');
+          showImpersonationBar(IMP_NAME);
+          showApp(data.session);
+          return;
+        } catch (e) {
+          document.body.innerHTML = '<div style="max-width:440px;margin:80px auto;font:15px Inter,sans-serif;text-align:center;color:#4a4f57">' +
+            '<h2 style="font-family:Instrument Serif,serif;font-weight:400;font-size:26px;color:#14161a;margin-bottom:8px">Sitzung abgelaufen</h2>' +
+            'Der Zugang „als Firma öffnen" ist nur einmal gültig. Bitte im Super-Dashboard erneut öffnen.<br><br>' +
+            '<a href="admin.html" style="color:#4f46e5;font-weight:600">← Zum Super-Dashboard</a></div>';
+          return;
+        }
+      }
+      const { data } = await sb.auth.getSession();
+      data.session ? showApp(data.session) : showAuth();
+    }
+    boot();
   </script>
   <script>
     (function () {
