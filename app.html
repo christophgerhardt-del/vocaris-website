@@ -676,14 +676,10 @@
               </div>
             </div>
             <label style="margin-top:14px">Stimme des Assistenten</label>
-            <p class="muted" style="margin:0 0 10px">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sind auf Deutsch.</p>
+            <p class="muted" style="margin:0 0 10px">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sprechen Deutsch. Die Hörproben klingen genau so wie am echten Telefon – schmalbandig, nicht geschönt.</p>
             <div id="voicePicker" class="voicegrid"></div>
             <audio id="voiceAudio" preload="none"></audio>
-            <details style="margin-top:10px">
-              <summary class="muted" style="cursor:pointer;font-size:13px">Eigene ElevenLabs-Stimme verwenden (Voice-ID)</summary>
-              <input id="voiceId" placeholder="leer = Standardstimme" style="margin-top:8px" />
-              <p class="muted" style="margin-top:6px">Voice-ID aus ElevenLabs („Copy Voice ID"). Überschreibt die Auswahl oben.</p>
-            </details>
+            <input id="voiceId" type="hidden" />
 
             <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
               <input type="checkbox" id="fwdEnabled" style="width:auto;margin:0">
@@ -1510,20 +1506,31 @@
     }
 
     // ---- Stimmen (mit Hörbeispiel) ----
+    // Stimmen der OpenAI Realtime API. Die früheren ElevenLabs-Stimmen (Ava,
+    // Monika, Hatti, Helmut, Adrian, Achim) gibt es dort nicht – deshalb neue
+    // Liste + neue Hörproben (echte Telefonqualität, μ-law 8 kHz, ungeschönt).
+    //
+    // TODO Christoph: Die desc-Texte sind Platzhalter. Sie müssen von jemandem
+    // gesetzt werden, der die Proben GEHÖRT hat – „warm & herzlich" lässt sich
+    // nicht aus dem Datenblatt ableiten. Reihenfolge = Aussprache-Genauigkeit
+    // im Test (Rück-Transkription gegen einen bekannten Satz).
     const VOICES = [
-      { id: 'AnvlJBAqSLDzEevYr9Ap', name: 'Ava', desc: 'Weiblich · jung, lebhaft & freundlich' },
-      { id: 'duraok8mDDsn72TpG3r5', name: 'Monika', desc: 'Weiblich · warm & herzlich' },
-      { id: 'x9tGbxYQaoX72Y8bvqBh', name: 'Hatti', desc: 'Weiblich · ruhig & sanft' },
-      { id: 'TUKJhQmz3RPYBNAgC5A1', name: 'Helmut', desc: 'Männlich · seriös & professionell' },
-      { id: 'YYyi4prp0WCqZCPDNGu1', name: 'Adrian', desc: 'Männlich · freundlich & zugewandt' },
-      { id: 'kEOZcky6h2yXYqPyImH3', name: 'Achim', desc: 'Männlich · ruhig & geschäftlich' },
+      { id: 'marin',   name: 'Marin',   desc: 'Neu · eigens für Telefonie gebaut' },
+      { id: 'cedar',   name: 'Cedar',   desc: 'Neu · eigens für Telefonie gebaut' },
+      { id: 'alloy',   name: 'Alloy',   desc: 'Aussprache im Test fehlerfrei' },
+      { id: 'ash',     name: 'Ash',     desc: 'Aussprache im Test fehlerfrei' },
+      { id: 'ballad',  name: 'Ballad',  desc: 'Aussprache im Test fehlerfrei' },
+      { id: 'coral',   name: 'Coral',   desc: 'Hörprobe anhören' },
+      { id: 'sage',    name: 'Sage',    desc: 'Hörprobe anhören' },
+      { id: 'shimmer', name: 'Shimmer', desc: 'Hörprobe anhören' },
+      { id: 'verse',   name: 'Verse',   desc: 'Hörprobe anhören' },
     ];
     let voicePlayingId = '';
     function playVoiceSample(id, btn) {
       const a = $('voiceAudio'); if (!a) return;
       if (voicePlayingId === id && !a.paused) { a.pause(); return; }
       voicePlayingId = id;
-      a.src = 'https://vocaris.eu/assets/voices/' + id + '.mp3';
+      a.src = 'https://vocaris.eu/assets/voices/' + id + '.m4a';
       a.play().catch(() => {});
       document.querySelectorAll('#voicePicker .play').forEach((p) => (p.textContent = '▶'));
       if (btn) btn.textContent = '⏸';
@@ -3674,8 +3681,9 @@
           '<div><div class="n">' + eur(d.avgPerCall) + '</div><div class="l">Ø je Anruf</div></div>' +
           '<div><div class="n">' + (d.calls || 0) + '</div><div class="l">Anrufe (30 Tage)</div></div>' +
           '<div><div class="n">' + Math.round((d.totalSeconds || 0) / 60) + ' Min</div><div class="l">Gesprächszeit</div></div>';
-        brk.textContent = 'Aufschlüsselung: Telefonie ' + eur(c.telnyx) + ' · Spracherkennung ' + eur(c.deepgram) +
-          ' · Sprachausgabe ' + eur(c.tts) + ' · KI ' + eur(c.llm) + '.';
+        // Seit dem Wechsel auf OpenAI Realtime gibt es nur noch zwei Posten:
+        // Leitung und KI (Sprache + Verstehen + Antwort in einem Modell).
+        brk.textContent = 'Aufschlüsselung: Telefonie ' + eur(c.telnyx) + ' · KI ' + eur(c.ai) + '.';
       } catch (e) {
         sum.innerHTML = '<div class="muted" style="padding:6px">Kosten werden erfasst, sobald Anrufe eingehen.</div>';
         brk.textContent = '';
