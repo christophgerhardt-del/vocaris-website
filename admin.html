@@ -253,7 +253,12 @@
         ? '<span class="badge badge--rest">🍽 Restaurant</span>'
         : '<span class="badge badge--gen">Allgemein</span>';
       const nums = t.numbers.length
-        ? t.numbers.map((n) => `<div class="num"><code>${esc(n.phone_number)}</code>${n.department ? '<span class="dep">' + esc(n.department) + '</span>' : ''} <a href="#" data-unassign="${esc(n.phone_number)}" class="dep" style="margin-left:auto">entfernen</a></div>`).join('')
+        ? t.numbers.map((n) => {
+            const tag = n.inbound ? '<span class="dep" style="color:var(--accent-2)">eingehend</span>' : (n.department ? '<span class="dep">' + esc(n.department) + '</span>' : '');
+            // Eingehende (geteilte) Nummern kann man hier nicht lösen – sie gehören einer anderen Firma.
+            const act = n.inbound ? '' : ' <a href="#" data-unassign="' + esc(n.phone_number) + '" class="dep" style="margin-left:auto">entfernen</a>';
+            return '<div class="num"><code>' + esc(n.phone_number) + '</code>' + tag + act + '</div>';
+          }).join('')
         : '<div class="muted">Keine Nummer zugewiesen</div>';
       const restHint = t.industry === 'restaurant' && !t.restaurantEnabled
         ? '<div class="muted" style="color:var(--accent-3);margin-top:6px">⚠ Reservierung ist in dieser Firma noch nicht aktiv</div>' : '';

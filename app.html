@@ -1574,7 +1574,7 @@
 
       const nowIso = new Date().toISOString();
       const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
-        sb.from('phone_numbers').select('phone_number, department').eq('tenant_id', tenant.id),
+        sb.from('phone_numbers').select('phone_number, department, tenant_id, inbound_tenant_id').or('tenant_id.eq.' + tenant.id + ',inbound_tenant_id.eq.' + tenant.id),
         sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
         sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(50),
         sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }),
@@ -1694,12 +1694,17 @@
       sorted.forEach((n) => {
         const dep = (n.department || 'general');
         const num = n.phone_number;
+        // Empfangsnummer: gehört formal einem anderen Mandanten, leitet Anrufe aber zu uns.
+        const inbound = n.inbound_tenant_id === tenant.id && n.tenant_id !== tenant.id;
         const card = document.createElement('div'); card.className = 'numcard';
-        const labelHtml = dep === 'general'
-          ? '<span class="dept-badge general">Allgemein</span>'
-          : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>';
+        const labelHtml = inbound
+          ? '<span class="dept-badge support">Empfangsnummer</span>'
+          : (dep === 'general'
+            ? '<span class="dept-badge general">Allgemein</span>'
+            : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>');
         card.innerHTML =
           '<div class="numhead"><span class="bignum"><span>' + num + '</span></span>' + labelHtml + '</div>' +
+          (inbound ? '<p class="muted" style="font-size:13px;margin-top:6px">Unter dieser Nummer erreichen dich deine Anrufer.</p>' : '') +
           '<button class="btn btn--ghost sm" type="button" style="margin-top:12px">Nummer kopieren</button>';
         card.querySelector('button').onclick = () => { navigator.clipboard?.writeText(num); toast('Nummer kopiert.'); };
         wrap.append(card);
