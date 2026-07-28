@@ -39,6 +39,27 @@
   .btn--primary { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border:0; color:#fff; width:100%; margin-top:18px; padding:15px; font-size:16px; box-shadow:0 10px 24px -10px var(--accent); }
   .btn--block { width:100%; }
   .btn[disabled] { opacity:.55; cursor:default; }
+  /* Interaktive Speisekarte */
+  .menu-chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px; scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
+  .menu-chips::-webkit-scrollbar { height:4px; }
+  .menu-chips::-webkit-scrollbar-thumb { background:var(--line); border-radius:4px; }
+  .m-chip { flex:none; font:inherit; font-size:13px; font-weight:600; padding:7px 14px; border-radius:100px; border:1.5px solid var(--line); background:#fff; color:var(--muted); cursor:pointer; white-space:nowrap; transition:all .12s; }
+  .m-chip:hover { border-color:var(--accent-2); color:var(--ink); }
+  .m-chip.active { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border-color:transparent; color:#fff; }
+  .menu-body { max-height:420px; overflow:auto; padding-right:4px; }
+  .m-cat { margin-bottom:20px; }
+  .m-cat:last-child { margin-bottom:4px; }
+  .m-cat h4 { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  .m-dish { padding:9px 0; border-bottom:1px dotted rgba(0,0,0,.07); }
+  .m-dish:last-child { border-bottom:0; }
+  .m-dish-top { display:flex; align-items:baseline; gap:8px; }
+  .m-name { font-weight:600; font-size:14.5px; color:var(--ink); }
+  .m-lead { flex:1; border-bottom:1px dotted rgba(0,0,0,.18); transform:translateY(-3px); min-width:14px; }
+  .m-price { font-weight:700; font-size:14px; color:var(--accent); white-space:nowrap; }
+  .m-desc { font-size:13px; color:var(--muted); margin-top:2px; line-height:1.45; }
+  .m-tags { display:inline-flex; gap:4px; margin-left:6px; }
+  .m-tag { font-size:11px; }
+  mark { background:rgba(217,138,61,.32); color:inherit; border-radius:3px; padding:0 1px; }
   .times { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
   .time { padding:10px 16px; border:1.5px solid var(--line); border-radius:12px; background:var(--paper); cursor:pointer; font-weight:600; font-size:15px; transition:all .12s; }
   .time:hover { border-color:var(--accent-2); }
@@ -107,7 +128,13 @@
           <!-- Speisekarte (falls hinterlegt) -->
           <div id="menuBlock" class="hidden" style="margin-top:18px;border-top:1px solid rgba(0,0,0,.08);padding-top:14px">
             <button id="menuToggle" type="button" class="btn btn--block" style="background:transparent;border:1px solid rgba(0,0,0,.14)">🍽 Speisekarte ansehen</button>
-            <div id="menuText" class="hidden" style="margin-top:12px;max-height:360px;overflow:auto;white-space:pre-wrap;font-size:14px;line-height:1.6;background:rgba(255,255,255,.6);border-radius:12px;padding:14px"></div>
+            <div id="menuPanel" class="hidden" style="margin-top:12px">
+              <input id="menuSearch" type="search" placeholder="Gericht suchen …" autocomplete="off"
+                style="width:100%;font:inherit;font-size:14px;padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:#fff;margin-bottom:10px" />
+              <div id="menuChips" class="menu-chips"></div>
+              <div id="menuBody" class="menu-body"></div>
+              <p id="menuEmpty" class="hidden muted" style="text-align:center;padding:18px 0">Kein Gericht gefunden.</p>
+            </div>
           </div>
         </div>
 
@@ -174,6 +201,116 @@
 
   function show(id) { ['loading','booking','confirmed','storno','manage'].forEach((x) => $(x).classList.toggle('hidden', x !== id)); }
 
+  // ── Interaktive Speisekarte ─────────────────────────────────────────────
+  // Der Menütext kommt als roher Text (Kategorie-Zeilen ohne Preis, Gericht-
+  // Zeilen mit Preis am Ende). Wir parsen ihn in Kategorien + Gerichte und
+  // rendern eine filterbare, durchsuchbare Karte.
+  let MENU = [];            // [{ title, dishes:[{name,desc,price,tags}] }]
+  let menuCat = '__all';    // aktiver Kategorie-Filter
+  let menuQuery = '';       // Suchbegriff
+
+  const escHtml = (s) => (s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+  // Eine preislose Zeile ist nur dann eine Kategorie-Überschrift, wenn sie kurz
+  // ist und nicht wie ein (mehrzeiliger) Gerichtname aussieht. Sonst ist sie die
+  // Fortsetzung eines Gerichts, dessen Preis erst in einer der nächsten Zeilen
+  // steht (im echten Menü kommt das oft vor, z.B. „Caesar Salad / … \n Dressing 12,95").
+  function looksLikeCategory(line) {
+    if (/\d/.test(line)) return false;      // Ziffer → eher Gericht/Preis
+    if (line.includes('/')) return false;   // „/" → Gericht-Fortsetzung
+    if (/[,;:]$/.test(line)) return false;  // endet mit Komma → Fortsetzung folgt
+    return line.split(/\s+/).length <= 2;   // kurz → Überschrift
+  }
+
+  function parseMenu(raw) {
+    // Preis(e) am Zeilenende, z.B. "5,50" oder "3,95 / 6,95" (halbe/ganze Portion).
+    const priceRe = /\s+((?:\d{1,3}[.,]\d{2})(?:\s*\/\s*\d{1,3}[.,]\d{2})*)\s*€?$/;
+    const cats = [];
+    let cur = null, buf = [];
+    for (let line of raw.split('\n')) {
+      line = line.replace(/\t/g, ' ').replace(/\s{2,}/g, ' ').trim();
+      if (!line) continue;
+      const m = line.match(priceRe);
+      if (m) {
+        const price = m[1].replace(/\s*\/\s*/g, ' / ');
+        // Vorher gepufferte Fortsetzungszeilen dem Namen voranstellen.
+        let namePart = (buf.join(' ') + ' ' + line.slice(0, m.index)).trim();
+        buf = [];
+        let name = namePart, desc = '';
+        const sl = namePart.indexOf(' / ');
+        if (sl !== -1) { name = namePart.slice(0, sl).trim(); desc = namePart.slice(sl + 3).trim(); }
+        const hay = (name + ' ' + desc).toLowerCase();
+        const tags = [];
+        if (/\bvegan\b/.test(hay)) tags.push('🌱');
+        else if (/vegetar|ohne fleisch/.test(hay)) tags.push('🥬');
+        if (/scharf|pikant|peperonc|arrabbiat|diavol/.test(hay)) tags.push('🌶️');
+        if (!cur) { cur = { title: 'Speisekarte', dishes: [] }; cats.push(cur); }
+        cur.dishes.push({ name, desc, price, tags });
+      } else if (looksLikeCategory(line)) {
+        buf = [];
+        cur = { title: line, dishes: [] };
+        cats.push(cur);
+      } else {
+        buf.push(line); // Fortsetzung eines mehrzeiligen Gerichts
+      }
+    }
+    return cats.filter((c) => c.dishes.length);
+  }
+
+  function setupMenu(raw) {
+    MENU = parseMenu(raw);
+    if (!MENU.length) { // Fallback: unerwartetes Format → wenigstens Rohtext zeigen
+      $('menuBody').innerHTML = '<div style="white-space:pre-wrap;font-size:14px;line-height:1.6">' + escHtml(raw) + '</div>';
+      $('menuChips').classList.add('hidden'); $('menuSearch').classList.add('hidden');
+      return;
+    }
+    // Kategorie-Chips: „Alle" + je Kategorie.
+    const chips = ['<button class="m-chip active" data-cat="__all" type="button">Alle</button>']
+      .concat(MENU.map((c) => '<button class="m-chip" data-cat="' + escHtml(c.title) + '" type="button">' + escHtml(cap(c.title)) + '</button>'));
+    $('menuChips').innerHTML = chips.join('');
+    $('menuChips').querySelectorAll('.m-chip').forEach((b) => {
+      b.onclick = () => {
+        menuCat = b.dataset.cat;
+        $('menuChips').querySelectorAll('.m-chip').forEach((x) => x.classList.toggle('active', x === b));
+        renderMenu();
+      };
+    });
+    $('menuSearch').oninput = () => {
+      menuQuery = $('menuSearch').value.trim().toLowerCase();
+      renderMenu();
+    };
+    renderMenu();
+  }
+
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function hilite(text, q) {
+    const t = escHtml(text);
+    if (!q) return t;
+    try { return t.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); }
+    catch (e) { return t; }
+  }
+
+  function renderMenu() {
+    const q = menuQuery;
+    let html = '';
+    let shown = 0;
+    for (const c of MENU) {
+      if (menuCat !== '__all' && c.title !== menuCat) continue;
+      const dishes = c.dishes.filter((d) => !q || (d.name + ' ' + d.desc).toLowerCase().includes(q));
+      if (!dishes.length) continue;
+      shown += dishes.length;
+      html += '<div class="m-cat"><h4>' + escHtml(cap(c.title)) + '</h4>' + dishes.map((d) =>
+        '<div class="m-dish"><div class="m-dish-top"><span class="m-name">' + hilite(d.name, q) +
+        (d.tags.length ? '<span class="m-tags">' + d.tags.map((t) => '<span class="m-tag">' + t + '</span>').join('') + '</span>' : '') +
+        '</span><span class="m-lead"></span><span class="m-price">' + escHtml(d.price) + ' €</span></div>' +
+        (d.desc ? '<div class="m-desc">' + hilite(d.desc, q) + '</div>' : '') + '</div>'
+      ).join('') + '</div>';
+    }
+    $('menuBody').innerHTML = html;
+    $('menuEmpty').classList.toggle('hidden', shown > 0);
+    postHeight();
+  }
+
   async function api(path, body) {
     const r = await fetch(API + path, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json().catch(() => ({}));
@@ -196,13 +333,13 @@
       $('areaWrap').classList.toggle('hidden', areas.length < 2); // erst ab 2 Bereichen sinnvoll
       $('date').min = new Date().toISOString().slice(0,10);
       $('date').value = new Date().toISOString().slice(0,10);
-      // Speisekarte (falls hinterlegt) anbieten.
+      // Speisekarte (falls hinterlegt) interaktiv anbieten.
       if (info.menu && String(info.menu).trim()) {
-        $('menuText').textContent = String(info.menu).trim();
+        setupMenu(String(info.menu).trim());
         $('menuBlock').classList.remove('hidden');
         $('menuToggle').onclick = () => {
-          const t = $('menuText'); const open = t.classList.toggle('hidden');
-          $('menuToggle').textContent = open ? '🍽 Speisekarte ansehen' : '🍽 Speisekarte ausblenden';
+          const open = !$('menuPanel').classList.toggle('hidden');
+          $('menuToggle').textContent = open ? '🍽 Speisekarte ausblenden' : '🍽 Speisekarte ansehen';
           postHeight();
         };
       }
