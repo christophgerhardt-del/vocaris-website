@@ -75,7 +75,10 @@
     .num { display:flex; align-items:center; gap:10px; font-size:14px; }
     .num code { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:3px 9px; font-family:ui-monospace,monospace; }
     .num .dep { color:var(--ink-faint); font-size:12px; }
-    .tenant__actions { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:flex; gap:8px; flex-wrap:wrap; }
+    .tenant__actions { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .prov-wrap { display:inline-flex; align-items:center; gap:6px; margin-left:auto; }
+    .prov-label { font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+    .prov-select { font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--line); border-radius:100px; background:#fff; color:var(--ink); cursor:pointer; width:auto; }
 
     dialog { border:none; border-radius:20px; padding:0; box-shadow:0 40px 90px -30px rgba(40,36,90,.5); max-width:440px; width:92%; }
     dialog::backdrop { background:rgba(20,18,50,.45); backdrop-filter:blur(2px); }
@@ -279,6 +282,14 @@
           <button class="btn btn--primary btn--sm" data-open="${t.id}">Als Firma öffnen</button>
           <button class="btn btn--ghost btn--sm" data-num="${t.id}" data-name="${esc(t.name)}">+ Nummer</button>
           <button class="btn btn--ghost btn--sm" data-ind="${t.id}" data-cur="${t.industry}">Branche: ${t.industry === 'restaurant' ? 'Restaurant' : 'Allgemein'}</button>
+          <label class="prov-wrap" title="KI-Modell für die Anrufe">
+            <span class="prov-label">KI</span>
+            <select class="prov-select" data-prov="${t.id}">
+              <option value="openai"${t.voiceProvider === 'openai' ? ' selected' : ''}>OpenAI (GPT-Realtime)</option>
+              <option value="grok"${t.voiceProvider === 'grok' ? ' selected' : ''}>xAI Grok Voice</option>
+              <option value="gemini"${t.voiceProvider === 'gemini' ? ' selected' : ''}>Google Gemini Live</option>
+            </select>
+          </label>
         </div>
       </div>`;
     }
@@ -289,6 +300,12 @@
       card.querySelector(`[data-open="${t.id}"]`).onclick = () => impersonate(t.id, t.name);
       card.querySelector(`[data-num="${t.id}"]`).onclick = () => openNumDlg(t.id, t.name);
       card.querySelector(`[data-ind="${t.id}"]`).onclick = () => toggleIndustry(t.id, t.industry);
+      const prov = card.querySelector(`[data-prov="${t.id}"]`);
+      prov.onchange = async () => {
+        const provider = prov.value;
+        try { await api('/api/admin/tenants/provider', { tenantId: t.id, provider }); toast('KI-Anbieter: ' + prov.options[prov.selectedIndex].text); }
+        catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; }
+      };
       card.querySelectorAll('[data-unassign]').forEach((a) => {
         a.onclick = async (e) => {
           e.preventDefault();
