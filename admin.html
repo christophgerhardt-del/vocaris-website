@@ -225,7 +225,9 @@
       if (!token) return showLogin();
       // Admin-Gate: Backend bestätigt, dass dieser Login Plattform-Admin ist.
       try {
-        const res = await fetch(API + '/api/admin/me', { method: 'POST', headers: auth() });
+        // Body '{}' zwingend: Fastify lehnt POST mit content-type application/json
+        // und LEEREM Body mit 400 ab – das wurde faelschlich als "kein Admin" gewertet.
+        const res = await fetch(API + '/api/admin/me', { method: 'POST', headers: auth(), body: '{}' });
         if (!res.ok) throw new Error();
       } catch {
         $('loginErr').textContent = 'Dieser Zugang ist kein Plattform-Administrator.';
