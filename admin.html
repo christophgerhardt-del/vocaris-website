@@ -293,8 +293,26 @@
               <option value="mistral"${t.voiceProvider === 'mistral' ? ' selected' : ''}>Mistral (EU/DSGVO)</option>
             </select>
           </label>
+          <label class="prov-wrap" title="Stimme (passend zum Modell)" style="margin-left:0">
+            <span class="prov-label">🔊</span>
+            <select class="prov-select" data-voice="${t.id}">${voiceOptions(t.voiceProvider, t.voiceId)}</select>
+          </label>
         </div>
       </div>`;
+    }
+
+    // Stimmen je Anbieter – nur diese sind für das jeweilige Modell gültig.
+    const VOICES_BY_PROVIDER = {
+      openai: [['marin','Marin'],['cedar','Cedar'],['alloy','Alloy'],['ash','Ash'],['ballad','Ballad'],['coral','Coral'],['sage','Sage'],['shimmer','Shimmer'],['verse','Verse'],['echo','Echo']],
+      grok:   [['eve','Eve'],['ara','Ara'],['rex','Rex'],['sal','Sal'],['leo','Leo']],
+      gemini: [['Aoede','Aoede'],['Puck','Puck'],['Charon','Charon'],['Kore','Kore'],['Fenrir','Fenrir'],['Leda','Leda'],['Orus','Orus'],['Zephyr','Zephyr']],
+      mistral:[['en_paul_neutral','Paul – neutral'],['en_paul_cheerful','Paul – freundlich'],['en_paul_confident','Paul – souverän'],['en_paul_happy','Paul – fröhlich'],['gb_oliver_neutral','Oliver – britisch'],['gb_jane_sarcasm','Jane – weiblich']],
+    };
+    function voiceOptions(provider, current) {
+      const list = VOICES_BY_PROVIDER[provider] || VOICES_BY_PROVIDER.openai;
+      // Ist die gespeicherte Stimme für diesen Anbieter gültig? Sonst erste wählen.
+      const valid = list.some(([v]) => v === current);
+      return list.map(([v, label]) => `<option value="${v}"${(valid ? v === current : v === list[0][0]) ? ' selected' : ''}>${label}</option>`).join('');
     }
 
     function wireTenant(t) {
@@ -304,10 +322,23 @@
       card.querySelector(`[data-num="${t.id}"]`).onclick = () => openNumDlg(t.id, t.name);
       card.querySelector(`[data-ind="${t.id}"]`).onclick = () => toggleIndustry(t.id, t.industry);
       const prov = card.querySelector(`[data-prov="${t.id}"]`);
+      const voiceSel = card.querySelector(`[data-voice="${t.id}"]`);
       prov.onchange = async () => {
         const provider = prov.value;
-        try { await api('/api/admin/tenants/provider', { tenantId: t.id, provider }); toast('KI-Anbieter: ' + prov.options[prov.selectedIndex].text); }
-        catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; }
+        try {
+          await api('/api/admin/tenants/provider', { tenantId: t.id, provider });
+          // Stimmen-Dropdown auf die des neuen Anbieters umstellen …
+          voiceSel.innerHTML = voiceOptions(provider, t.voiceId);
+          t.voiceProvider = provider;
+          // … und die (neue) Standardstimme gleich speichern, damit sie passt.
+          await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value });
+          t.voiceId = voiceSel.value;
+          toast('KI-Anbieter: ' + prov.options[prov.selectedIndex].text);
+        } catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; }
+      };
+      voiceSel.onchange = async () => {
+        try { await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value }); t.voiceId = voiceSel.value; toast('Stimme: ' + voiceSel.options[voiceSel.selectedIndex].text); }
+        catch (e) { toast(e.message, 'err'); voiceSel.value = t.voiceId; }
       };
       card.querySelectorAll('[data-unassign]').forEach((a) => {
         a.onclick = async (e) => {
