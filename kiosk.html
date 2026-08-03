@@ -111,6 +111,9 @@
 <script>
 const API='https://ki-anruf.onrender.com';
 const $=(id)=>document.getElementById(id);
+// Pflicht für alles, was über innerHTML in die Seite geht: Gästenamen kommen aus
+// der öffentlichen Buchung und vom Telefon, sind also Fremdeingabe.
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const token=new URLSearchParams(location.search).get('k')||'';
 let D=null, date='', view='res', area='', combos=[];
 let pin=localStorage.getItem('vocaris_kiosk_pin_'+token)||'';
@@ -149,8 +152,8 @@ function renderList(){
   const el=$('list'); el.innerHTML='';
   items.forEach(r=>{
     const div=document.createElement('div'); div.className='item';
-    div.innerHTML='<h4>'+hhmm(r.starts_at)+' Uhr · '+(r.party_size||'?')+'P · '+(r.customer_name||'Ohne Namen')+'<span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+(RES_STATUS[r.status]||r.status)+'</span></h4>'+
-      '<p>Tisch: '+tableNames(r)+(r.customer_phone?(' · '+r.customer_phone):'')+'</p>';
+    div.innerHTML='<h4>'+hhmm(r.starts_at)+' Uhr · '+(r.party_size||'?')+'P · '+esc(r.customer_name||'Ohne Namen')+'<span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+esc(RES_STATUS[r.status]||r.status)+'</span></h4>'+
+      '<p>Tisch: '+esc(tableNames(r))+(r.customer_phone?(' · '+esc(r.customer_phone)):'')+'</p>';
     div.append(actionBar(r));
     el.append(div);
   });
@@ -211,7 +214,7 @@ function buildTable(t,plan){
   const ch=document.createElement('div'); ch.style.cssText='position:absolute;inset:0;pointer-events:none'; box.append(ch); chairs(ch,shape,seats,tw,th,occ,rot);
   const surf=document.createElement('div'); const col=st?OCC[st.status]:(cleaning?{b:'#b08900',bg:'#fbf3d0'}:{b:'#3f7d63',bg:'#fff'}); const radius=shape==='round'?'50%':(shape==='bench'?'6px':'10px');
   surf.style.cssText='position:absolute;left:'+T_PAD+'px;top:'+T_PAD+'px;width:'+tw+'px;height:'+th+'px;border:2px solid '+col.b+';background:'+col.bg+';border-radius:'+radius+';box-shadow:0 3px 10px #0002;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;pointer-events:none;overflow:hidden';
-  surf.innerHTML='<b style="font-size:12px">'+(t.name||'Tisch')+'</b>'+(shape==='bench'?'':'<span style="font-size:11px;color:#666">'+(occ?(st.status==='seated'?'am Tisch':'reserviert'):(cleaning?'🧹 abräumen':(seats+'P')))+'</span>');
+  surf.innerHTML='<b style="font-size:12px">'+esc(t.name||'Tisch')+'</b>'+(shape==='bench'?'':'<span style="font-size:11px;color:#666">'+(occ?(st.status==='seated'?'am Tisch':'reserviert'):(cleaning?'🧹 abräumen':(seats+'P')))+'</span>');
   box.append(surf);
   box.onclick=()=>openTable(t);
   return box;
@@ -243,7 +246,7 @@ function openTable(t){
   openModal(html);
   if(here.length){
     const wrap=$('hereList');
-    here.forEach(r=>{ const div=document.createElement('div'); div.className='item'; div.innerHTML='<h4>'+(r.customer_name||'Ohne Namen')+' · '+(r.party_size||'?')+'P <span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+(RES_STATUS[r.status]||r.status)+'</span></h4><p>'+hhmm(r.starts_at)+' Uhr</p>'; div.append(actionBarSheet(r)); wrap.append(div); });
+    here.forEach(r=>{ const div=document.createElement('div'); div.className='item'; div.innerHTML='<h4>'+esc(r.customer_name||'Ohne Namen')+' · '+(r.party_size||'?')+'P <span class="badge" style="background:'+(SC[r.status]||'#888')+'">'+esc(RES_STATUS[r.status]||r.status)+'</span></h4><p>'+hhmm(r.starts_at)+' Uhr</p>'; div.append(actionBarSheet(r)); wrap.append(div); });
   } else {
     $('mReserve').onclick=()=>quickReserve(t,tl);
     $('mWalk').onclick=()=>quickWalk(t);
