@@ -1340,6 +1340,9 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
       IMP_HASH ? { auth: { storageKey: 'sb-vocaris-imp', persistSession: true, autoRefreshToken: true } } : undefined);
     const $ = (id) => document.getElementById(id);
+    // Pflicht fuer alles, was ueber innerHTML in die Seite geht: Gaestenamen kommen
+    // aus der oeffentlichen Buchung und vom Telefon, sind also Fremdeingabe.
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
     let tenant = null, accessToken = null, realtimeChannel = null, bookingToken = '', calStart = null, bizHours = {};
     let currentDept = 'general';
     const DEPT_LABEL = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
@@ -1985,7 +1988,7 @@
       surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + col.b +
         ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
       const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? '🧹 abräumen' : (seats + 'P'));
-      surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + (t.name || 'Tisch') + '</b>' +
+      surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + esc(t.name || 'Tisch') + '</b>' +
         (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666;pointer-events:none">' + sub + '</span>');
       if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
       box.append(surf);
@@ -2102,7 +2105,7 @@
       surf.style.cssText = 'width:' + w + 'px;height:' + h + 'px;border:1px dashed ' + meta.bd + ';background:' + meta.bg +
         ';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1;color:#444;font-size:12px;font-weight:600;overflow:hidden;pointer-events:none';
       if (el.kind === 'wall') surf.innerHTML = '';
-      else { const labelText = el.label || meta.name; surf.innerHTML = (meta.icon ? '<span style="font-size:18px">' + meta.icon + '</span>' : '') + '<span>' + labelText + '</span>'; }
+      else { const labelText = el.label || meta.name; surf.innerHTML = (meta.icon ? '<span style="font-size:18px">' + meta.icon + '</span>' : '') + '<span>' + esc(labelText) + '</span>'; }
       box.append(surf);
       if (!rsEditMode) return box; // Ansichtsmodus: statisch
 
@@ -2325,7 +2328,7 @@
         here.forEach((r) => {
           const div = document.createElement('div'); div.className = 'item';
           const stcol = STATUS_COLOR[r.status] || '#888';
-          div.innerHTML = '<h4 style="margin:0">' + (r.name || 'Ohne Namen') + ' · ' + (r.party || '?') + 'P <span style="font-size:11px;color:#fff;background:' + stcol + ';border-radius:999px;padding:2px 8px;margin-left:6px">' + (RES_STATUS[r.status] || r.status) + '</span></h4><p style="margin:4px 0 0">' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes()) + ' Uhr</p>';
+          div.innerHTML = '<h4 style="margin:0">' + esc(r.name || 'Ohne Namen') + ' · ' + (r.party || '?') + 'P <span style="font-size:11px;color:#fff;background:' + stcol + ';border-radius:999px;padding:2px 8px;margin-left:6px">' + esc(RES_STATUS[r.status] || r.status) + '</span></h4><p style="margin:4px 0 0">' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes()) + ' Uhr</p>';
           const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
           const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { await setResStatus(r.id, s); closeTableModal(); }; return b; };
           if (r.status === 'booked') bar.append(mk('Eingetroffen', 'seated'));
@@ -2386,7 +2389,7 @@
       const repeat = ns >= 2;
       const nsBadge = ns > 0 ? '<span title="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
       const h = document.createElement('h4');
-      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + (r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
+      h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
       p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
@@ -2513,7 +2516,7 @@
       const repeat = g.noShows >= 2;
       const ns = g.noShows > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + g.noShows + '× No-Show</span>' : '';
       const nl = g.newsletter ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#0a7d4b;background:#e5f6ee;border-radius:999px;padding:2px 9px;margin-left:6px">✉ Newsletter</span>' : '';
-      const h = document.createElement('h4'); h.innerHTML = (g.name || 'Ohne Namen') + star + ns + nl;
+      const h = document.createElement('h4'); h.innerHTML = esc(g.name || 'Ohne Namen') + star + ns + nl;
       const p = document.createElement('p');
       p.innerHTML = [g.phone, g.email].filter(Boolean).join(' · ') + ' · ' + g.visits + ' Besuch' + (g.visits === 1 ? '' : 'e') + ' · zuletzt ' + lastLbl + (g.tags && g.tags.length ? '<br>' + g.tags.map(tagMini).join('') : '');
       div.append(h, p);
@@ -2650,7 +2653,7 @@
         const div = document.createElement('div'); div.className = 'item';
         const nb = w.status === 'notified' ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:#2563eb;border-radius:999px;padding:2px 9px;margin-left:8px">benachrichtigt</span>' : '';
         const h = document.createElement('h4');
-        h.innerHTML = new Date(w.wl_date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }) + (w.requested_time ? (' · ' + w.requested_time + ' Uhr') : '') + ' · ' + (w.party_size || '?') + ' Pers. · ' + (w.customer_name || 'Ohne Namen') + nb;
+        h.innerHTML = new Date(w.wl_date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }) + (w.requested_time ? (' · ' + w.requested_time + ' Uhr') : '') + ' · ' + (w.party_size || '?') + ' Pers. · ' + esc(w.customer_name || 'Ohne Namen') + nb;
         const p = document.createElement('p'); p.textContent = [w.customer_phone, w.customer_email, w.area, w.note].filter(Boolean).join(' · ') || '—';
         div.append(h, p);
         const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
@@ -2719,7 +2722,7 @@
     }
     function fillWalkTables() {
       const ws = $('rsWalkTable'); if (!ws) return;
-      ws.innerHTML = rsTablesData.map((t) => '<option value="' + t.id + '">' + t.name + ' (' + (t.seats || 0) + 'P, ' + areaName(t.area || 'innen') + ')</option>').join('');
+      ws.innerHTML = rsTablesData.map((t) => '<option value="' + esc(t.id) + '">' + esc(t.name) + ' (' + (t.seats || 0) + 'P, ' + esc(areaName(t.area || 'innen')) + ')</option>').join('');
     }
     async function doWalkin() {
       const party = Math.max(1, parseInt($('rsWalkParty').value, 10) || 2);
@@ -2794,7 +2797,7 @@
           const sMin = s.getHours() * 60 + s.getMinutes(), eMin = e.getHours() * 60 + e.getMinutes();
           const left = Math.max(0, (sMin - lo) * PXMIN), width = Math.max(14, (Math.min(eMin, hi) - sMin) * PXMIN);
           const col = STATUS_COLOR[r.status] || '#3f7d63';
-          rows += '<div title="' + (r.customer_name || '') + ' · ' + (r.party_size || '?') + 'P" style="position:absolute;left:' + left + 'px;top:3px;height:24px;width:' + width + 'px;background:' + col + ';opacity:.9;border-radius:5px;color:#fff;font-size:11px;line-height:24px;padding:0 6px;overflow:hidden;white-space:nowrap">' + (r.customer_name || (r.party_size + 'P')) + '</div>';
+          rows += '<div title="' + esc(r.customer_name || '') + ' · ' + (r.party_size || '?') + 'P" style="position:absolute;left:' + left + 'px;top:3px;height:24px;width:' + width + 'px;background:' + col + ';opacity:.9;border-radius:5px;color:#fff;font-size:11px;line-height:24px;padding:0 6px;overflow:hidden;white-space:nowrap">' + esc(r.customer_name || (r.party_size + 'P')) + '</div>';
         }
         rows += '</div></div>';
       }
