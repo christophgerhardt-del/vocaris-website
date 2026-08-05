@@ -68,6 +68,21 @@
     .badge { font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:100px; white-space:nowrap; }
     .badge--rest { color:#8a3d17; background:#fdeee2; }
     .badge--gen { color:var(--accent-ink); background:color-mix(in srgb,var(--accent) 12%,#fff); }
+
+    /* Modulzustand: was die Firma in IHREM Bereich tatsächlich sieht.
+       Bewusst zweifarbig statt nur „an" zu zeigen — ein abgeschaltetes Modul
+       ist eine Information, kein Nichts. */
+    .mods { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    .mod { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600;
+           padding:4px 10px; border-radius:100px; border:1px solid var(--line); }
+    .mod--an  { color:#1c6b45; background:#e9f7ef; border-color:#bfe6d0; }
+    .mod--aus { color:var(--ink-faint); background:var(--paper2); }
+    .mod--unbek { color:#8a6d1f; background:#fdf6e3; border-color:#eadfba; }
+    .mod__dot { width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.75; }
+    .ind-wrap { display:inline-flex; align-items:center; gap:6px; }
+    .ind-label { font-size:11.5px; color:var(--ink-faint); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+    .ind-select { font:inherit; font-size:13px; padding:6px 10px; border:1px solid var(--line);
+                  border-radius:9px; background:#fff; cursor:pointer; }
     .tenant__stats { display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; }
     .stat { font-size:13px; color:var(--ink-soft); }
     .stat b { color:var(--ink); font-weight:700; }
@@ -153,9 +168,9 @@
         <label>Branche</label>
         <div class="radio" id="nIndustry">
           <label data-v="restaurant"><input type="radio" name="ind" value="restaurant" checked />Restaurant
-            <span class="d">Mit Tischplan &amp; Reservierung</span></label>
+            <span class="d">Reservierung, Tischplan &amp; Gästeliste sind sofort aktiv</span></label>
           <label data-v="general"><input type="radio" name="ind" value="general" />Allgemein
-            <span class="d">Nur Telefon-Assistent</span></label>
+            <span class="d">Assistent, Wissensbasis &amp; Termine — ohne Restaurant-Funktionen</span></label>
         </div>
         <div class="err" id="newErr"></div>
         <div class="foot">
@@ -265,8 +280,44 @@
             return '<div class="num"><code>' + esc(n.phone_number) + '</code>' + tag + act + '</div>';
           }).join('')
         : '<div class="muted">Keine Nummer zugewiesen</div>';
-      const restHint = t.industry === 'restaurant' && !t.restaurantEnabled
-        ? '<div class="muted" style="color:var(--accent-3);margin-top:6px">⚠ Reservierung ist in dieser Firma noch nicht aktiv</div>' : '';
+      // Module so anzeigen, wie der Kunde sie erlebt: „an" heißt, der Bereich
+      // ist in seiner Navigation sichtbar. Branche und Modul sind NICHT dasselbe
+      // — die Branche setzt beim Anlegen nur Voreinstellungen.
+      // Dreiwertig: an / aus / unbekannt. „Unbekannt" tritt auf, wenn diese
+      // Seite schon neu ist, das Backend aber noch nicht — dann fehlt das Feld,
+      // und ein hingeschriebenes „aus" wäre schlicht gelogen.
+      const mod = (wert, text, anTitel, ausTitel) => {
+        if (wert === undefined || wert === null) {
+          return `<span class="mod mod--unbek" title="Zustand unbekannt – Server liefert dieses Feld noch nicht.">` +
+                 `<span class="mod__dot"></span>${esc(text)} ?</span>`;
+        }
+        return `<span class="mod mod--${wert ? 'an' : 'aus'}" title="${esc(wert ? anTitel : ausTitel)}">` +
+               `<span class="mod__dot"></span>${esc(text)}</span>`;
+      };
+      const mods = '<div class="mods">' + [
+        mod(t.restaurantEnabled, 'Reservierung',
+          'Reservierungen, Tischplan und Gästeliste sind für diese Firma sichtbar.',
+          'Kein Tischplan, keine Reservierungen — die Bereiche sind ausgeblendet.'),
+        mod(t.bookingEnabled, 'Termine',
+          'Terminbuchung ist aktiv, der Bereich „Termine" ist sichtbar.',
+          'Terminbuchung aus — der Bereich „Termine" ist ausgeblendet.'),
+        mod(t.publicBooking, 'Online-Buchung',
+          'Gäste können über den öffentlichen Link selbst reservieren.',
+          'Kein öffentlicher Buchungslink.'),
+        mod(t.kioskEnabled, 'Kiosk',
+          'Das Personal-iPad ist freigeschaltet.',
+          'Kiosk-Ansicht nicht freigeschaltet.'),
+      ].join('') + '</div>';
+
+      // Widerspruch zwischen Branche und Modulzustand ausdrücklich benennen —
+      // das ist die häufigste Verwirrungsquelle im Support.
+      const hinweis =
+        t.industry === 'restaurant' && !t.restaurantEnabled
+          ? '<div class="muted" style="color:var(--accent-3);margin-top:8px">⚠ Branche Restaurant, aber Reservierung ist aus — diese Firma sieht keinen Tischplan.</div>'
+        : t.industry !== 'restaurant' && t.restaurantEnabled
+          ? '<div class="muted" style="color:var(--accent-3);margin-top:8px">⚠ Branche Allgemein, aber Reservierung ist an — Tischplan und Gästeliste sind sichtbar.</div>'
+          : '';
+      const restHint = mods + hinweis;
       return `<div class="card tenant" data-id="${t.id}">
         <div class="tenant__head">
           <div style="flex:1">
@@ -283,7 +334,13 @@
         <div class="tenant__actions">
           <button class="btn btn--primary btn--sm" data-open="${t.id}">Als Firma öffnen</button>
           <button class="btn btn--ghost btn--sm" data-num="${t.id}" data-name="${esc(t.name)}">+ Nummer</button>
-          <button class="btn btn--ghost btn--sm" data-ind="${t.id}" data-cur="${t.industry}">Branche: ${t.industry === 'restaurant' ? 'Restaurant' : 'Allgemein'}</button>
+          <label class="ind-wrap" title="Die Branche setzt Voreinstellungen (Persona, Wissens-Vorlagen, Module). Sie ist keine Sperre — Module lassen sich danach einzeln schalten.">
+            <span class="ind-label">Branche</span>
+            <select class="ind-select" data-ind="${t.id}" data-cur="${t.industry}">
+              <option value="general"${t.industry !== 'restaurant' ? ' selected' : ''}>Allgemein</option>
+              <option value="restaurant"${t.industry === 'restaurant' ? ' selected' : ''}>Restaurant</option>
+            </select>
+          </label>
           <label class="prov-wrap" title="KI-Modell für die Anrufe">
             <span class="prov-label">KI</span>
             <select class="prov-select" data-prov="${t.id}">
@@ -320,7 +377,7 @@
       if (!card) return;
       card.querySelector(`[data-open="${t.id}"]`).onclick = () => impersonate(t.id, t.name);
       card.querySelector(`[data-num="${t.id}"]`).onclick = () => openNumDlg(t.id, t.name);
-      card.querySelector(`[data-ind="${t.id}"]`).onclick = () => toggleIndustry(t.id, t.industry);
+      card.querySelector(`[data-ind="${t.id}"]`).onchange = (e) => setIndustry(t.id, t.industry, e.target);
       const prov = card.querySelector(`[data-prov="${t.id}"]`);
       const voiceSel = card.querySelector(`[data-voice="${t.id}"]`);
       prov.onchange = async () => {
@@ -360,15 +417,30 @@
       } catch (e) { toast(e.message, 'err'); }
     }
 
-    // ---- Branche umschalten ----
-    async function toggleIndustry(tenantId, cur) {
-      const next = cur === 'restaurant' ? 'general' : 'restaurant';
+    // ---- Branche setzen ----
+    // Die Branche ist eine VOREINSTELLUNG, keine Sperre: Beim Wechsel auf
+    // Restaurant legt die Datenbank Persona, Wissens-Vorlagen und die
+    // Reservierung an; beim Wechsel zurück wird die Reservierung abgeschaltet.
+    // Vorhandene Daten (Tische, Reservierungen, Gäste) bleiben in beiden
+    // Richtungen erhalten — deshalb steht das ausdrücklich in der Rückfrage.
+    async function setIndustry(tenantId, cur, selectEl) {
+      const next = selectEl.value;
+      if (next === cur) return;
       const msg = next === 'restaurant'
-        ? 'Diese Firma auf RESTAURANT umstellen? Tischplan und Reservierung werden freigeschaltet.'
-        : 'Diese Firma auf ALLGEMEIN umstellen? Reservierung/Tischplan werden ausgeblendet (Daten bleiben erhalten).';
-      if (!confirm(msg)) return;
-      try { await api('/api/admin/tenants/industry', { tenantId, industry: next }); toast('Branche geändert'); loadTenants(); }
-      catch (e) { toast(e.message, 'err'); }
+        ? 'Auf RESTAURANT umstellen?\n\nReservierung wird eingeschaltet, damit erscheinen bei dieser Firma die Bereiche Reservierungen, Tischplan und Gäste. Persona und Wissens-Vorlagen werden gesetzt, sofern noch nicht angepasst.'
+        : 'Auf ALLGEMEIN umstellen?\n\nDie Reservierung wird abgeschaltet — Reservierungen, Tischplan und Gäste verschwinden aus der Navigation dieser Firma.\n\nAlle Daten bleiben erhalten und sind nach dem Zurückstellen wieder da.';
+      if (!confirm(msg)) { selectEl.value = cur; return; }   // Auswahl zurückdrehen
+      selectEl.disabled = true;
+      try {
+        await api('/api/admin/tenants/industry', { tenantId, industry: next });
+        toast(next === 'restaurant' ? 'Branche: Restaurant — Reservierung aktiv' : 'Branche: Allgemein — Reservierung aus');
+        loadTenants();
+      } catch (e) {
+        selectEl.value = cur;
+        toast(e.message, 'err');
+      } finally {
+        selectEl.disabled = false;
+      }
     }
 
     // ---- Dialog: neue Firma ----
