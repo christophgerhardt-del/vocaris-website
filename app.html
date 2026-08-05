@@ -905,7 +905,7 @@
         <!-- Telefonnummer -->
         <section id="sec-number" class="section hidden">
           <h1 class="pagehead">Telefonnummer</h1>
-          <p class="pagesub">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
+          <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
           <div id="numbers"></div>
 
           <div class="panel" style="margin-top:18px" id="numAddPanel">
@@ -1426,10 +1426,19 @@
      */
     const BRANCHEN_KURATIERUNG = {
       restaurant: {
-        bereicheAus: ['sec-number', 'sec-webhooks', 'sec-booking'],
-        elementeAus: ['outboundCallPanel'],   // kein ausgehender Anruf aus dem Profil
+        bereicheAus: ['sec-webhooks', 'sec-booking'],
+        // „Telefonnummer" bleibt sichtbar — ein Restaurant soll seine eigene
+        // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
+        // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
+        // gehört zum Betreiber, nicht in den kuratierten Restaurant-Bereich.
+        elementeAus: ['outboundCallPanel', 'numAddPanel'],
         elementeAn: ['menuPanel'],            // Speisekarte hochladen
         selektorenAus: ['[data-deptbar]', '.dept-hint'], // nur ein Bereich, kein Vertrieb/Support
+        // Restaurants haben nur EINEN Bereich – der Hinweis auf Vertrieb und
+        // Support wäre dort schlicht verwirrend.
+        texte: {
+          numSubtitle: 'Die Rufnummer, unter der dein Assistent erreichbar ist. Für eine weitere Nummer melde dich bei uns.',
+        },
       },
     };
 
@@ -1479,6 +1488,10 @@
       for (const id of (kur.elementeAn || [])) $(id)?.classList.remove('hidden');
       for (const sel of (kur.selektorenAus || [])) {
         document.querySelectorAll(sel).forEach((el) => el.classList.add('hidden'));
+      }
+      for (const [id, text] of Object.entries(kur.texte || {})) {
+        const el = $(id);
+        if (el) el.textContent = text;
       }
     }
 
