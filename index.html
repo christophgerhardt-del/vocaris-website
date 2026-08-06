@@ -1,592 +1,397 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vocaris — KI-Telefonassistent, der klingt wie ein Mensch</title>
-  <meta name="description" content="Vocaris nimmt Anrufe entgegen und ruft selbst an — in Echtzeit, natürlich, rund um die Uhr. Gebaut auf einer eigenen Sprach-Pipeline mit Claude. DSGVO-konform, gehostet in der EU." />
-  <meta name="theme-color" content="#fafaf7" />
-
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Vocaris — KI-Telefonassistent, der klingt wie ein Mensch" />
-  <meta property="og:description" content="Echtzeit-Telefon-KI für ein- und ausgehende Anrufe. Natürliche Stimme, sofortige Unterbrechbarkeit, DSGVO-konform." />
-  <meta property="og:image" content="assets/og.svg" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vocaris — Der KI-Telefonassistent, der ans Telefon geht</title>
+<meta name="description" content="Vocaris nimmt Ihre Anrufe entgegen und ruft selbst an — bucht Termine, reserviert Tische, verbindet zu Menschen. In der EU gehostet, in 15 Minuten startklar.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="cursor-glow" aria-hidden="true"></div>
+<style>
+:root{
+  --paper:#f6f5f1; --lav:#e9e6f6; --lav-2:#beaef0; --bubble:#f1eff9; --cardfoot:#faf9fd;
+  --ink:#1a1723; --t2:#4b4658; --t3:#7b7590; --ph:#9a94ad;
+  --accent:#5f4fd4; --accent-2:#b4a9e6; --on-dark:#b4b0c4;
+  --line:#e7e4dd; --line-lav:#d6d1ea; --line-dark:#38324a;
+  --ok:#3d8a5f; --ok-dark:#7ee2ab;
+  --disp:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --maxw:1240px; --pad:64px;
+  color-scheme:light;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+a{color:var(--ink);text-decoration:none;transition:color .15s;}
+a:hover{color:var(--accent);}
+h1,h2{font-family:var(--disp);font-weight:400;letter-spacing:-.012em;margin:0;text-wrap:balance;}
+p{margin:0;}
+.wrap{max-width:var(--maxw);margin:0 auto;}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent);}
+.serif{font-family:var(--disp);}
+.pill{border-radius:999px;}
+@keyframes vpulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;}}
 
-  <!-- ───────────────────────── Nav ───────────────────────── -->
-  <header class="nav" id="nav">
-    <div class="container nav__inner">
-      <a class="brand" href="#top" aria-label="Vocaris Startseite">
-        <span class="brand__mark" aria-hidden="true">
-          <svg viewBox="0 0 28 28" width="28" height="28"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-        <span class="brand__name">Vocaris</span>
-      </a>
-      <nav class="nav__links" aria-label="Hauptnavigation">
-        <a href="#features">Funktionen</a>
-        <a href="#vorteile">Vorteile</a>
-        <a href="#how">So funktioniert's</a>
-        <a href="#usecases">Einsatzgebiete</a>
-        <a href="#pricing">Preise</a>
-        <a href="restaurants.html">Für Restaurants</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-      <div class="nav__cta">
-        <a class="btn btn--ghost" href="app.html">Anmelden</a>
-        <a class="btn btn--primary" href="#contact">Demo buchen</a>
-      </div>
-      <button class="nav__burger" id="burger" aria-label="Menü" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+/* Nav */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:22px var(--pad);background:var(--paper);position:sticky;top:0;z-index:20;border-bottom:1px solid transparent;}
+.nav.scrolled{border-bottom-color:var(--line);}
+.logo{font-family:var(--disp);font-size:24px;font-weight:500;letter-spacing:-.01em;}
+.nav-links{display:flex;gap:36px;font-size:14px;color:var(--t2);}
+.nav-right{display:flex;gap:12px;align-items:center;}
+.nav-right a.contact{font-size:14px;color:var(--t2);}
+.btn-dark{font-size:14px;font-weight:600;padding:11px 22px;background:var(--ink);color:var(--paper);border-radius:999px;border:0;cursor:pointer;font-family:inherit;transition:transform .15s;}
+.btn-dark:hover{transform:translateY(-1px);color:var(--paper);}
+
+/* Hero */
+.hero{background:var(--lav);padding:96px var(--pad) 88px;}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:80px;align-items:center;}
+.hero-copy{display:flex;flex-direction:column;gap:28px;}
+.hero h1{font-size:clamp(46px,6.2vw,72px);line-height:1.02;letter-spacing:-.015em;}
+.hero p.lede{font-size:18px;line-height:1.65;color:var(--t2);max-width:46ch;}
+.microcopy{font-size:13px;color:var(--t3);}
+
+/* Testanruf-Formular */
+.callform{display:flex;gap:12px;align-items:stretch;max-width:460px;}
+.callform input{flex:1;padding:0 18px;background:#fff;border:1px solid var(--line-lav);border-radius:999px;font-size:15px;font-family:inherit;color:var(--ink);min-height:52px;}
+.callform input::placeholder{color:var(--ph);}
+.callform input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent);}
+.callform button{padding:15px 26px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;border-radius:999px;white-space:nowrap;border:0;cursor:pointer;font-family:inherit;transition:transform .15s,filter .15s;}
+.callform button:hover{transform:translateY(-1px);filter:brightness(1.05);}
+.callform.dark button{background:var(--ink);}
+.callform .err{display:none;}
+.callsuccess{max-width:460px;padding:18px 22px;background:#fff;border:1px solid var(--line-lav);border-radius:16px;font-size:15px;line-height:1.5;color:var(--ink);}
+.callsuccess b{color:var(--ok);}
+.formerr{color:#c0392b;font-size:13px;min-height:1em;}
+
+/* Live-Karte */
+.callcard{background:#fff;border-radius:20px;box-shadow:0 24px 60px -24px rgba(38,28,92,.25);overflow:hidden;}
+.callcard .ch{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid #eeecf5;}
+.callcard .ch .live{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:vpulse 1.6s infinite;}
+.callcard .body{display:flex;flex-direction:column;gap:14px;padding:26px;}
+.bub{max-width:82%;padding:13px 17px;font-size:14.5px;line-height:1.5;}
+.bub.in{align-self:flex-start;background:var(--bubble);border-radius:4px 16px 16px 16px;}
+.bub.out{align-self:flex-end;background:var(--ink);color:var(--paper);border-radius:16px 4px 16px 16px;}
+.wave{display:flex;align-items:flex-end;gap:4px;height:34px;padding-top:6px;}
+.wave i{width:4px;border-radius:2px;display:block;}
+.callcard .cf{display:flex;gap:22px;padding:15px 26px;background:var(--cardfoot);border-top:1px solid #eeecf5;font-size:12.5px;color:var(--t2);}
+
+/* Stats */
+.stats{display:flex;justify-content:center;gap:72px;padding:34px var(--pad);background:var(--paper);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.stat{display:flex;align-items:baseline;gap:10px;}
+.stat .n{font-family:var(--disp);font-size:28px;}
+.stat .l{font-size:13px;color:var(--t3);}
+
+/* Sections */
+.sec{padding:110px var(--pad);}
+.sec-2{display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:center;}
+.h2-big{font-size:clamp(38px,5vw,54px);line-height:1.05;}
+
+/* Produkt */
+.arrows{display:flex;flex-direction:column;gap:16px;font-size:16px;line-height:1.5;}
+.arrows .a{display:flex;gap:14px;}
+.arrows .a span:first-child{color:var(--accent);}
+.grid-art{position:relative;border-radius:16px;overflow:hidden;background:var(--lav-2);aspect-ratio:1;
+  background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px),linear-gradient(#ffffff55 1px,transparent 1px),linear-gradient(90deg,#ffffff55 1px,transparent 1px);
+  background-size:18px 18px,18px 18px,90px 90px,90px 90px;}
+.float{position:absolute;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 12px 30px -12px rgba(38,28,92,.35);font-size:13px;max-width:60%;}
+.float .t{font-weight:600;margin-bottom:3px;}
+.float .s{color:var(--t3);}
+.float.dark{background:var(--ink);color:var(--paper);box-shadow:0 12px 30px -12px rgba(38,28,92,.5);}
+.float.dark .s{color:var(--accent-2);}
+
+/* Branchen */
+.cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.icard{display:flex;flex-direction:column;gap:14px;padding:34px;border-radius:16px;background:var(--paper);}
+.icard.hl{background:var(--lav);}
+.icard .kicker{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
+.icard.hl .kicker{color:var(--accent);}
+.icard .tt{font-family:var(--disp);font-size:27px;line-height:1.15;}
+.icard p{font-size:14.5px;line-height:1.6;color:var(--t2);}
+.icard .more{margin-top:auto;font-size:14px;font-weight:600;color:var(--t2);}
+.icard.hl .more{color:var(--accent);}
+
+/* Modelle */
+.cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.mcard{display:flex;flex-direction:column;gap:10px;padding:28px;background:#fff;border:1px solid var(--line);border-radius:14px;}
+.mcard .name{font-weight:700;font-size:17px;}
+.mcard p{font-size:14px;line-height:1.55;color:var(--t2);}
+.mcard .st{margin-top:auto;font-size:12px;font-weight:600;}
+.mcard.dark{background:var(--ink);color:var(--paper);border:0;}
+.mcard.dark p{color:var(--on-dark);}
+.eubadge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:4px 9px;background:var(--accent);color:#fff;border-radius:999px;}
+
+/* Sicherheit */
+.dark-sec{background:var(--ink);color:var(--paper);padding:96px var(--pad);}
+.dark-sec .eyebrow{color:var(--accent-2);}
+.dark-sec p.lede{font-size:17px;line-height:1.65;color:var(--on-dark);max-width:48ch;}
+.grid-2x2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.scard{padding:24px;border:1px solid var(--line-dark);border-radius:14px;}
+.scard .t{font-weight:600;margin-bottom:6px;font-size:15px;}
+.scard .s{font-size:13.5px;line-height:1.55;color:var(--on-dark);}
+
+/* Start */
+.centered{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.step .n{font-family:var(--disp);font-size:30px;color:var(--accent);}
+.step .t{font-weight:700;font-size:17px;}
+.step p{font-size:14.5px;line-height:1.6;color:var(--t2);}
+
+/* CTA */
+.cta{background:var(--lav);padding:100px var(--pad);text-align:center;}
+.cta .inner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:24px;}
+.cta h2{font-size:clamp(42px,5vw,58px);line-height:1.05;}
+
+/* Footer */
+.foot{display:flex;justify-content:space-between;align-items:center;padding:28px var(--pad);background:var(--paper);border-top:1px solid var(--line);font-size:13px;color:var(--t3);flex-wrap:wrap;gap:16px;}
+.foot .fl{display:flex;gap:28px;}
+.foot .fr{display:flex;gap:20px;}
+
+.callform{flex-direction:column;align-items:stretch;gap:10px;}
+.callrow{display:flex;gap:12px;align-items:stretch;}
+.consent{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.4;color:var(--t3);cursor:pointer;max-width:460px;}
+.consent input{margin-top:2px;flex:none;accent-color:var(--accent);width:16px;height:16px;}
+.demolink{font-size:14px;color:var(--accent);font-weight:600;}
+
+/* Responsive */
+@media (max-width:1000px){
+  :root{--pad:28px;}
+  .nav-links{display:none;}
+  .hero{padding:56px var(--pad) 56px;}
+  .hero-grid,.sec-2{grid-template-columns:1fr;gap:44px;}
+  .sec{padding:64px var(--pad);}
+  .dark-sec,.cta{padding:64px var(--pad);}
+  .stats{gap:20px 40px;}
+  .cards-3,.cards-4{grid-template-columns:1fr;}
+  .grid-2x2{grid-template-columns:1fr;}
+  .grid-art{aspect-ratio:16/11;}
+  .modelle-head{grid-template-columns:1fr!important;gap:20px!important;}
+}
+@media (max-width:560px){
+  .callrow{flex-direction:column;}
+  .stats .stat{width:calc(50% - 20px);}
+  .foot{flex-direction:column;align-items:flex-start;}
+}
+</style>
+
+<nav class="nav" id="nav">
+  <div class="logo">Vocaris</div>
+  <div class="nav-links">
+    <a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a>
+  </div>
+  <div class="nav-right">
+    <a href="demo.html" class="contact">Demo buchen</a>
+    <a href="#testanruf"><button class="btn-dark" type="button">Testanruf erhalten</button></a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="testanruf">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">DER KI-TELEFONASSISTENT</div>
+      <h1>Geht ran.<br>Handelt.<br>Rund um die Uhr.</h1>
+      <p class="lede">Vocaris nimmt Ihre Anrufe entgegen und ruft selbst an — in Echtzeit, natürlich im Klang, jederzeit unterbrechbar. Er bucht Termine, reserviert Tische, verbindet zu Menschen. In der EU gehostet, in 15 Minuten startklar.</p>
+      <form class="callform" data-callform>
+        <div class="callrow">
+          <input type="tel" inputmode="tel" placeholder="+49 · Ihre Rufnummer" aria-label="Ihre Rufnummer" required>
+          <button type="submit">Lassen Sie sich anrufen</button>
+        </div>
+        <label class="consent"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken unter dieser Nummer anruft.</label>
+      </form>
+      <div class="formerr" data-err></div>
+      <div class="microcopy">Kostenlos und unverbindlich — Vocaris ruft Sie in wenigen Sekunden zurück. Hören schlägt Behaupten.</div>
     </div>
-  </header>
-
-  <main id="top">
-    <!-- ───────────────────────── Hero ───────────────────────── -->
-    <section class="hero">
-      <div class="hero__bg" aria-hidden="true"></div>
-      <div class="container hero__grid">
-        <div class="hero__copy reveal">
-          <span class="eyebrow"><span class="dot"></span> Echtzeit-Sprach-KI · gebaut in der EU</span>
-          <h1 class="display">
-            Der Telefonassistent, der klingt&nbsp;wie <em>ein Mensch.</em>
-          </h1>
-          <p class="lede">
-            Vocaris nimmt Ihre Anrufe entgegen und ruft selbst an — natürlich,
-            sofort unterbrechbar, rund um die Uhr. Eine eigene Sprach-Pipeline
-            verbindet Verstehen, Denken und Sprechen in unter einer Sekunde.
-          </p>
-          <div class="hero__actions">
-            <a class="btn btn--primary btn--lg" href="#demo"><i data-lucide="phone-call"></i> Lass dich jetzt anrufen</a>
-            <a class="btn btn--ghost btn--lg" href="#contact">Demo buchen →</a>
-          </div>
-          <ul class="hero__trust">
-            <li><strong data-count="0.8" data-suffix=" s">0&nbsp;s</strong><span>Antwortlatenz</span></li>
-            <li><strong data-count="24" data-suffix="/7">0/7</strong><span>erreichbar</span></li>
-            <li><strong data-count="30" data-suffix="+">0+</strong><span>Sprachen</span></li>
-            <li><strong>EU</strong><span>gehostet · DSGVO</span></li>
-          </ul>
-        </div>
-
-        <!-- Live-Demo-Karte -->
-        <div class="hero__demo reveal" aria-hidden="true">
-          <div class="phone">
-            <div class="phone__top">
-              <span class="phone__status"><span class="pulse"></span> Anruf aktiv</span>
-              <span class="phone__time" id="callTimer">00:07</span>
-            </div>
-            <div class="phone__wave"><canvas id="wave" width="600" height="160"></canvas></div>
-            <div class="phone__chat" id="chat"></div>
-            <div class="phone__meter">
-              <span>Latenz</span>
-              <div class="meter"><i id="latbar"></i></div>
-              <span id="latval">740&nbsp;ms</span>
-            </div>
-          </div>
-          <div class="phone__float phone__float--1"><i data-lucide="ear"></i> Barge-in aktiv</div>
-          <div class="phone__float phone__float--2"><i data-lucide="languages"></i> erkennt Deutsch</div>
+    <div class="callcard">
+      <div class="ch">
+        <div class="live"><span class="dot"></span>Eingehender Anruf</div>
+        <div style="font-size:13px;color:var(--ph)">00:31</div>
+      </div>
+      <div class="body">
+        <div class="bub in">„Guten Tag, ich bräuchte kommende Woche einen Termin — geht Donnerstagnachmittag?"</div>
+        <div class="bub out">„Donnerstag ist um 14:30 oder 16:00 Uhr frei. Welche Zeit passt Ihnen besser?"</div>
+        <div class="wave">
+          <i style="height:30%;background:var(--line-lav)"></i><i style="height:60%;background:var(--accent-2)"></i><i style="height:100%;background:var(--accent)"></i><i style="height:75%;background:var(--accent)"></i><i style="height:45%;background:var(--accent-2)"></i><i style="height:85%;background:var(--accent)"></i><i style="height:35%;background:var(--line-lav)"></i><i style="height:55%;background:var(--accent-2)"></i><i style="height:25%;background:var(--line-lav)"></i>
+          <span style="margin-left:auto;font-size:12px;color:var(--ph)">Antwortzeit 0,7 s</span>
         </div>
       </div>
-
-      <!-- Stack-Strip -->
-      <div class="container stack">
-        <span class="stack__label">Beste Bausteine, eine Pipeline</span>
-        <div class="stack__logos">
-          <span>Telnyx</span><i></i><span>Deepgram</span><i></i><span>Claude</span><i></i><span>ElevenLabs</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────── Capability marquee ───────────────────── -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span>Eingehende Anrufe</span><span>•</span><span>Ausgehende Kampagnen</span><span>•</span>
-        <span>Terminbuchung</span><span>•</span><span>CRM-Anbindung</span><span>•</span>
-        <span>Live-Transkripte</span><span>•</span><span>Warm-Transfer an Menschen</span><span>•</span>
-        <span>Mehrsprachig</span><span>•</span><span>Natürliche Unterbrechung</span><span>•</span>
-        <span>Eingehende Anrufe</span><span>•</span><span>Ausgehende Kampagnen</span><span>•</span>
-        <span>Terminbuchung</span><span>•</span><span>CRM-Anbindung</span><span>•</span>
-        <span>Live-Transkripte</span><span>•</span><span>Warm-Transfer an Menschen</span><span>•</span>
-        <span>Mehrsprachig</span><span>•</span><span>Natürliche Unterbrechung</span><span>•</span>
+      <div class="cf">
+        <span style="color:var(--ok);font-weight:600">✓ Termin gebucht</span><span>Bestätigung per SMS gesendet</span>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- ───────────────────────── Features ───────────────────────── -->
-    <section class="section" id="features">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker">Funktionen</span>
-          <h2 class="display display--sm">Alles, was ein perfektes Telefonteam kann — nur ohne Wartezeit.</h2>
-          <p class="section__sub">Vocaris ist keine Ansage und kein starres Menü. Es ist ein
-            denkender Gesprächspartner, der zuhört, versteht und handelt.</p>
-        </header>
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><span class="n">&lt;&thinsp;1&thinsp;s</span><span class="l">Antwortzeit</span></div>
+  <div class="stat"><span class="n">24/7</span><span class="l">erreichbar</span></div>
+  <div class="stat"><span class="n">4</span><span class="l">KI-Modelle zur Wahl</span></div>
+  <div class="stat"><span class="n">15&thinsp;Min</span><span class="l">bis startklar</span></div>
+  <div class="stat"><span class="n">EU</span><span class="l">gehostet, DSGVO-konform</span></div>
+</div>
 
-        <div class="bento">
-          <article class="card card--wide reveal">
-            <div class="card__icon"><i data-lucide="zap"></i></div>
-            <h3>Antwort in Echtzeit</h3>
-            <p>Verstehen, Denken und Sprechen laufen parallel und gestreamt — keine
-              Konvertierung, keine Pausen. Der Anrufer merkt nicht, dass er mit einer KI spricht.</p>
-            <div class="card__art card__art--latency">
-              <div class="lane"><span>Hört zu</span></div>
-              <div class="lane"><span>Denkt</span></div>
-              <div class="lane"><span>Spricht</span></div>
-            </div>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon"><i data-lucide="arrow-left-right"></i></div>
-            <h3>Natürliche Unterbrechung</h3>
-            <p>Wer dazwischenredet, wird sofort gehört. Vocaris stoppt mitten im Satz und
-              hört zu — wie ein echter Mensch.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon"><i data-lucide="phone-call"></i></div>
-            <h3>Ein- &amp; ausgehend</h3>
-            <p>Nimmt Anrufe entgegen <em>und</em> startet eigene — für Rückrufe, Erinnerungen
-              und Outbound-Kampagnen über eine eigene Rufnummer.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon"><i data-lucide="globe"></i></div>
-            <h3>30+ Sprachen</h3>
-            <p>Erkennt die Sprache des Anrufers automatisch und antwortet in derselben — von
-              Deutsch und Englisch bis zu jeder großen EU-Sprache.</p>
-          </article>
-
-          <article class="card card--accent reveal">
-            <div class="card__icon"><i data-lucide="brain"></i></div>
-            <h3>Versteht Absicht, nicht nur Wörter</h3>
-            <p>Angetrieben von Claude. Vocaris erfasst den Kontext eines ganzen Gesprächs,
-              merkt sich Details und reagiert sinnvoll — auch bei Rückfragen und Umwegen.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon"><i data-lucide="plug"></i></div>
-            <h3>Handelt während des Gesprächs</h3>
-            <p>Bucht Termine, schlägt Daten nach, legt Tickets an und überträgt an einen
-              Menschen — direkt im Anruf über Ihre Systeme.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon"><i data-lucide="bar-chart-3"></i></div>
-            <h3>Jedes Gespräch ausgewertet</h3>
-            <p>Vollständige Transkripte, Zusammenfassungen, Stimmungsanalyse und Übergaben —
-              live im Dashboard und per Webhook in Ihren Systemen.</p>
-          </article>
-
-          <article class="card card--wide reveal">
-            <div class="card__icon"><i data-lucide="shield-check"></i></div>
-            <h3>Vertrauenswürdig by Design</h3>
-            <p>Verschlüsselte Verbindungen, Hosting in der EU, DSGVO-konforme Verarbeitung und
-              klare Datenkontrolle. Ihre Stimme bleibt Ihre Stimme.</p>
-            <div class="chips">
-              <span>EU-Hosting</span><span>TLS verschlüsselt</span><span>DSGVO</span><span>Eigene Stimme</span><span>Löschfristen</span>
-            </div>
-          </article>
-        </div>
+<!-- Produkt -->
+<section class="sec" id="produkt">
+  <div class="wrap sec-2">
+    <div style="display:flex;flex-direction:column;gap:26px">
+      <div class="eyebrow">KEIN ANRUFBEANTWORTER</div>
+      <h2 class="h2-big">Versteht. Handelt.<br>Lernt dazu.</h2>
+      <p style="font-size:17px;line-height:1.65;color:var(--t2);max-width:48ch">Vocaris führt das Gespräch zu Ende — und erledigt dabei, worum es geht. Was er nicht beantworten kann, landet als offene Frage in Ihrem Dashboard: mit jedem Anruf wird er besser.</p>
+      <div class="arrows">
+        <div class="a"><span>→</span><span><strong>Bucht Termine und reserviert Tische</strong> — direkt im Gespräch, mit Bestätigung per SMS oder E-Mail.</span></div>
+        <div class="a"><span>→</span><span><strong>Verbindet zu Menschen</strong>, nimmt Rückrufe und Nachrichten auf, führt Wartelisten.</span></div>
+        <div class="a"><span>→</span><span><strong>Ruft selbst an</strong> — Erinnerungen, Wartelisten-Nachrücker, Rückrufe.</span></div>
+        <div class="a"><span>→</span><span><strong>Volle Transparenz</strong>: Zusammenfassung, Stimmung und Transkript jedes Anrufs, Live-Ansicht laufender Gespräche.</span></div>
       </div>
-    </section>
-
-    <!-- ───────────────────────── Vorteile ───────────────────────── -->
-    <section class="section section--soft" id="vorteile">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker">Ihre Vorteile</span>
-          <h2 class="display display--sm">Was Vocaris für Ihr Geschäft bedeutet.</h2>
-          <p class="section__sub">Nicht Technik um der Technik willen — sondern mehr beantwortete Anrufe,
-            ein entlastetes Team und Kunden, die sich sofort aufgehoben fühlen.</p>
-        </header>
-        <div class="vgrid reveal">
-          <article class="card">
-            <div class="card__icon"><i data-lucide="phone-call"></i></div>
-            <h3>Kein Anruf geht verloren</h3>
-            <p>Vocaris hebt beim ersten Klingeln ab — nachts, am Wochenende und selbst wenn alle
-              Leitungen belegt sind. Jeder Anrufer wird bedient, niemand landet im Besetztzeichen.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><i data-lucide="headset"></i></div>
-            <h3>Ihr Team wird entlastet</h3>
-            <p>Routinefragen, Terminwünsche und Rückrufnotizen erledigt Vocaris allein. Ihre Leute
-              arbeiten konzentriert weiter, statt ständig ans Telefon zu springen.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><i data-lucide="trending-up"></i></div>
-            <h3>Mehr Aufträge, weniger verpasst</h3>
-            <p>Jeder Interessent erreicht sofort jemanden. Anliegen werden erfasst, eingeordnet und
-              als Rückruf hinterlegt — kein Lead verpufft mehr in der Mailbox.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><i data-lucide="timer"></i></div>
-            <h3>In Minuten startklar</h3>
-            <p>Kein IT-Projekt: Assistent benennen, Wissen hinterlegen, Nummer verbinden — alles im
-              Browser. Sie hören Ihren eigenen Assistenten am selben Tag.</p>
-          </article>
-          <article class="card">
-            <div class="card__icon"><i data-lucide="wallet"></i></div>
-            <h3>Bruchteil einer Empfangskraft</h3>
-            <p>Abgerechnet pro Minute statt pro Monatsgehalt — ohne Urlaub, Krankheit oder
-              Schichtplan. Sie zahlen nur für tatsächlich geführte Gespräche.</p>
-          </article>
-          <article class="card card--accent">
-            <div class="card__icon"><i data-lucide="sprout"></i></div>
-            <h3>Wird mit jedem Anruf besser</h3>
-            <p>Was Vocaris noch nicht weiß, merkt es sich. Sie beantworten die offene Frage einmal im
-              Dashboard — ab dann kennt der Assistent die Antwort selbst.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── How it works ───────────────────────── -->
-    <section class="section section--dark" id="how">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker kicker--light">So funktioniert's</span>
-          <h2 class="display display--sm">Vier Bausteine. Eine Stimme. Unter einer Sekunde.</h2>
-          <p class="section__sub section__sub--light">Statt einer fertigen Black Box haben wir die
-            schnellste Pipeline aus den besten Komponenten gebaut — alles im selben Audioformat,
-            damit keine Zeit für Umrechnung verloren geht.</p>
-        </header>
-
-        <div class="pipeline reveal">
-          <div class="pipe">
-            <span class="pipe__num">01</span>
-            <h4>Anruf</h4>
-            <p>Telnyx verbindet das Gespräch und streamt das Audio bidirektional.</p>
-          </div>
-          <div class="pipe__flow" aria-hidden="true"><i></i><i></i><i></i></div>
-          <div class="pipe">
-            <span class="pipe__num">02</span>
-            <h4>Verstehen</h4>
-            <p>Deepgram wandelt Sprache in Echtzeit in Text — Wort für Wort.</p>
-          </div>
-          <div class="pipe__flow" aria-hidden="true"><i></i><i></i><i></i></div>
-          <div class="pipe pipe--accent">
-            <span class="pipe__num">03</span>
-            <h4>Denken</h4>
-            <p>Claude formuliert die Antwort und streamt sie satzweise zurück.</p>
-          </div>
-          <div class="pipe__flow" aria-hidden="true"><i></i><i></i><i></i></div>
-          <div class="pipe">
-            <span class="pipe__num">04</span>
-            <h4>Sprechen</h4>
-            <p>ElevenLabs erzeugt eine natürliche Stimme — sofort hörbar.</p>
-          </div>
-        </div>
-
-        <p class="pipeline__note reveal">Alles läuft in μ-law 8&nbsp;kHz — demselben Format, das das
-          Telefonnetz nutzt. Kein Resampling, keine Latenz, kein Roboterklang.</p>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Use cases ───────────────────────── -->
-    <section class="section" id="usecases">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker">Einsatzgebiete</span>
-          <h2 class="display display--sm">Ein Assistent, der nie krank wird, nie Pause macht, nie genervt klingt.</h2>
-        </header>
-
-        <div class="usecases reveal">
-          <div class="usecases__tabs" role="tablist">
-            <button class="uc-tab is-active" data-uc="0">Kundenservice 24/7</button>
-            <button class="uc-tab" data-uc="1">Terminvereinbarung</button>
-            <button class="uc-tab" data-uc="2">Outbound-Vertrieb</button>
-            <button class="uc-tab" data-uc="3">Empfang &amp; Weiterleitung</button>
-            <button class="uc-tab" data-uc="4">Bestell- &amp; Auftragsannahme</button>
-          </div>
-          <div class="usecases__panels">
-            <div class="uc-panel is-active">
-              <div class="uc-panel__copy">
-                <h3>Jeder Anruf wird angenommen — auch der 50. gleichzeitig.</h3>
-                <p>Vocaris beantwortet Standardfragen, erfasst Anliegen, eröffnet Tickets und
-                  eskaliert an einen Menschen, wenn es nötig wird. Keine Warteschleife, keine verpassten Anrufe.</p>
-                <ul class="ticks">
-                  <li>Beantwortet FAQ aus Ihrer Wissensbasis</li>
-                  <li>Erfasst Name, Anliegen und Rückrufwunsch</li>
-                  <li>Warm-Transfer an die richtige Person</li>
-                </ul>
-              </div>
-              <div class="uc-panel__art"><span><i data-lucide="bell-ring"></i></span></div>
-            </div>
-            <div class="uc-panel">
-              <div class="uc-panel__copy">
-                <h3>Termine buchen, verschieben, erinnern — im Gespräch.</h3>
-                <p>Greift live auf Ihren Kalender zu, schlägt freie Slots vor und bestätigt per
-                  SMS oder E-Mail. Sendet automatische Erinnerungsanrufe gegen No-Shows.</p>
-                <ul class="ticks">
-                  <li>Echtzeit-Abgleich mit Kalender &amp; Verfügbarkeit</li>
-                  <li>Bestätigung per SMS / E-Mail</li>
-                  <li>Automatische Erinnerungs- und Rückrufe</li>
-                </ul>
-              </div>
-              <div class="uc-panel__art"><span><i data-lucide="calendar-check"></i></span></div>
-            </div>
-            <div class="uc-panel">
-              <div class="uc-panel__copy">
-                <h3>Hunderte Gespräche gleichzeitig — qualifiziert und protokolliert.</h3>
-                <p>Vocaris ruft Leads an, qualifiziert nach Ihren Kriterien, vereinbart Folgetermine
-                  und schreibt alles sauber ins CRM. Sie sehen nur die heißen Kontakte.</p>
-                <ul class="ticks">
-                  <li>Skalierbare Outbound-Kampagnen</li>
-                  <li>Lead-Qualifizierung nach Ihren Regeln</li>
-                  <li>Automatische CRM-Pflege &amp; Übergabe</li>
-                </ul>
-              </div>
-              <div class="uc-panel__art"><span><i data-lucide="trending-up"></i></span></div>
-            </div>
-            <div class="uc-panel">
-              <div class="uc-panel__copy">
-                <h3>Die freundliche Stimme am Empfang — für jede Abteilung.</h3>
-                <p>Begrüßt Anrufer, versteht das Anliegen in natürlicher Sprache und verbindet
-                  zielsicher weiter — ohne „Drücken Sie die 1".</p>
-                <ul class="ticks">
-                  <li>Versteht freie Sprache statt Tonwahl-Menüs</li>
-                  <li>Intelligente Weiterleitung &amp; Notizen</li>
-                  <li>Nimmt Nachrichten auf, wenn niemand erreichbar ist</li>
-                </ul>
-              </div>
-              <div class="uc-panel__art"><span><i data-lucide="building-2"></i></span></div>
-            </div>
-            <div class="uc-panel">
-              <div class="uc-panel__copy">
-                <h3>Bestellungen und Aufträge fehlerfrei aufnehmen.</h3>
-                <p>Nimmt Bestellungen, Reservierungen und Aufträge telefonisch auf, liest sie zur
-                  Bestätigung vor und übergibt strukturiert an Ihr System.</p>
-                <ul class="ticks">
-                  <li>Strukturierte Erfassung mit Rückbestätigung</li>
-                  <li>Direkte Übergabe per Webhook / API</li>
-                  <li>Funktioniert auch außerhalb der Öffnungszeiten</li>
-                </ul>
-              </div>
-              <div class="uc-panel__art"><span><i data-lucide="receipt"></i></span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Demo / sample ───────────────────────── -->
-    <section class="section section--soft" id="demo">
-      <div class="container demo">
-        <header class="section__head reveal">
-          <span class="kicker">Selbst ausprobieren</span>
-          <h2 class="display display--sm">Erleben Sie Vocaris — live am Telefon.</h2>
-          <p class="section__sub">Lass dich in Sekunden anrufen und sprich direkt mit dem Assistenten — oder hör dir unten ein echtes Beispielgespräch an.</p>
-        </header>
-        <div class="demo__call demo__call--featured reveal">
-          <span class="demo__call-badge"><i data-lucide="phone-call"></i> Live-Testanruf</span>
-          <h3>Lass dich in Sekunden von Vocaris anrufen.</h3>
-          <p>Nummer eingeben, „Anrufen lassen" — Vocaris ruft dich sofort an und du sprichst direkt mit dem Assistenten. Kein Formular, kein Warten.</p>
-          <div class="demo__call-row">
-            <input id="demoPhone" type="tel" inputmode="tel" placeholder="+49 170 1234567" autocomplete="tel" />
-            <button id="demoCallBtn" class="btn btn--primary"><i data-lucide="phone-outgoing"></i> Anrufen lassen</button>
-          </div>
-          <label class="demo__consent">
-            <input type="checkbox" id="demoConsent" />
-            <span>Es ist meine eigene Nummer und ich möchte einmalig von Vocaris angerufen werden. Ich bin einverstanden, dass Vocaris mich danach kontaktiert und mir Infomaterial zusendet (Einwilligung, jederzeit widerrufbar). Details in der <a href="datenschutz.html">Datenschutzerklärung</a>.</span>
-          </label>
-          <p id="demoCallHint" class="demo__call-hint"></p>
-        </div>
-
-        <div class="demo__player reveal">
-          <div class="demo__control">
-            <button class="demo__play" id="demoPlay" aria-label="Beispielgespräch abspielen">
-              <svg viewBox="0 0 24 24" width="22" height="22" id="playIcon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-            </button>
-            <div class="demo__line">
-              <div class="demo__bars" id="demoBars"></div>
-              <span class="demo__caption" id="demoCaption">Play drücken — echtes Beispielgespräch mit der Vocaris-Stimme</span>
-            </div>
-            <span class="demo__scenario"><i data-lucide="stethoscope"></i> Zahnarztpraxis · Terminvereinbarung</span>
-          </div>
-          <div class="demo__chat" id="demoChat"></div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Integrations ───────────────────────── -->
-    <section class="section" id="integrations">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker">Integrationen</span>
-          <h2 class="display display--sm">Fügt sich in Ihre Werkzeuge ein — nicht umgekehrt.</h2>
-        </header>
-        <div class="intgrid reveal">
-          <div class="int">Telnyx</div><div class="int">HubSpot</div><div class="int">Pipedrive</div>
-          <div class="int">Salesforce</div><div class="int">Google Calendar</div><div class="int">Microsoft 365</div>
-          <div class="int">Zapier</div><div class="int">Slack</div><div class="int">Notion</div>
-          <div class="int">Webhooks</div><div class="int">REST-API</div><div class="int">Ihr CRM</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Security band ───────────────────────── -->
-    <section class="band reveal">
-      <div class="container band__inner">
-        <div>
-          <span class="kicker kicker--light">Sicherheit &amp; Datenschutz</span>
-          <h2 class="display display--sm">Made &amp; hosted in Europe.</h2>
-          <p>Anrufe laufen ausschließlich verschlüsselt. Verarbeitung und Speicherung
-            erfolgen in der EU, DSGVO-konform, mit klaren Löschfristen und vollem Zugriff auf Ihre Daten.</p>
-        </div>
-        <ul class="band__list">
-          <li><strong>EU-Region</strong> Daten verlassen die EU nicht</li>
-          <li><strong>Verschlüsselt</strong> TLS für jede Verbindung</li>
-          <li><strong>AVV</strong> Auftragsverarbeitung inklusive</li>
-          <li><strong>Kontrolle</strong> Export &amp; Löschung jederzeit</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Pricing ───────────────────────── -->
-    <section class="section" id="pricing">
-      <div class="container">
-        <header class="section__head reveal">
-          <span class="kicker">Preise</span>
-          <h2 class="display display--sm">Transparent abgerechnet — pro Minute, kein Risiko.</h2>
-          <p class="section__sub">Starten Sie klein, skalieren Sie ohne Grenzen. Alle Pläne enthalten
-            ein- und ausgehende Anrufe, Live-Transkripte und EU-Hosting.</p>
-        </header>
-
-        <div class="prices reveal">
-          <article class="price">
-            <h3>Starter</h3>
-            <p class="price__for">Für erste Projekte &amp; kleine Teams</p>
-            <div class="price__tag"><span>€</span>49<small>/Monat</small></div>
-            <p class="price__meta">inkl. 300 Anrufminuten · dann 0,19&nbsp;€/Min</p>
-            <ul class="ticks">
-              <li>1 KI-Assistent &amp; 1 Rufnummer</li>
-              <li>Ein- &amp; ausgehende Anrufe</li>
-              <li>Live-Transkripte &amp; Zusammenfassungen</li>
-              <li>E-Mail-Support</li>
-            </ul>
-            <a class="btn btn--ghost btn--block" href="#contact">Demo buchen</a>
-          </article>
-
-          <article class="price price--featured">
-            <span class="price__badge">Beliebt</span>
-            <h3>Business</h3>
-            <p class="price__for">Für wachsende Service- &amp; Vertriebsteams</p>
-            <div class="price__tag"><span>€</span>199<small>/Monat</small></div>
-            <p class="price__meta">inkl. 1.500 Anrufminuten · dann 0,14&nbsp;€/Min</p>
-            <ul class="ticks">
-              <li>5 KI-Assistenten &amp; mehrere Rufnummern</li>
-              <li>CRM-, Kalender- &amp; Webhook-Integrationen</li>
-              <li>Outbound-Kampagnen &amp; Warm-Transfer</li>
-              <li>Analytics-Dashboard</li>
-              <li>Prioritäts-Support</li>
-            </ul>
-            <a class="btn btn--primary btn--block" href="#contact">Demo buchen</a>
-          </article>
-
-          <article class="price">
-            <h3>Enterprise</h3>
-            <p class="price__for">Für hohe Volumina &amp; eigene Anforderungen</p>
-            <div class="price__tag price__tag--text">Individuell</div>
-            <p class="price__meta">Mengenpreise &amp; SLA nach Bedarf</p>
-            <ul class="ticks">
-              <li>Unbegrenzte Assistenten &amp; Rufnummern</li>
-              <li>Eigene Stimme &amp; Wissensbasis</li>
-              <li>SSO, AVV, individuelle Löschfristen</li>
-              <li>Dedizierter Ansprechpartner &amp; SLA</li>
-            </ul>
-            <a class="btn btn--ghost btn--block" href="#contact">Kontakt aufnehmen</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── FAQ ───────────────────────── -->
-    <section class="section section--soft" id="faq">
-      <div class="container faq">
-        <header class="section__head reveal">
-          <span class="kicker">FAQ</span>
-          <h2 class="display display--sm">Häufige Fragen</h2>
-        </header>
-        <div class="faq__list reveal">
-          <details class="qa"><summary>Merkt der Anrufer, dass er mit einer KI spricht?</summary>
-            <p>Vocaris antwortet in unter einer Sekunde mit einer natürlichen Stimme und lässt sich
-              jederzeit unterbrechen. Wir empfehlen dennoch, transparent zu machen, dass ein KI-Assistent
-              spricht — das schafft Vertrauen und ist je nach Region rechtlich geboten.</p></details>
-          <details class="qa"><summary>Brauche ich eine eigene Telefonnummer?</summary>
-            <p>Nein. Sie können eine neue Nummer über uns bereitstellen lassen oder Ihre bestehende
-              Nummer anbinden. Eingehende Anrufe werden zu Vocaris geleitet, ausgehende laufen über
-              Ihre Rufnummer.</p></details>
-          <details class="qa"><summary>In welchen Sprachen funktioniert Vocaris?</summary>
-            <p>Deutsch und Englisch sind voll unterstützt; insgesamt versteht und spricht Vocaris über
-              30 Sprachen und erkennt die Sprache des Anrufers automatisch.</p></details>
-          <details class="qa"><summary>Wie steht es um Datenschutz und DSGVO?</summary>
-            <p>Verarbeitung und Speicherung erfolgen in der EU, alle Verbindungen sind verschlüsselt.
-              Auf Wunsch erhalten Sie einen Auftragsverarbeitungsvertrag (AVV) sowie konfigurierbare
-              Löschfristen.</p></details>
-          <details class="qa"><summary>Kann Vocaris in meine Systeme schreiben?</summary>
-            <p>Ja. Über Integrationen und Webhooks kann Vocaris Termine buchen, Daten nachschlagen,
-              Tickets anlegen und Gesprächsergebnisse direkt in Ihr CRM übertragen.</p></details>
-          <details class="qa"><summary>Was passiert, wenn die KI nicht weiterweiß?</summary>
-            <p>Vocaris erkennt das und führt einen Warm-Transfer durch — übergibt das Gespräch also an
-              eine echte Person samt Kontext, oder nimmt eine Nachricht auf und löst einen Rückruf aus.</p></details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ───────────────────────── Final CTA ───────────────────────── -->
-    <section class="cta" id="contact">
-      <div class="container cta__inner reveal">
-        <h2 class="display display--sm">Lassen Sie Vocaris für Sie ans Telefon gehen.</h2>
-        <p>Buchen Sie eine kostenlose Demo — wir richten in 15 Minuten einen Test-Assistenten ein,
-          den Sie selbst anrufen können.</p>
-        <form class="cta__form" id="leadForm" novalidate>
-          <input type="text" name="name" placeholder="Ihr Name" required aria-label="Name" />
-          <input type="email" name="email" placeholder="E-Mail-Adresse" required aria-label="E-Mail" />
-          <button class="btn btn--primary btn--lg" type="submit">Demo anfragen →</button>
-        </form>
-        <p class="cta__hint" id="formHint">Keine Kreditkarte nötig · Antwort innerhalb eines Werktags</p>
-      </div>
-    </section>
-  </main>
-
-  <!-- ───────────────────────── Footer ───────────────────────── -->
-  <footer class="footer">
-    <div class="container footer__grid">
-      <div class="footer__brand">
-        <span class="brand"><span class="brand__name">Vocaris</span></span>
-        <p>KI-Telefonassistent für ein- und ausgehende Anrufe. Echtzeit, natürlich, in der EU gehostet.</p>
-        <span class="footer__made">⬤ Made in the EU</span>
-      </div>
-      <nav class="footer__col"><h5>Produkt</h5>
-        <a href="#features">Funktionen</a><a href="#vorteile">Vorteile</a><a href="#how">So funktioniert's</a>
-        <a href="#usecases">Einsatzgebiete</a><a href="#pricing">Preise</a>
-      </nav>
-      <nav class="footer__col"><h5>Unternehmen</h5>
-        <a href="#contact">Demo buchen</a><a href="#faq">FAQ</a>
-        <a href="#integrations">Integrationen</a>
-      </nav>
-      <nav class="footer__col"><h5>Rechtliches</h5>
-        <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a>
-      </nav>
     </div>
-    <div class="container footer__bottom">
-      <span>© <span id="year">2026</span> Vocaris</span>
-      <span>Built on Telnyx · Deepgram · Claude · ElevenLabs</span>
+    <div class="grid-art">
+      <div class="float" style="left:8%;top:10%"><div class="t">Offene Frage erkannt</div><div class="s">„Haben Sie glutenfreie Optionen?"</div></div>
+      <div class="float" style="right:8%;top:38%"><div class="t">Antwort-Entwurf bereit</div><div class="s">Von der KI vorgeschlagen — Sie geben frei</div></div>
+      <div class="float dark" style="left:14%;bottom:12%"><div class="t">Ab jetzt beantwortet</div><div class="s">Die Wissensbasis wächst mit jedem Anruf</div></div>
     </div>
-  </footer>
+  </div>
+</section>
 
-  <!-- Lucide selbst gehostet (assets/lucide.min.js, v1.21.0) – kein CDN-/Upstream-Breaking-Risiko. -->
-  <script src="assets/lucide.min.js"></script>
-  <script src="app.js"></script>
-  <script>window.lucide && lucide.createIcons();</script>
+<!-- Branchen -->
+<section class="sec" id="branchen" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div style="max-width:60ch;display:flex;flex-direction:column;gap:22px;margin-bottom:56px">
+      <div class="eyebrow">BRANCHEN</div>
+      <h2 class="h2-big">Für jeden Betrieb,<br>der ans Telefon muss.</h2>
+      <p style="font-size:17px;line-height:1.65;color:var(--t2)">Vocaris kennt Ihre Branche — vom ersten Klingeln bis zur Bestätigung. Ohne IT-Projekt, ohne neue Software für Ihr Team.</p>
+    </div>
+    <div class="cards-3">
+      <div class="icard hl">
+        <div class="kicker">GASTRONOMIE</div>
+        <div class="tt">Reservierung bis Tischplan</div>
+        <p>Die tiefste Integration: Tischplan per Foto eingelesen, Bereiche und Kombinationen, Stammgast-Erkennung mit Namen und Vorlieben, Warteliste, Wetter-Empfehlung für die Terrasse.</p>
+        <div class="more">Mehr für Restaurants →</div>
+      </div>
+      <div class="icard">
+        <div class="kicker">PRAXEN &amp; DIENSTLEISTER</div>
+        <div class="tt">Termine statt Warteschleife</div>
+        <p>Terminbuchung im Gespräch, Erinnerungen gegen No-Shows, Rückruf-Aufnahme außerhalb der Öffnungszeiten — Ihre Patienten und Kunden erreichen immer jemanden.</p>
+        <div class="more">Mehr erfahren →</div>
+      </div>
+      <div class="icard">
+        <div class="kicker">SERVICE &amp; VERTRIEB</div>
+        <div class="tt">Ein- und ausgehend</div>
+        <p>Vocaris qualifiziert Anfragen, verbindet an die richtige Person und ruft aktiv zurück — Erinnerungen, Kampagnen, Follow-ups. Mit Zusammenfassung und Stimmung zu jedem Gespräch.</p>
+        <div class="more">Mehr erfahren →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modelle -->
+<section class="sec" id="modelle" style="border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-2 modelle-head" style="margin-bottom:56px;align-items:end">
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div class="eyebrow">IHRE KI. IHRE WAHL.</div>
+        <h2 class="h2-big">Sie entscheiden,<br>wer für Sie spricht.</h2>
+      </div>
+      <p style="margin-bottom:8px;font-size:17px;line-height:1.65;color:var(--t2)">Vier führende Sprachmodelle, pro Firma umschaltbar, jeweils mit eigenen Stimmen — inklusive einer rein europäischen Option. Fällt ein Anbieter aus, übernimmt automatisch der nächste.</p>
+    </div>
+    <div class="cards-4">
+      <div class="mcard"><div class="name">OpenAI GPT-Realtime</div><p>Natives Speech-to-Speech, sehr schnell — der bewährte Standard.</p><div class="st" style="color:var(--ok)">● Live</div></div>
+      <div class="mcard"><div class="name">xAI Grok Voice</div><p>Klingt hervorragend auf Deutsch, schnell — der aktuelle Standard.</p><div class="st" style="color:var(--ok)">● Live</div></div>
+      <div class="mcard"><div class="name">Google Gemini Live</div><p>Die breiteste Mehrsprachigkeit für internationale Anrufer.</p><div class="st" style="color:var(--ph)">○ In Vorbereitung</div></div>
+      <div class="mcard dark">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div class="name">Mistral</div><div class="eubadge">🇪🇺 EU</div></div>
+        <p>Rein europäisch, aus Frankreich — die DSGVO-Option für Ihre Daten.</p>
+        <div class="st" style="color:var(--ok-dark)">● Live</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sicherheit -->
+<section class="dark-sec" id="sicherheit">
+  <div class="wrap sec-2">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <div class="eyebrow">SICHERHEIT &amp; DATENSCHUTZ</div>
+      <h2 class="h2-big">Europäisch gedacht.<br>Europäisch gehostet.</h2>
+      <p class="lede">Ihre Gespräche bleiben in der EU. Auf Wunsch führt ein rein europäisches Sprachmodell Ihre Anrufe — ohne Umweg über Drittstaaten.</p>
+    </div>
+    <div class="grid-2x2">
+      <div class="scard"><div class="t">DSGVO-konform</div><div class="s">Verarbeitung und Hosting in der EU, AV-Vertrag inklusive.</div></div>
+      <div class="scard"><div class="t">Ausfallsicher</div><div class="s">Automatischer Modell-Fallback und Störungsansage — kein Anruf geht verloren.</div></div>
+      <div class="scard"><div class="t">Kosten im Griff</div><div class="s">Kosten-Limits pro Firma und Tracking pro Anruf.</div></div>
+      <div class="scard"><div class="t">Volle Kontrolle</div><div class="s">Jedes Transkript einsehbar, jede Antwort von Ihnen steuerbar.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Start -->
+<section class="sec">
+  <div class="wrap">
+    <div class="centered" style="margin-bottom:60px">
+      <div class="eyebrow">DER START</div>
+      <h2 class="h2-big">In 15 Minuten startklar.<br>Kein IT-Projekt.</h2>
+    </div>
+    <div class="cards-3">
+      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">1</div><div class="t">Wissen einlesen</div><p>Website, PDF oder Foto genügt — die KI baut Ihre Wissensbasis in Minuten auf.</p></div>
+      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">2</div><div class="t">Stimme wählen</div><p>KI-Modell und Stimme aussuchen, Rufnummer verbinden — Ihre bestehende Nummer bleibt.</p></div>
+      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">3</div><div class="t">Anrufe abgeben</div><p>Vocaris übernimmt — Sie sehen jede Zusammenfassung, jedes Transkript, jeden gebuchten Termin.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="kontakt">
+  <div class="inner">
+    <h2>Hören Sie selbst.</h2>
+    <p style="font-size:17px;line-height:1.65;color:var(--t2)">Ein Testanruf sagt mehr als jede Funktionsliste. Preise besprechen wir persönlich — zugeschnitten auf Ihr Anrufvolumen.</p>
+    <form class="callform dark" data-callform style="align-items:center">
+      <div class="callrow">
+        <input type="tel" inputmode="tel" placeholder="+49 · Ihre Rufnummer" aria-label="Ihre Rufnummer" required style="min-width:220px">
+        <button type="submit">Testanruf erhalten</button>
+      </div>
+      <label class="consent" style="justify-content:center;text-align:left"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken anruft.</label>
+    </form>
+    <div class="formerr" data-err></div>
+    <div class="microcopy">Lieber persönlich? <a href="demo.html" class="demolink">Demo buchen &rarr;</a> &nbsp;·&nbsp; oder <a href="mailto:kontakt@vocaris.eu" style="color:var(--accent);font-weight:600">kontakt@vocaris.eu</a></div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="foot">
+  <div class="logo" style="font-size:18px;color:var(--ink)">Vocaris</div>
+  <div class="fl"><a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a></div>
+  <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
+</footer>
+
+<script>
+  var API='https://ki-anruf.onrender.com';
+  var nav=document.getElementById('nav');
+  addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
+  document.querySelectorAll('[data-callform]').forEach(function(f){
+    var err=f.parentElement.querySelector('[data-err]');
+    f.addEventListener('submit',function(e){
+      e.preventDefault();
+      var input=f.querySelector('input[type=tel]'), consent=f.querySelector('[data-consent]');
+      var num=(input.value||'').replace(/[^\d+]/g,'');
+      if(err)err.textContent='';
+      if(!/^\+49\d{6,13}$/.test(num)){if(err)err.textContent='Bitte eine deutsche Nummer im Format +49\u2026 angeben.';input.focus();return;}
+      if(consent&&!consent.checked){if(err)err.textContent='Bitte die Einwilligung best\u00e4tigen.';return;}
+      var btn=f.querySelector('button');btn.disabled=true;var old=btn.textContent;btn.textContent='Ruft an\u2026';
+      fetch(API+'/api/demo-call',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:num,consent:true})})
+        .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+        .then(function(res){
+          if(!res.ok){if(err)err.textContent=(res.d&&res.d.error)||'Anruf konnte nicht gestartet werden.';btn.disabled=false;btn.textContent=old;return;}
+          var s=document.createElement('div');s.className='callsuccess';
+          s.innerHTML='<b>\u2713 Geschafft.</b> Vocaris ruft Sie in wenigen Sekunden an. Nehmen Sie einfach ab.';
+          f.replaceWith(s);
+        })
+        .catch(function(){if(err)err.textContent='Server nicht erreichbar. Bitte sp\u00e4ter erneut.';btn.disabled=false;btn.textContent=old;});
+    });
+  });
+</script>
+
 </body>
 </html>

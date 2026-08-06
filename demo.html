@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo buchen — Vocaris</title>
+<meta name="description" content="Vocaris in Aktion erleben. Hinterlassen Sie E-Mail oder Telefonnummer — wir melden uns und richten Ihren KI-Telefonassistenten mit Ihnen ein.">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f5f1; --lav:#e9e6f6; --ink:#1a1723; --t2:#4b4658; --t3:#7b7590; --ph:#9a94ad;
+    --accent:#5f4fd4; --accent-2:#b4a9e6; --on-dark:#b4b0c4;
+    --line:#e7e4dd; --line-lav:#d6d1ea; --ok:#3d8a5f;
+    --disp:"Newsreader",Georgia,serif; --sans:"Schibsted Grotesk",system-ui,-apple-system,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+  a{color:var(--ink);text-decoration:none;transition:color .15s;}
+  a:hover{color:var(--accent);}
+  h1,h2{font-family:var(--disp);font-weight:400;letter-spacing:-.012em;margin:0;text-wrap:balance;}
+  p{margin:0;}
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:22px 64px;border-bottom:1px solid var(--line);}
+  .logo{font-family:var(--disp);font-size:24px;font-weight:500;letter-spacing:-.01em;}
+  .back{font-size:14px;color:var(--t2);}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 64px;}
+  .main{display:grid;grid-template-columns:.92fr 1.08fr;gap:72px;align-items:start;padding:80px 0 100px;}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent);margin-bottom:22px;}
+  .lead h1{font-size:clamp(38px,5vw,52px);line-height:1.04;margin-bottom:20px;}
+  .lead p{font-size:17px;line-height:1.65;color:var(--t2);max-width:42ch;}
+  .points{list-style:none;padding:0;margin:34px 0 0;display:flex;flex-direction:column;gap:14px;}
+  .points li{display:flex;gap:12px;font-size:15px;color:var(--t2);line-height:1.5;}
+  .points li span{color:var(--accent);}
+  .points li b{color:var(--ink);font-weight:600;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:36px;box-shadow:0 24px 60px -30px rgba(38,28,92,.22);}
+  .card h2{font-size:23px;margin-bottom:6px;}
+  .card .sub{font-size:14.5px;color:var(--t3);margin-bottom:24px;}
+  .field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+  .field label{font-size:13px;font-weight:600;color:var(--t2);}
+  .field label .opt{color:var(--ph);font-weight:400;}
+  .field input,.field textarea{font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid var(--line-lav);border-radius:11px;background:#fff;color:var(--ink);width:100%;}
+  .field input::placeholder,.field textarea::placeholder{color:var(--ph);}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);}
+  .field textarea{resize:vertical;min-height:88px;line-height:1.5;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .submit{width:100%;margin-top:8px;padding:15px;background:var(--accent);color:#fff;font-family:inherit;font-weight:600;font-size:16px;border:0;border-radius:12px;cursor:pointer;transition:transform .15s,filter .15s;}
+  .submit:hover{transform:translateY(-1px);filter:brightness(1.05);}
+  .submit:disabled{opacity:.6;cursor:default;transform:none;}
+  .formerr{color:#c0392b;font-size:13.5px;min-height:1em;margin-top:10px;}
+  .finehint{font-size:12.5px;color:var(--t3);margin-top:14px;line-height:1.5;}
+  .success{text-align:center;padding:26px 10px;}
+  .success .tick{width:52px;height:52px;border-radius:50%;background:color-mix(in srgb,var(--ok) 16%,#fff);color:var(--ok);display:grid;place-items:center;font-size:26px;margin:0 auto 16px;}
+  .success h2{font-size:25px;margin-bottom:8px;}
+  .success p{font-size:15px;color:var(--t2);line-height:1.6;max-width:38ch;margin:0 auto;}
+  .foot{display:flex;justify-content:space-between;align-items:center;padding:28px 64px;border-top:1px solid var(--line);font-size:13px;color:var(--t3);flex-wrap:wrap;gap:16px;}
+  .foot .fr{display:flex;gap:20px;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+  @media (max-width:900px){
+    .nav,.foot{padding:20px 24px;} .wrap{padding:0 24px;}
+    .main{grid-template-columns:1fr;gap:40px;padding:48px 0 64px;}
+    .row2{grid-template-columns:1fr;}
+    .foot{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="logo">Vocaris</a>
+  <a href="index.html" class="back">&larr; Zurück zur Startseite</a>
+</nav>
+
+<div class="wrap">
+  <div class="main">
+    <div class="lead">
+      <div class="eyebrow">DEMO BUCHEN</div>
+      <h1>Erleben Sie Vocaris — an Ihrem echten Betrieb.</h1>
+      <p>Hinterlassen Sie E-Mail oder Telefonnummer. Wir melden uns, zeigen Ihnen Vocaris live und richten Ihren Assistenten gemeinsam mit Ihnen ein — kostenlos und unverbindlich.</p>
+      <ul class="points">
+        <li><span>→</span><span><b>Persönlich statt Selbstbedienung</b> — wir gehen Ihren Anwendungsfall durch.</span></li>
+        <li><span>→</span><span><b>In 15 Minuten startklar</b> — kein IT-Projekt, Ihre Nummer bleibt.</span></li>
+        <li><span>→</span><span><b>Preise nach Anrufvolumen</b> — besprechen wir passend zu Ihrem Betrieb.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div id="formview">
+        <h2>Ihre Anfrage</h2>
+        <p class="sub">Ein Kontaktweg genügt — je mehr, desto schneller melden wir uns.</p>
+        <form id="demoForm" novalidate>
+          <div class="row2">
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" autocomplete="name" placeholder="Ihr Name">
+            </div>
+            <div class="field">
+              <label for="company">Betrieb</label>
+              <input id="company" name="company" type="text" autocomplete="organization" placeholder="z. B. Restaurant, Praxis">
+            </div>
+          </div>
+          <div class="field">
+            <label for="email">E-Mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="name@betrieb.de">
+          </div>
+          <div class="field">
+            <label for="phone">Telefon</label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+49 …">
+          </div>
+          <div class="field">
+            <label for="message">Nachricht <span class="opt">(optional)</span></label>
+            <textarea id="message" name="message" placeholder="Worum geht es? Wann erreichen wir Sie am besten?"></textarea>
+          </div>
+          <button type="submit" class="submit" id="submitBtn">Anfrage senden</button>
+          <div class="formerr" id="err"></div>
+          <p class="finehint">Mit dem Absenden willigen Sie ein, dass wir Sie zur Bearbeitung Ihrer Anfrage kontaktieren. Details in unserer <a href="datenschutz.html" style="color:var(--accent)">Datenschutzerklärung</a>.</p>
+        </form>
+      </div>
+      <div id="okview" style="display:none">
+        <div class="success">
+          <div class="tick">✓</div>
+          <h2>Vielen Dank!</h2>
+          <p>Ihre Anfrage ist bei uns. Wir melden uns in Kürze — meist noch am selben Werktag.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="foot">
+  <a href="index.html" class="logo" style="font-size:18px">Vocaris</a>
+  <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
+</footer>
+
+<script>
+  var API='https://ki-anruf.onrender.com';
+  var f=document.getElementById('demoForm'), err=document.getElementById('err'), btn=document.getElementById('submitBtn');
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    err.textContent='';
+    var data={
+      name:document.getElementById('name').value.trim(),
+      company:document.getElementById('company').value.trim(),
+      email:document.getElementById('email').value.trim(),
+      phone:document.getElementById('phone').value.trim(),
+      message:document.getElementById('message').value.trim()
+    };
+    var emailOk=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email);
+    var phoneOk=data.phone.replace(/[^\d]/g,'').length>=6;
+    if(!emailOk&&!phoneOk){err.textContent='Bitte geben Sie eine E-Mail oder eine Telefonnummer an.';return;}
+    btn.disabled=true; var old=btn.textContent; btn.textContent='Wird gesendet…';
+    fetch(API+'/api/demo-request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+      .then(function(res){
+        if(!res.ok){err.textContent=(res.d&&res.d.error)||'Konnte nicht gesendet werden.';btn.disabled=false;btn.textContent=old;return;}
+        document.getElementById('formview').style.display='none';
+        document.getElementById('okview').style.display='block';
+      })
+      .catch(function(){err.textContent='Server nicht erreichbar. Bitte später erneut oder per E-Mail an kontakt@vocaris.eu.';btn.disabled=false;btn.textContent=old;});
+  });
+</script>
+</body>
+</html>
