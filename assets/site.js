@@ -12,6 +12,20 @@
   addEventListener('resize',onScrollUI,{passive:true});
   onScrollUI();
 
+  // Mobiles Menü
+  var burger=document.getElementById('burger');
+  function closeMenu(){if(!nav)return;nav.classList.remove('open');if(burger){burger.setAttribute('aria-expanded','false');burger.setAttribute('aria-label','Menü öffnen');}}
+  if(burger&&nav){
+    burger.addEventListener('click',function(){
+      var open=nav.classList.toggle('open');
+      burger.setAttribute('aria-expanded',open?'true':'false');
+      burger.setAttribute('aria-label',open?'Menü schließen':'Menü öffnen');
+    });
+    nav.querySelectorAll('.nav-links a,.nav-right a').forEach(function(a){a.addEventListener('click',closeMenu);});
+    addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+    addEventListener('resize',function(){if(window.innerWidth>1000)closeMenu();});
+  }
+
   // Sanftes Scrollen zu Sprungmarken auf derselben Seite (rAF-getrieben,
   // damit es unabhängig von Browser-Eigenheiten zuverlässig scrollt).
   var reduceMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;

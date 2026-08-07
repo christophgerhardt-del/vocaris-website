@@ -49,6 +49,11 @@ p{margin:0;}
 .nav-right a.contact{font-size:14px;color:var(--t2);}
 .btn-dark{font-size:14px;font-weight:600;padding:11px 22px;background:var(--ink);color:var(--paper);border-radius:999px;border:0;cursor:pointer;font-family:inherit;transition:transform .15s;}
 .btn-dark:hover{transform:translateY(-1px);color:var(--paper);}
+.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:9px;background:none;border:0;cursor:pointer;z-index:22;}
+.burger span{display:block;height:2px;width:22px;background:var(--ink);border-radius:2px;transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
+.nav.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav.open .burger span:nth-child(2){opacity:0;}
+.nav.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
 /* Hero */
 .hero{background:var(--lav);padding:96px var(--pad) 88px;}
@@ -239,7 +244,15 @@ html{scroll-padding-top:88px;}
 /* Responsive */
 @media (max-width:1000px){
   :root{--pad:28px;}
-  .nav-links{display:none;}
+  .nav{flex-wrap:wrap;}
+  .burger{display:flex;order:2;}
+  .nav-links,.nav-right{order:3;flex-basis:100%;display:none;}
+  .nav.open .nav-links{display:flex;flex-direction:column;gap:2px;padding:14px 0 4px;}
+  .nav.open .nav-links a{padding:12px 2px;font-size:16px;border-bottom:1px solid var(--line);}
+  .nav.open .nav-links a::after{display:none;}
+  .nav.open .nav-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px 0 16px;}
+  .nav.open .nav-right .contact{padding:6px 2px;}
+  .nav.open .nav-right .btn-dark{width:100%;padding:14px;font-size:15px;}
   .hero{padding:56px var(--pad) 56px;}
   .hero-grid,.sec-2{grid-template-columns:1fr;gap:44px;}
   .sec{padding:64px var(--pad);}
@@ -267,6 +280,7 @@ html{scroll-padding-top:88px;}
     <a href="demo.html" class="contact">Demo buchen</a>
     <a href="#testanruf"><button class="btn-dark" type="button">Testanruf erhalten</button></a>
   </div>
+  <button class="burger" id="burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
 </nav>
 
 <!-- Hero -->
@@ -524,6 +538,20 @@ html{scroll-padding-top:88px;}
   addEventListener('scroll',onScrollUI,{passive:true});
   addEventListener('resize',onScrollUI,{passive:true});
   onScrollUI();
+
+  // Mobiles Menü
+  var burger=document.getElementById('burger');
+  function closeMenu(){nav.classList.remove('open');if(burger){burger.setAttribute('aria-expanded','false');burger.setAttribute('aria-label','Menü öffnen');}}
+  if(burger){
+    burger.addEventListener('click',function(){
+      var open=nav.classList.toggle('open');
+      burger.setAttribute('aria-expanded',open?'true':'false');
+      burger.setAttribute('aria-label',open?'Menü schließen':'Menü öffnen');
+    });
+    nav.querySelectorAll('.nav-links a,.nav-right a').forEach(function(a){a.addEventListener('click',closeMenu);});
+    addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+    addEventListener('resize',function(){if(window.innerWidth>1000)closeMenu();});
+  }
 
   // Sanftes Scrollen zu Sprungmarken + Korrektur beim Laden mit #hash
   // (macht die Navigation zuverlässig, unabhängig vom Browserverhalten).

@@ -18,6 +18,7 @@ def nav():
     <a href="demo.html" class="contact">Demo buchen</a>
     <a href="#call"><button class="btn-dark" type="button">Testanruf erhalten</button></a>
   </div>
+  <button class="burger" id="burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
 </nav>'''
 
 def footer():
