@@ -160,7 +160,7 @@ p{margin:0;}
 
 
 /* ── Aufwertung: Interaktivität & Politur ── */
-html{scroll-behavior:smooth;scroll-padding-top:88px;}
+html{scroll-padding-top:88px;}
 .hero{position:relative;overflow:hidden;}
 .aurora{position:absolute;inset:-20% -10% auto -10%;height:150%;pointer-events:none;z-index:0;
   background:radial-gradient(620px 420px at 16% 18%,rgba(95,79,212,.20),transparent 60%),
@@ -497,15 +497,23 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 
   // Sanftes Scrollen zu Sprungmarken + Korrektur beim Laden mit #hash
   // (macht die Navigation zuverlässig, unabhängig vom Browserverhalten).
+  var reduceMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function smoothTo(y){y=Math.max(0,y);
+    if(reduceMotion){window.scrollTo(0,y);return;}
+    var start=window.scrollY,d=y-start,t0=null,dur=Math.min(700,Math.max(280,Math.abs(d)*0.5));
+    function step(ts){if(t0===null)t0=ts;var p=Math.min(1,(ts-t0)/dur),e=1-Math.pow(1-p,3);
+      window.scrollTo(0,Math.round(start+d*e));if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);}
   function scrollToId(id,smooth){var el=id&&document.getElementById(id);if(!el)return false;
     var y=el.getBoundingClientRect().top+window.scrollY-80;
-    window.scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'auto'});return true;}
+    if(smooth)smoothTo(y);else window.scrollTo(0,Math.max(0,y));return true;}
   document.querySelectorAll('a[href^="#"]').forEach(function(a){
     a.addEventListener('click',function(e){var id=a.getAttribute('href').slice(1);
       if(scrollToId(id,true)){e.preventDefault();history.pushState(null,'','#'+id);}});
   });
   if(location.hash.length>1){var id=location.hash.slice(1);
-    addEventListener('load',function(){setTimeout(function(){scrollToId(id,false);},60);});}
+    var fix=function(){scrollToId(id,false);};
+    addEventListener('load',function(){setTimeout(fix,60);});fix();}
   document.querySelectorAll('[data-callform]').forEach(function(f){
     var err=f.parentElement.querySelector('[data-err]');
     f.addEventListener('submit',function(e){

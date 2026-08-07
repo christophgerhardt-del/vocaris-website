@@ -4,10 +4,18 @@
   var nav=document.getElementById('nav');
   if(nav) addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
 
-  // Sanftes Scrollen zu Sprungmarken auf derselben Seite
+  // Sanftes Scrollen zu Sprungmarken auf derselben Seite (rAF-getrieben,
+  // damit es unabhängig von Browser-Eigenheiten zuverlässig scrollt).
+  var reduceMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function smoothTo(y){y=Math.max(0,y);
+    if(reduceMotion){window.scrollTo(0,y);return;}
+    var start=window.scrollY,d=y-start,t0=null,dur=Math.min(700,Math.max(280,Math.abs(d)*0.5));
+    function step(ts){if(t0===null)t0=ts;var p=Math.min(1,(ts-t0)/dur),e=1-Math.pow(1-p,3);
+      window.scrollTo(0,Math.round(start+d*e));if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);}
   function scrollToId(id,smooth){var el=id&&document.getElementById(id);if(!el)return false;
     var y=el.getBoundingClientRect().top+window.scrollY-80;
-    window.scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'auto'});return true;}
+    if(smooth)smoothTo(y);else window.scrollTo(0,Math.max(0,y));return true;}
   document.querySelectorAll('a[href^="#"]').forEach(function(a){
     a.addEventListener('click',function(e){var id=a.getAttribute('href').slice(1);
       if(scrollToId(id,true)){e.preventDefault();history.pushState(null,'','#'+id);}});
