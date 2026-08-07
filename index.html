@@ -193,6 +193,35 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 .callcf-anim.show{opacity:1;transform:none;}
 @media (prefers-reduced-motion:reduce){.reveal,.bub,.callcf-anim{opacity:1!important;transform:none!important;}.aurora{animation:none;}.wave.live i{transition:none;}}
 
+/* Stat-Band: feine Trennlinien für einen ruhigen, präzisen Eindruck */
+.stats .stat{position:relative;padding:2px 0;}
+.stats .stat:not(:last-child)::after{content:"";position:absolute;right:-36px;top:8%;height:84%;width:1px;background:var(--line);}
+@media (max-width:1000px){.stats .stat::after{display:none!important;}}
+
+/* FAQ */
+.faq-sec{padding:104px var(--pad);background:#fff;border-top:1px solid var(--line);}
+.faq-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:72px;align-items:start;}
+.faq-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);}
+.faq{border-bottom:1px solid var(--line);}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:24px 4px;font-family:var(--sans);font-weight:600;font-size:18px;letter-spacing:-.01em;color:var(--ink);transition:color .15s;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary:hover{color:var(--accent);}
+.faq summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px;}
+.faq .mk{flex:none;width:26px;height:26px;position:relative;}
+.faq .mk::before,.faq .mk::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:2px;border-radius:2px;background:var(--accent);transform:translate(-50%,-50%);transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
+.faq .mk::after{transform:translate(-50%,-50%) rotate(90deg);}
+.faq[open] .mk::after{transform:translate(-50%,-50%) rotate(0);opacity:0;}
+.faq .ans{overflow:hidden;font-size:15.5px;line-height:1.68;color:var(--t2);padding:0 60px 26px 4px;max-width:62ch;}
+.faq .ans a{color:var(--accent);font-weight:600;}
+.faq[open] summary{color:var(--accent);}
+.faq-aside .eyebrow{margin-bottom:20px;display:block;}
+.faq-aside h2{margin-bottom:18px;}
+.faq-aside p{font-size:16px;line-height:1.65;color:var(--t2);margin-bottom:26px;}
+.faq-cta{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;color:#fff;background:var(--accent);padding:13px 24px;border-radius:999px;box-shadow:0 10px 24px -12px rgba(95,79,212,.65);transition:transform .15s,filter .15s;}
+.faq-cta:hover{transform:translateY(-1px);filter:brightness(1.05);color:#fff;}
+@media (max-width:1000px){.faq-sec{padding:64px var(--pad);}.faq-grid{grid-template-columns:1fr;gap:36px;}.faq .ans{padding-right:30px;}}
+
 /* Responsive */
 @media (max-width:1000px){
   :root{--pad:28px;}
@@ -381,6 +410,44 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
   </div>
 </section>
 
+<!-- FAQ -->
+<section class="faq-sec" id="faq">
+  <div class="wrap faq-grid">
+    <div class="faq-aside">
+      <span class="eyebrow">HÄUFIGE FRAGEN</span>
+      <h2 class="h2-big">Gut zu wissen.</h2>
+      <p>Die häufigsten Fragen vor dem Start — und die ehrlichen Antworten. Alles andere klären wir gern persönlich in einer kurzen Demo.</p>
+      <a href="demo.html" class="faq-cta">Demo buchen <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="faq-list">
+      <details class="faq">
+        <summary>Klingt Vocaris wirklich wie ein echter Mensch?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Ja. Vocaris spricht in Echtzeit mit natürlicher Stimme, reagiert auf Zwischenfragen und lässt sich jederzeit unterbrechen — ohne Tastenmenü. Am ehrlichsten überzeugt ein <a href="#testanruf">Testanruf</a>: Sie hören in wenigen Sekunden selbst, wie es klingt.</div>
+      </details>
+      <details class="faq">
+        <summary>Bleibt meine bestehende Rufnummer erhalten?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Ja. Vocaris lässt sich vor Ihre bestehende Nummer schalten oder nur dann aktivieren, wenn niemand abnimmt. Auf Wunsch stellen wir alternativ eine neue Rufnummer bereit.</div>
+      </details>
+      <details class="faq">
+        <summary>Wie schnell bin ich startklar?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Meist in etwa 15 Minuten und komplett im Browser — kein IT-Projekt, keine Installation. Wissen einlesen, Stimme wählen, Nummer verbinden, fertig.</div>
+      </details>
+      <details class="faq">
+        <summary>Was passiert bei Fragen, die Vocaris nicht kennt?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Er merkt sich die Frage und nimmt bei Bedarf einen Rückruf auf. Sie beantworten die Frage einmal im Dashboard — danach kennt Vocaris die Antwort. So wird er mit jedem Anruf besser.</div>
+      </details>
+      <details class="faq">
+        <summary>Wie steht es um den Datenschutz?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Vocaris arbeitet DSGVO-konform: verschlüsselte Verbindungen, Verarbeitung und Hosting in der EU, Auftragsverarbeitungsvertrag inklusive. Auf Wunsch führt ein rein europäisches Sprachmodell Ihre Anrufe — ohne Umweg über Drittstaaten.</div>
+      </details>
+      <details class="faq">
+        <summary>Was kostet Vocaris?<span class="mk" aria-hidden="true"></span></summary>
+        <div class="ans">Der Preis richtet sich nach Ihrem Anrufvolumen; der Einstieg liegt bei rund 49&thinsp;€ im Monat. Ein genaues, unverbindliches Angebot machen wir passend zu Ihrem Betrieb in der Demo.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="cta" id="kontakt">
   <div class="inner">
@@ -394,14 +461,14 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
       <label class="consent" style="justify-content:center;text-align:left"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken anruft.</label>
     </form>
     <div class="formerr" data-err></div>
-    <div class="microcopy">Lieber persönlich? <a href="demo.html" class="demolink">Demo buchen &rarr;</a> &nbsp;·&nbsp; oder <a href="mailto:kontakt@vocaris.eu" style="color:var(--accent);font-weight:600">kontakt@vocaris.eu</a></div>
+    <div class="microcopy">Lieber persönlich? <a href="demo.html" class="demolink">Demo buchen &rarr;</a> — wir richten Vocaris in einem kurzen Termin mit Ihnen ein.</div>
   </div>
 </section>
 
 <!-- Footer -->
 <footer class="foot">
   <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 28 28" width="22" height="22"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Vocaris</a>
-  <div class="fl"><a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a></div>
+  <div class="fl"><a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a><a href="#faq">FAQ</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
 
@@ -432,7 +499,7 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
   });
   // Scroll-Reveal
   (function(){
-    var sel='.eyebrow,.hero h1,.hero p.lede,.callform,.stat,.arrows,.grid-art,.icard,.mcard,.scard,.dark-sec h2,.dark-sec p.lede,.step,.cta h2,.cta p,.h2-big';
+    var sel='.eyebrow,.hero h1,.hero p.lede,.callform,.stat,.arrows,.grid-art,.icard,.mcard,.scard,.dark-sec h2,.dark-sec p.lede,.step,.cta h2,.cta p,.h2-big,.faq,.faq-aside';
     var els=[].slice.call(document.querySelectorAll(sel));
     els.forEach(function(e){e.classList.add('reveal');});
     if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
