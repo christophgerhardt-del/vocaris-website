@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://vocaris.eu/apotheke.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
     <loc>https://vocaris.eu/arztpraxen.html</loc>
     <lastmod>2026-08-07</lastmod>
   </url>
@@ -21,6 +25,18 @@
     <lastmod>2026-08-07</lastmod>
   </url>
   <url>
+    <loc>https://vocaris.eu/hausverwaltung.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://vocaris.eu/hotel.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://vocaris.eu/immobilienmakler.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
     <loc>https://vocaris.eu/</loc>
     <lastmod>2026-08-07</lastmod>
   </url>
@@ -29,7 +45,15 @@
     <lastmod>2026-08-07</lastmod>
   </url>
   <url>
+    <loc>https://vocaris.eu/pflegedienst.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
     <loc>https://vocaris.eu/restaurants.html</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://vocaris.eu/versicherungsmakler.html</loc>
     <lastmod>2026-08-07</lastmod>
   </url>
 </urlset>
