@@ -4,6 +4,15 @@
   var nav=document.getElementById('nav');
   if(nav) addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
 
+  // Sanftes Scrollen zu Sprungmarken auf derselben Seite
+  function scrollToId(id,smooth){var el=id&&document.getElementById(id);if(!el)return false;
+    var y=el.getBoundingClientRect().top+window.scrollY-80;
+    window.scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'auto'});return true;}
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(e){var id=a.getAttribute('href').slice(1);
+      if(scrollToId(id,true)){e.preventDefault();history.pushState(null,'','#'+id);}});
+  });
+
   // Testanruf-Formular(e)
   document.querySelectorAll('[data-callform]').forEach(function(f){
     var err=f.parentElement.querySelector('[data-err]');
