@@ -1,0 +1,13 @@
+# robots.txt für vocaris.eu
+#
+# Bewusst KEINE Disallow-Regeln für die internen Seiten (app, admin, kiosk,
+# reservieren). Die tragen alle ein "noindex" im Seitenkopf — und damit
+# Google das lesen KANN, muss es die Seite abrufen dürfen. Ein Disallow
+# würde den Abruf verhindern, das noindex bliebe ungelesen, und die Adresse
+# könnte trotzdem als nackter Link im Index landen. Zusperren und
+# Nicht-Indexieren sind zwei verschiedene Dinge; hier ist das zweite gemeint.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://vocaris.eu/sitemap.xml
