@@ -3,9 +3,10 @@ import json, html
 
 BASE = "https://vocaris.eu/"
 
-LOGO = ('<span class="mark" aria-hidden="true"><svg viewBox="0 0 28 28" width="26" height="26">'
-        '<circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/>'
-        '<path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Vocaris')
+LOGO = ('<span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26">'
+        '<defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs>'
+        '<rect width="64" height="64" rx="15" fill="url(#vlogoN)"/>'
+        '<path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris')
 
 def nav():
     return f'''<nav class="nav" id="nav"><span id="top"></span>
@@ -21,7 +22,7 @@ def nav():
 
 def footer():
     return f'''<footer class="foot">
-  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 28 28" width="22" height="22"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"/><path d="M9 14c0-3 5-3 5 0s5 3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
   <div class="fl"><a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>'''
