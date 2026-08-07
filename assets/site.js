@@ -1,0 +1,40 @@
+// Vocaris – gemeinsame Skripte für Unterseiten
+(function(){
+  var API='https://ki-anruf.onrender.com';
+  var nav=document.getElementById('nav');
+  if(nav) addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
+
+  // Testanruf-Formular(e)
+  document.querySelectorAll('[data-callform]').forEach(function(f){
+    var err=f.parentElement.querySelector('[data-err]');
+    f.addEventListener('submit',function(e){
+      e.preventDefault();
+      var input=f.querySelector('input[type=tel]'), consent=f.querySelector('[data-consent]');
+      var num=(input.value||'').replace(/[^\d+]/g,'');
+      if(err)err.textContent='';
+      if(!/^\+49\d{6,13}$/.test(num)){if(err)err.textContent='Bitte eine deutsche Nummer im Format +49… angeben.';input.focus();return;}
+      if(consent&&!consent.checked){if(err)err.textContent='Bitte die Einwilligung bestätigen.';return;}
+      var btn=f.querySelector('button');btn.disabled=true;var old=btn.textContent;btn.textContent='Ruft an…';
+      fetch(API+'/api/demo-call',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:num,consent:true})})
+        .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+        .then(function(res){
+          if(!res.ok){if(err)err.textContent=(res.d&&res.d.error)||'Anruf konnte nicht gestartet werden.';btn.disabled=false;btn.textContent=old;return;}
+          var s=document.createElement('div');s.className='callsuccess';
+          s.innerHTML='<b>✓ Geschafft.</b> Vocaris ruft Sie in wenigen Sekunden an. Nehmen Sie einfach ab.';
+          f.replaceWith(s);
+        })
+        .catch(function(){if(err)err.textContent='Server nicht erreichbar. Bitte später erneut.';btn.disabled=false;btn.textContent=old;});
+    });
+  });
+
+  // Scroll-Reveal
+  var sel='.eyebrow,.hero h1,.hero p.lede,.callform,.stat,.arrows,.grid-art,.icard,.mcard,.scard,.softcard,.dark-sec h2,.dark-sec p.lede,.step,.cta h2,.cta p,.h2-big,.faq,.faq-aside';
+  var els=[].slice.call(document.querySelectorAll(sel));
+  els.forEach(function(e){e.classList.add('reveal');});
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
+  document.querySelectorAll('.cards-3,.cards-4,.grid-2x2,.stats').forEach(function(g){
+    [].slice.call(g.children).forEach(function(c,i){ if(c.classList.contains('reveal')&&i<4) c.classList.add('d'+(i+1)); });
+  });
+  var io=new IntersectionObserver(function(ents){ents.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){io.observe(e);});
+})();
