@@ -239,3 +239,15 @@ a.icard:hover{color:var(--ink);}
 .softcard .q{font-size:15px;color:var(--t2);line-height:1.55;}
 .softcard .q b{color:var(--ink);}
 .backhome{font-size:14px;color:var(--t2);}
+
+/* Interaktive Politur (Unterseiten) */
+.scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px -2px var(--accent);}
+.logo .mark{transition:transform .35s cubic-bezier(.22,.61,.36,1);}
+.logo:hover .mark{transform:rotate(-8deg) scale(1.08);}
+.nav-links a{position:relative;padding:4px 0;transition:color .18s;}
+.nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-3px;height:2px;border-radius:2px;
+  background:var(--accent);transition:right .28s cubic-bezier(.22,.61,.36,1);}
+.nav-links a:hover::after,.nav-links a.active::after{right:0;}
+.nav-links a.active{color:var(--accent);}
+@media (prefers-reduced-motion:reduce){.logo .mark{transition:none;}.nav-links a::after{transition:none;}}

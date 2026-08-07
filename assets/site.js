@@ -2,7 +2,15 @@
 (function(){
   var API='https://ki-anruf.onrender.com';
   var nav=document.getElementById('nav');
-  if(nav) addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
+  var prog=document.getElementById('scrollprog');
+  function onScrollUI(){
+    if(nav)nav.classList.toggle('scrolled',scrollY>8);
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    if(prog)prog.style.width=(h>0?Math.min(100,scrollY/h*100):0)+'%';
+  }
+  addEventListener('scroll',onScrollUI,{passive:true});
+  addEventListener('resize',onScrollUI,{passive:true});
+  onScrollUI();
 
   // Sanftes Scrollen zu Sprungmarken auf derselben Seite (rAF-getrieben,
   // damit es unabhängig von Browser-Eigenheiten zuverlässig scrollt).

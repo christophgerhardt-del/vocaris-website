@@ -160,6 +160,18 @@ p{margin:0;}
 .consent input{margin-top:2px;flex:none;accent-color:var(--accent);width:16px;height:16px;}
 .demolink{font-size:14px;color:var(--accent);font-weight:600;}
 
+/* Interaktive Politur: Scroll-Fortschritt, aktive Nav, Logo-Hover */
+.scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px -2px var(--accent);}
+.logo .mark{transition:transform .35s cubic-bezier(.22,.61,.36,1);}
+.logo:hover .mark{transform:rotate(-8deg) scale(1.08);}
+.nav-links a{position:relative;padding:4px 0;transition:color .18s;}
+.nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-3px;height:2px;border-radius:2px;
+  background:var(--accent);transition:right .28s cubic-bezier(.22,.61,.36,1);}
+.nav-links a:hover::after,.nav-links a.active::after{right:0;}
+.nav-links a.active{color:var(--accent);}
+@media (prefers-reduced-motion:reduce){.logo .mark{transition:none;}.nav-links a::after{transition:none;}}
+
 
 /* ── Aufwertung: Interaktivität & Politur ── */
 html{scroll-padding-top:88px;}
@@ -245,6 +257,7 @@ html{scroll-padding-top:88px;}
 }
 </style>
 
+<div class="scrollprog" id="scrollprog"></div>
 <nav class="nav" id="nav" style="scroll-margin-top:0"><span id="top"></span>
   <a href="#top" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
   <div class="nav-links">
@@ -495,7 +508,22 @@ html{scroll-padding-top:88px;}
 <script>
   var API='https://ki-anruf.onrender.com';
   var nav=document.getElementById('nav');
-  addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
+
+  // Scroll-Fortschrittsleiste + aktive Sektion in der Navigation
+  var prog=document.getElementById('scrollprog');
+  var navLinks=[].slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+  var secs=navLinks.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
+  function onScrollUI(){
+    nav.classList.toggle('scrolled',scrollY>8);
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    if(prog)prog.style.width=(h>0?Math.min(100,scrollY/h*100):0)+'%';
+    var idx=-1;
+    for(var i=0;i<secs.length;i++){if(secs[i]&&secs[i].getBoundingClientRect().top<=120)idx=i;}
+    navLinks.forEach(function(a,i){a.classList.toggle('active',i===idx);});
+  }
+  addEventListener('scroll',onScrollUI,{passive:true});
+  addEventListener('resize',onScrollUI,{passive:true});
+  onScrollUI();
 
   // Sanftes Scrollen zu Sprungmarken + Korrektur beim Laden mit #hash
   // (macht die Navigation zuverlässig, unabhängig vom Browserverhalten).

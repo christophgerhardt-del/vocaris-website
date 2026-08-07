@@ -79,6 +79,7 @@ def render(b):
 </head>
 <body>
 
+<div class="scrollprog" id="scrollprog"></div>
 {nav()}
 
 <!-- Hero -->
