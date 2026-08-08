@@ -269,3 +269,20 @@ a.icard:hover{color:var(--ink);}
   .nav.open .nav-right .contact{padding:6px 2px;}
   .nav.open .nav-right .btn-dark{width:100%;padding:14px;font-size:15px;}
 }
+
+/* ── Querverweise zwischen den Branchenseiten ──
+   Bis hierher verwies jede Branchenseite nur zurueck auf die Startseite und
+   keine auf eine andere. Fuer Besucher hiess das: wer auf der falschen Seite
+   landet, muss den Umweg ueber die Uebersicht nehmen. Fuer Google hiess es,
+   dass alle Aufmerksamkeit an einem einzigen Punkt haengt statt sich zu
+   verteilen. Beides loest diese Leiste. */
+.branchbar{padding:44px var(--pad);background:var(--paper);border-top:1px solid var(--line);}
+.branchbar .wrap{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;}
+.branchbar .bb-t{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent);white-space:nowrap;}
+.branchbar .bb-l{display:flex;flex-wrap:wrap;gap:10px;}
+.branchbar .bb-l a{font-size:14px;color:var(--t2);padding:8px 16px;background:#fff;border:1px solid var(--line);border-radius:999px;transition:color .15s,border-color .15s;}
+.branchbar .bb-l a:hover{color:var(--accent);border-color:var(--line-lav);}
+@media (max-width:560px){
+  .branchbar{padding:32px var(--pad);}
+  .branchbar .wrap{flex-direction:column;gap:14px;}
+}
