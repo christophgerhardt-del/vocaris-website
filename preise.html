@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preise — was ein KI-Telefonassistent bei Vocaris kostet</title>
+<meta name="description" content="Preise für den KI-Telefonassistenten: ab 49 € im Monat inklusive 250 Gesprächsminuten, keine Einrichtungsgebühr, monatlich kündbar. Mit Rechner für Ihr Anrufaufkommen.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://vocaris.eu/preise.html">
+<meta property="og:title" content="Preise — was ein KI-Telefonassistent bei Vocaris kostet">
+<meta property="og:description" content="Preise für den KI-Telefonassistenten: ab 49 € im Monat inklusive 250 Gesprächsminuten, keine Einrichtungsgebühr, monatlich kündbar. Mit Rechner für Ihr Anrufaufkommen.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vocaris.eu/preise.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Was kostet ein KI-Telefonassistent bei Vocaris?","acceptedAnswer":{"@type":"Answer","text":"Der Einstieg liegt bei 49 € im Monat für 250 Gesprächsminuten. Das reicht für etwa 150 bis 250 Anrufe, je nachdem wie lang Ihre Gespräche sind. Wer mehr telefoniert, fährt mit 99 € oder 249 € im Monat günstiger — der Rechner oben zeigt Ihnen, welcher Tarif für Ihr Aufkommen der billigste ist."}},{"@type":"Question","name":"Gibt es eine Einrichtungsgebühr?","acceptedAnswer":{"@type":"Answer","text":"Nein. Viele Anbieter verlangen 100 bis 500 € für die Einrichtung. Bei Vocaris ist sie kostenlos, weil die Einrichtung tatsächlich nur etwa 15 Minuten dauert und komplett im Browser läuft — dafür Geld zu verlangen wäre schwer zu begründen."}},{"@type":"Question","name":"Was passiert, wenn ich mein Minutenkontingent überschreite?","acceptedAnswer":{"@type":"Answer","text":"Nichts Dramatisches: Der Assistent nimmt weiter ab. Jede zusätzliche Minute wird zum Minutenpreis Ihres Tarifs abgerechnet und auf der nächsten Rechnung ausgewiesen. Es gibt keine Abschaltung und keine Strafgebühr — ein Anruf, der nicht angenommen wird, wäre schließlich genau das Problem, das Sie lösen wollten."}},{"@type":"Question","name":"Kann ich monatlich kündigen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Alle Tarife sind monatlich kündigbar, mit 14 Tagen Frist zum Ende des Abrechnungsmonats. Es gibt keine Mindestlaufzeit und keinen Rabatt, der an eine Zweijahresbindung geknüpft ist."}},{"@type":"Question","name":"Kann ich Vocaris kostenlos testen?","acceptedAnswer":{"@type":"Answer","text":"Sie können sich jederzeit einen kostenlosen Testanruf schicken lassen — Nummer eintragen, und der Assistent ruft in wenigen Sekunden an. So hören Sie vor jeder Entscheidung, wie ein Gespräch tatsächlich klingt. Ein kostenloses Testkonto zum Selbsteinrichten gibt es derzeit nicht; die Einrichtung machen wir gemeinsam in der Demo."}},{"@type":"Question","name":"Sind die Preise netto oder brutto?","acceptedAnswer":{"@type":"Answer","text":"Alle genannten Preise verstehen sich netto, also zuzüglich der gesetzlichen Umsatzsteuer. Vocaris richtet sich an Unternehmen, die die Vorsteuer geltend machen können."}},{"@type":"Question","name":"Was ist im Preis enthalten und was kostet extra?","acceptedAnswer":{"@type":"Answer","text":"Enthalten sind: der Assistent selbst, eine Rufnummer, die Einrichtung, alle Updates, der Support und der Auftragsverarbeitungsvertrag. Extra berechnet werden nur Minuten über dem Kontingent, weitere Rufnummern zu 5 € im Monat und SMS-Bestätigungen zu 9 Cent pro Nachricht."}},{"@type":"Question","name":"Warum ist Vocaris nicht der billigste Anbieter?","acceptedAnswer":{"@type":"Answer","text":"Weil jedes Gespräch echte Rechenleistung kostet — ein Assistent, der in Echtzeit zuhört, versteht und antwortet, ist teurer im Betrieb als eine Ansage vom Band. Wir rechnen das offen über Minuten ab, statt einen niedrigen Grundpreis zu zeigen und die Kosten in Zusatzposten zu verstecken."}}]}</script>
+<style>
+/* ── Preisrechner ──
+   Bewusst hier statt in site.css: Diese Regeln gelten nur auf dieser einen
+   Seite, und site.css wird von jeder anderen Seite mitgeladen. */
+.preis-hero{background:var(--lav);padding:88px var(--pad) 72px;}
+.preis-hero .wrap{display:flex;flex-direction:column;gap:24px;max-width:760px;}
+.preis-hero h1{font-size:clamp(42px,5.4vw,62px);line-height:1.04;letter-spacing:-.015em;}
+.preis-hero .lede{font-size:18px;line-height:1.65;color:var(--t2);}
+
+.rechner{padding:72px var(--pad);background:var(--paper);border-bottom:1px solid var(--line);}
+.rechner .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
+.rechner .regler{display:flex;flex-direction:column;gap:34px;}
+.rechner label{display:flex;flex-direction:column;gap:12px;}
+.rechner .lab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+.rechner .lab .t{font-size:15px;font-weight:600;}
+.rechner .lab .v{font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;}
+.rechner input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:999px;background:var(--line-lav);outline:none;}
+.rechner input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 8px rgba(38,28,92,.3);}
+.rechner input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;}
+.rechner .hint{font-size:13px;color:var(--t3);line-height:1.5;}
+
+.ergebnis{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px;display:flex;flex-direction:column;gap:20px;}
+.ergebnis .kicker{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
+.ergebnis .tarif{font-size:15px;font-weight:600;}
+.ergebnis .summe{font-size:46px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
+.ergebnis .summe small{font-size:16px;font-weight:500;color:var(--t3);letter-spacing:0;}
+.ergebnis .zeilen{display:flex;flex-direction:column;gap:9px;font-size:14px;color:var(--t2);border-top:1px solid var(--line);padding-top:18px;}
+.ergebnis .zeile{display:flex;justify-content:space-between;gap:14px;}
+.ergebnis .zeile b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.ergebnis .fuss{font-size:13px;color:var(--t3);line-height:1.55;}
+
+.tarife{padding:96px var(--pad);background:#fff;border-top:1px solid var(--line);}
+.tarifgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;}
+.tkarte{border:1px solid var(--line);border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:16px;background:var(--paper);}
+.tkarte.hl{background:var(--lav);border-color:var(--line-lav);}
+.tkarte .n{font-size:13px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
+.tkarte .p{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
+.tkarte .p small{font-size:15px;font-weight:500;color:var(--t3);letter-spacing:0;}
+.tkarte .inkl{font-size:15px;color:var(--t2);}
+.tkarte .inkl b{color:var(--ink);}
+.tkarte .fuer{font-size:14px;color:var(--t3);line-height:1.55;border-top:1px solid var(--line);padding-top:14px;margin-top:auto;}
+.tkarte.hl .fuer{border-top-color:var(--line-lav);}
+
+.listen{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:64px;}
+.liste h3{font-size:17px;font-weight:700;margin:0 0 18px;}
+.liste ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+.liste li{font-size:15px;color:var(--t2);line-height:1.55;display:flex;gap:11px;}
+.liste li span:first-child{flex:none;font-weight:600;}
+.liste .ja span:first-child{color:var(--ok);}
+.liste .nein span:first-child{color:var(--t3);}
+.liste li .pr{color:var(--t3);white-space:nowrap;}
+
+@media (max-width:1000px){
+  .rechner .wrap,.listen{grid-template-columns:1fr;gap:40px;}
+  .tarifgrid{grid-template-columns:1fr;}
+  .rechner,.tarife{padding:64px var(--pad);}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><span id="top"></span>
+  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <div class="nav-links">
+    <a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a>
+  </div>
+  <div class="nav-right">
+    <a href="demo.html" class="contact">Demo buchen</a>
+    <a href="#call"><button class="btn-dark" type="button">Testanruf erhalten</button></a>
+  </div>
+  <button class="burger" id="burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+</nav>
+
+<section class="preis-hero">
+  <div class="wrap">
+    <div class="eyebrow">PREISE</div>
+    <h1>Was kostet ein Assistent, der wirklich rangeht?</h1>
+    <p class="lede">Ab <b>49 €</b> im Monat. Keine Einrichtungsgebühr, keine Mindestlaufzeit, keine Staffelung, die erst beim Vertragsgespräch auftaucht. Stellen Sie unten ein, wie viel bei Ihnen telefoniert wird — der Rechner nennt den günstigsten Tarif.</p>
+  </div>
+</section>
+
+<!-- Rechner -->
+<section class="rechner" id="rechner">
+  <div class="wrap">
+    <div class="regler">
+      <label>
+        <span class="lab"><span class="t">Anrufe im Monat</span><span class="v" id="vAnrufe">120</span></span>
+        <input type="range" id="anrufe" min="20" max="2000" step="10" value="120">
+        <span class="hint">Zählen Sie alle Anrufe, die heute bei Ihnen ankommen — auch die, die niemand annimmt. Genau die sind ja der Grund.</span>
+      </label>
+      <label>
+        <span class="lab"><span class="t">Durchschnittliche Gesprächsdauer</span><span class="v" id="vDauer">1,5 Min</span></span>
+        <input type="range" id="dauer" min="5" max="50" step="1" value="15">
+        <span class="hint">Bei unseren Messungen dauert ein Gespräch im Mittel etwa eine Minute. Terminvergaben sind kürzer, Schadenmeldungen länger.</span>
+      </label>
+      <label>
+        <span class="lab"><span class="t">SMS-Bestätigungen</span><span class="v" id="vSms">aus</span></span>
+        <input type="range" id="sms" min="0" max="100" step="5" value="0">
+        <span class="hint">Anteil der Anrufe, nach denen eine Bestätigung per SMS rausgeht. Senkt bei Terminen die Zahl der Nichterscheinen.</span>
+      </label>
+    </div>
+
+    <div class="ergebnis">
+      <div class="kicker">IHR GÜNSTIGSTER TARIF</div>
+      <div class="tarif" id="rTarif">Standard</div>
+      <div class="summe"><span id="rSumme">99</span> €<small> / Monat, netto</small></div>
+      <div class="zeilen" id="rZeilen"></div>
+      <div class="fuss" id="rFuss"></div>
+      <a href="demo.html" class="faq-cta">Unverbindliches Angebot <span aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- Tarife -->
+<section class="tarife">
+  <div class="wrap">
+    <div style="max-width:60ch;display:flex;flex-direction:column;gap:20px">
+      <div class="eyebrow">DIE DREI TARIFE</div>
+      <h2 class="h2-big">Alles drin, außer den Minuten.</h2>
+      <p style="font-size:17px;line-height:1.65;color:var(--t2)">Die Tarife unterscheiden sich in genau einem Punkt: wie viele Gesprächsminuten enthalten sind. Der Funktionsumfang ist überall derselbe — es gibt keine Stufe, in der die Terminbuchung fehlt.</p>
+    </div>
+
+    <div class="tarifgrid">
+      <div class="tkarte">
+        <div class="n">KLEIN</div>
+        <div class="p">49 €<small> / Monat</small></div>
+        <div class="inkl"><b>250 Gesprächsminuten</b> inklusive<br>danach 0,19 € je Minute</div>
+        <div class="inkl" style="font-size:14px;color:var(--t3)">rund 150–250 Anrufe im Monat</div>
+        <div class="fuer">Einzelpraxen, kleine Salons, Betriebe mit ruhigem Telefon</div>
+      </div>
+      <div class="tkarte hl">
+        <div class="n">STANDARD</div>
+        <div class="p">99 €<small> / Monat</small></div>
+        <div class="inkl"><b>700 Gesprächsminuten</b> inklusive<br>danach 0,15 € je Minute</div>
+        <div class="inkl" style="font-size:14px;color:var(--t3)">rund 450–700 Anrufe im Monat</div>
+        <div class="fuer">Restaurants, Werkstätten, Praxen mit vollem Wartezimmer</div>
+      </div>
+      <div class="tkarte">
+        <div class="n">GROSS</div>
+        <div class="p">249 €<small> / Monat</small></div>
+        <div class="inkl"><b>2.000 Gesprächsminuten</b> inklusive<br>danach 0,11 € je Minute</div>
+        <div class="inkl" style="font-size:14px;color:var(--t3)">rund 1.300–2.000 Anrufe im Monat</div>
+        <div class="fuer">Hausverwaltungen, Pflegedienste, Betriebe mit mehreren Standorten</div>
+      </div>
+    </div>
+
+    <div class="listen">
+      <div class="liste">
+        <h3>Im Preis enthalten</h3>
+        <ul><li class="ja"><span>✓</span><span>Der Assistent selbst — unbegrenzt viele Gespräche gleichzeitig</span></li><li class="ja"><span>✓</span><span>Eine Rufnummer, oder Ihre bestehende weiterleiten</span></li><li class="ja"><span>✓</span><span>Einrichtung und Einweisung</span></li><li class="ja"><span>✓</span><span>Alle Updates und neuen Funktionen</span></li><li class="ja"><span>✓</span><span>Support per E-Mail und Telefon</span></li><li class="ja"><span>✓</span><span>Auftragsverarbeitungsvertrag nach DSGVO</span></li><li class="ja"><span>✓</span><span>Verarbeitung und Hosting in der EU</span></li></ul>
+      </div>
+      <div class="liste">
+        <h3>Was zusätzlich berechnet wird</h3>
+        <ul><li class="nein"><span>+</span><span>Minuten über dem Kontingent<br><span class="pr">je nach Tarif 0,11 – 0,19 € pro Minute</span></span></li><li class="nein"><span>+</span><span>Weitere Rufnummern<br><span class="pr">5 € pro Nummer und Monat</span></span></li><li class="nein"><span>+</span><span>SMS-Bestätigungen an Ihre Kunden<br><span class="pr">0,09 € pro SMS</span></span></li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-sec" id="faq">
+  <div class="wrap faq-grid">
+    <div class="faq-aside">
+      <span class="eyebrow">HÄUFIGE FRAGEN</span>
+      <h2 class="h2-big">Zum Preis.</h2>
+      <p>Was Kunden vor der Entscheidung wissen wollen — ehrlich beantwortet, auch wo die Antwort unbequem ist.</p>
+      <a href="demo.html" class="faq-cta">Demo buchen <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="faq-list"><details class="faq"><summary>Was kostet ein KI-Telefonassistent bei Vocaris?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Der Einstieg liegt bei 49 € im Monat für 250 Gesprächsminuten. Das reicht für etwa 150 bis 250 Anrufe, je nachdem wie lang Ihre Gespräche sind. Wer mehr telefoniert, fährt mit 99 € oder 249 € im Monat günstiger — der Rechner oben zeigt Ihnen, welcher Tarif für Ihr Aufkommen der billigste ist.</div></details><details class="faq"><summary>Gibt es eine Einrichtungsgebühr?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Nein. Viele Anbieter verlangen 100 bis 500 € für die Einrichtung. Bei Vocaris ist sie kostenlos, weil die Einrichtung tatsächlich nur etwa 15 Minuten dauert und komplett im Browser läuft — dafür Geld zu verlangen wäre schwer zu begründen.</div></details><details class="faq"><summary>Was passiert, wenn ich mein Minutenkontingent überschreite?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Nichts Dramatisches: Der Assistent nimmt weiter ab. Jede zusätzliche Minute wird zum Minutenpreis Ihres Tarifs abgerechnet und auf der nächsten Rechnung ausgewiesen. Es gibt keine Abschaltung und keine Strafgebühr — ein Anruf, der nicht angenommen wird, wäre schließlich genau das Problem, das Sie lösen wollten.</div></details><details class="faq"><summary>Kann ich monatlich kündigen?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Ja. Alle Tarife sind monatlich kündigbar, mit 14 Tagen Frist zum Ende des Abrechnungsmonats. Es gibt keine Mindestlaufzeit und keinen Rabatt, der an eine Zweijahresbindung geknüpft ist.</div></details><details class="faq"><summary>Kann ich Vocaris kostenlos testen?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Sie können sich jederzeit einen kostenlosen Testanruf schicken lassen — Nummer eintragen, und der Assistent ruft in wenigen Sekunden an. So hören Sie vor jeder Entscheidung, wie ein Gespräch tatsächlich klingt. Ein kostenloses Testkonto zum Selbsteinrichten gibt es derzeit nicht; die Einrichtung machen wir gemeinsam in der Demo.</div></details><details class="faq"><summary>Sind die Preise netto oder brutto?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Alle genannten Preise verstehen sich netto, also zuzüglich der gesetzlichen Umsatzsteuer. Vocaris richtet sich an Unternehmen, die die Vorsteuer geltend machen können.</div></details><details class="faq"><summary>Was ist im Preis enthalten und was kostet extra?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Enthalten sind: der Assistent selbst, eine Rufnummer, die Einrichtung, alle Updates, der Support und der Auftragsverarbeitungsvertrag. Extra berechnet werden nur Minuten über dem Kontingent, weitere Rufnummern zu 5 € im Monat und SMS-Bestätigungen zu 9 Cent pro Nachricht.</div></details><details class="faq"><summary>Warum ist Vocaris nicht der billigste Anbieter?<span class="mk" aria-hidden="true"></span></summary><div class="ans">Weil jedes Gespräch echte Rechenleistung kostet — ein Assistent, der in Echtzeit zuhört, versteht und antwortet, ist teurer im Betrieb als eine Ansage vom Band. Wir rechnen das offen über Minuten ab, statt einen niedrigen Grundpreis zu zeigen und die Kosten in Zusatzposten zu verstecken.</div></details></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="inner">
+    <h2>Rechnen Sie nach — oder hören Sie zu.</h2>
+    <p style="font-size:17px;line-height:1.65;color:var(--t2)">Ein Testanruf sagt mehr als jede Preistabelle. Kostenlos, unverbindlich, in wenigen Sekunden.</p>
+    <form class="callform dark" data-callform style="align-items:center">
+        <div class="callrow">
+          <input type="tel" inputmode="tel" placeholder="+49 · Ihre Rufnummer" aria-label="Ihre Rufnummer" required style="min-width:220px">
+          <button type="submit">Testanruf erhalten</button>
+        </div>
+        <label class="consent" style="justify-content:center;text-align:left"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken anruft.</label>
+      </form>
+      <div class="formerr" data-err></div>
+    <div class="microcopy">Lieber persönlich? <a href="demo.html" class="demolink">Demo buchen &rarr;</a> — oder zurück zur <a href="index.html" class="demolink">Übersicht</a>.</div>
+  </div>
+</section>
+
+<footer class="foot">
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <div class="fl"><a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a></div>
+  <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script>
+/* Preisrechner.
+   Die Tarife stehen HIER und nur hier. Wer Preise ändern will, ändert diese
+   eine Liste — die Rechenlogik darunter bleibt unberührt. Die Karten weiter
+   oben im Text müssen dann von Hand nachgezogen werden; sie stehen bewusst
+   als Text in der Seite, damit Google sie auch ohne JavaScript liest. */
+(function () {
+  var TARIFE = [{"id":"klein","name":"Klein","preis":49,"minuten":250,"extra":0.19},{"id":"standard","name":"Standard","preis":99,"minuten":700,"extra":0.15},{"id":"gross","name":"Groß","preis":249,"minuten":2000,"extra":0.11}];
+  var SMS_PREIS = 0.09;
+
+  var eAnrufe = document.getElementById('anrufe');
+  var eDauer  = document.getElementById('dauer');
+  var eSms    = document.getElementById('sms');
+  if (!eAnrufe) return;
+
+  function eur(n) {
+    return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function rechne() {
+    var anrufe = +eAnrufe.value;
+    var dauer  = +eDauer.value / 10;           // Regler in Zehntelminuten
+    var smsAnteil = +eSms.value / 100;
+    var minuten = Math.round(anrufe * dauer);
+    var smsZahl = Math.round(anrufe * smsAnteil);
+
+    document.getElementById('vAnrufe').textContent = anrufe.toLocaleString('de-DE');
+    document.getElementById('vDauer').textContent  = eur(dauer).replace(',00', '') + ' Min';
+    document.getElementById('vSms').textContent    = smsAnteil ? Math.round(smsAnteil * 100) + ' %' : 'aus';
+
+    // Günstigsten Tarif suchen: Grundpreis plus Minuten über dem Kontingent.
+    var beste = null;
+    TARIFE.forEach(function (t) {
+      var ueber = Math.max(0, minuten - t.minuten);
+      var summe = t.preis + ueber * t.extra;
+      if (!beste || summe < beste.summe) beste = { t: t, summe: summe, ueber: ueber };
+    });
+
+    var sms = smsZahl * SMS_PREIS;
+    var gesamt = beste.summe + sms;
+
+    document.getElementById('rTarif').textContent = 'Tarif ' + beste.t.name;
+    document.getElementById('rSumme').textContent = eur(gesamt).replace(',00', '');
+
+    var z = [];
+    z.push(['Grundpreis ' + beste.t.name, eur(beste.t.preis) + ' €']);
+    z.push([minuten.toLocaleString('de-DE') + ' Gesprächsminuten', beste.ueber
+      ? beste.t.minuten.toLocaleString('de-DE') + ' inkl.'
+      : 'im Tarif enthalten']);
+    if (beste.ueber) z.push([beste.ueber.toLocaleString('de-DE') + ' Minuten darüber', eur(beste.ueber * beste.t.extra) + ' €']);
+    if (smsZahl) z.push([smsZahl.toLocaleString('de-DE') + ' SMS', eur(sms) + ' €']);
+
+    document.getElementById('rZeilen').innerHTML = z.map(function (r) {
+      return '<div class="zeile"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>';
+    }).join('');
+
+    document.getElementById('rFuss').textContent =
+      'Schätzung auf Basis Ihrer Angaben, netto zzgl. USt. Bei ' + anrufe.toLocaleString('de-DE') +
+      ' Anrufen sind das rund ' + eur(gesamt / anrufe) + ' € je Anruf. Den verbindlichen Preis nennen wir im Angebot.';
+  }
+
+  [eAnrufe, eDauer, eSms].forEach(function (e) {
+    e.addEventListener('input', rechne);
+  });
+  rechne();
+})();
+</script>
+</body>
+</html>
