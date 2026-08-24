@@ -15,7 +15,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/vocaris.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Kennt Vocaris meine Leistungen und deren Dauer?","acceptedAnswer":{"@type":"Answer","text":"Ja. Sie hinterlegen Leistungen samt Dauer, Vocaris plant den passenden Zeitblock ein."}},{"@type":"Question","name":"Kann er Stammkunden erkennen?","acceptedAnswer":{"@type":"Answer","text":"An der Rufnummer erkennt Vocaris wiederkehrende Kunden und begrüßt sie mit Namen."}},{"@type":"Question","name":"Was passiert bei Absagen?","acceptedAnswer":{"@type":"Answer","text":"Vocaris trägt die Absage ein und bietet den frei gewordenen Termin aktiv der Warteliste an."}},{"@type":"Question","name":"Ist das ein Telefonservice für meinen Salon?","acceptedAnswer":{"@type":"Answer","text":"Im Ergebnis ja, nur ohne fremdes Büro. Vocaris übernimmt die Telefonannahme im Salon, kennt Ihre Leistungen samt Dauer, bucht direkt in Ihren Kalender und ruft bei einer Absage die Warteliste an — damit der Stuhl nicht leer bleibt."}}]}</script>
 <script src="/pv.js" defer></script>
 </head>
@@ -23,7 +25,7 @@
 
 <div class="scrollprog" id="scrollprog"></div>
 <nav class="nav" id="nav"><span id="top"></span>
-  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoN)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="nav-links">
     <a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a>
   </div>
@@ -36,7 +38,7 @@
 
 <!-- Hero -->
 <section class="hero branch-hero" id="call">
-  <div class="aurora"></div>
+  <div class="aurora-buehne" aria-hidden="true"><span class="korn"></span></div>
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <div class="eyebrow">FRISEUR, KOSMETIK & SALON</div>
@@ -70,7 +72,7 @@
 <div class="stats"><div class="stat"><span class="n">0</span><span class="l">verpasste Terminanrufe</span></div><div class="stat"><span class="n">24/7</span><span class="l">Buchung</span></div><div class="stat"><span class="n">SMS</span><span class="l">Erinnerung gegen No-Shows</span></div><div class="stat"><span class="n">Warteliste</span><span class="l">füllt Lücken</span></div></div>
 
 <!-- Problem -->
-<section class="sec" id="problem">
+<section class="sec" data-zeig id="problem">
   <div class="wrap sec-2">
     <div style="display:flex;flex-direction:column;gap:26px">
       <div class="eyebrow">DAS PROBLEM</div>
@@ -85,19 +87,19 @@
 </section>
 
 <!-- Lösung -->
-<section class="sec" style="background:#fff;border-top:1px solid var(--line)">
+<section class="sec" data-zeig style="background:#fff;border-top:1px solid var(--line)">
   <div class="wrap">
     <div style="max-width:60ch;display:flex;flex-direction:column;gap:22px;margin-bottom:56px">
       <div class="eyebrow">SO ÜBERNIMMT VOCARIS</div>
       <h2 class="h2-big">Bucht Termine, während Sie am Stuhl stehen.</h2>
       <p style="font-size:17px;line-height:1.65;color:var(--t2)">Vocaris kennt Ihre Leistungen und Dauer, vergibt passende Slots und hält Ihren Kalender voll.</p>
     </div>
-    <div class="cards-3"><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Bucht & verschiebt Termine</div><p>Vocaris kennt Ihre Leistungen und Dauer, vergibt passende Slots und verschiebt auf Wunsch.</p></div><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Füllt Lücken automatisch</div><p>Sagt jemand ab, bietet Vocaris den Slot der Warteliste an — Ihr Kalender bleibt voll.</p></div><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Erinnert per SMS</div><p>Die automatische Terminerinnerung senkt No-Shows spürbar.</p></div></div>
+    <div class="cards-3" data-staffel><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Bucht & verschiebt Termine</div><p>Vocaris kennt Ihre Leistungen und Dauer, vergibt passende Slots und verschiebt auf Wunsch.</p></div><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Füllt Lücken automatisch</div><p>Sagt jemand ab, bietet Vocaris den Slot der Warteliste an — Ihr Kalender bleibt voll.</p></div><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Erinnert per SMS</div><p>Die automatische Terminerinnerung senkt No-Shows spürbar.</p></div></div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="faq-sec" id="faq">
+<section class="faq-sec" data-zeig id="faq">
   <div class="wrap faq-grid">
     <div class="faq-aside">
       <span class="eyebrow">HÄUFIGE FRAGEN</span>
@@ -113,7 +115,7 @@
 <section class="branchbar">
   <div class="wrap">
     <span class="bb-t">ANDERE BRANCHE?</span>
-    <div class="bb-l"><a href="restaurants.html">Restaurants</a><a href="arztpraxen.html">Arztpraxen</a><a href="kanzlei.html">Kanzleien</a><a href="handwerk.html">Handwerk</a><a href="autowerkstatt.html">Autowerkstätten</a><a href="hotel.html">Hotels</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilienmakler</a><a href="pflegedienst.html">Pflegedienste</a><a href="apotheke.html">Apotheken</a><a href="versicherungsmakler.html">Versicherungsmakler</a></div>
+    <div class="bb-l"><a href="restaurants.html">Restaurants</a><a href="arztpraxen.html">Arztpraxen</a><a href="kanzlei.html">Kanzleien</a><a href="handwerk.html">Handwerk</a><a href="autowerkstatt.html">Autowerkstätten</a><a href="hotel.html">Hotels</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilienmakler</a><a href="pflegedienst.html">Pflegedienste</a><a href="apotheke.html">Apotheken</a><a href="versicherungsmakler.html">Versicherungsmakler</a><a href="software.html">Softwareanbieter</a><a href="onlineshop.html">Onlineshops</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxen</a><a href="fitnessstudio.html">Fitnessstudios</a></div>
   </div>
 </section>
 <!-- /Andere Branchen -->
@@ -136,11 +138,12 @@
 </section>
 
 <footer class="foot">
-  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoF)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="fl"><a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
 
 <script src="assets/site.js"></script>
+<script src="assets/vocaris.js" defer></script>
 </body>
 </html>

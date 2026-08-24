@@ -1,0 +1,633 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Vocaris — Bewegungs- und Interaktionsschicht
+   ══════════════════════════════════════════════════════════════════════════
+
+   Eine ZUSÄTZLICHE Schicht über site.css bzw. den Inline-Stilen der
+   Startseite. Bewusst additiv: Sie überschreibt nichts Bestehendes, sondern
+   ergänzt. Fällt diese Datei aus, sieht die Website aus wie vorher — nur
+   ohne Bewegung. Nichts hier ist für Lesbarkeit oder Bedienbarkeit nötig.
+
+   Die Identität bleibt eure: Newsreader für Anzeigen, Schibsted Grotesk für
+   Text, Papier-Lavendel, das Violett. Übernommen ist nur das Handwerk —
+   Verläufe, die sich bewegen; Kanten, die Licht fangen; Übergänge, die einer
+   Kurve folgen statt linear zu sein.
+
+   JEDE Bewegung endet bei prefers-reduced-motion. Ganz unten, in einem Block.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* Bewegungskurven. Die erste ist das Arbeitspferd: schnell los, weich aus —
+     dadurch wirken Elemente wie angestoßen statt wie hingeschoben. */
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-aus:cubic-bezier(.16,1,.3,1);
+  --ease-rein:cubic-bezier(.55,0,.1,1);
+  --schnell:.18s; --mittel:.34s; --langsam:.72s;
+
+  /* Erweiterte Farbrampe für Verläufe und Glanzkanten. */
+  --v1:#5f4fd4; --v2:#7c3aed; --v3:#4f46e5; --v4:#a78bfa;
+  --glanz:rgba(255,255,255,.7);
+  --schatten-weich:0 24px 60px -28px rgba(38,28,92,.30);
+  --schatten-hart:0 40px 90px -32px rgba(38,28,92,.42);
+}
+
+/* ── Aurora: der lebende Verlauf ───────────────────────────────────────────
+   Drei weiche Farbkreise, die sehr langsam gegeneinander wandern. Kein
+   Canvas, kein Bild — nur Radialverläufe auf zwei Ebenen. Das kostet fast
+   nichts und läuft auch auf einem alten Telefon flüssig. */
+.aurora-buehne{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+.aurora-buehne::before,
+.aurora-buehne::after{
+  content:"";position:absolute;inset:-30%;
+  background:
+    radial-gradient(38% 44% at 22% 30%, rgba(124,58,237,.30), transparent 62%),
+    radial-gradient(34% 40% at 78% 22%, rgba(79,70,229,.26), transparent 60%),
+    radial-gradient(44% 48% at 58% 82%, rgba(167,139,250,.24), transparent 64%);
+  filter:blur(14px);
+  animation:aurora-wandern 26s var(--ease) infinite alternate;
+}
+.aurora-buehne::after{
+  animation-duration:38s;animation-direction:alternate-reverse;
+  opacity:.7;mix-blend-mode:soft-light;
+}
+@keyframes aurora-wandern{
+  0%  {transform:translate3d(-3%,-2%,0) scale(1)   rotate(0deg);}
+  50% {transform:translate3d( 4%, 3%,0) scale(1.12) rotate(6deg);}
+  100%{transform:translate3d(-2%, 4%,0) scale(1.04) rotate(-4deg);}
+}
+
+/* Feines Korn darüber. Nimmt dem Verlauf das Bandartige und lässt die
+   Fläche gedruckt statt digital wirken — passt zur Papier-Palette. */
+.aurora-buehne .korn{
+  position:absolute;inset:0;opacity:.055;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23k)'/%3E%3C/svg%3E");
+}
+
+/* ── Scroll-Enthüllung ─────────────────────────────────────────────────────
+   Startzustand nur setzen, wenn JavaScript da ist (html.js). Sonst wäre der
+   Inhalt bei abgeschaltetem JS dauerhaft unsichtbar — ein Fehler, den man
+   erst bemerkt, wenn es zu spät ist. */
+.js [data-zeig]{opacity:0;transform:translate3d(0,18px,0);
+  transition:opacity var(--langsam) var(--ease-aus), transform var(--langsam) var(--ease-aus);}
+.js [data-zeig].da{opacity:1;transform:none;}
+/* Gestaffelt: Kinder folgen dem Elternteil nacheinander. */
+.js [data-staffel] > *{opacity:0;transform:translate3d(0,22px,0);
+  transition:opacity var(--langsam) var(--ease-aus), transform var(--langsam) var(--ease-aus);}
+.js [data-staffel].da > *{opacity:1;transform:none;}
+.js [data-staffel].da > *:nth-child(1){transition-delay:0ms}
+.js [data-staffel].da > *:nth-child(2){transition-delay:70ms}
+.js [data-staffel].da > *:nth-child(3){transition-delay:140ms}
+.js [data-staffel].da > *:nth-child(4){transition-delay:210ms}
+.js [data-staffel].da > *:nth-child(5){transition-delay:280ms}
+.js [data-staffel].da > *:nth-child(6){transition-delay:350ms}
+.js [data-staffel].da > *:nth-child(n+7){transition-delay:420ms}
+
+/* ── Karten, die auf den Zeiger reagieren ──────────────────────────────────
+   Ein Lichtschein folgt der Maus. Die Position kommt aus vocaris.js als
+   --mx/--my. Ohne JS bleibt der Schein einfach aus. */
+.glanz{position:relative;isolation:isolate;overflow:hidden;}
+.glanz::before{
+  content:"";position:absolute;inset:0;z-index:-1;opacity:0;
+  transition:opacity var(--mittel) var(--ease);
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),
+             rgba(124,58,237,.14), transparent 68%);
+}
+.glanz:hover::before{opacity:1;}
+.glanz{transition:transform var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease), border-color var(--mittel) var(--ease);}
+.glanz:hover{transform:translateY(-3px);box-shadow:var(--schatten-weich);}
+
+/* ── Abschnittsnavigation mit Standanzeige ─────────────────────────────────
+   Zeigt beim Scrollen, wo man ist. Der Balken wandert weich mit. */
+.marke{position:sticky;top:68px;z-index:15;display:flex;justify-content:center;
+  padding:14px var(--pad);pointer-events:none;}
+.marke-inner{display:flex;gap:4px;padding:5px;border-radius:999px;pointer-events:auto;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(14px) saturate(1.6);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);
+  border:1px solid var(--line-lav);box-shadow:0 10px 30px -18px rgba(38,28,92,.4);
+  position:relative;}
+.marke a{position:relative;z-index:1;font-size:13px;font-weight:500;color:var(--t2);
+  padding:8px 16px;border-radius:999px;white-space:nowrap;
+  transition:color var(--mittel) var(--ease);}
+.marke a.hier{color:#fff;}
+.marke a:hover{color:var(--ink);}
+.marke a.hier:hover{color:#fff;}
+.marke .schieber{position:absolute;top:5px;left:0;height:calc(100% - 10px);
+  border-radius:999px;background:var(--ink);z-index:0;
+  transition:transform var(--mittel) var(--ease), width var(--mittel) var(--ease);}
+
+/* ── Gesprächssimulator ────────────────────────────────────────────────────
+   Das Herzstück. Zeigt, was das Produkt tut, statt es zu behaupten. */
+.sim{background:#fff;border-radius:22px;box-shadow:var(--schatten-hart);
+  overflow:hidden;display:flex;flex-direction:column;
+  border:1px solid rgba(255,255,255,.6);}
+
+.sim-kopf{display:flex;align-items:center;gap:14px;padding:16px 22px;
+  border-bottom:1px solid #eeecf5;background:linear-gradient(180deg,#fdfdff,#f8f7fc);}
+.sim-licht{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+  color:var(--ink);white-space:nowrap;}
+.sim-punkt{width:8px;height:8px;border-radius:50%;background:var(--t3);flex:none;
+  transition:background var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease);}
+.sim.laeuft .sim-punkt{background:#e5484d;box-shadow:0 0 0 0 rgba(229,72,77,.5);
+  animation:puls-rot 1.8s infinite;}
+@keyframes puls-rot{
+  0%{box-shadow:0 0 0 0 rgba(229,72,77,.45)}
+  70%{box-shadow:0 0 0 9px rgba(229,72,77,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}
+}
+.sim-uhr{margin-left:auto;font-size:13px;color:var(--ph);font-variant-numeric:tabular-nums;}
+
+/* Wellenform. Reine <i>-Balken, deren Höhe aus JS kommt — kein Canvas,
+   damit es auch bei abgeschaltetem JS als ruhige Grafik dasteht. */
+.welle{display:flex;align-items:center;gap:3px;height:26px;flex:none;}
+.welle i{display:block;width:3px;border-radius:999px;background:var(--accent-2);
+  height:20%;transform-origin:center;
+  transition:height .09s linear, background var(--mittel) var(--ease);}
+.sim[data-wer="assistent"] .welle i{background:var(--accent);}
+.sim[data-wer="anrufer"]  .welle i{background:var(--lav-2);}
+
+.sim-koerper{padding:22px;display:flex;flex-direction:column;gap:12px;
+  min-height:266px;justify-content:flex-end;
+  background:linear-gradient(180deg,#fff,#fcfbff);}
+
+/* Sprechblasen. Sie sind IM HTML vorhanden (wegen Suchmaschinen) und werden
+   nur eingeblendet — nicht per JS erzeugt. */
+.sim-blase{max-width:86%;padding:12px 16px;border-radius:16px;font-size:14.5px;
+  line-height:1.5;opacity:0;transform:translate3d(0,10px,0) scale(.985);
+  transition:opacity var(--mittel) var(--ease-aus), transform var(--mittel) var(--ease-aus);}
+.sim-blase.da{opacity:1;transform:none;}
+.sim-blase.rein{align-self:flex-start;background:var(--bubble);color:var(--ink);
+  border-bottom-left-radius:5px;}
+.sim-blase.raus{align-self:flex-end;background:var(--ink);color:#fff;
+  border-bottom-right-radius:5px;}
+.sim-blase .wer{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;
+  opacity:.5;margin-bottom:4px;text-transform:uppercase;}
+
+/* Tippanzeige, während „nachgedacht“ wird. */
+.sim-tippt{align-self:flex-start;display:none;gap:4px;padding:13px 16px;
+  background:var(--bubble);border-radius:16px;border-bottom-left-radius:5px;}
+.sim-tippt.da{display:flex;}
+.sim-tippt i{width:6px;height:6px;border-radius:50%;background:var(--t3);
+  animation:tipp 1.25s infinite;}
+.sim-tippt i:nth-child(2){animation-delay:.16s}
+.sim-tippt i:nth-child(3){animation-delay:.32s}
+@keyframes tipp{0%,60%,100%{opacity:.28;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+.sim-fuss{padding:14px 22px;border-top:1px solid #eeecf5;background:var(--cardfoot);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:56px;}
+.sim-ergebnis{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;
+  color:var(--ok);opacity:0;transform:translateY(5px);
+  transition:opacity var(--mittel) var(--ease-aus), transform var(--mittel) var(--ease-aus);}
+.sim-ergebnis.da{opacity:1;transform:none;}
+.sim-nochmal{margin-left:auto;font-size:13px;font-weight:600;color:var(--accent);
+  background:none;border:0;cursor:pointer;font-family:inherit;padding:6px 2px;
+  opacity:0;pointer-events:none;transition:opacity var(--mittel) var(--ease);}
+.sim-nochmal.da{opacity:1;pointer-events:auto;}
+.sim-nochmal:hover{text-decoration:underline;}
+
+/* Branchenumschalter über dem Simulator. */
+.sim-waehler{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.sim-waehler button{font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;
+  padding:8px 15px;border-radius:999px;border:1px solid var(--line-lav);
+  background:rgba(255,255,255,.66);color:var(--t2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background var(--mittel) var(--ease), color var(--mittel) var(--ease),
+             border-color var(--mittel) var(--ease), transform var(--schnell) var(--ease);}
+.sim-waehler button:hover{border-color:var(--accent-2);transform:translateY(-1px);}
+.sim-waehler button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* ── Zähler, die hochlaufen ────────────────────────────────────────────────*/
+.zahl{font-variant-numeric:tabular-nums;}
+
+/* ── Verlustrechner ────────────────────────────────────────────────────────*/
+.verlust{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;}
+.verlust .regler{display:flex;flex-direction:column;gap:30px;}
+.verlust label{display:flex;flex-direction:column;gap:11px;}
+.verlust .lab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+.verlust .lab .t{font-size:15px;font-weight:600;}
+.verlust .lab .v{font-size:15px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+.verlust input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;
+  border-radius:999px;background:var(--line-lav);outline:none;}
+.verlust input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;
+  border:3px solid #fff;box-shadow:0 2px 10px rgba(38,28,92,.32);
+  transition:transform var(--schnell) var(--ease);}
+.verlust input[type=range]::-webkit-slider-thumb:active{transform:scale(1.16);}
+.verlust input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;
+  background:var(--accent);cursor:pointer;border:3px solid #fff;}
+.verlust .hint{font-size:13px;color:var(--t3);line-height:1.5;}
+
+.verlust-karte{background:var(--ink);color:#fff;border-radius:22px;padding:38px;
+  display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;
+  box-shadow:var(--schatten-hart);}
+.verlust-karte::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(70% 90% at 100% 0%, rgba(124,58,237,.42), transparent 62%);}
+.verlust-karte > *{position:relative;}
+.verlust-karte .kicker{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--accent-2);}
+.verlust-karte .gross{font-size:clamp(40px,5.6vw,60px);font-weight:700;letter-spacing:-.03em;
+  line-height:1;font-variant-numeric:tabular-nums;}
+.verlust-karte .gross small{font-size:20px;font-weight:500;color:var(--on-dark);letter-spacing:0;}
+.verlust-karte .satz{font-size:15px;line-height:1.6;color:var(--on-dark);}
+.verlust-karte .satz b{color:#fff;font-weight:600;}
+.verlust-karte .trenn{height:1px;background:var(--line-dark);margin:4px 0;}
+.verlust-karte .gegen{display:flex;justify-content:space-between;gap:16px;font-size:14px;color:var(--on-dark);}
+.verlust-karte .gegen b{color:var(--ok-dark);font-weight:600;font-variant-numeric:tabular-nums;}
+
+/* ── Feinschliff, der überall wirkt ────────────────────────────────────────*/
+.js .btn-dark,
+.js .callform button{transition:transform var(--schnell) var(--ease), filter var(--schnell) var(--ease), box-shadow var(--mittel) var(--ease);}
+.js .btn-dark:active,
+.js .callform button:active{transform:translateY(1px) scale(.985);}
+
+/* Fokus sichtbar machen — beim Umbau leicht zu verlieren, für
+   Tastaturbedienung aber unverzichtbar. */
+.js a:focus-visible,.js button:focus-visible,.js input:focus-visible,.js summary:focus-visible{
+  outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;}
+
+/* Lesefortschritt ganz oben. */
+.fortschritt{position:fixed;top:0;left:0;height:2px;z-index:60;width:0;
+  background:linear-gradient(90deg,var(--v1),var(--v4));
+  transition:width .1s linear;pointer-events:none;}
+
+@media (max-width:1000px){
+  .verlust{grid-template-columns:1fr;gap:34px;}
+  .marke{top:60px;overflow-x:auto;justify-content:flex-start;}
+  .marke-inner{margin:0 auto;}
+}
+@media (max-width:560px){
+  .sim-koerper{min-height:230px;padding:18px;}
+  .verlust-karte{padding:28px;}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Wer Bewegung abbestellt hat, bekommt keine. Ausnahmslos.
+   Der Inhalt bleibt vollständig sichtbar — nur Animation und Verschiebung
+   entfallen. Das ist keine abgespeckte Fassung, sondern eine ruhige.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion:reduce){
+  .aurora-buehne::before,.aurora-buehne::after{animation:none;}
+  .js [data-zeig],.js [data-staffel] > *{opacity:1!important;transform:none!important;transition:none!important;}
+  .sim-blase{opacity:1;transform:none;transition:none;}
+  .sim.laeuft .sim-punkt{animation:none;}
+  .sim-tippt i{animation:none;opacity:.6;}
+  .welle i{transition:none;}
+  .glanz:hover{transform:none;}
+  .marke .schieber{transition:none;}
+  .fortschritt{transition:none;}
+  .js .btn-dark:active,.js .callform button:active{transform:none;}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Bauteile — die Modernisierung
+   ══════════════════════════════════════════════════════════════════════════
+   Diese Schicht lädt als letzte und überschreibt bewusst die älteren
+   Festlegungen in home.css und site.css. Sie dort direkt zu ändern hätte
+   bedeutet, zwei Dateien parallel zu pflegen; so liegt alles Neue an einem
+   Ort und ist im Zweifel mit einer Zeile wieder abschaltbar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Navigation: Glas statt Papier ─────────────────────────────────────────*/
+.nav{
+  background:rgba(250,249,247,.72);
+  backdrop-filter:blur(18px) saturate(1.7);
+  -webkit-backdrop-filter:blur(18px) saturate(1.7);
+  border-bottom:1px solid transparent;
+  transition:background var(--mittel) var(--ease), border-color var(--mittel) var(--ease);
+}
+.nav.scrolled{background:rgba(250,249,247,.9);border-bottom-color:var(--linie);}
+.nav-links a{position:relative;padding:6px 0;}
+/* Unterstrich wächst aus der Mitte statt einfach zu erscheinen. */
+.nav-links a::after{
+  content:"";position:absolute;left:50%;right:50%;bottom:0;height:1.5px;
+  background:var(--marke);border-radius:2px;
+  transition:left var(--mittel) var(--ease), right var(--mittel) var(--ease);
+}
+.nav-links a:hover::after{left:0;right:0;}
+
+/* ── Knöpfe ────────────────────────────────────────────────────────────────*/
+.btn-dark,.callform button{
+  border-radius:var(--rund-voll);
+  font-weight:600;letter-spacing:-.01em;
+  box-shadow:var(--hoch-1);
+}
+.callform button{
+  background:var(--marke-verlauf);
+  box-shadow:0 2px 8px -2px rgba(105,65,242,.5), 0 12px 28px -12px rgba(105,65,242,.55);
+}
+.callform button:hover{filter:brightness(1.07) saturate(1.05);box-shadow:0 4px 14px -2px rgba(105,65,242,.55), 0 18px 40px -14px rgba(105,65,242,.6);}
+.btn-dark{background:var(--text-1);}
+.btn-dark:hover{box-shadow:var(--hoch-2);}
+
+/* ── Eingabefelder ─────────────────────────────────────────────────────────*/
+.callform input{
+  border-radius:var(--rund-voll);
+  border-color:var(--linie-stark);
+  background:var(--flaeche-1);
+  box-shadow:var(--hoch-1);
+  transition:border-color var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease);
+}
+.callform input:focus{
+  border-color:var(--marke);
+  box-shadow:0 0 0 4px rgba(105,65,242,.14), var(--hoch-1);
+}
+
+/* ── Karten ────────────────────────────────────────────────────────────────
+   Große Rundung, echte Erhebung, weiche statt harter Kanten. Das ist der
+   sichtbarste Unterschied zwischen „2019“ und „jetzt“. */
+.icard,.tkarte,.softcard,.scard,.mcard{
+  border-radius:var(--rund-xl);
+}
+.icard{
+  background:var(--flaeche-1);
+  border:1px solid var(--linie);
+  box-shadow:var(--hoch-1);
+  padding:32px;
+}
+.icard.hl{
+  background:linear-gradient(160deg,var(--flaeche-tint),var(--flaeche-1) 72%);
+  border-color:var(--linie-stark);
+}
+.icard .tt{font-size:17px;letter-spacing:-.015em;}
+.icard .kicker{color:var(--marke);}
+.icard .more{color:var(--marke);font-weight:600;}
+.glanz:hover{box-shadow:var(--hoch-2);border-color:var(--linie-stark);}
+
+.softcard{
+  background:linear-gradient(160deg,var(--flaeche-tint),var(--flaeche-2));
+  border:1px solid var(--linie-stark);
+  box-shadow:var(--hoch-1);
+}
+
+/* ── Abschnittsrhythmus und Typografie ─────────────────────────────────────*/
+.h2-big{font-size:var(--t-gross);letter-spacing:-.03em;line-height:1.04;}
+.hero h1{font-size:var(--t-riesig);letter-spacing:-.035em;}
+.hero p.lede{font-size:var(--t-lede);color:var(--text-2);}
+.eyebrow{color:var(--marke);letter-spacing:.15em;font-size:12px;}
+
+/* ── Zahlenband ────────────────────────────────────────────────────────────*/
+.stats{
+  background:var(--flaeche-1);
+  border-top:1px solid var(--linie);
+  border-bottom:1px solid var(--linie);
+}
+.stats .stat .n{
+  background:var(--marke-verlauf);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  letter-spacing:-.03em;
+}
+
+/* ── Dunkle Abschnitte ─────────────────────────────────────────────────────*/
+.dark-sec,.cta{
+  background:
+    radial-gradient(60% 80% at 88% 8%, rgba(124,58,237,.30), transparent 60%),
+    radial-gradient(50% 70% at 6% 96%, rgba(79,70,229,.24), transparent 62%),
+    var(--dunkel);
+  color:#fff;
+}
+.dark-sec h2,.cta h2{letter-spacing:-.03em;}
+
+/* ── Häufige Fragen ────────────────────────────────────────────────────────*/
+.faq{border-radius:var(--rund);transition:background var(--mittel) var(--ease);}
+.faq summary{padding-top:20px;padding-bottom:20px;font-weight:600;letter-spacing:-.01em;}
+.faq[open]{background:var(--flaeche-1);box-shadow:var(--hoch-1);}
+.faq[open] summary{color:var(--marke);}
+.faq-cta{color:var(--marke);font-weight:600;}
+
+/* ── Simulator an die neue Palette ─────────────────────────────────────────*/
+.sim{border-radius:var(--rund-xl);box-shadow:var(--hoch-3);}
+.sim-blase.rein{background:var(--flaeche-2);}
+.sim-blase.raus{background:var(--marke-verlauf);}
+.sim-waehler button[aria-pressed="true"]{background:var(--marke-verlauf);border-color:transparent;}
+
+/* ── Verlustrechner: die Zahl, die wehtut ──────────────────────────────────*/
+.verlust-karte{border-radius:var(--rund-xl);}
+.verlust-karte .gross{color:var(--weh-hell);}
+.verlust-karte .kicker{color:var(--marke-hell);}
+
+/* ── Fußzeile ──────────────────────────────────────────────────────────────*/
+.foot{background:var(--flaeche-1);border-top:1px solid var(--linie);}
+
+/* ── Querverweisleiste ─────────────────────────────────────────────────────*/
+.branchbar{background:var(--flaeche-1);}
+.branchbar .bb-l a{border-radius:var(--rund-voll);box-shadow:var(--hoch-1);}
+.branchbar .bb-l a:hover{border-color:var(--marke-hell);box-shadow:var(--hoch-2);}
+
+/* ── Preisseite ────────────────────────────────────────────────────────────*/
+.tkarte{border:1px solid var(--linie);box-shadow:var(--hoch-1);background:var(--flaeche-1);}
+.tkarte.hl{background:linear-gradient(160deg,var(--flaeche-tint),var(--flaeche-1) 74%);
+  border-color:var(--linie-stark);box-shadow:var(--hoch-2);}
+.tkarte .p{letter-spacing:-.03em;}
+.ergebnis{border-radius:var(--rund-xl);box-shadow:var(--hoch-2);}
+.ergebnis .summe{background:var(--marke-verlauf);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;}
+
+/* ── Auswahlfarbe ──────────────────────────────────────────────────────────*/
+::selection{background:var(--marke-zart);color:var(--marke-tief);}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Schleife 1 — Behebungen aus dem Gerätetest
+   ══════════════════════════════════════════════════════════════════════════
+   Gemessen mit echten Gerätemaßen (390 / 820 / 1440 / 1920). Was hier steht,
+   behebt konkrete Befunde, keine Vermutungen.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* BEFUND: 445px Inhalt in einem 390px-Fenster. Ursache war die Fußzeile —
+   ihre Linkreihen sind Flex-Zeilen ohne Umbruch und schoben die ganze Seite
+   auseinander. Ein seitlich scrollender Seitenkörper wirkt sofort kaputt. */
+.foot{flex-wrap:wrap;gap:18px 24px;}
+.foot .fl,.foot .fr{flex-wrap:wrap;gap:14px 22px;}
+
+/* BEFUND: Die Aurora war so kräftig, dass der Hero unter Farbe verschwand.
+   Deutlich zurückgenommen — sie soll Tiefe geben, nicht die Hauptrolle
+   spielen. Der Text muss das Lauteste auf der Fläche bleiben. */
+.aurora-buehne::before{
+  opacity:.42;filter:blur(30px);
+  background:
+    radial-gradient(32% 38% at 18% 26%, rgba(124,58,237,.30), transparent 66%),
+    radial-gradient(28% 34% at 82% 18%, rgba(79,70,229,.24), transparent 64%),
+    radial-gradient(38% 42% at 62% 88%, rgba(167,139,250,.22), transparent 68%);
+}
+.aurora-buehne::after{opacity:.3;}
+.aurora-buehne .korn{opacity:.035;}
+.hero{background:linear-gradient(170deg,var(--flaeche-tint) 0%, var(--flaeche-0) 78%);}
+
+/* BEFUND: 28 Tippziele unter 40px Höhe. Auf Touch-Geräten empfehlen Apple
+   und Google 44px; darunter trifft man daneben. Betrifft Umschalter,
+   Querverweise, Navigationspunkte und den Logo-Link. */
+@media (hover:none),(pointer:coarse){
+  .sim-waehler button,
+  .branchbar .bb-l a,
+  .marke a,
+  .nav-links a,
+  .faq-cta,
+  .foot .fl a,.foot .fr a{
+    min-height:44px;display:inline-flex;align-items:center;
+  }
+  .sim-waehler button{padding:0 18px;}
+  .branchbar .bb-l a{padding:0 18px;}
+  .nav .logo{min-height:44px;}
+  .demolink{display:inline-block;padding:6px 0;}
+}
+
+/* BEFUND: Die Regler auf der Preisseite und im Verlustrechner waren 4px hoch.
+   Die Bahn bleibt optisch dünn, die Trefferfläche wird auf 44px vergrößert —
+   der Balken wird in die Bahn hineingezeichnet statt das Element zu sein. */
+.verlust input[type=range],
+.rechner input[type=range]{
+  height:44px;background:transparent;padding:0;
+}
+.verlust input[type=range]::-webkit-slider-runnable-track,
+.rechner input[type=range]::-webkit-slider-runnable-track{
+  height:5px;border-radius:999px;background:var(--linie-stark);
+}
+.verlust input[type=range]::-moz-range-track,
+.rechner input[type=range]::-moz-range-track{
+  height:5px;border-radius:999px;background:var(--linie-stark);
+}
+.verlust input[type=range]::-webkit-slider-thumb,
+.rechner input[type=range]::-webkit-slider-thumb{
+  margin-top:-9px;   /* mittig auf der 5px-Bahn */
+  width:24px;height:24px;
+}
+
+/* BEFUND: Das Einverständnisfeld erzeugte einen weißen Kasten hinter sich —
+   der Kasten war das Feld selbst, von der Formularregel auf volle Breite
+   gezogen. Es braucht feste Maße und darf nicht mitwachsen. */
+.callform .consent{display:flex;align-items:flex-start;gap:10px;line-height:1.45;}
+.callform .consent input[type=checkbox]{
+  flex:none;width:20px;height:20px;min-height:0;margin:1px 0 0;padding:0;
+  border-radius:6px;border:1.5px solid var(--linie-stark);background:var(--flaeche-1);
+  box-shadow:none;accent-color:var(--marke);cursor:pointer;
+  appearance:auto;-webkit-appearance:checkbox;
+}
+.callform .consent input[type=checkbox]:focus{box-shadow:0 0 0 3px rgba(105,65,242,.18);}
+
+/* BEFUND: Die Simulator-Karte war viel höher als ihr Inhalt — bei einer
+   sichtbaren Sprechblase klaffte darunter eine leere weiße Fläche. Sie wächst
+   jetzt mit, statt eine feste Höhe zu erzwingen. */
+.sim-koerper{min-height:0;padding-top:18px;padding-bottom:18px;}
+.sim{min-height:340px;}
+
+/* BEFUND: Die Abschnittsleiste war mit 510px breiter als das Handyfenster.
+   Sie darf seitlich scrollen — aber ohne den Seitenkörper mitzuziehen. */
+.marke{max-width:100%;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.marke::-webkit-scrollbar{display:none;}
+.marke-inner{flex:none;}
+
+/* Auf schmalen Fenstern liest sich der Hero besser mit etwas kleinerer
+   Schlagzeile — sonst drückt „Rund um die Uhr." gegen den Rand. */
+@media (max-width:560px){
+  .hero h1{font-size:clamp(38px,10.5vw,52px);}
+  .hero p.lede{font-size:16.5px;}
+  .sim-kopf{padding:14px 16px;gap:10px;}
+  .sim-licht{font-size:12px;}
+  .welle{height:20px;}
+  .welle i{width:2.5px;}
+}
+
+/* Grundsätzlich: Nichts darf den Seitenkörper seitlich schieben. */
+html,body{max-width:100%;overflow-x:clip;}
+
+/* Restliche Tippziele aus dem zweiten Durchgang. Inline-Links im Fließtext
+   sind bewusst ausgenommen — sie auf 44px zu ziehen würde den Textfluss
+   zerreißen, und dort erwartet niemand eine Schaltfläche. */
+@media (hover:none),(pointer:coarse){
+  .sim-nochmal{min-height:44px;}
+  .faq-cta{min-height:44px;}
+  .foot .logo{min-height:44px;}
+  /* Die kleinen Verweise unter den Formularen sind eigenständige Ziele,
+     keine Wörter im Fließtext — die dürfen die vollen 44px bekommen. */
+  .microcopy a,.demolink{display:inline-flex;align-items:center;min-height:44px;}
+}
+/* Das Einverständnisfeld etwas größer; der zugehörige Text ist ohnehin
+   mit anklickbar, weil er im <label> liegt. */
+.callform .consent input[type=checkbox]{width:22px;height:22px;}
+
+/* BEFUND aus Schleife 2: Die Sprechblasen standen alle links und alle gleich
+   breit — obwohl die Antworten von Vocaris rechts stehen sollten. Ursache war,
+   dass die Blasen nicht direkt im Flex-Körper liegen, sondern in einem
+   Gesprächs-Container, der ein einfacher Block war. `align-self` hatte damit
+   nichts, worauf es sich beziehen konnte, und `max-width:86%` griff gegen die
+   volle Breite statt gegen den Inhalt.
+   Der Container wird jetzt selbst zur Flex-Spalte. */
+/* ACHTUNG: :not([hidden]) ist hier zwingend. Ein explizites `display` schlägt
+   das hidden-Attribut — ohne diese Einschränkung wären plötzlich ALLE vier
+   Gespräche gleichzeitig sichtbar und die Karte 1.600px hoch. Genau das ist
+   beim ersten Versuch passiert. */
+.sim-koerper [data-gespraech]:not([hidden]){
+  display:flex;flex-direction:column;gap:12px;align-items:flex-start;
+}
+.sim-koerper [data-gespraech] .sim-blase.raus{align-self:flex-end;}
+.sim-blase{width:fit-content;max-width:86%;}
+
+/* ── Branchenfinder ────────────────────────────────────────────────────────*/
+.finder{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.finder-feld{display:flex;align-items:center;gap:11px;max-width:440px;
+  padding:0 18px;background:var(--flaeche-1);border:1px solid var(--linie-stark);
+  border-radius:var(--rund-voll);box-shadow:var(--hoch-1);
+  transition:border-color var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease);}
+.finder-feld:focus-within{border-color:var(--marke);box-shadow:0 0 0 4px rgba(105,65,242,.14),var(--hoch-1);}
+.finder-feld .lupe{color:var(--text-3);display:flex;flex:none;}
+.finder-feld input{flex:1;border:0;outline:none;background:none;font-family:inherit;
+  font-size:15px;color:var(--text-1);min-height:52px;padding:0;}
+.finder-feld input::placeholder{color:var(--text-4);}
+.finder-feld input::-webkit-search-cancel-button{cursor:pointer;}
+.finder-treffer{font-size:13.5px;color:var(--marke);font-weight:600;min-height:1.2em;}
+
+/* ── Stimmprobe: Antwortzeit in Echtzeit ───────────────────────────────────*/
+.probe{background:var(--flaeche-1);border:1px solid var(--linie);border-radius:var(--rund-xl);
+  padding:34px;margin-bottom:40px;box-shadow:var(--hoch-1);}
+.probe-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  margin-bottom:28px;flex-wrap:wrap;}
+.probe-titel{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:10px 0 8px;}
+.probe-text{font-size:15px;line-height:1.6;color:var(--text-2);max-width:62ch;}
+.probe-start{font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+  padding:11px 20px;border-radius:var(--rund-voll);border:1px solid var(--linie-stark);
+  background:var(--flaeche-0);color:var(--text-2);white-space:nowrap;
+  transition:border-color var(--mittel) var(--ease), color var(--mittel) var(--ease);}
+.probe-start:hover:not(:disabled){border-color:var(--marke);color:var(--marke);}
+.probe-start:disabled{opacity:.45;cursor:default;}
+
+.probe-reihen{display:flex;flex-direction:column;gap:18px;}
+.probe-reihe{display:grid;grid-template-columns:230px 1fr 66px;gap:18px;align-items:center;}
+.probe-name{font-size:14.5px;font-weight:600;line-height:1.3;}
+.probe-name small{display:block;font-size:12.5px;font-weight:400;color:var(--text-3);margin-top:2px;}
+.probe-bahn{height:12px;border-radius:999px;background:var(--flaeche-2);overflow:hidden;}
+.probe-balken{display:block;height:100%;width:0;border-radius:999px;
+  background:var(--marke-verlauf);}
+.probe-reihe.eu .probe-balken{background:linear-gradient(90deg,#16875a,#3fbe86);}
+.probe-wert{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;
+  text-align:right;color:var(--text-3);transition:color var(--mittel) var(--ease);}
+.probe-reihe.fertig .probe-wert{color:var(--text-1);}
+.probe-fuss{font-size:14px;line-height:1.6;color:var(--text-2);margin-top:24px;
+  padding-top:20px;border-top:1px solid var(--linie);}
+.probe-fuss b{color:var(--text-1);}
+
+@media (max-width:700px){
+  .probe{padding:24px;}
+  .probe-reihe{grid-template-columns:1fr 58px;grid-template-areas:"name wert" "bahn bahn";gap:8px 14px;}
+  .probe-name{grid-area:name;} .probe-wert{grid-area:wert;} .probe-bahn{grid-area:bahn;}
+}
+@media (prefers-reduced-motion:reduce){ .probe-balken{transition:none!important;} }
+
+/* BEFUND aus Schleife 3: Die große Verlustzahl las sich als „37 . 440" —
+   Ziffern in Tabellenbreite geben auch dem Tausenderpunkt eine volle
+   Ziffernbreite. Bei laufenden Zählern ist das richtig (nichts zappelt), bei
+   einer Schauzahl ist es hässlich. Hier also normale Breiten; das leichte
+   Wandern beim Ziehen des Reglers ist das kleinere Übel. */
+.verlust-karte .gross{font-variant-numeric:normal;letter-spacing:-.035em;}
+
+/* BEFUND: Der Verweis in der dunklen Karte war violett auf violett — kaum
+   lesbar. Auf dunklem Grund braucht es eine eigene Behandlung. */
+.verlust-karte .faq-cta{
+  align-self:flex-start;margin-top:6px;
+  padding:12px 22px;border-radius:var(--rund-voll);
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);
+  color:#fff!important;font-weight:600;font-size:14.5px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background var(--mittel) var(--ease), border-color var(--mittel) var(--ease);
+}
+.verlust-karte .faq-cta:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.4);}
+
+/* Die Abschnittsleiste saß dicht auf den Überschriften. Etwas Luft darunter,
+   damit sie beim Scrollen nicht in den Text schneidet. */
+.marke{padding-top:12px;padding-bottom:20px;}

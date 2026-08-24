@@ -16,72 +16,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/preise.css">
+<link rel="stylesheet" href="assets/vocaris.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Was kostet ein KI-Telefonassistent bei Vocaris?","acceptedAnswer":{"@type":"Answer","text":"Der Einstieg liegt bei 49 € im Monat für 250 Gesprächsminuten. Das reicht für etwa 150 bis 250 Anrufe, je nachdem wie lang Ihre Gespräche sind. Wer mehr telefoniert, fährt mit 99 € oder 249 € im Monat günstiger — der Rechner oben zeigt Ihnen, welcher Tarif für Ihr Aufkommen der billigste ist."}},{"@type":"Question","name":"Gibt es eine Einrichtungsgebühr?","acceptedAnswer":{"@type":"Answer","text":"Nein. Viele Anbieter verlangen 100 bis 500 € für die Einrichtung. Bei Vocaris ist sie kostenlos, weil die Einrichtung tatsächlich nur etwa 15 Minuten dauert und komplett im Browser läuft — dafür Geld zu verlangen wäre schwer zu begründen."}},{"@type":"Question","name":"Was passiert, wenn ich mein Minutenkontingent überschreite?","acceptedAnswer":{"@type":"Answer","text":"Nichts Dramatisches: Der Assistent nimmt weiter ab. Jede zusätzliche Minute wird zum Minutenpreis Ihres Tarifs abgerechnet und auf der nächsten Rechnung ausgewiesen. Es gibt keine Abschaltung und keine Strafgebühr — ein Anruf, der nicht angenommen wird, wäre schließlich genau das Problem, das Sie lösen wollten."}},{"@type":"Question","name":"Kann ich monatlich kündigen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Alle Tarife sind monatlich kündigbar, mit 14 Tagen Frist zum Ende des Abrechnungsmonats. Es gibt keine Mindestlaufzeit und keinen Rabatt, der an eine Zweijahresbindung geknüpft ist."}},{"@type":"Question","name":"Kann ich Vocaris kostenlos testen?","acceptedAnswer":{"@type":"Answer","text":"Sie können sich jederzeit einen kostenlosen Testanruf schicken lassen — Nummer eintragen, und der Assistent ruft in wenigen Sekunden an. So hören Sie vor jeder Entscheidung, wie ein Gespräch tatsächlich klingt. Ein kostenloses Testkonto zum Selbsteinrichten gibt es derzeit nicht; die Einrichtung machen wir gemeinsam in der Demo."}},{"@type":"Question","name":"Sind die Preise netto oder brutto?","acceptedAnswer":{"@type":"Answer","text":"Alle genannten Preise verstehen sich netto, also zuzüglich der gesetzlichen Umsatzsteuer. Vocaris richtet sich an Unternehmen, die die Vorsteuer geltend machen können."}},{"@type":"Question","name":"Was ist im Preis enthalten und was kostet extra?","acceptedAnswer":{"@type":"Answer","text":"Enthalten sind: der Assistent selbst, eine Rufnummer, die Einrichtung, alle Updates, der Support und der Auftragsverarbeitungsvertrag. Extra berechnet werden nur Minuten über dem Kontingent, weitere Rufnummern zu 5 € im Monat und SMS-Bestätigungen zu 9 Cent pro Nachricht."}},{"@type":"Question","name":"Warum ist Vocaris nicht der billigste Anbieter?","acceptedAnswer":{"@type":"Answer","text":"Weil jedes Gespräch echte Rechenleistung kostet — ein Assistent, der in Echtzeit zuhört, versteht und antwortet, ist teurer im Betrieb als eine Ansage vom Band. Wir rechnen das offen über Minuten ab, statt einen niedrigen Grundpreis zu zeigen und die Kosten in Zusatzposten zu verstecken."}}]}</script>
-<style>
-/* ── Preisrechner ──
-   Bewusst hier statt in site.css: Diese Regeln gelten nur auf dieser einen
-   Seite, und site.css wird von jeder anderen Seite mitgeladen. */
-.preis-hero{background:var(--lav);padding:88px var(--pad) 72px;}
-.preis-hero .wrap{display:flex;flex-direction:column;gap:24px;max-width:760px;}
-.preis-hero h1{font-size:clamp(42px,5.4vw,62px);line-height:1.04;letter-spacing:-.015em;}
-.preis-hero .lede{font-size:18px;line-height:1.65;color:var(--t2);}
 
-.rechner{padding:72px var(--pad);background:var(--paper);border-bottom:1px solid var(--line);}
-.rechner .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
-.rechner .regler{display:flex;flex-direction:column;gap:34px;}
-.rechner label{display:flex;flex-direction:column;gap:12px;}
-.rechner .lab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
-.rechner .lab .t{font-size:15px;font-weight:600;}
-.rechner .lab .v{font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;}
-.rechner input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:999px;background:var(--line-lav);outline:none;}
-.rechner input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 8px rgba(38,28,92,.3);}
-.rechner input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;}
-.rechner .hint{font-size:13px;color:var(--t3);line-height:1.5;}
-
-.ergebnis{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px;display:flex;flex-direction:column;gap:20px;}
-.ergebnis .kicker{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
-.ergebnis .tarif{font-size:15px;font-weight:600;}
-.ergebnis .summe{font-size:46px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
-.ergebnis .summe small{font-size:16px;font-weight:500;color:var(--t3);letter-spacing:0;}
-.ergebnis .zeilen{display:flex;flex-direction:column;gap:9px;font-size:14px;color:var(--t2);border-top:1px solid var(--line);padding-top:18px;}
-.ergebnis .zeile{display:flex;justify-content:space-between;gap:14px;}
-.ergebnis .zeile b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
-.ergebnis .fuss{font-size:13px;color:var(--t3);line-height:1.55;}
-
-.tarife{padding:96px var(--pad);background:#fff;border-top:1px solid var(--line);}
-.tarifgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;}
-.tkarte{border:1px solid var(--line);border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:16px;background:var(--paper);}
-.tkarte.hl{background:var(--lav);border-color:var(--line-lav);}
-.tkarte .n{font-size:13px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
-.tkarte .p{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
-.tkarte .p small{font-size:15px;font-weight:500;color:var(--t3);letter-spacing:0;}
-.tkarte .inkl{font-size:15px;color:var(--t2);}
-.tkarte .inkl b{color:var(--ink);}
-.tkarte .fuer{font-size:14px;color:var(--t3);line-height:1.55;border-top:1px solid var(--line);padding-top:14px;margin-top:auto;}
-.tkarte.hl .fuer{border-top-color:var(--line-lav);}
-
-.listen{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:64px;}
-.liste h3{font-size:17px;font-weight:700;margin:0 0 18px;}
-.liste ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
-.liste li{font-size:15px;color:var(--t2);line-height:1.55;display:flex;gap:11px;}
-.liste li span:first-child{flex:none;font-weight:600;}
-.liste .ja span:first-child{color:var(--ok);}
-.liste .nein span:first-child{color:var(--t3);}
-.liste li .pr{color:var(--t3);white-space:nowrap;}
-
-@media (max-width:1000px){
-  .rechner .wrap,.listen{grid-template-columns:1fr;gap:40px;}
-  .tarifgrid{grid-template-columns:1fr;}
-  .rechner,.tarife{padding:64px var(--pad);}
-}
-</style>
 <script src="/pv.js" defer></script>
 </head>
 <body>
 
 <nav class="nav" id="nav"><span id="top"></span>
-  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoN)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="nav-links">
     <a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a>
   </div>
@@ -133,7 +79,7 @@
 </section>
 
 <!-- Tarife -->
-<section class="tarife">
+<section class="tarife" data-zeig>
   <div class="wrap">
     <div style="max-width:60ch;display:flex;flex-direction:column;gap:20px">
       <div class="eyebrow">DIE DREI TARIFE</div>
@@ -141,22 +87,22 @@
       <p style="font-size:17px;line-height:1.65;color:var(--t2)">Die Tarife unterscheiden sich in genau einem Punkt: wie viele Gesprächsminuten enthalten sind. Der Funktionsumfang ist überall derselbe — es gibt keine Stufe, in der die Terminbuchung fehlt.</p>
     </div>
 
-    <div class="tarifgrid">
-      <div class="tkarte">
+    <div class="tarifgrid" data-staffel>
+      <div class="tkarte glanz">
         <div class="n">KLEIN</div>
         <div class="p">49 €<small> / Monat</small></div>
         <div class="inkl"><b>250 Gesprächsminuten</b> inklusive<br>danach 0,19 € je Minute</div>
         <div class="inkl" style="font-size:14px;color:var(--t3)">rund 150–250 Anrufe im Monat</div>
         <div class="fuer">Einzelpraxen, kleine Salons, Betriebe mit ruhigem Telefon</div>
       </div>
-      <div class="tkarte hl">
+      <div class="tkarte glanz hl">
         <div class="n">STANDARD</div>
         <div class="p">99 €<small> / Monat</small></div>
         <div class="inkl"><b>700 Gesprächsminuten</b> inklusive<br>danach 0,15 € je Minute</div>
         <div class="inkl" style="font-size:14px;color:var(--t3)">rund 450–700 Anrufe im Monat</div>
         <div class="fuer">Restaurants, Werkstätten, Praxen mit vollem Wartezimmer</div>
       </div>
-      <div class="tkarte">
+      <div class="tkarte glanz">
         <div class="n">GROSS</div>
         <div class="p">249 €<small> / Monat</small></div>
         <div class="inkl"><b>2.000 Gesprächsminuten</b> inklusive<br>danach 0,11 € je Minute</div>
@@ -179,7 +125,7 @@
 </section>
 
 <!-- FAQ -->
-<section class="faq-sec" id="faq">
+<section class="faq-sec" data-zeig id="faq">
   <div class="wrap faq-grid">
     <div class="faq-aside">
       <span class="eyebrow">HÄUFIGE FRAGEN</span>
@@ -209,7 +155,7 @@
 </section>
 
 <footer class="foot">
-  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoF)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="fl"><a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
@@ -282,5 +228,6 @@
   rechne();
 })();
 </script>
+<script src="assets/vocaris.js" defer></script>
 </body>
 </html>

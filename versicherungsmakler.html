@@ -15,14 +15,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/vocaris.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Gibt Vocaris Auskunft, ob ein Schaden gedeckt ist?","acceptedAnswer":{"@type":"Answer","text":"Nein. Vocaris nimmt die Meldung auf und stellt Rückfragen zum Sachverhalt, gibt aber keine Deckungszusage und keine Beratung zum Vertrag. Beides bleibt bei Ihnen — eine falsche Zusage am Telefon wäre ein Haftungsrisiko, kein Service."}},{"@type":"Question","name":"Ist das ein Telefonservice wie ein Maklerbüro-Sekretariat?","acceptedAnswer":{"@type":"Answer","text":"Vergleichbare Aufgabe, anderer Weg. Ein ausgelagertes Telefonsekretariat nimmt Namen und Nummer auf; Vocaris erfasst die Schadenmeldung vollständig, vergibt den Termin und sortiert nach Dringlichkeit — ohne Bereitschaftszuschlag am Wochenende."}},{"@type":"Question","name":"Was passiert nach einem Unwetter, wenn alle gleichzeitig anrufen?","acceptedAnswer":{"@type":"Answer","text":"Genau dafür ist es gebaut: Vocaris nimmt beliebig viele Gespräche gleichzeitig an. Niemand hört ein Besetztzeichen, und Sie bekommen alle Meldungen strukturiert und sortiert vorgelegt statt als vierzig Mailboxnachrichten."}},{"@type":"Question","name":"Wie steht es um Datenschutz und Vertraulichkeit?","acceptedAnswer":{"@type":"Answer","text":"Die Verarbeitung läuft DSGVO-konform und in der EU, ein Auftragsverarbeitungsvertrag gehört dazu. Auf Wunsch führt ein rein europäisches Sprachmodell die Gespräche, ohne Umweg über Drittstaaten."}}]}</script>
 <script src="/pv.js" defer></script>
 </head>
 <body>
 
 <nav class="nav" id="nav"><span id="top"></span>
-  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoN)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="nav-links">
     <a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a>
   </div>
@@ -34,7 +36,7 @@
 
 <!-- Hero -->
 <section class="hero branch-hero" id="call">
-  <div class="aurora"></div>
+  <div class="aurora-buehne" aria-hidden="true"><span class="korn"></span></div>
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <div class="eyebrow">VERSICHERUNG</div>
@@ -68,7 +70,7 @@
 <div class="stats"><div class="stat"><span class="n">0</span><span class="l">verpasste Schadenmeldungen</span></div><div class="stat"><span class="n">strukturiert</span><span class="l">jede Meldung vollständig</span></div><div class="stat"><span class="n">24/7</span><span class="l">auch nach Feierabend</span></div><div class="stat"><span class="n">Termin</span><span class="l">direkt im Kalender</span></div></div>
 
 <!-- Problem -->
-<section class="sec" id="problem">
+<section class="sec" data-zeig id="problem">
   <div class="wrap sec-2">
     <div style="display:flex;flex-direction:column;gap:26px">
       <div class="eyebrow">DAS PROBLEM</div>
@@ -83,19 +85,19 @@
 </section>
 
 <!-- Lösung -->
-<section class="sec" style="background:#fff;border-top:1px solid var(--line)">
+<section class="sec" data-zeig style="background:#fff;border-top:1px solid var(--line)">
   <div class="wrap">
     <div style="max-width:60ch;display:flex;flex-direction:column;gap:22px;margin-bottom:56px">
       <div class="eyebrow">SO ÜBERNIMMT VOCARIS</div>
       <h2 class="h2-big">Nimmt ab, während Sie beraten.</h2>
       <p style="font-size:17px;line-height:1.65;color:var(--t2)">Vocaris übernimmt die Telefonannahme, erfasst Schadenmeldungen vollständig nach Ihrem Schema und füllt Ihren Terminkalender — ohne dass Sie ein Kundengespräch unterbrechen.</p>
     </div>
-    <div class="cards-3"><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Erfasst Schäden vollständig</div><p>Was, wann, wo, Beteiligte, Umfang und Erreichbarkeit — Vocaris fragt Ihr Schema ab, damit später keine Angabe fehlt.</p></div><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Vergibt Beratungstermine</div><p>Freie Zeiten aus Ihrem Kalender, Termin direkt im Gespräch vergeben, Bestätigung und Erinnerung per SMS.</p></div><div class="icard" style="background:#fff;border:1px solid var(--line)"><div class="tt">Sortiert nach Dringlichkeit</div><p>Ein Wasserschaden im Haus ist etwas anderes als eine Frage zur Beitragsrechnung. Vocaris trennt beides nach Ihren Regeln.</p></div></div>
+    <div class="cards-3" data-staffel><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Erfasst Schäden vollständig</div><p>Was, wann, wo, Beteiligte, Umfang und Erreichbarkeit — Vocaris fragt Ihr Schema ab, damit später keine Angabe fehlt.</p></div><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Vergibt Beratungstermine</div><p>Freie Zeiten aus Ihrem Kalender, Termin direkt im Gespräch vergeben, Bestätigung und Erinnerung per SMS.</p></div><div class="icard glanz" style="background:#fff;border:1px solid var(--line)"><div class="tt">Sortiert nach Dringlichkeit</div><p>Ein Wasserschaden im Haus ist etwas anderes als eine Frage zur Beitragsrechnung. Vocaris trennt beides nach Ihren Regeln.</p></div></div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="faq-sec" id="faq">
+<section class="faq-sec" data-zeig id="faq">
   <div class="wrap faq-grid">
     <div class="faq-aside">
       <span class="eyebrow">HÄUFIGE FRAGEN</span>
@@ -111,7 +113,7 @@
 <section class="branchbar">
   <div class="wrap">
     <span class="bb-t">ANDERE BRANCHE?</span>
-    <div class="bb-l"><a href="restaurants.html">Restaurants</a><a href="arztpraxen.html">Arztpraxen</a><a href="kanzlei.html">Kanzleien</a><a href="friseur.html">Friseure</a><a href="handwerk.html">Handwerk</a><a href="autowerkstatt.html">Autowerkstätten</a><a href="hotel.html">Hotels</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilienmakler</a><a href="pflegedienst.html">Pflegedienste</a><a href="apotheke.html">Apotheken</a></div>
+    <div class="bb-l"><a href="restaurants.html">Restaurants</a><a href="arztpraxen.html">Arztpraxen</a><a href="kanzlei.html">Kanzleien</a><a href="friseur.html">Friseure</a><a href="handwerk.html">Handwerk</a><a href="autowerkstatt.html">Autowerkstätten</a><a href="hotel.html">Hotels</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilienmakler</a><a href="pflegedienst.html">Pflegedienste</a><a href="apotheke.html">Apotheken</a><a href="software.html">Softwareanbieter</a><a href="onlineshop.html">Onlineshops</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxen</a><a href="fitnessstudio.html">Fitnessstudios</a></div>
   </div>
 </section>
 <!-- /Andere Branchen -->
@@ -134,11 +136,12 @@
 </section>
 
 <footer class="foot">
-  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoF)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="fl"><a href="index.html#produkt">Produkt</a><a href="index.html#branchen">Branchen</a><a href="preise.html">Preise</a><a href="index.html#modelle">KI-Modelle</a><a href="index.html#sicherheit">Sicherheit</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
 
 <script src="assets/site.js"></script>
+<script src="assets/vocaris.js" defer></script>
 </body>
 </html>
