@@ -1,4 +1,11 @@
-
+/* ══════════════════════════════════════════════════════════════════════
+   Vocaris — Startseite
+   ══════════════════════════════════════════════════════════════════════
+   Ausgelagert aus dem <style>-Block, der bis dahin im <body> stand. Dort
+   gewann er gegen jede Datei im <head> und blockierte damit jede
+   gemeinsame Gestaltungsschicht.
+   Farben und Maße kommen aus assets/tokens.css.
+   ══════════════════════════════════════════════════════════════════════ */
 /* Farben, Schriften und Maße stehen jetzt in assets/tokens.css —
    eine Quelle für das ganze Produkt. Hier bewusst nichts mehr definieren,
    sonst überschreibt diese Datei die gemeinsamen Werte. */
@@ -26,6 +33,11 @@ p{margin:0;}
 .nav-right a.contact{font-size:14px;color:var(--t2);}
 .btn-dark{font-size:14px;font-weight:600;padding:11px 22px;background:var(--ink);color:var(--paper);border-radius:999px;border:0;cursor:pointer;font-family:inherit;transition:transform .15s;}
 .btn-dark:hover{transform:translateY(-1px);color:var(--paper);}
+.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:9px;background:none;border:0;cursor:pointer;z-index:22;}
+.burger span{display:block;height:2px;width:22px;background:var(--ink);border-radius:2px;transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
+.nav.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav.open .burger span:nth-child(2){opacity:0;}
+.nav.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
 /* Hero */
 .hero{background:var(--lav);padding:96px var(--pad) 88px;}
@@ -137,9 +149,21 @@ p{margin:0;}
 .consent input{margin-top:2px;flex:none;accent-color:var(--accent);width:16px;height:16px;}
 .demolink{font-size:14px;color:var(--accent);font-weight:600;}
 
+/* Interaktive Politur: Scroll-Fortschritt, aktive Nav, Logo-Hover */
+.scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px -2px var(--accent);}
+.logo .mark{transition:transform .35s cubic-bezier(.22,.61,.36,1);}
+.logo:hover .mark{transform:rotate(-8deg) scale(1.08);}
+.nav-links a{position:relative;padding:4px 0;transition:color .18s;}
+.nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-3px;height:2px;border-radius:2px;
+  background:var(--accent);transition:right .28s cubic-bezier(.22,.61,.36,1);}
+.nav-links a:hover::after,.nav-links a.active::after{right:0;}
+.nav-links a.active{color:var(--accent);}
+@media (prefers-reduced-motion:reduce){.logo .mark{transition:none;}.nav-links a::after{transition:none;}}
+
 
 /* ── Aufwertung: Interaktivität & Politur ── */
-html{scroll-behavior:smooth;scroll-padding-top:88px;}
+html{scroll-padding-top:88px;}
 .hero{position:relative;overflow:hidden;}
 .aurora{position:absolute;inset:-20% -10% auto -10%;height:150%;pointer-events:none;z-index:0;
   background:radial-gradient(620px 420px at 16% 18%,rgba(95,79,212,.20),transparent 60%),
@@ -203,7 +227,15 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 
 /* Responsive */
 @media (max-width:1000px){
-  .nav-links{display:none;}
+  .nav{flex-wrap:wrap;}
+  .burger{display:flex;order:2;}
+  .nav-links,.nav-right{order:3;flex-basis:100%;display:none;}
+  .nav.open .nav-links{display:flex;flex-direction:column;gap:2px;padding:14px 0 4px;}
+  .nav.open .nav-links a{padding:12px 2px;font-size:16px;border-bottom:1px solid var(--line);}
+  .nav.open .nav-links a::after{display:none;}
+  .nav.open .nav-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px 0 16px;}
+  .nav.open .nav-right .contact{padding:6px 2px;}
+  .nav.open .nav-right .btn-dark{width:100%;padding:14px;font-size:15px;}
   .hero{padding:56px var(--pad) 56px;}
   .hero-grid,.sec-2{grid-template-columns:1fr;gap:44px;}
   .sec{padding:64px var(--pad);}
@@ -218,62 +250,4 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
   .callrow{flex-direction:column;}
   .stats .stat{width:calc(50% - 20px);}
   .foot{flex-direction:column;align-items:flex-start;}
-}
-
-/* ── Branchen-Unterseiten ── */
-a.icard{color:var(--ink);text-decoration:none;}
-a.icard:hover{color:var(--ink);}
-.branch-hero .callcard .bub{opacity:1;transform:none;}
-.trust-line{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13px;color:var(--t3);align-items:center;}
-.trust-line b{color:var(--t2);font-weight:600;}
-.softcard{background:var(--lav);border-radius:18px;padding:34px;display:flex;flex-direction:column;gap:16px;}
-.softcard .q{font-size:15px;color:var(--t2);line-height:1.55;}
-.softcard .q b{color:var(--ink);}
-.backhome{font-size:14px;color:var(--t2);}
-
-/* Interaktive Politur (Unterseiten) */
-.scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px -2px var(--accent);}
-.logo .mark{transition:transform .35s cubic-bezier(.22,.61,.36,1);}
-.logo:hover .mark{transform:rotate(-8deg) scale(1.08);}
-.nav-links a{position:relative;padding:4px 0;transition:color .18s;}
-.nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-3px;height:2px;border-radius:2px;
-  background:var(--accent);transition:right .28s cubic-bezier(.22,.61,.36,1);}
-.nav-links a:hover::after,.nav-links a.active::after{right:0;}
-.nav-links a.active{color:var(--accent);}
-@media (prefers-reduced-motion:reduce){.logo .mark{transition:none;}.nav-links a::after{transition:none;}}
-
-/* Mobiles Menü (Unterseiten) */
-.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:9px;background:none;border:0;cursor:pointer;z-index:22;}
-.burger span{display:block;height:2px;width:22px;background:var(--ink);border-radius:2px;transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
-.nav.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg);}
-.nav.open .burger span:nth-child(2){opacity:0;}
-.nav.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
-@media (max-width:1000px){
-  .nav{flex-wrap:wrap;}
-  .burger{display:flex;order:2;}
-  .nav-links,.nav-right{order:3;flex-basis:100%;display:none;}
-  .nav.open .nav-links{display:flex;flex-direction:column;gap:2px;padding:14px 0 4px;}
-  .nav.open .nav-links a{padding:12px 2px;font-size:16px;border-bottom:1px solid var(--line);}
-  .nav.open .nav-links a::after{display:none;}
-  .nav.open .nav-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px 0 16px;}
-  .nav.open .nav-right .contact{padding:6px 2px;}
-  .nav.open .nav-right .btn-dark{width:100%;padding:14px;font-size:15px;}
-}
-
-/* ── Querverweise zwischen den Branchenseiten ──
-   Bis hierher verwies jede Branchenseite nur zurueck auf die Startseite und
-   keine auf eine andere. Fuer Besucher hiess das: wer auf der falschen Seite
-   landet, muss den Umweg ueber die Uebersicht nehmen. Fuer Google hiess es,
-   dass alle Aufmerksamkeit an einem einzigen Punkt haengt statt sich zu
-   verteilen. Beides loest diese Leiste. */
-.branchbar{padding:44px var(--pad);background:var(--paper);border-top:1px solid var(--line);}
-.branchbar .wrap{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;}
-.branchbar .bb-t{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent);white-space:nowrap;}
-.branchbar .bb-l{display:flex;flex-wrap:wrap;gap:10px;}
-.branchbar .bb-l a{font-size:14px;color:var(--t2);padding:8px 16px;background:#fff;border:1px solid var(--line);border-radius:999px;transition:color .15s,border-color .15s;}
-.branchbar .bb-l a:hover{color:var(--accent);border-color:var(--line-lav);}
-@media (max-width:560px){
-  .branchbar{padding:32px var(--pad);}
-  .branchbar .wrap{flex-direction:column;gap:14px;}
 }

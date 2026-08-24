@@ -1,0 +1,65 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Vocaris — preise.html
+   ══════════════════════════════════════════════════════════════════════
+   Ausgelagert aus dem Inline-<style>. Dort gewann er gegen die gemeinsame
+   Schicht in vocaris.css — sichtbare Folge waren Regler, die auf dem Handy
+   nur 4px hoch blieben, obwohl die Behebung längst geschrieben war.
+   Wird jetzt VOR vocaris.css geladen: seitenspezifisch unten, Gemeinsames
+   darüber. Farben kommen aus tokens.css.
+   ══════════════════════════════════════════════════════════════════════ */
+/* ── Preisrechner ──
+   Bewusst hier statt in site.css: Diese Regeln gelten nur auf dieser einen
+   Seite, und site.css wird von jeder anderen Seite mitgeladen. */
+.preis-hero{background:var(--lav);padding:88px var(--pad) 72px;}
+.preis-hero .wrap{display:flex;flex-direction:column;gap:24px;max-width:760px;}
+.preis-hero h1{font-size:clamp(42px,5.4vw,62px);line-height:1.04;letter-spacing:-.015em;}
+.preis-hero .lede{font-size:18px;line-height:1.65;color:var(--t2);}
+
+.rechner{padding:72px var(--pad);background:var(--paper);border-bottom:1px solid var(--line);}
+.rechner .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
+.rechner .regler{display:flex;flex-direction:column;gap:34px;}
+.rechner label{display:flex;flex-direction:column;gap:12px;}
+.rechner .lab{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+.rechner .lab .t{font-size:15px;font-weight:600;}
+.rechner .lab .v{font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;}
+.rechner input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:999px;background:var(--line-lav);outline:none;}
+.rechner input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 2px 8px rgba(38,28,92,.3);}
+.rechner input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;}
+.rechner .hint{font-size:13px;color:var(--t3);line-height:1.5;}
+
+.ergebnis{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px;display:flex;flex-direction:column;gap:20px;}
+.ergebnis .kicker{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
+.ergebnis .tarif{font-size:15px;font-weight:600;}
+.ergebnis .summe{font-size:46px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
+.ergebnis .summe small{font-size:16px;font-weight:500;color:var(--t3);letter-spacing:0;}
+.ergebnis .zeilen{display:flex;flex-direction:column;gap:9px;font-size:14px;color:var(--t2);border-top:1px solid var(--line);padding-top:18px;}
+.ergebnis .zeile{display:flex;justify-content:space-between;gap:14px;}
+.ergebnis .zeile b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.ergebnis .fuss{font-size:13px;color:var(--t3);line-height:1.55;}
+
+.tarife{padding:96px var(--pad);background:#fff;border-top:1px solid var(--line);}
+.tarifgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;}
+.tkarte{border:1px solid var(--line);border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:16px;background:var(--paper);}
+.tkarte.hl{background:var(--lav);border-color:var(--line-lav);}
+.tkarte .n{font-size:13px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
+.tkarte .p{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;}
+.tkarte .p small{font-size:15px;font-weight:500;color:var(--t3);letter-spacing:0;}
+.tkarte .inkl{font-size:15px;color:var(--t2);}
+.tkarte .inkl b{color:var(--ink);}
+.tkarte .fuer{font-size:14px;color:var(--t3);line-height:1.55;border-top:1px solid var(--line);padding-top:14px;margin-top:auto;}
+.tkarte.hl .fuer{border-top-color:var(--line-lav);}
+
+.listen{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:64px;}
+.liste h3{font-size:17px;font-weight:700;margin:0 0 18px;}
+.liste ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+.liste li{font-size:15px;color:var(--t2);line-height:1.55;display:flex;gap:11px;}
+.liste li span:first-child{flex:none;font-weight:600;}
+.liste .ja span:first-child{color:var(--ok);}
+.liste .nein span:first-child{color:var(--t3);}
+.liste li .pr{color:var(--t3);white-space:nowrap;}
+
+@media (max-width:1000px){
+  .rechner .wrap,.listen{grid-template-columns:1fr;gap:40px;}
+  .tarifgrid{grid-template-columns:1fr;}
+  .rechner,.tarife{padding:64px var(--pad);}
+}

@@ -15,270 +15,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/home.css">
+<link rel="stylesheet" href="assets/vocaris.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Klingt Vocaris wirklich wie ein echter Mensch?","acceptedAnswer":{"@type":"Answer","text":"Ja. Vocaris spricht in Echtzeit mit natürlicher Stimme, reagiert auf Zwischenfragen und lässt sich jederzeit unterbrechen — ohne Tastenmenü. Am ehrlichsten überzeugt ein Testanruf: Sie hören in wenigen Sekunden selbst, wie es klingt."}},{"@type":"Question","name":"Bleibt meine bestehende Rufnummer erhalten?","acceptedAnswer":{"@type":"Answer","text":"Ja. Vocaris lässt sich vor Ihre bestehende Nummer schalten oder nur dann aktivieren, wenn niemand abnimmt. Auf Wunsch stellen wir alternativ eine neue Rufnummer bereit."}},{"@type":"Question","name":"Wie schnell bin ich startklar?","acceptedAnswer":{"@type":"Answer","text":"Meist in etwa 15 Minuten und komplett im Browser — kein IT-Projekt, keine Installation. Wissen einlesen, Stimme wählen, Nummer verbinden, fertig."}},{"@type":"Question","name":"Was passiert bei Fragen, die Vocaris nicht kennt?","acceptedAnswer":{"@type":"Answer","text":"Er merkt sich die Frage und nimmt bei Bedarf einen Rückruf auf. Sie beantworten die Frage einmal im Dashboard — danach kennt Vocaris die Antwort. So wird er mit jedem Anruf besser."}},{"@type":"Question","name":"Wie steht es um den Datenschutz?","acceptedAnswer":{"@type":"Answer","text":"Vocaris arbeitet DSGVO-konform: verschlüsselte Verbindungen, Verarbeitung und Hosting in der EU, Auftragsverarbeitungsvertrag inklusive. Auf Wunsch führt ein rein europäisches Sprachmodell Ihre Anrufe — ohne Umweg über Drittstaaten."}},{"@type":"Question","name":"Was kostet Vocaris?","acceptedAnswer":{"@type":"Answer","text":"Ab 49 € im Monat, inklusive 250 Gesprächsminuten. Darüber gibt es zwei größere Tarife für 99 € und 249 €. Keine Einrichtungsgebühr, keine Mindestlaufzeit, monatlich kündbar. Auf der Preisseite rechnen Sie in wenigen Sekunden aus, was Ihr Anrufaufkommen kostet."}},{"@type":"Question","name":"Was ist der Unterschied zu einem klassischen Telefonservice?","acceptedAnswer":{"@type":"Answer","text":"Ein klassischer Telefonservice — auch Telefondienst oder Telefonsekretariat genannt — ist ein Büro mit Menschen, das Ihre Anrufe entgegennimmt und Ihnen anschließend eine Notiz schickt. Den eigentlichen Rückruf machen Sie selbst. Vocaris übernimmt die Telefonannahme vollständig: Er führt das Gespräch, bucht den Termin verbindlich, trägt ihn in Ihren Kalender ein und ruft auf Wunsch von sich aus zurück. Rund um die Uhr, ohne Wochenendzuschlag und ohne Mindestlaufzeit pro Anruf."}}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://vocaris.eu/#org", "name": "Vocaris", "url": "https://vocaris.eu/", "logo": "https://vocaris.eu/assets/favicon.svg", "email": "christoph.gerhardt@gmail.com", "areaServed": "DE"}, {"@type": "SoftwareApplication", "name": "Vocaris", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "https://vocaris.eu/", "description": "KI-Telefonassistent für Unternehmen: nimmt Anrufe rund um die Uhr mit natürlicher Stimme entgegen, bucht Termine und Reservierungen, beantwortet Fragen und ruft auf Wunsch zurück. DSGVO-konform, Einrichtung in etwa 15 Minuten, monatlich kündbar.", "publisher": {"@id": "https://vocaris.eu/#org"}, "offers": [{"@type": "Offer", "name": "Klein", "price": "49.00", "priceCurrency": "EUR", "description": "49 € pro Monat, 250 Gesprächsminuten inklusive."}, {"@type": "Offer", "name": "Standard", "price": "99.00", "priceCurrency": "EUR", "description": "99 € pro Monat für mittleres Anrufaufkommen."}, {"@type": "Offer", "name": "Groß", "price": "249.00", "priceCurrency": "EUR", "description": "249 € pro Monat für hohes Anrufaufkommen."}]}]}</script>
 </head>
 <body>
-<style>
-:root{
-  --paper:#f6f5f1; --lav:#e9e6f6; --lav-2:#beaef0; --bubble:#f1eff9; --cardfoot:#faf9fd;
-  --ink:#1a1723; --t2:#4b4658; --t3:#7b7590; --ph:#9a94ad;
-  --accent:#5f4fd4; --accent-2:#b4a9e6; --on-dark:#b4b0c4;
-  --line:#e7e4dd; --line-lav:#d6d1ea; --line-dark:#38324a;
-  --ok:#3d8a5f; --ok-dark:#7ee2ab;
-  --disp:"Newsreader",Georgia,"Times New Roman",serif;
-  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --maxw:1240px; --pad:64px;
-  color-scheme:light;
-}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
-a{color:var(--ink);text-decoration:none;transition:color .15s;}
-a:hover{color:var(--accent);}
-h1,h2{font-family:var(--sans);font-weight:700;letter-spacing:-.025em;margin:0;text-wrap:balance;line-height:1.06;}
-p{margin:0;}
-.wrap{max-width:var(--maxw);margin:0 auto;}
-.eyebrow{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent);}
-.serif{font-family:var(--disp);}
-.pill{border-radius:999px;}
-@keyframes vpulse{0%,100%{opacity:1}50%{opacity:.35}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;}}
-
-/* Nav */
-.nav{display:flex;justify-content:space-between;align-items:center;padding:22px var(--pad);background:var(--paper);position:sticky;top:0;z-index:20;border-bottom:1px solid transparent;}
-.nav.scrolled{border-bottom-color:var(--line);}
-.logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--disp);font-size:24px;font-weight:500;letter-spacing:-.01em;color:var(--ink);}
-  .logo .mark{display:inline-flex;color:var(--accent);}
-  .logo .mark svg{display:block;}
-.nav-links{display:flex;gap:36px;font-size:14px;color:var(--t2);}
-.nav-right{display:flex;gap:12px;align-items:center;}
-.nav-right a.contact{font-size:14px;color:var(--t2);}
-.btn-dark{font-size:14px;font-weight:600;padding:11px 22px;background:var(--ink);color:var(--paper);border-radius:999px;border:0;cursor:pointer;font-family:inherit;transition:transform .15s;}
-.btn-dark:hover{transform:translateY(-1px);color:var(--paper);}
-.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;padding:9px;background:none;border:0;cursor:pointer;z-index:22;}
-.burger span{display:block;height:2px;width:22px;background:var(--ink);border-radius:2px;transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
-.nav.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg);}
-.nav.open .burger span:nth-child(2){opacity:0;}
-.nav.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
-
-/* Hero */
-.hero{background:var(--lav);padding:96px var(--pad) 88px;}
-.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:80px;align-items:center;}
-.hero-copy{display:flex;flex-direction:column;gap:28px;}
-.hero h1{font-size:clamp(46px,6.2vw,72px);line-height:1.02;letter-spacing:-.015em;}
-.hero p.lede{font-size:18px;line-height:1.65;color:var(--t2);max-width:46ch;}
-.microcopy{font-size:13px;color:var(--t3);}
-
-/* Testanruf-Formular */
-.callform{display:flex;gap:12px;align-items:stretch;max-width:460px;}
-.callform input{flex:1;padding:0 18px;background:#fff;border:1px solid var(--line-lav);border-radius:999px;font-size:15px;font-family:inherit;color:var(--ink);min-height:52px;}
-.callform input::placeholder{color:var(--ph);}
-.callform input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent);}
-.callform button{padding:15px 26px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;border-radius:999px;white-space:nowrap;border:0;cursor:pointer;font-family:inherit;transition:transform .15s,filter .15s;}
-.callform button:hover{transform:translateY(-1px);filter:brightness(1.05);}
-.callform.dark button{background:var(--ink);}
-.callform .err{display:none;}
-.callsuccess{max-width:460px;padding:18px 22px;background:#fff;border:1px solid var(--line-lav);border-radius:16px;font-size:15px;line-height:1.5;color:var(--ink);}
-.callsuccess b{color:var(--ok);}
-.formerr{color:#c0392b;font-size:13px;min-height:1em;}
-
-/* Live-Karte */
-.callcard{background:#fff;border-radius:20px;box-shadow:0 24px 60px -24px rgba(38,28,92,.25);overflow:hidden;}
-.callcard .ch{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid #eeecf5;}
-.callcard .ch .live{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:vpulse 1.6s infinite;}
-.callcard .body{display:flex;flex-direction:column;gap:14px;padding:26px;}
-.bub{max-width:82%;padding:13px 17px;font-size:14.5px;line-height:1.5;}
-.bub.in{align-self:flex-start;background:var(--bubble);border-radius:4px 16px 16px 16px;}
-.bub.out{align-self:flex-end;background:var(--ink);color:var(--paper);border-radius:16px 4px 16px 16px;}
-.wave{display:flex;align-items:flex-end;gap:4px;height:34px;padding-top:6px;}
-.wave i{width:4px;border-radius:2px;display:block;}
-.callcard .cf{display:flex;gap:22px;padding:15px 26px;background:var(--cardfoot);border-top:1px solid #eeecf5;font-size:12.5px;color:var(--t2);}
-
-/* Stats */
-.stats{display:flex;justify-content:center;gap:72px;padding:34px var(--pad);background:var(--paper);border-bottom:1px solid var(--line);flex-wrap:wrap;}
-.stat{display:flex;align-items:baseline;gap:10px;}
-.stat .n{font-family:var(--sans);font-weight:700;font-size:30px;letter-spacing:-.02em;}
-.stat .l{font-size:13px;color:var(--t3);}
-
-/* Sections */
-.sec{padding:110px var(--pad);}
-.sec-2{display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:center;}
-.h2-big{font-size:clamp(38px,5vw,54px);line-height:1.05;}
-
-/* Produkt */
-.arrows{display:flex;flex-direction:column;gap:16px;font-size:16px;line-height:1.5;}
-.arrows .a{display:flex;gap:14px;}
-.arrows .a span:first-child{color:var(--accent);}
-.grid-art{position:relative;border-radius:16px;overflow:hidden;background:var(--lav-2);aspect-ratio:1;
-  background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px),linear-gradient(#ffffff55 1px,transparent 1px),linear-gradient(90deg,#ffffff55 1px,transparent 1px);
-  background-size:18px 18px,18px 18px,90px 90px,90px 90px;}
-.float{position:absolute;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 12px 30px -12px rgba(38,28,92,.35);font-size:13px;max-width:60%;}
-.float .t{font-weight:600;margin-bottom:3px;}
-.float .s{color:var(--t3);}
-.float.dark{background:var(--ink);color:var(--paper);box-shadow:0 12px 30px -12px rgba(38,28,92,.5);}
-.float.dark .s{color:var(--accent-2);}
-
-/* Branchen */
-.cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-.icard{display:flex;flex-direction:column;gap:14px;padding:34px;border-radius:16px;background:var(--paper);}
-.icard.hl{background:var(--lav);}
-.icard .kicker{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);}
-.icard.hl .kicker{color:var(--accent);}
-.icard .tt{font-family:var(--sans);font-weight:700;font-size:22px;line-height:1.18;letter-spacing:-.015em;}
-.icard p{font-size:14.5px;line-height:1.6;color:var(--t2);}
-.icard .more{margin-top:auto;font-size:14px;font-weight:600;color:var(--t2);}
-.icard.hl .more{color:var(--accent);}
-
-/* Modelle */
-.cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-.mcard{display:flex;flex-direction:column;gap:10px;padding:28px;background:#fff;border:1px solid var(--line);border-radius:14px;}
-.mcard .name{font-weight:700;font-size:17px;}
-.mcard p{font-size:14px;line-height:1.55;color:var(--t2);}
-.mcard .st{margin-top:auto;font-size:12px;font-weight:600;}
-.mcard.dark{background:var(--ink);color:var(--paper);border:0;}
-.mcard.dark p{color:var(--on-dark);}
-.eubadge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:4px 9px;background:var(--accent);color:#fff;border-radius:999px;}
-
-/* Sicherheit */
-.dark-sec{background:var(--ink);color:var(--paper);padding:96px var(--pad);}
-.dark-sec .eyebrow{color:var(--accent-2);}
-.dark-sec p.lede{font-size:17px;line-height:1.65;color:var(--on-dark);max-width:48ch;}
-.grid-2x2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
-.scard{padding:24px;border:1px solid var(--line-dark);border-radius:14px;}
-.scard .t{font-weight:600;margin-bottom:6px;font-size:15px;}
-.scard .s{font-size:13.5px;line-height:1.55;color:var(--on-dark);}
-
-/* Start */
-.centered{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;}
-.step .n{font-family:var(--sans);font-weight:700;font-size:30px;color:var(--accent);}
-.step .t{font-weight:700;font-size:17px;}
-.step p{font-size:14.5px;line-height:1.6;color:var(--t2);}
-
-/* CTA */
-.cta{background:var(--lav);padding:100px var(--pad);text-align:center;}
-.cta .inner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:24px;}
-.cta h2{font-size:clamp(42px,5vw,58px);line-height:1.05;}
-
-/* Footer */
-.foot{display:flex;justify-content:space-between;align-items:center;padding:28px var(--pad);background:var(--paper);border-top:1px solid var(--line);font-size:13px;color:var(--t3);flex-wrap:wrap;gap:16px;}
-.foot .fl{display:flex;gap:28px;}
-.foot .fr{display:flex;gap:20px;}
-
-.callform{flex-direction:column;align-items:stretch;gap:10px;}
-.callrow{display:flex;gap:12px;align-items:stretch;}
-.consent{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.4;color:var(--t3);cursor:pointer;max-width:460px;}
-.consent input{margin-top:2px;flex:none;accent-color:var(--accent);width:16px;height:16px;}
-.demolink{font-size:14px;color:var(--accent);font-weight:600;}
-
-/* Interaktive Politur: Scroll-Fortschritt, aktive Nav, Logo-Hover */
-.scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px -2px var(--accent);}
-.logo .mark{transition:transform .35s cubic-bezier(.22,.61,.36,1);}
-.logo:hover .mark{transform:rotate(-8deg) scale(1.08);}
-.nav-links a{position:relative;padding:4px 0;transition:color .18s;}
-.nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-3px;height:2px;border-radius:2px;
-  background:var(--accent);transition:right .28s cubic-bezier(.22,.61,.36,1);}
-.nav-links a:hover::after,.nav-links a.active::after{right:0;}
-.nav-links a.active{color:var(--accent);}
-@media (prefers-reduced-motion:reduce){.logo .mark{transition:none;}.nav-links a::after{transition:none;}}
-
-
-/* ── Aufwertung: Interaktivität & Politur ── */
-html{scroll-padding-top:88px;}
-.hero{position:relative;overflow:hidden;}
-.aurora{position:absolute;inset:-20% -10% auto -10%;height:150%;pointer-events:none;z-index:0;
-  background:radial-gradient(620px 420px at 16% 18%,rgba(95,79,212,.20),transparent 60%),
-             radial-gradient(520px 400px at 86% 78%,rgba(180,169,230,.42),transparent 62%),
-             radial-gradient(440px 340px at 62% 8%,rgba(255,255,255,.55),transparent 55%);
-  animation:aur 20s ease-in-out infinite alternate;}
-@keyframes aur{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(-3%,2%,0) scale(1.09)}}
-.hero-grid{position:relative;z-index:1;}
-.nav{backdrop-filter:saturate(1.3) blur(9px);background:rgba(246,245,241,.82);transition:box-shadow .25s,background .25s;}
-.nav.scrolled{box-shadow:0 8px 30px -22px rgba(38,28,92,.55);background:rgba(246,245,241,.94);}
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .75s cubic-bezier(.22,.61,.36,1);}
-.reveal.in{opacity:1;transform:none;}
-.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
-.mcard,.icard,.scard{transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s,border-color .22s;}
-.mcard:hover,.icard:hover{transform:translateY(-5px);box-shadow:0 22px 46px -22px rgba(38,28,92,.30);}
-.icard.hl:hover{box-shadow:0 22px 46px -20px rgba(95,79,212,.45);}
-.callform button,.btn-dark,.submit{box-shadow:0 10px 24px -12px rgba(95,79,212,.65);}
-.callcard{transition:transform .4s cubic-bezier(.22,.61,.36,1),box-shadow .4s;}
-.hero:hover .callcard{transform:translateY(-4px);box-shadow:0 34px 74px -28px rgba(38,28,92,.32);}
-.stat .n{font-variant-numeric:tabular-nums;}
-.bub{opacity:0;transform:translateY(8px) scale(.98);transition:opacity .4s,transform .4s;}
-.bub.show{opacity:1;transform:none;}
-.typing{display:none;align-self:flex-start;gap:5px;padding:15px 18px;background:var(--bubble);border-radius:4px 16px 16px 16px;}
-.typing.show{display:flex;}
-.typing i{width:6px;height:6px;border-radius:50%;background:var(--accent-2);animation:typ 1.15s infinite;}
-.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
-@keyframes typ{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
-.wave.live i{transition:height .18s ease;}
-.callcf-anim{opacity:0;transform:translateY(6px);transition:opacity .5s,transform .5s;}
-.callcf-anim.show{opacity:1;transform:none;}
-@media (prefers-reduced-motion:reduce){.reveal,.bub,.callcf-anim{opacity:1!important;transform:none!important;}.aurora{animation:none;}.wave.live i{transition:none;}}
-
-/* Stat-Band: feine Trennlinien für einen ruhigen, präzisen Eindruck */
-.stats .stat{position:relative;padding:2px 0;}
-.stats .stat:not(:last-child)::after{content:"";position:absolute;right:-36px;top:8%;height:84%;width:1px;background:var(--line);}
-@media (max-width:1000px){.stats .stat::after{display:none!important;}}
-
-/* FAQ */
-.faq-sec{padding:104px var(--pad);background:#fff;border-top:1px solid var(--line);}
-.faq-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:72px;align-items:start;}
-.faq-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);}
-.faq{border-bottom:1px solid var(--line);}
-.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:24px;
-  padding:24px 4px;font-family:var(--sans);font-weight:600;font-size:18px;letter-spacing:-.01em;color:var(--ink);transition:color .15s;}
-.faq summary::-webkit-details-marker{display:none;}
-.faq summary:hover{color:var(--accent);}
-.faq summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px;}
-.faq .mk{flex:none;width:26px;height:26px;position:relative;}
-.faq .mk::before,.faq .mk::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:2px;border-radius:2px;background:var(--accent);transform:translate(-50%,-50%);transition:transform .28s cubic-bezier(.22,.61,.36,1),opacity .2s;}
-.faq .mk::after{transform:translate(-50%,-50%) rotate(90deg);}
-.faq[open] .mk::after{transform:translate(-50%,-50%) rotate(0);opacity:0;}
-.faq .ans{overflow:hidden;font-size:15.5px;line-height:1.68;color:var(--t2);padding:0 60px 26px 4px;max-width:62ch;}
-.faq .ans a{color:var(--accent);font-weight:600;}
-.faq[open] summary{color:var(--accent);}
-.faq-aside .eyebrow{margin-bottom:20px;display:block;}
-.faq-aside h2{margin-bottom:18px;}
-.faq-aside p{font-size:16px;line-height:1.65;color:var(--t2);margin-bottom:26px;}
-.faq-cta{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;color:#fff;background:var(--accent);padding:13px 24px;border-radius:999px;box-shadow:0 10px 24px -12px rgba(95,79,212,.65);transition:transform .15s,filter .15s;}
-.faq-cta:hover{transform:translateY(-1px);filter:brightness(1.05);color:#fff;}
-@media (max-width:1000px){.faq-sec{padding:64px var(--pad);}.faq-grid{grid-template-columns:1fr;gap:36px;}.faq .ans{padding-right:30px;}}
-
-/* Responsive */
-@media (max-width:1000px){
-  :root{--pad:28px;}
-  .nav{flex-wrap:wrap;}
-  .burger{display:flex;order:2;}
-  .nav-links,.nav-right{order:3;flex-basis:100%;display:none;}
-  .nav.open .nav-links{display:flex;flex-direction:column;gap:2px;padding:14px 0 4px;}
-  .nav.open .nav-links a{padding:12px 2px;font-size:16px;border-bottom:1px solid var(--line);}
-  .nav.open .nav-links a::after{display:none;}
-  .nav.open .nav-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px 0 16px;}
-  .nav.open .nav-right .contact{padding:6px 2px;}
-  .nav.open .nav-right .btn-dark{width:100%;padding:14px;font-size:15px;}
-  .hero{padding:56px var(--pad) 56px;}
-  .hero-grid,.sec-2{grid-template-columns:1fr;gap:44px;}
-  .sec{padding:64px var(--pad);}
-  .dark-sec,.cta{padding:64px var(--pad);}
-  .stats{gap:20px 40px;}
-  .cards-3,.cards-4{grid-template-columns:1fr;}
-  .grid-2x2{grid-template-columns:1fr;}
-  .grid-art{aspect-ratio:16/11;}
-  .modelle-head{grid-template-columns:1fr!important;gap:20px!important;}
-}
-@media (max-width:560px){
-  .callrow{flex-direction:column;}
-  .stats .stat{width:calc(50% - 20px);}
-  .foot{flex-direction:column;align-items:flex-start;}
-}
-</style>
 
 <div class="scrollprog" id="scrollprog"></div>
 <nav class="nav" id="nav" style="scroll-margin-top:0"><span id="top"></span>
-  <a href="#top" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoN)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="#top" class="logo" aria-label="Vocaris Startseite"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><defs><linearGradient id="vlogoN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoN)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="nav-links">
     <a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="preise.html">Preise</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a>
   </div>
@@ -289,9 +36,11 @@ html{scroll-padding-top:88px;}
   <button class="burger" id="burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
 </nav>
 
+<div class="fortschritt" aria-hidden="true"></div>
+
 <!-- Hero -->
 <section class="hero" id="testanruf">
-  <div class="aurora"></div>
+  <div class="aurora-buehne" aria-hidden="true"><span class="korn"></span></div>
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <div class="eyebrow">DER KI-TELEFONASSISTENT</div>
@@ -307,29 +56,69 @@ html{scroll-padding-top:88px;}
       <div class="formerr" data-err></div>
       <div class="microcopy">Kostenlos und unverbindlich — Vocaris ruft Sie in wenigen Sekunden zurück. Hören schlägt Behaupten.</div>
     </div>
-    <div class="callcard">
-      <div class="ch">
-        <div class="live"><span class="dot"></span>Eingehender Anruf</div>
-        <div style="font-size:13px;color:var(--ph)" data-timer>00:00</div>
+
+    <!-- Gesprächssimulator.
+         Alle vier Gespräche stehen vollständig im HTML. Das Skript blendet
+         sie nur nacheinander ein — ohne JavaScript liest man das erste
+         Gespräch als ruhige Abschrift, und Suchmaschinen sehen alle vier. -->
+    <div>
+      <div class="sim-waehler" role="group" aria-label="Branche für das Beispielgespräch wählen">
+        <button type="button" data-branche="restaurant" aria-pressed="true">Restaurant</button>
+        <button type="button" data-branche="arztpraxis" aria-pressed="false">Arztpraxis</button>
+        <button type="button" data-branche="handwerk" aria-pressed="false">Handwerk</button>
+        <button type="button" data-branche="kanzlei" aria-pressed="false">Kanzlei</button>
       </div>
-      <div class="body">
-        <div class="bub in" data-b1>„Guten Tag, ich bräuchte kommende Woche einen Termin — geht Donnerstagnachmittag?"</div>
-        <div class="typing" data-typing><i></i><i></i><i></i></div>
-        <div class="bub out" data-b2>„Donnerstag ist um 14:30 oder 16:00 Uhr frei. Welche Zeit passt Ihnen besser?"</div>
-        <div class="wave" data-wave>
-          <i style="height:30%;background:var(--line-lav)"></i><i style="height:60%;background:var(--accent-2)"></i><i style="height:100%;background:var(--accent)"></i><i style="height:75%;background:var(--accent)"></i><i style="height:45%;background:var(--accent-2)"></i><i style="height:85%;background:var(--accent)"></i><i style="height:35%;background:var(--line-lav)"></i><i style="height:55%;background:var(--accent-2)"></i><i style="height:25%;background:var(--line-lav)"></i>
-          <span style="margin-left:auto;font-size:12px;color:var(--ph)">Antwortzeit 0,7 s</span>
+
+      <div class="sim" data-sim="restaurant">
+        <div class="sim-kopf">
+          <div class="sim-licht"><span class="sim-punkt"></span><span class="txt">Anruf geht ein</span></div>
+          <div class="welle" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="sim-uhr">00:00</div>
         </div>
-      </div>
-      <div class="cf callcf-anim" data-cf>
-        <span style="color:var(--ok);font-weight:600">✓ Termin gebucht</span><span>Bestätigung per SMS gesendet</span>
+
+        <div class="sim-koerper">
+          <div data-gespraech="restaurant" data-anlass="Reservierung geht ein" data-ergebnis="Tisch reserviert · Bestätigung per SMS">
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Guten Abend, haben Sie heute um acht noch einen Tisch für vier Personen?</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Um 20 Uhr wird es eng — um 20:30 Uhr hätte ich einen Vierertisch am Fenster. Passt Ihnen das?</div>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Ja, das passt. Einer von uns isst kein Gluten.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Notiert, ich hinterlege die Unverträglichkeit bei der Reservierung. Auf welchen Namen darf ich den Tisch buchen?</div>
+          </div>
+
+          <div data-gespraech="arztpraxis" data-anlass="Patientenanruf" data-ergebnis="Termin vergeben · Erinnerung per SMS" hidden>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Guten Morgen, ich bräuchte einen Termin zur Blutabnahme, möglichst diese Woche.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Für die Blutabnahme habe ich Mittwoch um 7:45 Uhr oder Freitag um 8:15 Uhr frei. Beides nüchtern, bitte.</div>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Mittwoch passt. Und ich bräuchte noch ein Folgerezept.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Das nehme ich auf. Nennen Sie mir bitte das Präparat — die Praxis legt es zum Termin bereit.</div>
+          </div>
+
+          <div data-gespraech="handwerk" data-anlass="Auftrag geht ein" data-ergebnis="Als dringend eingestuft · Rückruf angekündigt" hidden>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Bei uns im Bad läuft Wasser aus der Wand, unter dem Waschbecken.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Das nehme ich als dringend auf. Können Sie den Haupthahn zudrehen? Und nennen Sie mir bitte Straße und Hausnummer.</div>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Hahn ist zu. Lindenstraße 14, in Schwabing.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Danke. Der Chef ruft Sie in den nächsten Minuten zurück — der Auftrag liegt ihm bereits als Notfall vor.</div>
+          </div>
+
+          <div data-gespraech="kanzlei" data-anlass="Mandantenanruf" data-ergebnis="Anliegen erfasst · Termin vergeben" hidden>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Guten Tag, ich habe eine Kündigung erhalten und weiß nicht, ob die wirksam ist.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Das ordne ich dem Arbeitsrecht zu. Wichtig ist die Frist: Wann genau haben Sie die Kündigung bekommen?</div>
+            <div class="sim-blase rein"><span class="wer">Anrufer</span>Vorgestern, am Dienstag.</div>
+            <div class="sim-blase raus"><span class="wer">Vocaris</span>Dann bleibt Zeit. Ich habe morgen um 11 Uhr einen Termin frei — beraten wird Sie selbstverständlich die Anwältin, nicht ich.</div>
+          </div>
+
+          <div class="sim-tippt" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="sim-fuss">
+          <span class="sim-ergebnis">✓ <span class="txt">Tisch reserviert · Bestätigung per SMS</span></span>
+          <button type="button" class="sim-nochmal">Noch einmal abspielen</button>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Stats -->
-<div class="stats">
+<div class="stats" data-staffel>
   <div class="stat"><span class="n">&lt;&thinsp;1&thinsp;s</span><span class="l">Antwortzeit</span></div>
   <div class="stat"><span class="n">24/7</span><span class="l">erreichbar</span></div>
   <div class="stat"><span class="n">4</span><span class="l">KI-Modelle zur Wahl</span></div>
@@ -337,8 +126,20 @@ html{scroll-padding-top:88px;}
   <div class="stat"><span class="n">EU</span><span class="l">gehostet, DSGVO-konform</span></div>
 </div>
 
+<!-- Abschnittsnavigation -->
+<div class="marke" aria-label="Abschnitte dieser Seite">
+  <nav class="marke-inner">
+    <span class="schieber" aria-hidden="true"></span>
+    <a href="#produkt">Produkt</a>
+    <a href="#rechner">Was es kostet</a>
+    <a href="#branchen">Branchen</a>
+    <a href="#modelle">KI-Modelle</a>
+    <a href="#sicherheit">Sicherheit</a>
+  </nav>
+</div>
+
 <!-- Produkt -->
-<section class="sec" id="produkt">
+<section class="sec" data-zeig id="produkt">
   <div class="wrap sec-2">
     <div style="display:flex;flex-direction:column;gap:26px">
       <div class="eyebrow">KEIN ANRUFBEANTWORTER</div>
@@ -359,93 +160,173 @@ html{scroll-padding-top:88px;}
   </div>
 </section>
 
+<!-- Verlustrechner -->
+<section class="sec" data-zeig id="rechner" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div style="max-width:60ch;display:flex;flex-direction:column;gap:22px;margin-bottom:52px" data-zeig>
+      <div class="eyebrow">RECHNEN WIR NACH</div>
+      <h2 class="h2-big">Was kostet ein Telefon,<br>an das niemand geht?</h2>
+      <p style="font-size:17px;line-height:1.65;color:var(--t2)">Nicht jeder verpasste Anruf ist ein verlorener Auftrag — aber jeder dritte reicht schon. Stellen Sie ein, wie es bei Ihnen aussieht.</p>
+    </div>
+
+    <div class="verlust" data-verlust data-zeig>
+      <div class="regler">
+        <label>
+          <span class="lab"><span class="t">Anrufe pro Woche</span><span class="v" id="vAnrufeWocheV">60</span></span>
+          <input type="range" id="vAnrufeWoche" min="10" max="400" step="5" value="60">
+          <span class="hint">Alle eingehenden Anrufe, nicht nur die angenommenen.</span>
+        </label>
+        <label>
+          <span class="lab"><span class="t">Davon erreicht niemanden</span><span class="v" id="vQuoteV">20 %</span></span>
+          <input type="range" id="vQuote" min="5" max="60" step="1" value="20">
+          <span class="hint">Besetzt, außerhalb der Zeiten, oder es ging schlicht niemand ran. In den meisten Betrieben sind es mehr, als man denkt.</span>
+        </label>
+        <label>
+          <span class="lab"><span class="t">Wert eines Auftrags</span><span class="v" id="vWertV">180 €</span></span>
+          <input type="range" id="vWert" min="20" max="1500" step="10" value="180">
+          <span class="hint">Was ein durchschnittlicher Auftrag, Termin oder Tisch bei Ihnen einbringt.</span>
+        </label>
+      </div>
+
+      <div class="verlust-karte">
+        <span class="kicker">ENTGANGEN IM JAHR</span>
+        <div class="gross"><span id="vSumme">18.720</span> <small>€</small></div>
+        <p class="satz">Bei <b><span id="vProWoche">12</span> Anrufen pro Woche</b>, die niemanden erreichen — und der zurückhaltenden Annahme, dass nur jeder dritte davon ein Auftrag geworden wäre.</p>
+        <div class="trenn"></div>
+        <div class="gegen"><span>Vocaris im Jahr, ab</span><b><span id="vKosten">588</span> €</b></div>
+        <p class="satz" id="vFaktor" style="font-size:14px"></p>
+        <a href="preise.html" class="faq-cta" style="color:var(--accent-2)">Zu den Preisen <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Branchen -->
-<section class="sec" id="branchen" style="background:#fff;border-top:1px solid var(--line)">
+<section class="sec" data-zeig id="branchen" style="background:var(--paper);border-top:1px solid var(--line)">
   <div class="wrap">
     <div style="max-width:60ch;display:flex;flex-direction:column;gap:22px;margin-bottom:56px">
       <div class="eyebrow">BRANCHEN</div>
       <h2 class="h2-big">Für jeden Betrieb,<br>der ans Telefon muss.</h2>
       <p style="font-size:17px;line-height:1.65;color:var(--t2)">Vocaris kennt Ihre Branche — vom ersten Klingeln bis zur Bestätigung. Ohne IT-Projekt, ohne neue Software für Ihr Team.</p>
+      <div class="finder">
+        <label class="finder-feld">
+          <span class="lupe" aria-hidden="true">
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="8.6" cy="8.6" r="5.6"/><path d="M12.8 12.8 17 17"/></svg>
+          </span>
+          <input type="search" data-branchensuche placeholder="Ihre Branche suchen — z. B. Praxis, Werkstatt, Support" aria-label="Branche suchen">
+        </label>
+        <div class="finder-treffer" data-branchentreffer role="status" aria-live="polite"></div>
+      </div>
     </div>
-    <div class="cards-3">
-      <a class="icard hl" href="restaurants.html">
+    <div class="cards-3" data-staffel>
+      <a class="icard glanz hl" href="restaurants.html" data-suchwoerter="gastronomie wirtshaus lokal kneipe café cafe bistro gaststätte tisch reservierung">
         <div class="kicker">GASTRONOMIE</div>
         <div class="tt">Reservierung im vollen Haus</div>
         <p>Tische reservieren, Stammgäste an der Nummer erkennen, Warteliste führen — während Sie im Service stehen. Bestätigung per SMS.</p>
         <div class="more">Mehr für Restaurants →</div>
       </a>
-      <a class="icard" href="arztpraxen.html">
+      <a class="icard glanz" href="arztpraxen.html" data-suchwoerter="praxis arzt hausarzt zahnarzt facharzt mvz patient sprechstunde medizin">
         <div class="kicker">ARZTPRAXEN</div>
         <div class="tt">Nie mehr besetzt</div>
         <p>Termine, Rezeptwünsche und Rückrufe annehmen, wenn morgens alle Leitungen glühen — DSGVO-konform und ohne Warteschleife.</p>
         <div class="more">Mehr für Praxen →</div>
       </a>
-      <a class="icard" href="handwerk.html">
+      <a class="icard glanz" href="handwerk.html" data-suchwoerter="baustelle installateur elektriker sanitär maler dachdecker klempner heizung schreiner">
         <div class="kicker">HANDWERK &amp; BAU</div>
         <div class="tt">Kein Auftrag geht verloren</div>
         <p>Anrufe annehmen und Notfälle erkennen, während beide Hände voll sind. Vocaris legt jeden Auftrag sortiert vor und ruft zurück.</p>
         <div class="more">Mehr für Handwerk →</div>
       </a>
-      <a class="icard" href="autowerkstatt.html">
+      <a class="icard glanz" href="autowerkstatt.html" data-suchwoerter="kfz auto werkstatt reifen autohaus mechaniker inspektion tüv">
         <div class="kicker">KFZ &amp; AUTOWERKSTATT</div>
         <div class="tt">Termine ohne Hörer</div>
         <p>Serviceanfragen und TÜV-Termine annehmen, ohne die Hebebühne zu verlassen — Statusfragen inklusive, rund um die Uhr.</p>
         <div class="more">Mehr für Werkstätten →</div>
       </a>
-      <a class="icard" href="friseur.html">
+      <a class="icard glanz" href="friseur.html" data-suchwoerter="salon frisör barbier kosmetik nagelstudio beauty haare">
         <div class="kicker">FRISEUR &amp; SALON</div>
         <div class="tt">Termine am Stuhl</div>
         <p>Buchungen und Absagen annehmen, frei werdende Slots aus der Warteliste füllen, per SMS erinnern — Ihr Kalender bleibt voll.</p>
         <div class="more">Mehr für Salons →</div>
       </a>
-      <a class="icard" href="kanzlei.html">
+      <a class="icard glanz" href="kanzlei.html" data-suchwoerter="anwalt anwältin rechtsanwalt steuerberater notar mandant jurist recht">
         <div class="kicker">KANZLEIEN</div>
         <div class="tt">Jeder Mandant angenommen</div>
         <p>Mandantenanrufe qualifizieren, Termine vergeben und vertrauliche Nachrichten aufnehmen — professionell, vertraulich und konform.</p>
         <div class="more">Mehr für Kanzleien →</div>
       </a>
-      <a class="icard" href="hotel.html">
+      <a class="icard glanz" href="hotel.html" data-suchwoerter="pension gasthof beherbergung zimmer rezeption gäste übernachtung">
         <div class="kicker">HOTELLERIE</div>
         <div class="tt">Auch nachts erreichbar</div>
         <p>Zimmeranfragen aufnehmen, Fragen zu Anreise und Frühstück beantworten, bei Bedarf an die Rezeption durchstellen — mehrsprachig.</p>
         <div class="more">Mehr für Hotels →</div>
       </a>
-      <a class="icard" href="hausverwaltung.html">
+      <a class="icard glanz" href="hausverwaltung.html" data-suchwoerter="immobilienverwaltung wohnung mieter hausmeister weg mängel">
         <div class="kicker">HAUSVERWALTUNG</div>
         <div class="tt">Notfall zuerst</div>
         <p>Mängelmeldungen strukturiert aufnehmen, Wasserschaden und Heizungsausfall sofort an die Bereitschaft geben, Dauerfragen selbst beantworten.</p>
         <div class="more">Mehr für Verwaltungen →</div>
       </a>
-      <a class="icard" href="immobilienmakler.html">
+      <a class="icard glanz" href="immobilienmakler.html" data-suchwoerter="makler immobilien besichtigung wohnung haus verkauf vermietung">
         <div class="kicker">IMMOBILIEN</div>
         <div class="tt">Besichtigung vergeben</div>
         <p>Objektfragen beantworten, Interessenten vorqualifizieren und Besichtigungstermine vergeben — während Sie im Termin stehen.</p>
         <div class="more">Mehr für Makler →</div>
       </a>
-      <a class="icard" href="pflegedienst.html">
+      <a class="icard glanz" href="pflegedienst.html" data-suchwoerter="pflege ambulant altenpflege betreuung angehörige sozialstation">
         <div class="kicker">AMBULANTE PFLEGE</div>
         <div class="tt">Erreichbar auf Tour</div>
         <p>Anliegen von Angehörigen und Ärzten vollständig erfassen, Dringendes an die Rufbereitschaft geben, neue Anfragen aufnehmen.</p>
         <div class="more">Mehr für Pflegedienste →</div>
       </a>
-      <a class="icard" href="apotheke.html">
+      <a class="icard glanz" href="apotheke.html" data-suchwoerter="pharmazie medikament rezept notdienst hv">
         <div class="kicker">APOTHEKE</div>
         <div class="tt">HV-Tisch entlastet</div>
         <p>Öffnungszeiten und Notdienst nennen, Vorbestellungen aufnehmen — und jede pharmazeutische Frage sofort an Ihr Team durchstellen.</p>
         <div class="more">Mehr für Apotheken →</div>
       </a>
-      <a class="icard" href="versicherungsmakler.html">
+      <a class="icard glanz" href="versicherungsmakler.html" data-suchwoerter="versicherung schaden police vermittler assekuranz">
         <div class="kicker">VERSICHERUNG</div>
         <div class="tt">Schaden vollständig erfasst</div>
         <p>Schadenmeldungen nach Ihrem Schema aufnehmen, Beratungstermine vergeben, nach Dringlichkeit sortieren — auch nach dem Unwetter.</p>
         <div class="more">Mehr für Makler →</div>
+      </a>
+      <a class="icard glanz" href="software.html" data-suchwoerter="saas it software support kundenservice helpdesk technik entwickler app hotline">
+        <div class="kicker">SOFTWARE &amp; SAAS</div>
+        <div class="tt">Support ohne Callcenter</div>
+        <p>Supportanrufe annehmen, nach Dringlichkeit sortieren und Bekanntes aus Ihrer Wissensbasis beantworten — Ihr Team bleibt in der Arbeit.</p>
+        <div class="more">Mehr für Softwareanbieter →</div>
+      </a>
+      <a class="icard glanz" href="onlineshop.html" data-suchwoerter="shop e-commerce handel versand bestellung retoure webshop kundenservice">
+        <div class="kicker">ONLINEHANDEL</div>
+        <div class="tt">Erreichbar, wenn gekauft wird</div>
+        <p>Fragen zu Lieferung, Rückgabe und Zahlung beantworten, Reklamationen aufnehmen — auch abends, wenn bestellt wird.</p>
+        <div class="more">Mehr für Onlineshops →</div>
+      </a>
+      <a class="icard glanz" href="physiotherapie.html" data-suchwoerter="physio praxis krankengymnastik therapie reha massage heilmittel">
+        <div class="kicker">PHYSIOTHERAPIE</div>
+        <div class="tt">Termine trotz voller Hände</div>
+        <p>Rezeptreihen am Stück vergeben, kurzfristige Ausfälle aus der Warteliste nachbesetzen, Rezeptfragen beantworten.</p>
+        <div class="more">Mehr für Physiotherapie →</div>
+      </a>
+      <a class="icard glanz" href="tierarzt.html" data-suchwoerter="praxis tiere hund katze veterinär tiermedizin notdienst">
+        <div class="kicker">TIERARZTPRAXIS</div>
+        <div class="tt">Notfall erkannt</div>
+        <p>Termine vergeben, Notfälle nach Ihren Regeln erkennen und außerhalb der Sprechzeiten den Notdienst nennen.</p>
+        <div class="more">Mehr für Tierarztpraxen →</div>
+      </a>
+      <a class="icard glanz" href="fitnessstudio.html" data-suchwoerter="fitness studio gym sport training probetraining verein">
+        <div class="kicker">FITNESS &amp; STUDIO</div>
+        <div class="tt">Probetraining vereinbart</div>
+        <p>Tarife und Kurszeiten erklären, Probetrainings vergeben, Mitgliederanliegen aufnehmen — auch wenn die Theke leer ist.</p>
+        <div class="more">Mehr für Fitnessstudios →</div>
       </a>
     </div>
   </div>
 </section>
 
 <!-- Modelle -->
-<section class="sec" id="modelle" style="border-top:1px solid var(--line)">
+<section class="sec" data-zeig id="modelle" style="border-top:1px solid var(--line)">
   <div class="wrap">
     <div class="sec-2 modelle-head" style="margin-bottom:56px;align-items:end">
       <div style="display:flex;flex-direction:column;gap:22px">
@@ -454,7 +335,31 @@ html{scroll-padding-top:88px;}
       </div>
       <p style="margin-bottom:8px;font-size:17px;line-height:1.65;color:var(--t2)">Vier führende Sprachmodelle, pro Firma umschaltbar, jeweils mit eigenen Stimmen — inklusive einer rein europäischen Option. Fällt ein Anbieter aus, übernimmt automatisch der nächste.</p>
     </div>
-    <div class="cards-4">
+    <div class="probe" data-probe data-zeig>
+      <div class="probe-kopf">
+        <div>
+          <div class="eyebrow">ANTWORTZEIT, GEMESSEN</div>
+          <h3 class="probe-titel">Wie lange dauert es, bis geantwortet wird?</h3>
+          <p class="probe-text">Die Balken laufen in Echtzeit — Sie warten genauso lange wie Ihr Anrufer. Gemessen an echten Gesprächen über unsere Anlage, nicht aus Datenblättern übernommen.</p>
+        </div>
+        <button type="button" class="probe-start" data-probe-start>Noch einmal</button>
+      </div>
+      <div class="probe-reihen">
+        <div class="probe-reihe" data-ms="700">
+          <div class="probe-name">Schnelle Strecke <small>OpenAI GPT-Realtime</small></div>
+          <div class="probe-bahn"><span class="probe-balken"></span></div>
+          <div class="probe-wert">…</div>
+        </div>
+        <div class="probe-reihe eu" data-ms="1900">
+          <div class="probe-name">Europäische Strecke <small>Mistral, Verarbeitung in der EU</small></div>
+          <div class="probe-bahn"><span class="probe-balken"></span></div>
+          <div class="probe-wert">…</div>
+        </div>
+      </div>
+      <p class="probe-fuss">Die europäische Strecke braucht rund <b>1,2 Sekunden länger</b>, weil sie Sprache erst in Text wandelt, dann denkt, dann wieder spricht — drei Schritte statt einem. Dafür verlässt kein Ton die EU. Welcher Weg richtiger ist, entscheiden Sie pro Firma.</p>
+    </div>
+
+    <div class="cards-4" data-staffel>
       <div class="mcard"><div class="name">OpenAI GPT-Realtime</div><p>Natives Speech-to-Speech, sehr schnell — der bewährte Standard.</p><div class="st" style="color:var(--ok)">● Live</div></div>
       <div class="mcard"><div class="name">xAI Grok Voice</div><p>Klingt hervorragend auf Deutsch, schnell — der aktuelle Standard.</p><div class="st" style="color:var(--ok)">● Live</div></div>
       <div class="mcard"><div class="name">Google Gemini Live</div><p>Die breiteste Mehrsprachigkeit für internationale Anrufer.</p><div class="st" style="color:var(--ph)">○ In Vorbereitung</div></div>
@@ -468,7 +373,7 @@ html{scroll-padding-top:88px;}
 </section>
 
 <!-- Sicherheit -->
-<section class="dark-sec" id="sicherheit">
+<section class="dark-sec" data-zeig id="sicherheit">
   <div class="wrap sec-2">
     <div style="display:flex;flex-direction:column;gap:22px">
       <div class="eyebrow">SICHERHEIT &amp; DATENSCHUTZ</div>
@@ -485,22 +390,22 @@ html{scroll-padding-top:88px;}
 </section>
 
 <!-- Start -->
-<section class="sec">
+<section class="sec" data-zeig>
   <div class="wrap">
     <div class="centered" style="margin-bottom:60px">
       <div class="eyebrow">DER START</div>
       <h2 class="h2-big">In 15 Minuten startklar.<br>Kein IT-Projekt.</h2>
     </div>
-    <div class="cards-3">
-      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">1</div><div class="t">Wissen einlesen</div><p>Website, PDF oder Foto genügt — die KI baut Ihre Wissensbasis in Minuten auf.</p></div>
-      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">2</div><div class="t">Stimme wählen</div><p>KI-Modell und Stimme aussuchen, Rufnummer verbinden — Ihre bestehende Nummer bleibt.</p></div>
-      <div class="icard step" style="background:#fff;border:1px solid var(--line)"><div class="n">3</div><div class="t">Anrufe abgeben</div><p>Vocaris übernimmt — Sie sehen jede Zusammenfassung, jedes Transkript, jeden gebuchten Termin.</p></div>
+    <div class="cards-3" data-staffel>
+      <div class="icard glanz step" style="background:#fff;border:1px solid var(--line)"><div class="n">1</div><div class="t">Wissen einlesen</div><p>Website, PDF oder Foto genügt — die KI baut Ihre Wissensbasis in Minuten auf.</p></div>
+      <div class="icard glanz step" style="background:#fff;border:1px solid var(--line)"><div class="n">2</div><div class="t">Stimme wählen</div><p>KI-Modell und Stimme aussuchen, Rufnummer verbinden — Ihre bestehende Nummer bleibt.</p></div>
+      <div class="icard glanz step" style="background:#fff;border:1px solid var(--line)"><div class="n">3</div><div class="t">Anrufe abgeben</div><p>Vocaris übernimmt — Sie sehen jede Zusammenfassung, jedes Transkript, jeden gebuchten Termin.</p></div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="faq-sec" id="faq">
+<section class="faq-sec" data-zeig id="faq">
   <div class="wrap faq-grid">
     <div class="faq-aside">
       <span class="eyebrow">HÄUFIGE FRAGEN</span>
@@ -560,7 +465,7 @@ html{scroll-padding-top:88px;}
 
 <!-- Footer -->
 <footer class="foot">
-  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="22" height="22"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vlogoF)"/><path d="M16 32c0-7 11-7 11 0s11 7 11 0 11-7 11 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></span>Vocaris</a>
+  <a href="index.html" class="logo" style="font-size:18px"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><defs><linearGradient id="vlogoF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#vlogoF)"/><g fill="#fff"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg></span>Vocaris</a>
   <div class="fl"><a href="#produkt">Produkt</a><a href="#branchen">Branchen</a><a href="preise.html">Preise</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a><a href="#faq">FAQ</a></div>
   <div class="fr"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
@@ -700,6 +605,7 @@ html{scroll-padding-top:88px;}
 
 </script>
 
+<script src="assets/vocaris.js" defer></script>
 <script src="pv.js" defer></script>
 </body>
 </html>
