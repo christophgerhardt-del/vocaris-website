@@ -49,7 +49,7 @@ p{margin:0;}
 .formerr{color:#c0392b;font-size:13px;min-height:1em;}
 
 /* Live-Karte */
-.callcard{background:#fff;border-radius:20px;box-shadow:0 24px 60px -24px rgba(38,28,92,.25);overflow:hidden;}
+.callcard{background:#fff;border-radius:20px;box-shadow:0 24px 60px -24px rgba(10,58,74,.25);overflow:hidden;}
 .callcard .ch{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid #eeecf5;}
 .callcard .ch .live{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:vpulse 1.6s infinite;}
@@ -79,10 +79,10 @@ p{margin:0;}
 .grid-art{position:relative;border-radius:16px;overflow:hidden;background:var(--lav-2);aspect-ratio:1;
   background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px),linear-gradient(#ffffff55 1px,transparent 1px),linear-gradient(90deg,#ffffff55 1px,transparent 1px);
   background-size:18px 18px,18px 18px,90px 90px,90px 90px;}
-.float{position:absolute;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 12px 30px -12px rgba(38,28,92,.35);font-size:13px;max-width:60%;}
+.float{position:absolute;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 12px 30px -12px rgba(10,58,74,.35);font-size:13px;max-width:60%;}
 .float .t{font-weight:600;margin-bottom:3px;}
 .float .s{color:var(--t3);}
-.float.dark{background:var(--ink);color:var(--paper);box-shadow:0 12px 30px -12px rgba(38,28,92,.5);}
+.float.dark{background:var(--ink);color:var(--paper);box-shadow:0 12px 30px -12px rgba(10,58,74,.5);}
 .float.dark .s{color:var(--accent-2);}
 
 /* Branchen */
@@ -149,16 +149,16 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 @keyframes aur{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(-3%,2%,0) scale(1.09)}}
 .hero-grid{position:relative;z-index:1;}
 .nav{backdrop-filter:saturate(1.3) blur(9px);background:rgba(246,245,241,.82);transition:box-shadow .25s,background .25s;}
-.nav.scrolled{box-shadow:0 8px 30px -22px rgba(38,28,92,.55);background:rgba(246,245,241,.94);}
+.nav.scrolled{box-shadow:0 8px 30px -22px rgba(10,58,74,.55);background:rgba(246,245,241,.94);}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .75s cubic-bezier(.22,.61,.36,1);}
 .reveal.in{opacity:1;transform:none;}
 .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
 .mcard,.icard,.scard{transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s,border-color .22s;}
-.mcard:hover,.icard:hover{transform:translateY(-5px);box-shadow:0 22px 46px -22px rgba(38,28,92,.30);}
+.mcard:hover,.icard:hover{transform:translateY(-5px);box-shadow:0 22px 46px -22px rgba(10,58,74,.30);}
 .icard.hl:hover{box-shadow:0 22px 46px -20px rgba(95,79,212,.45);}
 .callform button,.btn-dark,.submit{box-shadow:0 10px 24px -12px rgba(95,79,212,.65);}
 .callcard{transition:transform .4s cubic-bezier(.22,.61,.36,1),box-shadow .4s;}
-.hero:hover .callcard{transform:translateY(-4px);box-shadow:0 34px 74px -28px rgba(38,28,92,.32);}
+.hero:hover .callcard{transform:translateY(-4px);box-shadow:0 34px 74px -28px rgba(10,58,74,.32);}
 .stat .n{font-variant-numeric:tabular-nums;}
 .bub{opacity:0;transform:translateY(8px) scale(.98);transition:opacity .4s,transform .4s;}
 .bub.show{opacity:1;transform:none;}
