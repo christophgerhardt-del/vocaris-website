@@ -24,10 +24,10 @@
   --schnell:.18s; --mittel:.34s; --langsam:.72s;
 
   /* Erweiterte Farbrampe für Verläufe und Glanzkanten. */
-  --v1:#5f4fd4; --v2:#7c3aed; --v3:#4f46e5; --v4:#a78bfa;
+  --v1:#0E7C96; --v2:#12A0B8; --v3:#0A6A8C; --v4:#6FCEDE;
   --glanz:rgba(255,255,255,.7);
-  --schatten-weich:0 24px 60px -28px rgba(38,28,92,.30);
-  --schatten-hart:0 40px 90px -32px rgba(38,28,92,.42);
+  --schatten-weich:0 24px 60px -28px rgba(10,58,74,.30);
+  --schatten-hart:0 40px 90px -32px rgba(10,58,74,.42);
 }
 
 /* ── Aurora: der lebende Verlauf ───────────────────────────────────────────
@@ -39,9 +39,9 @@
 .aurora-buehne::after{
   content:"";position:absolute;inset:-30%;
   background:
-    radial-gradient(38% 44% at 22% 30%, rgba(124,58,237,.30), transparent 62%),
-    radial-gradient(34% 40% at 78% 22%, rgba(79,70,229,.26), transparent 60%),
-    radial-gradient(44% 48% at 58% 82%, rgba(167,139,250,.24), transparent 64%);
+    radial-gradient(38% 44% at 22% 30%, rgba(18,160,184,.30), transparent 62%),
+    radial-gradient(34% 40% at 78% 22%, rgba(10,106,140,.26), transparent 60%),
+    radial-gradient(44% 48% at 58% 82%, rgba(111,206,222,.24), transparent 64%);
   filter:blur(14px);
   animation:aurora-wandern 26s var(--ease) infinite alternate;
 }
@@ -89,7 +89,7 @@
   content:"";position:absolute;inset:0;z-index:-1;opacity:0;
   transition:opacity var(--mittel) var(--ease);
   background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),
-             rgba(124,58,237,.14), transparent 68%);
+             rgba(18,160,184,.14), transparent 68%);
 }
 .glanz:hover::before{opacity:1;}
 .glanz{transition:transform var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease), border-color var(--mittel) var(--ease);}
@@ -102,7 +102,7 @@
 .marke-inner{display:flex;gap:4px;padding:5px;border-radius:999px;pointer-events:auto;
   background:rgba(255,255,255,.72);backdrop-filter:blur(14px) saturate(1.6);
   -webkit-backdrop-filter:blur(14px) saturate(1.6);
-  border:1px solid var(--line-lav);box-shadow:0 10px 30px -18px rgba(38,28,92,.4);
+  border:1px solid var(--line-lav);box-shadow:0 10px 30px -18px rgba(10,58,74,.4);
   position:relative;}
 .marke a{position:relative;z-index:1;font-size:13px;font-weight:500;color:var(--t2);
   padding:8px 16px;border-radius:999px;white-space:nowrap;
@@ -208,7 +208,7 @@
   border-radius:999px;background:var(--line-lav);outline:none;}
 .verlust input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
   width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;
-  border:3px solid #fff;box-shadow:0 2px 10px rgba(38,28,92,.32);
+  border:3px solid #fff;box-shadow:0 2px 10px rgba(10,58,74,.32);
   transition:transform var(--schnell) var(--ease);}
 .verlust input[type=range]::-webkit-slider-thumb:active{transform:scale(1.16);}
 .verlust input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;
@@ -219,7 +219,7 @@
   display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;
   box-shadow:var(--schatten-hart);}
 .verlust-karte::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(70% 90% at 100% 0%, rgba(124,58,237,.42), transparent 62%);}
+  background:radial-gradient(70% 90% at 100% 0%, rgba(18,160,184,.42), transparent 62%);}
 .verlust-karte > *{position:relative;}
 .verlust-karte .kicker{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--accent-2);}
 .verlust-karte .gross{font-size:clamp(40px,5.6vw,60px);font-weight:700;letter-spacing:-.03em;
@@ -310,9 +310,9 @@
 }
 .callform button{
   background:var(--marke-verlauf);
-  box-shadow:0 2px 8px -2px rgba(105,65,242,.5), 0 12px 28px -12px rgba(105,65,242,.55);
+  box-shadow:0 2px 8px -2px rgba(14,124,150,.5), 0 12px 28px -12px rgba(14,124,150,.55);
 }
-.callform button:hover{filter:brightness(1.07) saturate(1.05);box-shadow:0 4px 14px -2px rgba(105,65,242,.55), 0 18px 40px -14px rgba(105,65,242,.6);}
+.callform button:hover{filter:brightness(1.07) saturate(1.05);box-shadow:0 4px 14px -2px rgba(14,124,150,.55), 0 18px 40px -14px rgba(14,124,150,.6);}
 .btn-dark{background:var(--text-1);}
 .btn-dark:hover{box-shadow:var(--hoch-2);}
 
@@ -326,7 +326,7 @@
 }
 .callform input:focus{
   border-color:var(--marke);
-  box-shadow:0 0 0 4px rgba(105,65,242,.14), var(--hoch-1);
+  box-shadow:0 0 0 4px rgba(14,124,150,.14), var(--hoch-1);
 }
 
 /* ── Karten ────────────────────────────────────────────────────────────────
@@ -378,8 +378,8 @@
 /* ── Dunkle Abschnitte ─────────────────────────────────────────────────────*/
 .dark-sec,.cta{
   background:
-    radial-gradient(60% 80% at 88% 8%, rgba(124,58,237,.30), transparent 60%),
-    radial-gradient(50% 70% at 6% 96%, rgba(79,70,229,.24), transparent 62%),
+    radial-gradient(60% 80% at 88% 8%, rgba(18,160,184,.30), transparent 60%),
+    radial-gradient(50% 70% at 6% 96%, rgba(10,106,140,.24), transparent 62%),
     var(--dunkel);
   color:#fff;
 }
@@ -442,9 +442,9 @@
 .aurora-buehne::before{
   opacity:.42;filter:blur(30px);
   background:
-    radial-gradient(32% 38% at 18% 26%, rgba(124,58,237,.30), transparent 66%),
-    radial-gradient(28% 34% at 82% 18%, rgba(79,70,229,.24), transparent 64%),
-    radial-gradient(38% 42% at 62% 88%, rgba(167,139,250,.22), transparent 68%);
+    radial-gradient(32% 38% at 18% 26%, rgba(18,160,184,.30), transparent 66%),
+    radial-gradient(28% 34% at 82% 18%, rgba(10,106,140,.24), transparent 64%),
+    radial-gradient(38% 42% at 62% 88%, rgba(111,206,222,.22), transparent 68%);
 }
 .aurora-buehne::after{opacity:.3;}
 .aurora-buehne .korn{opacity:.035;}
@@ -499,7 +499,7 @@
   box-shadow:none;accent-color:var(--marke);cursor:pointer;
   appearance:auto;-webkit-appearance:checkbox;
 }
-.callform .consent input[type=checkbox]:focus{box-shadow:0 0 0 3px rgba(105,65,242,.18);}
+.callform .consent input[type=checkbox]:focus{box-shadow:0 0 0 3px rgba(14,124,150,.18);}
 
 /* BEFUND: Die Simulator-Karte war viel höher als ihr Inhalt — bei einer
    sichtbaren Sprechblase klaffte darunter eine leere weiße Fläche. Sie wächst
@@ -565,7 +565,7 @@ html,body{max-width:100%;overflow-x:clip;}
   padding:0 18px;background:var(--flaeche-1);border:1px solid var(--linie-stark);
   border-radius:var(--rund-voll);box-shadow:var(--hoch-1);
   transition:border-color var(--mittel) var(--ease), box-shadow var(--mittel) var(--ease);}
-.finder-feld:focus-within{border-color:var(--marke);box-shadow:0 0 0 4px rgba(105,65,242,.14),var(--hoch-1);}
+.finder-feld:focus-within{border-color:var(--marke);box-shadow:0 0 0 4px rgba(14,124,150,.14),var(--hoch-1);}
 .finder-feld .lupe{color:var(--text-3);display:flex;flex:none;}
 .finder-feld input{flex:1;border:0;outline:none;background:none;font-family:inherit;
   font-size:15px;color:var(--text-1);min-height:52px;padding:0;}

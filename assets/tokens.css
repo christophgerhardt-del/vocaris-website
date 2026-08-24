@@ -12,23 +12,25 @@
    bestehende Verwendungen sofort mit, ohne dass eine Datei angefasst werden
    muss. Wer ein neues Element baut, nimmt die neuen, sprechenderen Namen.
 
-   ZUR FARBWAHL: Ausgangspunkt war das Logo — ein Verlauf von #7c3aed nach
-   #4f46e5. Eine Palette, die daneben fremd wirkt, macht das Logo zum
-   Fremdkörper. Also ist alles um dieses Violett-Indigo herum aufgebaut:
-   heller und klarer als vorher, mit deutlich mehr Kontrast im Text, und mit
-   genau einer zweiten Farbe für Zahlen, die wehtun sollen.
+   ZUR FARBWAHL: Die Marke war Violett und ist jetzt Petrol — ein tiefes
+   Blaugrün. Zwei Gründe. Fünf der siebzehn Branchen kommen aus dem
+   Gesundheitsbereich (Praxis, Apotheke, Physiotherapie, Tierarzt, Pflege);
+   dort liest sich Petrol sachlich, wo Violett verspielt wirkt. Und der
+   Wettbewerb ist fast durchgehend blau oder violett — diese Farbe ist
+   unterscheidbar, ohne laut zu sein.
+   Das Logo trägt denselben Verlauf, sonst wäre es ein Fremdkörper.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root{
   /* ── Flächen ──────────────────────────────────────────────────────────────
-     Ein Hauch Wärme bleibt: Reines Kaltweiß sieht aus wie jedes andere
-     Software-Angebot. Der Papiercharakter war das Eigene daran — nur heller
-     und klarer als vorher. */
-  --flaeche-0:#faf9f7;      /* Seitenhintergrund */
+     Ein Hauch Wärme bleibt im Seitengrund: Reines Kaltweiß sieht aus wie
+     jedes andere Software-Angebot. Die getönten Flächen ziehen dagegen ins
+     Petrol, damit Hero und Karten zur Marke gehören. */
+  --flaeche-0:#F9FAFA;      /* Seitenhintergrund */
   --flaeche-1:#ffffff;      /* Karten, erhobene Flächen */
-  --flaeche-2:#f3f1fa;      /* ruhige Füllung, Eingabefelder */
-  --flaeche-tint:#efecfb;   /* der Lavendel-Waschgang, Hero */
-  --flaeche-tint-2:#e2dbf8;
+  --flaeche-2:#EEF5F7;      /* ruhige Füllung, Eingabefelder */
+  --flaeche-tint:#E4F2F6;   /* der Lavendel-Waschgang, Hero */
+  --flaeche-tint-2:#CBE9EF;
 
   /* ── Text ─────────────────────────────────────────────────────────────────
      Kräftiger als bisher. #1a1723 war auf hellem Grund weich; #14121c sitzt
@@ -39,13 +41,13 @@
   --text-4:#9a96ab;
 
   /* ── Marke ────────────────────────────────────────────────────────────────
-     Etwas elektrischer als das alte #5f4fd4, aber in derselben Familie —
-     das Logo passt weiterhin dazu. */
-  --marke:#6941f2;
-  --marke-tief:#5a34d9;
-  --marke-hell:#a78bfa;
-  --marke-zart:#ede7fe;
-  --marke-verlauf:linear-gradient(135deg,#7c3aed,#4f46e5);
+     Petrol: dunkel genug für weißen Text darauf, hell genug, um auf dunklem
+     Grund zu leuchten. Beides musste dieselbe Farbe können. */
+  --marke:#0E7C96;
+  --marke-tief:#0A5B70;
+  --marke-hell:#6FCEDE;
+  --marke-zart:#DFF3F7;
+  --marke-verlauf:linear-gradient(135deg,#12A0B8,#0A6A8C);
 
   /* ── Signalfarben ─────────────────────────────────────────────────────────
      Genau zwei, und beide bedeuten etwas: Grün, wenn etwas gelungen ist.
@@ -57,22 +59,22 @@
   --weh-hell:#ff9878;
 
   /* ── Linien ───────────────────────────────────────────────────────────────*/
-  --linie:#e9e6f0;
-  --linie-stark:#dcd7ec;
-  --linie-dunkel:#2a2438;
+  --linie:#E4EDEF;
+  --linie-stark:#CFE4E9;
+  --linie-dunkel:#23383F;
 
   /* ── Dunkle Flächen ───────────────────────────────────────────────────────*/
-  --dunkel:#14111f;
-  --dunkel-2:#1d1830;
-  --auf-dunkel:#a9a4bc;
+  --dunkel:#0E1A20;
+  --dunkel-2:#15272F;
+  --auf-dunkel:#9BB4BC;
 
   /* ── Erhebung ─────────────────────────────────────────────────────────────
-     Drei Stufen, mehr braucht niemand. Alle mit violettem Unterton statt
-     neutralem Grau — dadurch wirkt der Schatten wie Licht auf dieser Seite
-     und nicht wie eine aufgeklebte Wolke. */
-  --hoch-1:0 1px 2px rgba(20,17,31,.05), 0 2px 8px -2px rgba(56,40,120,.08);
-  --hoch-2:0 4px 12px -4px rgba(20,17,31,.08), 0 16px 40px -18px rgba(56,40,120,.22);
-  --hoch-3:0 8px 20px -8px rgba(20,17,31,.10), 0 40px 90px -32px rgba(56,40,120,.34);
+     Drei Stufen, mehr braucht niemand. Alle mit petrolfarbenem Unterton
+     statt neutralem Grau — dadurch wirkt der Schatten wie Licht auf dieser
+     Seite und nicht wie eine aufgeklebte Wolke. */
+  --hoch-1:0 1px 2px rgba(20,17,31,.05), 0 2px 8px -2px rgba(12,70,90,.08);
+  --hoch-2:0 4px 12px -4px rgba(20,17,31,.08), 0 16px 40px -18px rgba(12,70,90,.22);
+  --hoch-3:0 8px 20px -8px rgba(20,17,31,.10), 0 40px 90px -32px rgba(12,70,90,.34);
 
   /* ── Rundungen ────────────────────────────────────────────────────────────
      Großzügiger als vorher. Das ist der stärkste einzelne Hebel dafür, dass
@@ -114,7 +116,7 @@
   --lav:var(--flaeche-tint);
   --lav-2:var(--flaeche-tint-2);
   --bubble:var(--marke-zart);
-  --cardfoot:#f8f6fd;
+  --cardfoot:#F4FAFB;
   --ink:var(--text-1);
   --t2:var(--text-2);
   --t3:var(--text-3);
