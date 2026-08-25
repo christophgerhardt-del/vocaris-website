@@ -24,7 +24,7 @@
   --schnell:.18s; --mittel:.34s; --langsam:.72s;
 
   /* Erweiterte Farbrampe für Verläufe und Glanzkanten. */
-  --v1:#0E7C96; --v2:#12A0B8; --v3:#0A6A8C; --v4:#6FCEDE;
+  --v1:#5c5aee; --v2:#4f8bf5; --v3:#3ecfd5; --v4:#9e9bff;
   --glanz:rgba(255,255,255,.7);
   --schatten-weich:0 24px 60px -28px rgba(10,58,74,.30);
   --schatten-hart:0 40px 90px -32px rgba(10,58,74,.42);
@@ -631,3 +631,177 @@ html,body{max-width:100%;overflow-x:clip;}
 /* Die Abschnittsleiste saß dicht auf den Überschriften. Etwas Luft darunter,
    damit sie beim Scrollen nicht in den Text schneidet. */
 .marke{padding-top:12px;padding-bottom:20px;}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEUAUSRICHTUNG — sachlicher, ruhiger, gebauter
+   ══════════════════════════════════════════════════════════════════════════
+   Diese Schicht liegt zuoberst und setzt bewusst frühere Festlegungen außer
+   Kraft. Sie zu ergänzen statt die alten Zeilen zu suchen hält die Änderung
+   an einem Ort und im Zweifel rückgängig zu machen.
+
+   Leitgedanke: Marineblau trägt, Indigo betont, Weiß atmet. Weniger Schatten,
+   klarere Kanten, ruhigere Rundungen. Die weichen Farbwolken weichen einem
+   schräg angeschnittenen Farbband — das wirkt gebaut statt gemalt.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Das Farbband im Kopfbereich ───────────────────────────────────────────
+   Ein großer, leicht gekippter Block mit Verlauf, dessen untere Kante
+   diagonal durch die Fläche schneidet. Umgesetzt über skewY auf einem
+   überstehenden Element: kein Bild, kein Canvas, gestochen scharf auf jedem
+   Bildschirm und beliebig hoch skalierbar. */
+.hero{background:var(--flaeche-1);position:relative;overflow:hidden;}
+.aurora-buehne{position:absolute;inset:-20% -10% auto -10%;height:130%;overflow:visible;}
+/* EINE Diagonale, nicht zwei. Der erste Versuch legte zwei gekippte Blöcke
+   übereinander — dabei entstanden zwei Schnittkanten, die sich bissen. Jetzt
+   ein Block, dessen Verlauf nach unten ausläuft: Die Farbe sitzt oben, wo
+   die Überschrift steht, und gibt den Text weiter unten frei. */
+.aurora-buehne::before{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0) 34%, rgba(246,249,252,.75) 74%, var(--flaeche-1) 100%),
+    linear-gradient(101deg, rgba(92,90,238,.20) 0%, rgba(79,139,245,.15) 46%, rgba(62,207,213,.18) 100%),
+    var(--flaeche-tint);
+  transform:skewY(-7deg);transform-origin:top left;
+  filter:none;animation:none;
+}
+.aurora-buehne::after{display:none;}
+.aurora-buehne .korn{display:none;}
+.branch-hero .aurora-buehne{inset:-24% -10% auto -10%;height:120%;}
+
+/* ── Schrift: Marineblau trägt ─────────────────────────────────────────────*/
+body{color:var(--text-1);}
+h1,h2,h3{color:var(--text-1);}
+.hero h1{letter-spacing:-.032em;line-height:1.05;}
+.h2-big{letter-spacing:-.028em;line-height:1.1;}
+.hero p.lede{color:var(--text-2);}
+.eyebrow{color:var(--marke);letter-spacing:.12em;font-size:12.5px;font-weight:600;}
+
+/* ── Navigation ───────────────────────────────────────────────────────────*/
+.nav{background:rgba(255,255,255,.86);border-bottom:1px solid transparent;
+  backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);}
+.nav.scrolled{background:rgba(255,255,255,.95);border-bottom-color:var(--linie);}
+.nav-links a{color:var(--text-2);font-weight:500;}
+.nav-links a:hover{color:var(--marke);}
+.nav-links a::after{background:var(--marke);height:2px;}
+
+/* ── Knöpfe ───────────────────────────────────────────────────────────────*/
+.callform button{
+  background:var(--marke);box-shadow:var(--hoch-marke);
+  border-radius:var(--rund-voll);font-weight:600;letter-spacing:-.005em;
+}
+.callform button:hover{background:var(--marke-tief);filter:none;
+  box-shadow:0 3px 8px -1px rgba(92,90,238,.36), 0 16px 34px -12px rgba(92,90,238,.44);}
+.btn-dark{background:var(--navy);border-radius:var(--rund-voll);}
+.btn-dark:hover{background:var(--navy-2);box-shadow:var(--hoch-2);}
+
+/* ── Eingabefelder ────────────────────────────────────────────────────────*/
+.callform input,.finder-feld{
+  border-radius:var(--rund-voll);border:1px solid var(--linie-stark);
+  background:var(--flaeche-1);box-shadow:var(--hoch-1);
+}
+.callform input:focus,.finder-feld:focus-within{
+  border-color:var(--marke);box-shadow:0 0 0 3px rgba(92,90,238,.16);
+}
+
+/* ── Karten: Kante statt Wolke ────────────────────────────────────────────*/
+.icard,.tkarte,.softcard,.mcard,.scard,.probe{border-radius:var(--rund-l);}
+.icard{
+  background:var(--flaeche-1);border:1px solid var(--linie);
+  box-shadow:var(--hoch-1);padding:28px;
+}
+.icard.hl{background:var(--flaeche-1);border-color:var(--marke-hell);
+  box-shadow:0 0 0 1px rgba(92,90,238,.14), var(--hoch-1);}
+.icard .kicker{color:var(--text-3);letter-spacing:.09em;}
+.icard .tt{color:var(--text-1);font-size:16.5px;letter-spacing:-.012em;}
+.icard p{color:var(--text-2);}
+.icard .more{color:var(--marke);font-weight:600;}
+.glanz:hover{transform:translateY(-2px);box-shadow:var(--hoch-2);border-color:var(--linie-stark);}
+.glanz::before{background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),
+  rgba(92,90,238,.07), transparent 70%);}
+
+.softcard{background:var(--flaeche-tint);border:1px solid var(--linie);box-shadow:none;}
+
+/* ── Zahlenband ───────────────────────────────────────────────────────────*/
+.stats{background:var(--flaeche-1);border-top:1px solid var(--linie);border-bottom:1px solid var(--linie);}
+.stats .stat .n{background:none;-webkit-text-fill-color:currentColor;color:var(--navy);
+  letter-spacing:-.028em;}
+.stats .stat .l{color:var(--text-3);}
+
+/* ── Dunkle Abschnitte: Marineblau, kein Farbnebel ────────────────────────*/
+.dark-sec,.cta{
+  background:linear-gradient(160deg, var(--navy-2) 0%, var(--navy) 62%);
+  color:#fff;
+}
+.dark-sec h2,.cta h2{color:#fff;}
+.cta .microcopy{color:var(--auf-dunkel);}
+
+/* ── Häufige Fragen ───────────────────────────────────────────────────────*/
+.faq{border-radius:var(--rund);}
+.faq summary{color:var(--text-1);}
+.faq[open]{background:var(--flaeche-1);box-shadow:none;border:1px solid var(--linie);}
+.faq[open] summary{color:var(--marke);}
+.faq .ans{color:var(--text-2);}
+.faq-cta{color:var(--marke);}
+
+/* ── Simulator ────────────────────────────────────────────────────────────*/
+.sim{border-radius:var(--rund-xl);box-shadow:var(--hoch-3);border:1px solid var(--linie);}
+.sim-kopf{background:var(--flaeche-1);border-bottom:1px solid var(--linie);}
+.sim-koerper{background:var(--flaeche-1);}
+.sim-blase.rein{background:var(--flaeche-2);color:var(--text-1);}
+.sim-blase.raus{background:var(--marke);color:#fff;}
+.sim-fuss{background:var(--flaeche-0);border-top:1px solid var(--linie);}
+.sim-waehler button{border-radius:var(--rund-voll);border-color:var(--linie-stark);
+  background:var(--flaeche-1);color:var(--text-2);}
+.sim-waehler button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+.welle i{background:var(--linie-stark);}
+.sim[data-wer="assistent"] .welle i{background:var(--marke);}
+.sim[data-wer="anrufer"] .welle i{background:var(--marke-hell);}
+
+/* ── Abschnittsnavigation ─────────────────────────────────────────────────*/
+.marke-inner{background:rgba(255,255,255,.9);border:1px solid var(--linie);
+  box-shadow:var(--hoch-1);}
+.marke .schieber{background:var(--navy);}
+.marke a{color:var(--text-2);}
+
+/* ── Verlustrechner ───────────────────────────────────────────────────────*/
+.verlust-karte{border-radius:var(--rund-xl);
+  background:linear-gradient(160deg, var(--navy-2) 0%, var(--navy) 64%);}
+.verlust-karte::before{background:none;}
+.verlust-karte .kicker{color:var(--marke-hell);}
+.verlust-karte .gross{color:#fff;}
+.verlust-karte .satz{color:var(--auf-dunkel);}
+.verlust input[type=range]::-webkit-slider-thumb,
+.rechner input[type=range]::-webkit-slider-thumb{background:var(--marke);}
+.verlust input[type=range]::-moz-range-thumb,
+.rechner input[type=range]::-moz-range-thumb{background:var(--marke);}
+.verlust .lab .v,.rechner .lab .v{color:var(--marke);}
+
+/* ── Antwortzeit-Vergleich ────────────────────────────────────────────────*/
+.probe{background:var(--flaeche-1);border:1px solid var(--linie);box-shadow:var(--hoch-1);}
+.probe-balken{background:var(--marke);}
+.probe-reihe.eu .probe-balken{background:var(--gut);}
+.probe-bahn{background:var(--flaeche-2);}
+
+/* ── Preisseite ───────────────────────────────────────────────────────────*/
+.tkarte{background:var(--flaeche-1);border:1px solid var(--linie);box-shadow:var(--hoch-1);}
+.tkarte.hl{background:var(--flaeche-1);border-color:var(--marke-hell);
+  box-shadow:0 0 0 1px rgba(92,90,238,.14), var(--hoch-2);}
+.tkarte .p{color:var(--navy);letter-spacing:-.028em;}
+.ergebnis{border-radius:var(--rund-xl);border:1px solid var(--linie);box-shadow:var(--hoch-2);}
+.ergebnis .summe{background:none;-webkit-text-fill-color:currentColor;color:var(--navy);}
+.preis-hero{background:var(--flaeche-1);}
+
+/* ── Fußzeile und Querverweise ────────────────────────────────────────────*/
+.foot{background:var(--flaeche-1);border-top:1px solid var(--linie);}
+.branchbar{background:var(--flaeche-0);border-top:1px solid var(--linie);}
+.branchbar .bb-t{color:var(--text-3);}
+.branchbar .bb-l a{background:var(--flaeche-1);border-color:var(--linie);
+  border-radius:var(--rund-voll);box-shadow:none;color:var(--text-2);}
+.branchbar .bb-l a:hover{border-color:var(--marke);color:var(--marke);box-shadow:var(--hoch-1);}
+
+::selection{background:var(--marke-zart);color:var(--marke-tief);}
+.fortschritt{background:var(--marke);}
+
+@media (prefers-reduced-motion:reduce){
+  .aurora-buehne::before,.aurora-buehne::after{animation:none;}
+}

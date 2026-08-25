@@ -2,87 +2,95 @@
    Vocaris — Gestaltungswerte. EINE Quelle für das ganze Produkt.
    ══════════════════════════════════════════════════════════════════════════
 
-   Vorher lagen dieselben Farben an drei Stellen: styles.css (Kundenbereich
-   und Rechtsseiten), assets/site.css (Marketingseiten) und noch einmal
-   inline in index.html. Wer eine Farbe ändern wollte, musste sie dreimal
-   finden — und hat die dritte übersehen.
+   Die alten Namen (--paper, --ink, --accent …) bestehen weiter und zeigen auf
+   die neuen Werte. Dadurch wirken über 700 vorhandene Verwendungen mit — auch
+   die 272 in app.html — ohne dass eine dieser Dateien angefasst werden muss.
 
-   Jetzt stehen sie hier. Die alten Namen (--paper, --ink, --accent …) gibt
-   es weiterhin, sie zeigen nur auf die neuen Werte. Dadurch wirken über 700
-   bestehende Verwendungen sofort mit, ohne dass eine Datei angefasst werden
-   muss. Wer ein neues Element baut, nimmt die neuen, sprechenderen Namen.
+   ── ZUR FARBWAHL ─────────────────────────────────────────────────────────
 
-   ZUR FARBWAHL: Die Marke war Violett und ist jetzt Petrol — ein tiefes
-   Blaugrün. Zwei Gründe. Fünf der siebzehn Branchen kommen aus dem
-   Gesundheitsbereich (Praxis, Apotheke, Physiotherapie, Tierarzt, Pflege);
-   dort liest sich Petrol sachlich, wo Violett verspielt wirkt. Und der
-   Wettbewerb ist fast durchgehend blau oder violett — diese Farbe ist
-   unterscheidbar, ohne laut zu sein.
-   Das Logo trägt denselben Verlauf, sonst wäre es ein Fremdkörper.
+   Der professionelle Eindruck, den man von Stripe kennt, kommt nicht vom
+   Indigo. Er kommt vom DUNKLEN MARINEBLAU, das dort alles trägt:
+   Überschriften, Fließtext, dunkle Abschnitte, Kanten. Das Indigo ist nur
+   der Akzent und taucht sparsam auf — genau deshalb wirkt es, wenn es
+   auftaucht.
+
+   Hier ebenso aufgebaut:
+     Marineblau  → trägt    (Text, dunkle Flächen)
+     Indigo      → betont   (Knöpfe, Verweise, aktive Zustände)
+     Kühles Weiß → atmet    (Flächen)
+
+   Bewusst NICHT Stripes exakte Markenfarbe. Ein eigenes Indigo aus derselben
+   Familie erzeugt denselben Eindruck, ohne dass Vocaris wie eine Kopie
+   aussieht. Wer die Farbe ändern will, ändert sie unten einmal.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root{
+  /* ── Marineblau: der Anker ────────────────────────────────────────────────
+     #0a2540 ist dunkel genug für großen Text und ruhig genug für ganze
+     Flächen. Reines Schwarz wäre härter und billiger; dieser Blauton wirkt
+     wie Tinte auf gutem Papier. */
+  --navy:#0a2540;
+  --navy-2:#0e3054;
+  --navy-3:#163a63;
+
+  /* ── Text ─────────────────────────────────────────────────────────────────*/
+  --text-1:#0a2540;   /* Überschriften und Fließtext */
+  --text-2:#425466;   /* zweite Ebene */
+  --text-3:#697386;   /* Beschriftungen, Hinweise */
+  --text-4:#8792a2;   /* Platzhalter */
+
   /* ── Flächen ──────────────────────────────────────────────────────────────
-     Ein Hauch Wärme bleibt im Seitengrund: Reines Kaltweiß sieht aus wie
-     jedes andere Software-Angebot. Die getönten Flächen ziehen dagegen ins
-     Petrol, damit Hero und Karten zur Marke gehören. */
-  --flaeche-0:#F9FAFA;      /* Seitenhintergrund */
-  --flaeche-1:#ffffff;      /* Karten, erhobene Flächen */
-  --flaeche-2:#EEF5F7;      /* ruhige Füllung, Eingabefelder */
-  --flaeche-tint:#E4F2F6;   /* der Lavendel-Waschgang, Hero */
-  --flaeche-tint-2:#CBE9EF;
+     Kühles, sehr helles Grau statt Papierweiß. Es lässt weiße Karten darauf
+     schweben — der Trick, mit dem Oberflächen sortiert wirken. */
+  --flaeche-0:#f6f9fc;
+  --flaeche-1:#ffffff;
+  --flaeche-2:#eef2f7;
+  --flaeche-tint:#f0f1ff;
+  --flaeche-tint-2:#dfe1ff;
 
-  /* ── Text ─────────────────────────────────────────────────────────────────
-     Kräftiger als bisher. #1a1723 war auf hellem Grund weich; #14121c sitzt
-     sauberer und liest sich auf Telefonen bei Sonnenlicht deutlich besser. */
-  --text-1:#14121c;
-  --text-2:#494458;
-  --text-3:#75718a;
-  --text-4:#9a96ab;
-
-  /* ── Marke ────────────────────────────────────────────────────────────────
-     Petrol: dunkel genug für weißen Text darauf, hell genug, um auf dunklem
-     Grund zu leuchten. Beides musste dieselbe Farbe können. */
-  --marke:#0E7C96;
-  --marke-tief:#0A5B70;
-  --marke-hell:#6FCEDE;
-  --marke-zart:#DFF3F7;
-  --marke-verlauf:linear-gradient(135deg,#12A0B8,#0A6A8C);
+  /* ── Indigo: der Akzent ───────────────────────────────────────────────────*/
+  --marke:#5c5aee;
+  --marke-tief:#4340c9;
+  --marke-hell:#9e9bff;
+  --marke-zart:#eff0ff;
+  --marke-verlauf:linear-gradient(101deg,#5c5aee 0%,#3ecfd5 100%);
+  --marke-verlauf-weit:linear-gradient(101deg,#5c5aee 0%,#4f8bf5 42%,#3ecfd5 100%);
 
   /* ── Signalfarben ─────────────────────────────────────────────────────────
-     Genau zwei, und beide bedeuten etwas: Grün, wenn etwas gelungen ist.
-     Koralle für Zahlen, die einen Verlust zeigen. Nirgends dekorativ. */
-  --gut:#16875a;
-  --gut-hell:#5ee9a4;
-  --gut-zart:#e6f6ee;
-  --weh:#e0522f;
-  --weh-hell:#ff9878;
+     Zwei, und beide bedeuten etwas: Grün, wenn etwas gelungen ist. Rot für
+     Zahlen, die einen Verlust zeigen. Nirgends dekorativ. */
+  --gut:#09825d;
+  --gut-hell:#4bd8a4;
+  --gut-zart:#e3f5ee;
+  --weh:#e25950;
+  --weh-hell:#ff8a80;
 
   /* ── Linien ───────────────────────────────────────────────────────────────*/
-  --linie:#E4EDEF;
-  --linie-stark:#CFE4E9;
-  --linie-dunkel:#23383F;
+  --linie:#e3e8ee;
+  --linie-stark:#cdd6e0;
+  --linie-dunkel:#1d4166;
 
   /* ── Dunkle Flächen ───────────────────────────────────────────────────────*/
-  --dunkel:#0E1A20;
-  --dunkel-2:#15272F;
-  --auf-dunkel:#9BB4BC;
+  --dunkel:#0a2540;
+  --dunkel-2:#0e3054;
+  --auf-dunkel:#adbdcc;
 
   /* ── Erhebung ─────────────────────────────────────────────────────────────
-     Drei Stufen, mehr braucht niemand. Alle mit petrolfarbenem Unterton
-     statt neutralem Grau — dadurch wirkt der Schatten wie Licht auf dieser
-     Seite und nicht wie eine aufgeklebte Wolke. */
-  --hoch-1:0 1px 2px rgba(20,17,31,.05), 0 2px 8px -2px rgba(12,70,90,.08);
-  --hoch-2:0 4px 12px -4px rgba(20,17,31,.08), 0 16px 40px -18px rgba(12,70,90,.22);
-  --hoch-3:0 8px 20px -8px rgba(20,17,31,.10), 0 40px 90px -32px rgba(12,70,90,.34);
+     Zurückhaltender als zuvor. Professionelle Oberflächen schatten wenig —
+     sie trennen über Kanten und Fläche, nicht über Wolken. Der Unterton ist
+     marineblau, damit der Schatten zur Seite gehört. */
+  --hoch-1:0 1px 1px rgba(10,37,64,.04), 0 2px 5px -1px rgba(10,37,64,.06);
+  --hoch-2:0 2px 5px -1px rgba(10,37,64,.06), 0 12px 24px -8px rgba(10,37,64,.12);
+  --hoch-3:0 4px 8px -2px rgba(10,37,64,.08), 0 30px 60px -20px rgba(10,37,64,.22);
+  --hoch-marke:0 2px 6px -1px rgba(92,90,238,.30), 0 12px 28px -10px rgba(92,90,238,.36);
 
   /* ── Rundungen ────────────────────────────────────────────────────────────
-     Großzügiger als vorher. Das ist der stärkste einzelne Hebel dafür, dass
-     eine Oberfläche aktuell statt alt wirkt. */
-  --rund-s:10px;
-  --rund:14px;
-  --rund-l:20px;
-  --rund-xl:26px;
+     Maßvoller als zuvor. Sehr runde Ecken wirken freundlich, aber weich;
+     6 bis 18 Pixel wirken gebaut. Nur Knöpfe und Marken bleiben vollrund. */
+  --rund-s:6px;
+  --rund:10px;
+  --rund-l:14px;
+  --rund-xl:18px;
   --rund-voll:999px;
 
   /* ── Schrift ──────────────────────────────────────────────────────────────*/
@@ -90,33 +98,29 @@
   --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 
-  /* Große Größen wachsen mit dem Fenster, kleine bleiben fest — sonst wird
-     Fließtext auf großen Bildschirmen unangenehm groß. */
-  --t-riesig:clamp(46px,6.4vw,78px);
-  --t-gross:clamp(34px,4.4vw,54px);
-  --t-mittel:clamp(24px,2.6vw,32px);
-  --t-lede:clamp(17px,1.4vw,19px);
+  --t-riesig:clamp(42px,5.6vw,68px);
+  --t-gross:clamp(30px,3.6vw,44px);
+  --t-mittel:clamp(22px,2.2vw,28px);
+  --t-lede:clamp(17px,1.3vw,19px);
   --t-text:16px;
   --t-klein:14px;
   --t-mini:12.5px;
 
-  /* ── Maße ─────────────────────────────────────────────────────────────────*/
   --maxw:1240px;
   --pad:64px;
 
   color-scheme:light;
 
   /* ══════════════════════════════════════════════════════════════════════
-     Alte Namen, neue Werte. NICHT entfernen: Über 700 Stellen in
-     styles.css, site.css, app.html, admin.html, kiosk.html und
-     reservieren.html benutzen sie. Sie hier umzubiegen erneuert alles auf
-     einmal, ohne eine einzige dieser Dateien anzufassen.
+     Alte Namen, neue Werte. NICHT entfernen — über 700 Stellen in
+     styles.css, site.css, home.css, app.html, admin.html, kiosk.html und
+     reservieren.html benutzen sie.
      ══════════════════════════════════════════════════════════════════════ */
   --paper:var(--flaeche-0);
   --lav:var(--flaeche-tint);
   --lav-2:var(--flaeche-tint-2);
-  --bubble:var(--marke-zart);
-  --cardfoot:#F4FAFB;
+  --bubble:var(--flaeche-2);
+  --cardfoot:#f7f9fc;
   --ink:var(--text-1);
   --t2:var(--text-2);
   --t3:var(--text-3);
