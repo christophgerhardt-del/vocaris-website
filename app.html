@@ -469,6 +469,7 @@
         <button class="nav-item active" data-target="sec-overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Übersicht</button>
         <button class="nav-item" data-target="sec-live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h4"/></svg>Live <span id="liveBadge" class="gap-badge hidden" style="background:#28c76f"></span></button>
         <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Anrufe &amp; Nachrichten</button>
+        <button class="nav-item" data-target="sec-tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge <span id="tkBadge" class="gap-badge hidden"></span></button>
         <div class="nav-group">Assistent</div>
         <button class="nav-item" data-target="sec-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Wissensdatenbank</button>
         <button class="nav-item" data-target="sec-gaps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Offene Fragen <span id="gapBadge" class="gap-badge hidden"></span></button>
@@ -559,6 +560,31 @@
           <h1 class="pagehead">Anrufe &amp; Nachrichten</h1>
           <p class="pagesub">Rückrufe und Anliegen, die dein Assistent entgegengenommen hat.</p>
           <div id="messages"></div>
+        </section>
+
+        <!-- Vorgänge (eingebautes Ticketsystem) -->
+        <section id="sec-tickets" class="section hidden">
+          <h1 class="pagehead">Vorgänge</h1>
+          <p class="pagesub">Jede Nachricht wird ein Vorgang mit Nummer, Status und Notizen. So bleibt nichts liegen, auch ohne eigenes Ticketsystem.</p>
+          <div class="deptbar" style="margin-bottom:14px">
+            <button class="deptseg active" data-tkfilter="open" type="button">Offen</button>
+            <button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button>
+            <button class="deptseg" data-tkfilter="done" type="button">Erledigt</button>
+          </div>
+          <div class="panel">
+            <h3>Neuer Vorgang</h3>
+            <div class="grid2">
+              <div><label style="margin-top:0">Betreff</label><input id="tkNeuTitel" placeholder="z. B. Rückruf Frau Beispiel wegen Angebot" /></div>
+              <div><label style="margin-top:0">Priorität</label><select id="tkNeuPrio"><option value="normal">Normal</option><option value="high">Hoch</option><option value="low">Niedrig</option></select></div>
+            </div>
+            <div class="grid2">
+              <div><label>Name (optional)</label><input id="tkNeuName" /></div>
+              <div><label>Telefon (optional)</label><input id="tkNeuTel" placeholder="+49 …" /></div>
+            </div>
+            <label>Notiz</label><textarea id="tkNeuText" rows="2" placeholder="Worum geht es?"></textarea>
+            <div class="stack" style="margin-top:10px"><button id="tkNeuBtn" class="btn btn--primary">Vorgang anlegen</button></div>
+          </div>
+          <div id="tickets"></div>
         </section>
 
         <!-- Wissensdatenbank -->
@@ -1426,7 +1452,7 @@
         }
       }
     }
-    const TITLES = { 'sec-overview': 'Übersicht', 'sec-messages': 'Anrufe & Nachrichten',
+    const TITLES = { 'sec-overview': 'Übersicht', 'sec-messages': 'Anrufe & Nachrichten', 'sec-tickets': 'Vorgänge',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
       'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
 
@@ -1753,6 +1779,7 @@
       renderCrmList();
       renderTicketList();
       renderKeyList();
+      loadTickets();
 
       // Termine
       $('bkEnabled').checked = bk?.enabled ?? false;
@@ -4223,6 +4250,73 @@
         row.append(del, txt); el.append(row);
       });
     }
+
+    // ---- Vorgänge (eingebautes Ticketsystem) ----
+    let tkFilter = 'open';
+    const TK_STATUS = { open: 'Offen', in_progress: 'In Arbeit', done: 'Erledigt' };
+    const TK_PRIO = { high: 'Hoch', normal: 'Normal', low: 'Niedrig' };
+    document.querySelectorAll('[data-tkfilter]').forEach((b) => b.onclick = () => {
+      document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x === b));
+      tkFilter = b.dataset.tkfilter; loadTickets();
+    });
+    async function loadTickets() {
+      if (!tenant) return;
+      const [{ data: items }, { count }] = await Promise.all([
+        sb.from('tickets').select('*').eq('tenant_id', tenant.id).eq('status', tkFilter).order('created_at', { ascending: false }).limit(100),
+        sb.from('tickets').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
+      ]);
+      const badge = $('tkBadge');
+      if (badge) { badge.textContent = count || ''; badge.classList.toggle('hidden', !count); }
+      renderTickets(items || []);
+    }
+    function renderTickets(items) {
+      const el = $('tickets');
+      if (!items.length) { el.innerHTML = `<div class="panel muted">Keine Vorgänge mit Status „${TK_STATUS[tkFilter]}". Nachrichten deines Assistenten erscheinen hier automatisch.</div>`; return; }
+      el.innerHTML = '';
+      for (const t of items) {
+        const div = document.createElement('div'); div.className = 'item'; div.style.cursor = 'pointer';
+        const when = new Date(t.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+        const h = document.createElement('h4');
+        h.textContent = `#${t.number} · ${t.title}`;
+        if (t.priority === 'high') { const b = document.createElement('span'); b.className = 'gap-badge'; b.style.marginLeft = '8px'; b.textContent = 'Hoch'; h.append(b); }
+        const p = document.createElement('p');
+        p.textContent = `${t.caller_name || ''}${t.caller_phone ? ' · ' + t.caller_phone : ''}${t.caller_name || t.caller_phone ? ' · ' : ''}${when}`;
+        const detail = document.createElement('div'); detail.className = 'hidden'; detail.style.marginTop = '10px';
+        div.append(h, p, detail);
+        div.onclick = (e) => { if (e.target.closest('button, a, textarea, input')) return; detail.classList.toggle('hidden'); if (!detail.classList.contains('hidden') && !detail.dataset.geladen) renderTicketDetail(t, detail); };
+        el.append(div);
+      }
+    }
+    async function renderTicketDetail(t, box) {
+      box.dataset.geladen = '1';
+      box.innerHTML = '';
+      const body = document.createElement('p'); body.style.whiteSpace = 'pre-wrap'; body.textContent = t.body || '—'; box.append(body);
+      if (t.caller_phone) { const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + t.caller_phone.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + t.caller_phone; box.append(a); }
+      const st = document.createElement('div'); st.className = 'stack'; st.style.marginTop = '10px';
+      for (const [k, label] of Object.entries(TK_STATUS)) {
+        const b = document.createElement('button'); b.className = 'btn sm' + (t.status === k ? ' btn--primary' : ' btn--ghost'); b.textContent = label;
+        b.onclick = async () => { await sb.from('tickets').update({ status: k }).eq('id', t.id); toast(`Vorgang #${t.number}: ${label}.`); loadTickets(); };
+        st.append(b);
+      }
+      box.append(st);
+      const notesEl = document.createElement('div'); notesEl.style.marginTop = '10px'; box.append(notesEl);
+      const { data: notes } = await sb.from('ticket_notes').select('*').eq('ticket_id', t.id).order('created_at');
+      (notes || []).forEach((n) => { const d = document.createElement('p'); d.className = 'muted'; d.style.margin = '4px 0'; d.textContent = `${new Date(n.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })} · ${n.author}: ${n.body}`; notesEl.append(d); });
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.placeholder = 'Notiz hinzufügen …'; ta.style.marginTop = '8px';
+      const nb = document.createElement('button'); nb.className = 'btn sm'; nb.textContent = 'Notiz speichern'; nb.style.marginTop = '6px';
+      nb.onclick = async () => { const v = ta.value.trim(); if (!v) return; await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); ta.value = ''; toast('Notiz gespeichert.'); box.dataset.geladen = ''; renderTicketDetail(t, box); };
+      box.append(ta, nb);
+    }
+    $('tkNeuBtn').onclick = async () => {
+      if (!tenant) return;
+      const title = $('tkNeuTitel').value.trim(); if (!title) { toast('Bitte einen Betreff eingeben.', 'err'); return; }
+      $('tkNeuBtn').disabled = true;
+      const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: $('tkNeuText').value.trim(), priority: $('tkNeuPrio').value, source: 'manual', caller_name: $('tkNeuName').value.trim() || null, caller_phone: $('tkNeuTel').value.trim() || null });
+      $('tkNeuBtn').disabled = false;
+      if (error) { toast('Fehler: ' + error.message, 'err'); return; }
+      ['tkNeuTitel', 'tkNeuText', 'tkNeuName', 'tkNeuTel'].forEach((id) => ($(id).value = ''));
+      toast('Vorgang angelegt.'); tkFilter = 'open'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'open')); loadTickets();
+    };
     // ---- Termine ----
     $('bkSave').onclick = async () => {
       if (!tenant) return;
