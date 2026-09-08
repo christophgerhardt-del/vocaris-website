@@ -805,3 +805,10 @@ h1,h2,h3{color:var(--text-1);}
 @media (prefers-reduced-motion:reduce){
   .aurora-buehne::before,.aurora-buehne::after{animation:none;}
 }
+
+/* Logo — Signal-V, auf allen Unterseiten identisch zur Startseite */
+.logo{font-family:"Schibsted Grotesk",system-ui,sans-serif;font-weight:700;font-size:23px;letter-spacing:-.035em;gap:9px}
+.logo .mark{color:var(--navy,#0a2540);background:none;-webkit-background-clip:initial;background-clip:initial;-webkit-text-fill-color:initial}
+.logo .mark svg{width:28px;height:28px} .logo .mark svg .lm-v{stroke:currentColor;fill:none} .logo .mark svg .lm-punkt{fill:#22d3ee}
+.foot .logo .mark,.foot .logo{color:var(--navy,#0a2540)}
+.logo:hover .mark{transform:none}

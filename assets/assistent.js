@@ -19,7 +19,7 @@
     fehler: 'Gerade klappt es nicht. Versuchen Sie es gleich noch einmal oder buchen Sie eine Demo.',
   };
 
-  var LOGO = '<svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true"><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 13.5 26 19 15" stroke-width="5"/><path d="M19.5 15c1.6-3.2 3.2-3.2 4.8 0s3.2 3.2 4.8 0" stroke-width="4.2"/></g></svg>';
+  var LOGO = '<svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true"><path d="M5.2 6.5 14 26l6.4-14.2" fill="none" stroke="#fff" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24.6" cy="5.9" r="3.5" fill="#22d3ee"/></svg>';
 
   var css = document.createElement('style');
   css.textContent = '\

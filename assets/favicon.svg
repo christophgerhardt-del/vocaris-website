@@ -1,8 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Vocaris — die V-Welle: ein V, dessen rechter Arm als Schwingung ausläuft. -->
-  <defs><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c5aee"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+  <!-- Vocaris — Signal-V: zwei Striche bilden das V, der Punkt ist der Ton, der die Linie verlässt. -->
   <rect width="32" height="32" rx="8" fill="#0a1a3a"/>
-  <g fill="none" stroke="url(#v)" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.5 2.5) scale(0.84)">
-    <path d="M4 7 13.5 26 19 15" stroke-width="5"/><path d="M19.5 15c1.6-3.2 3.2-3.2 4.8 0s3.2 3.2 4.8 0" stroke-width="4.2"/>
-  </g>
+  <g transform="translate(3 3) scale(0.8125)"><path d="M5.2 6.5 14 26l6.4-14.2" fill="none" stroke="#fff" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24.6" cy="5.9" r="3.5" fill="#22d3ee"/></g>
 </svg>
