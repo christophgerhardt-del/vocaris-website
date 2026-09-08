@@ -20,7 +20,7 @@
     const auf = () => { clearTimeout(zu); m.classList.add('offen'); knopf.setAttribute('aria-expanded', 'true'); };
     const dicht = () => { m.classList.remove('offen'); knopf.setAttribute('aria-expanded', 'false'); };
     m.addEventListener('mouseenter', auf);
-    m.addEventListener('mouseleave', () => { zu = setTimeout(dicht, 160); });
+    m.addEventListener('mouseleave', () => { zu = setTimeout(dicht, 380); });
     knopf.addEventListener('click', () => (m.classList.contains('offen') ? dicht() : auf()));
     document.addEventListener('click', (e) => { if (!m.contains(e.target)) dicht(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dicht(); });

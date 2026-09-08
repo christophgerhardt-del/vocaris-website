@@ -542,3 +542,9 @@ dialog.popup::backdrop{background:rgba(8,18,46,.55);backdrop-filter:blur(3px)}
 .produkt-punkte>div{display:flex;gap:10px;align-items:flex-start}
 .produkt-punkte p{margin:4px 0 0;color:var(--text-2);font-size:.95rem}
 @media (max-width:900px){.produkt-punkte{grid-template-columns:1fr}}
+/* Gemessen: zwischen Menüpunkt und Ausklappmenü lag eine 10-px-Lücke; wer die
+   Maus nach unten bewegte, löste „mouseleave" aus und sah das Menü verblassen.
+   Eine unsichtbare Brücke schließt die Lücke, die Schonfrist ist länger. */
+.flyout::before{content:"";position:absolute;left:0;right:0;top:-18px;height:18px}
+.hat-menue.offen .flyout{transition-delay:0s}
+.flyout{transition:opacity .16s ease .12s,transform .16s ease .12s}
