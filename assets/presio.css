@@ -258,3 +258,92 @@ footer.gross a{display:block;color:var(--p-body);text-decoration:none;padding:4p
 .hero-form .consent{justify-content:flex-start;align-items:flex-start}
 .hero-form .consent input[type=checkbox]{flex:0 0 18px;width:18px;min-width:0;height:18px;margin:2px 0 0;min-height:0;padding:0;box-shadow:none;border-radius:4px}
 /* Gemessen: Das Kästchen war 200px breit — die min-width:200px des Rufnummernfelds galt auch für es. */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EIGENSTÄNDIG — Vocaris statt Presio-Kopie
+   ══════════════════════════════════════════════════════════════════════════
+   Dieselbe Bauweise, aber die eigene Handschrift: EIN Markenverlauf (Indigo →
+   Cyan, wie im Zeichen) zieht sich durch Kopfband, Knöpfe, Live-Karte und
+   Abschluss. Die Vocaris-Schriften kommen zurück — Schibsted Grotesk für
+   Überschriften und Bedienung, Newsreader für den Schriftzug. Kein Rosa,
+   kein Bernstein: Der Klang ist kühl, klar, technisch — wie Stimme durch Draht.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --v-verlauf:linear-gradient(120deg,#5c5aee 0%,#4f8bf5 45%,#22d3ee 100%);
+  --v-navy:#0a1a3a; --v-navy-2:#101f4a;
+}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",system-ui,sans-serif}
+h1,h2,h3,h4,.btn,.nav-links,.eyebrow{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",system-ui,sans-serif}
+.logo{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:24px;letter-spacing:-.01em;gap:9px}
+.logo-mark{width:34px;height:34px;background:none;border-radius:0}
+.logo-mark svg{width:30px;height:28px}
+/* Oben auf dem Farbband ist das Zeichen weiß; sobald die Leiste weiß wird,
+   trägt es den Verlauf. Dafür der Verlauf im SVG und oben eine weiße Maske. */
+nav.top:not(.fest) .logo-mark svg rect{fill:#fff}
+.dash .dl svg{width:16px;height:15px}
+
+/* Kopfband: Vocaris-Verlauf, tiefes Marineblau links oben, Cyan rechts unten. */
+.hero-farbe{
+  background:
+    radial-gradient(55% 80% at 8% 12%,#0a1a3a 0%,transparent 60%),
+    radial-gradient(60% 90% at 30% 40%,#5c5aee 0%,transparent 62%),
+    radial-gradient(50% 80% at 78% 18%,#4f8bf5 0%,transparent 60%),
+    radial-gradient(48% 75% at 92% 78%,#22d3ee 0%,transparent 58%),
+    linear-gradient(160deg,#141c5a 0%,#4b48d6 50%,#1a9fc4 100%);
+  filter:saturate(1.08);
+}
+/* Feines Linienraster über dem Band — der einzige Schmuck. Gibt der Fläche
+   etwas Gebautes, ohne zu stören. */
+.hero-farbe::after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:48px 48px;mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 75%);-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 75%)}
+.hero-inhalt h1{letter-spacing:-.035em;font-weight:700}
+.hero-form input{border-radius:12px} .hero-form button{border-radius:12px}
+
+/* Knöpfe: Verlauf statt Marineblau — das Zeichen wiederholt sich im Bedienelement. */
+a.btn,button.btn{border-radius:12px;background:var(--v-verlauf);box-shadow:0 8px 22px -10px rgba(92,90,238,.6)}
+a.btn:hover,button.btn:hover{filter:brightness(1.06);box-shadow:0 12px 28px -10px rgba(92,90,238,.7)}
+a.btn.hell{background:#fff;color:var(--v-navy);box-shadow:0 8px 24px -12px rgba(10,26,58,.5)} a.btn.hell:hover{filter:none}
+a.btn.glas,button.btn.glas{background:rgba(10,26,58,.35);box-shadow:none}
+nav.top.fest a.btn.hell{background:var(--v-verlauf);color:#fff}
+.karte,.schritt,.rechner,.probe,.sim,.planki{border-radius:14px}
+.karte .ikon{background:var(--marke-zart);color:var(--marke);border-radius:10px}
+.karte:hover .ikon{background:var(--v-verlauf);color:#fff}
+.schritt::before{background:var(--v-verlauf);border-radius:10px}
+.zahl b{background:var(--v-verlauf);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-family:"Schibsted Grotesk",sans-serif;font-weight:700}
+.zahl-kopf b{-webkit-text-fill-color:currentColor;color:var(--p-navy);background:none}
+.eyebrow{letter-spacing:.14em}
+.punkte .hk{background:var(--v-verlauf)}
+.dash .live{background:var(--v-verlauf)}
+.dash aside .di.an{background:var(--marke-zart);color:var(--marke-tief)}
+
+/* Dunkles Band und Abschluss in Vocaris-Marine, nicht Presio-Navy. */
+.band{background:linear-gradient(160deg,var(--v-navy-2),var(--v-navy) 65%)} .band .eyebrow{color:#7dd3fc} .band a{color:#7dd3fc}
+.cta-band{background:var(--v-verlauf);border-radius:18px}
+.cta-band::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+.cta-band>*{position:relative}
+.angebot{background:linear-gradient(135deg,var(--v-navy-2),#2d2ba6 70%)}
+.verlust-karte{background:linear-gradient(160deg,var(--v-navy-2),var(--v-navy) 64%)}
+.probe-balken{background:var(--v-verlauf)} .rechner input[type=range]{accent-color:var(--marke)}
+.vergleich{border-radius:14px}
+.proto .tag.b{background:var(--marke-zart);color:var(--marke-tief)}
+.faq-liste summary::after{color:var(--marke)}
+nav.top.fest .nav-links>a:hover,nav.top.fest .nav-links>.hat-menue>*:hover{color:var(--marke)}
+.flyout .fi{background:var(--marke-zart)!important;color:var(--marke)!important}
+.mobil-menue .fi{background:var(--marke-zart);color:var(--marke)}
+.sim-blase.raus{background:var(--v-verlauf)}
+.sim-waehler button[aria-pressed="true"]{background:var(--v-navy);border-color:var(--v-navy)}
+::selection{background:#dfe1ff;color:#2d2ba6}
+/* Gemessen: „im Monat , keine" — Tabellenziffern aus vocaris.css (.zahl) gaben
+   auch dem Komma volle Ziffernbreite. Im Fließtext normale Breiten; die
+   Zahl selbst behält Tabellenziffern nur für den laufenden Zähler. */
+.zahl,.zahl span{font-variant-numeric:normal}
+.zahl b{font-variant-numeric:normal;letter-spacing:-.02em}
+/* Gemessen: Nach dem Umschalten der Leiste lag noch ein farbiger Kasten hinter
+   dem Zeichen — eine ältere Regel für das Presio-Kästchen. Das Zeichen steht frei. */
+nav.top.fest .logo-mark,footer .logo-mark,.fuss-marke .logo-mark{background:none}
+
+/* Gemessen: Der Verlauf hieß vm14, nicht vm0 — die Regel zeigte ins Leere. In der
+   weißen Leiste gilt jetzt einfach der Verlauf aus dem SVG selbst. */
+nav.top.fest .logo-mark svg rect{fill:url(#vm-nav)}
+footer .logo-mark svg rect{fill:url(#vm-fuss)}

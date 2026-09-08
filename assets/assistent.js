@@ -19,22 +19,22 @@
     fehler: 'Gerade klappt es nicht. Versuchen Sie es gleich noch einmal oder buchen Sie eine Demo.',
   };
 
-  var LOGO = '<svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="#fff"/><g fill="#5c5aee"><rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/><rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/><rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/><rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/></g></svg>';
+  var LOGO = '<svg viewBox="0 0 34 32" width="22" height="22" aria-hidden="true"><g fill="#fff"><rect x="1" y="4" width="5" height="24" rx="2.5"/><rect x="8" y="9" width="5" height="14" rx="2.5"/><rect x="15" y="13.5" width="5" height="5" rx="2.5"/><rect x="22" y="9" width="5" height="14" rx="2.5"/><rect x="29" y="4" width="5" height="24" rx="2.5"/></g></svg>';
 
   var css = document.createElement('style');
   css.textContent = '\
 .pa-wurzel{position:fixed;right:20px;bottom:44px;z-index:70;font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif}\
-.pa-knopf{width:58px;height:58px;border-radius:50%;border:0;cursor:pointer;padding:3px;background:linear-gradient(135deg,#5c5aee,#7c3aed 60%,#f59e0b);box-shadow:0 10px 26px -8px rgba(10,37,64,.5);transition:transform .18s ease;position:relative}\
+.pa-knopf{width:58px;height:58px;border-radius:50%;border:0;cursor:pointer;padding:3px;background:linear-gradient(135deg,#5c5aee,#4f8bf5 50%,#22d3ee);box-shadow:0 10px 26px -8px rgba(10,37,64,.5);transition:transform .18s ease;position:relative}\
 .pa-knopf:hover{transform:scale(1.07)} .pa-knopf:focus-visible{outline:2px solid #5c5aee;outline-offset:2px}\
-.pa-knopf .pa-innen{width:100%;height:100%;border-radius:50%;background:#0a2540;display:flex;align-items:center;justify-content:center}\
+.pa-knopf .pa-innen{width:100%;height:100%;border-radius:50%;background:#0a1a3a;display:flex;align-items:center;justify-content:center}\
 .pa-punkt{position:absolute;right:2px;bottom:4px;width:13px;height:13px;border-radius:50%;background:#16a34a;border:2.5px solid #fff}\
 .pa-teaser{position:absolute;right:70px;bottom:6px;background:#fff;border-radius:14px 14px 4px 14px;box-shadow:0 13px 27px -5px rgba(50,50,93,.25),0 8px 16px -8px rgba(0,0,0,.3);padding:12px 34px 12px 16px;width:max-content;max-width:240px;cursor:pointer;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease;pointer-events:none}\
 .pa-teaser.da{opacity:1;transform:none;pointer-events:auto} .pa-teaser b{display:block;color:#0a2540;font-size:14.5px} .pa-teaser span{color:#425466;font-size:13px}\
 .pa-teaser .pa-zu{position:absolute;top:6px;right:8px;border:0;background:none;color:#8898aa;cursor:pointer;font-size:15px;line-height:1;padding:4px}\
 .pa-panel{position:fixed;right:20px;bottom:44px;z-index:71;width:min(370px,calc(100vw - 32px));height:min(540px,calc(100vh - 120px));background:#fff;border-radius:16px;display:flex;flex-direction:column;box-shadow:0 30px 60px -12px rgba(10,37,64,.4),0 18px 36px -18px rgba(10,37,64,.45),0 0 0 1px #e6ebf1;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .22s ease,transform .22s ease;font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif}\
 .pa-panel.offen{opacity:1;transform:none;pointer-events:auto}\
-.pa-kopf{background:#0a2540;border-radius:16px 16px 0 0;padding:14px 16px;display:flex;gap:11px;align-items:center}\
-.pa-kopf .pa-mini{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#5c5aee,#7c3aed);display:flex;align-items:center;justify-content:center;flex:none}\
+.pa-kopf{background:#0a1a3a;border-radius:16px 16px 0 0;padding:14px 16px;display:flex;gap:11px;align-items:center}\
+.pa-kopf .pa-mini{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#5c5aee,#22d3ee);display:flex;align-items:center;justify-content:center;flex:none}\
 .pa-kopf b{color:#fff;font-size:15px;display:block;letter-spacing:-.2px} .pa-kopf small{color:#a3b6cc;font-size:11.5px;display:flex;align-items:center;gap:5px}\
 .pa-kopf small::before{content:"";width:7px;height:7px;border-radius:50%;background:#4ade80}\
 .pa-kopf .pa-schliessen{margin-left:auto;background:rgba(255,255,255,.12);border:0;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;line-height:1}\
