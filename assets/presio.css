@@ -276,10 +276,10 @@ body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",system-ui,sans-ser
 h1,h2,h3,h4,.btn,.nav-links,.eyebrow{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",system-ui,sans-serif}
 .logo{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:24px;letter-spacing:-.01em;gap:9px}
 .logo-mark{width:34px;height:34px;background:none;border-radius:0}
-.logo-mark svg{width:30px;height:28px}
+.logo-mark svg{width:30px;height:30px}
 /* Oben auf dem Farbband ist das Zeichen weiß; sobald die Leiste weiß wird,
    trägt es den Verlauf. Dafür der Verlauf im SVG und oben eine weiße Maske. */
-nav.top:not(.fest) .logo-mark svg rect{fill:#fff}
+nav.top:not(.fest) .logo-mark svg path{stroke:#fff}
 .dash .dl svg{width:16px;height:15px}
 
 /* Kopfband: Vocaris-Verlauf, tiefes Marineblau links oben, Cyan rechts unten. */
@@ -345,8 +345,8 @@ nav.top.fest .logo-mark,footer .logo-mark,.fuss-marke .logo-mark{background:none
 
 /* Gemessen: Der Verlauf hieß vm14, nicht vm0 — die Regel zeigte ins Leere. In der
    weißen Leiste gilt jetzt einfach der Verlauf aus dem SVG selbst. */
-nav.top.fest .logo-mark svg rect{fill:url(#vm-nav)}
-footer .logo-mark svg rect{fill:url(#vm-fuss)}
+nav.top.fest .logo-mark svg path{stroke:url(#vm-nav)}
+footer .logo-mark svg path{stroke:url(#vm-fuss)}
 
 /* ══════════════════════════════════════════════════════════════════════════
    RUHIGER, WERTIGER — die Interaktion dort, wo sie das Produkt zeigt

@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Vocaris — fünf Pegelbalken, die ein V formen. Dunkler Grund, damit das
-       Zeichen im Browser-Reiter auf hellen wie dunklen Leisten steht. -->
+  <!-- Vocaris — die V-Welle: ein V, dessen rechter Arm als Schwingung ausläuft. -->
   <defs><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c5aee"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
   <rect width="32" height="32" rx="8" fill="#0a1a3a"/>
-  <g fill="url(#v)" transform="translate(4 5) scale(0.706)">
-    <rect x="1" y="4" width="5" height="24" rx="2.5"/><rect x="8" y="9" width="5" height="14" rx="2.5"/>
-    <rect x="15" y="13.5" width="5" height="5" rx="2.5"/><rect x="22" y="9" width="5" height="14" rx="2.5"/>
-    <rect x="29" y="4" width="5" height="24" rx="2.5"/>
+  <g fill="none" stroke="url(#v)" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.5 2.5) scale(0.84)">
+    <path d="M4 7 13.5 26 19 15" stroke-width="5"/><path d="M19.5 15c1.6-3.2 3.2-3.2 4.8 0s3.2 3.2 4.8 0" stroke-width="4.2"/>
   </g>
 </svg>
