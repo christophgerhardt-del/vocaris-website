@@ -1,5 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Vocaris — Signal-V: zwei Striche bilden das V, der Punkt ist der Ton, der die Linie verlässt. -->
-  <rect width="32" height="32" rx="8" fill="#0a1a3a"/>
-  <g transform="translate(3 3) scale(0.8125)"><path d="M5.2 6.5 14 26l6.4-14.2" fill="none" stroke="#fff" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24.6" cy="5.9" r="3.5" fill="#22d3ee"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Vocaris — die Pegelkugel: beleuchtete Kugel mit fünf Pegelbalken. -->
+<g transform="translate(-2 -4) scale(1.06)"><defs><radialGradient id="fvg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="fvh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="fvs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#fvg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#fvs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#fvh)"/></g>
 </svg>

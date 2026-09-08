@@ -19,7 +19,7 @@
     fehler: 'Gerade klappt es nicht. Versuchen Sie es gleich noch einmal oder buchen Sie eine Demo.',
   };
 
-  var LOGO = '<svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true"><path d="M5.2 6.5 14 26l6.4-14.2" fill="none" stroke="#fff" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24.6" cy="5.9" r="3.5" fill="#22d3ee"/></svg>';
+  var LOGO = '<svg viewBox="0 0 100 100" width="26" height="26" aria-hidden="true"><defs><radialGradient id="vkcg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vkch" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vkcs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vkcg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vkcs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vkch)"/></svg>';
 
   var css = document.createElement('style');
   css.textContent = '\

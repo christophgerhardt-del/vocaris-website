@@ -421,3 +421,38 @@ nav.top.fest a.btn.hell{background:var(--marke);color:#fff}
 .st-bars i:nth-child(2){animation-delay:.12s}.st-bars i:nth-child(3){animation-delay:.24s}.st-bars i:nth-child(4){animation-delay:.36s}
 @keyframes stb{0%,100%{height:30%}50%{height:100%}}
 @media (prefers-reduced-motion:reduce){.st-bars i{animation:none;height:60%}.ap-bars i{transition:none}}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MARKE 2026 — Pegelkugel, Bricolage Grotesque, Farbwelt „Elektrisch"
+   ══════════════════════════════════════════════════════════════════════════
+   Das Zeichen ist eine beleuchtete Kugel mit fünf Pegelbalken; die Farbe
+   dazu ist ein leuchtendes Elektroblau auf tiefem Nachtblau. Überschriften
+   und Schriftzug in Bricolage Grotesque, Fließtext und Bedienung bleiben in
+   Schibsted Grotesk. Diese Schicht steht zuletzt und gewinnt.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --v-verlauf:linear-gradient(120deg,#0a2fd0 0%,#3d8bff 55%,#7fdcff 100%);
+  --v-navy:#08122e; --v-navy-2:#0e1b45;
+  --p-navy:#08122e;
+}
+h1,h2,h3,h4,.zahl b,.logo{font-family:"Bricolage Grotesque","Schibsted Grotesk",system-ui,sans-serif}
+h1,h2{letter-spacing:-.03em;font-weight:600}
+h3,h4{font-weight:600}
+.hero-inhalt h1{font-weight:600;letter-spacing:-.035em}
+.logo{font-weight:600;font-size:24px;letter-spacing:-.03em;gap:10px}
+.logo-mark{width:32px;height:32px} .logo-mark svg{width:32px;height:32px}
+.hero-farbe{
+  background:
+    radial-gradient(60% 70% at 20% 15%,rgba(61,139,255,.40) 0%,transparent 60%),
+    radial-gradient(50% 60% at 85% 85%,rgba(10,47,208,.60) 0%,transparent 65%),
+    radial-gradient(40% 40% at 70% 20%,rgba(127,220,255,.14) 0%,transparent 60%),
+    #08122e;
+}
+.hero-inhalt .eyebrow{color:#7fdcff}
+.hero-form button,a.btn,button.btn{background:#1f5eff}
+a.btn:hover,button.btn:hover{background:#0a2fd0;box-shadow:0 10px 24px -12px rgba(31,94,255,.6)}
+nav.top.fest a.btn.hell{background:#1f5eff}
+.karte .ikon{background:#eaf1ff;color:#1f5eff}
+::selection{background:#d6e4ff;color:#0a2fd0}
+.dash aside .di.an{background:#eaf1ff;color:#0a2fd0}

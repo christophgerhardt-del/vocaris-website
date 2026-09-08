@@ -29,12 +29,12 @@
      #0a2540 ist dunkel genug für großen Text und ruhig genug für ganze
      Flächen. Reines Schwarz wäre härter und billiger; dieser Blauton wirkt
      wie Tinte auf gutem Papier. */
-  --navy:#0a2540;
-  --navy-2:#0e3054;
-  --navy-3:#163a63;
+  --navy:#08122e;
+  --navy-2:#0e1b45;
+  --navy-3:#14265e;
 
   /* ── Text ─────────────────────────────────────────────────────────────────*/
-  --text-1:#0a2540;   /* Überschriften und Fließtext */
+  --text-1:#08122e;   /* Überschriften und Fließtext */
   --text-2:#425466;   /* zweite Ebene */
   --text-3:#697386;   /* Beschriftungen, Hinweise */
   --text-4:#8792a2;   /* Platzhalter */
@@ -45,16 +45,16 @@
   --flaeche-0:#f6f9fc;
   --flaeche-1:#ffffff;
   --flaeche-2:#eef2f7;
-  --flaeche-tint:#f0f1ff;
-  --flaeche-tint-2:#dfe1ff;
+  --flaeche-tint:#edf3ff;
+  --flaeche-tint-2:#d6e4ff;
 
   /* ── Indigo: der Akzent ───────────────────────────────────────────────────*/
-  --marke:#5c5aee;
-  --marke-tief:#4340c9;
-  --marke-hell:#9e9bff;
-  --marke-zart:#eff0ff;
-  --marke-verlauf:linear-gradient(101deg,#5c5aee 0%,#3ecfd5 100%);
-  --marke-verlauf-weit:linear-gradient(101deg,#5c5aee 0%,#4f8bf5 42%,#3ecfd5 100%);
+  --marke:#1f5eff;
+  --marke-tief:#0a2fd0;
+  --marke-hell:#8ab8ff;
+  --marke-zart:#eaf1ff;
+  --marke-verlauf:linear-gradient(101deg,#0a2fd0 0%,#3d8bff 60%,#7fdcff 100%);
+  --marke-verlauf-weit:linear-gradient(101deg,#0a2fd0 0%,#3d8bff 50%,#7fdcff 100%);
 
   /* ── Signalfarben ─────────────────────────────────────────────────────────
      Zwei, und beide bedeuten etwas: Grün, wenn etwas gelungen ist. Rot für
@@ -94,7 +94,7 @@
   --rund-voll:999px;
 
   /* ── Schrift ──────────────────────────────────────────────────────────────*/
-  --disp:"Newsreader",Georgia,"Times New Roman",serif;
+  --disp:"Bricolage Grotesque","Schibsted Grotesk",system-ui,sans-serif;
   --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 
