@@ -134,10 +134,9 @@
   ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(110, ta.scrollHeight) + 'px'; });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('offen')) schliessen(); });
 
-  // Proaktiv, aber höflich: erst die Sprechblase, dann — nur einmal, nur wenn
-  // jemand wirklich bleibt — der geöffnete Chat. Wer abgewinkt hat, hat Ruhe.
+  // Zurückhaltend: nur eine Sprechblase nach 20 Sekunden, und nur, wenn jemand
+  // schon gescrollt hat. Der Chat öffnet sich nie von selbst.
   if (!zustand.teaserZu && !zustand.geoeffnet && !zustand.zu) {
-    setTimeout(function () { teaser.classList.add('da'); }, 9000);
-    setTimeout(function () { if (!zustand.geoeffnet && !zustand.zu && !zustand.teaserZu && !document.hidden && window.scrollY > 600) oeffnen(); }, 45000);
+    setTimeout(function () { if (!document.hidden && window.scrollY > 400) teaser.classList.add('da'); }, 20000);
   }
 })();

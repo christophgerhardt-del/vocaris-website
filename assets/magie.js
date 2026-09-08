@@ -79,24 +79,63 @@
     hero.addEventListener('mouseleave', () => { bild.style.transform = ''; });
   }
 
-  // ── Schreibmaschinen-Überschrift ──
-  // Der volle Text bleibt unsichtbar stehen und hält die Fläche exakt fest;
-  // getippt wird in eine Überlagerung. So springt keine Zeile.
-  const tippEl = document.querySelector('[data-tippen]');
-  if (tippEl && !ruhig) {
-    const zeilen = tippEl.dataset.tippen.split('|');
-    tippEl.style.position = 'relative';
-    tippEl.innerHTML = '<span style="visibility:hidden">' + zeilen.join('<br>') + '</span><span class="tippt-ebene" style="position:absolute;inset:0"></span>';
-    const ebene = tippEl.querySelector('.tippt-ebene');
-    const caret = '<span class="tippt-caret"></span>';
-    let z = 0, i = 0, out = '';
-    const tick = () => {
-      if (z >= zeilen.length) { ebene.innerHTML = out.replace(/<br>$/, ''); return; }
-      i++;
-      if (i > zeilen[z].length) { out += zeilen[z] + '<br>'; z++; i = 0; setTimeout(tick, 260); }
-      else { ebene.innerHTML = out + zeilen[z].slice(0, i) + caret; setTimeout(tick, 55 + Math.random() * 45); }
+
+  // ── Der Anruf zum Anhören (echte Aufnahmen aus dem Produkt) ──
+  // Anrufer-Zeilen erscheinen als Text, Vocaris-Zeilen spielen die Aufnahme.
+  // Es gibt genau EINEN Ton auf der Seite: Startet hier etwas, stoppt die
+  // Stimmenprobe — und umgekehrt.
+  const player = document.querySelector('[data-player]');
+  let aktuellerTon = null;
+  const stoppeTon = () => { if (aktuellerTon) { aktuellerTon.pause(); aktuellerTon.currentTime = 0; aktuellerTon = null; } document.dispatchEvent(new Event('vocaris:ton-aus')); };
+  if (player) {
+    const play = player.querySelector('[data-play]'), bars = player.querySelector('[data-bars]'), zeit = player.querySelector('[data-zeit]');
+    const status = player.querySelector('[data-status]'), ergebnis = player.querySelector('[data-ergebnis]');
+    const schritte = [...player.querySelectorAll('[data-schritt]')];
+    for (let i = 0; i < 18; i++) bars.appendChild(document.createElement('i'));
+    const balken = [...bars.children];
+    let laeuft = false, timer = [], barTimer = 0, sek = 0, uhr = 0, ton = null;
+    const icon = (p) => { play.innerHTML = p ? '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>'; play.setAttribute('aria-label', p ? 'Anruf anhalten' : 'Anruf abspielen'); };
+    const welle = (an) => { clearTimeout(barTimer); player.classList.toggle('spricht', an); if (!an || ruhig) { balken.forEach((b) => b.style.height = '20%'); return; } const f = () => { balken.forEach((b, i) => { const m = 1 - Math.abs(i - 8.5) / 8.5; b.style.height = (15 + Math.random() * 85 * (0.4 + 0.6 * m)) + '%'; }); barTimer = setTimeout(f, 95); }; f(); };
+    const zurueck = () => { laeuft = false; timer.forEach(clearTimeout); timer = []; clearInterval(uhr); welle(false); icon(false); play.classList.remove('laeuft'); if (ton) { ton.pause(); ton = null; } schritte.forEach((z) => z.classList.remove('aktiv')); };
+    const reset = () => { zurueck(); sek = 0; zeit.textContent = '0:00'; schritte.forEach((z) => z.classList.remove('da')); ergebnis.classList.remove('da'); status.textContent = 'Vocaris vergibt einen Kontrolltermin — hören Sie selbst.'; };
+    const spiele = async (i) => {
+      if (!laeuft) return;
+      if (i >= schritte.length) { zurueck(); ergebnis.classList.add('da'); status.textContent = 'Fertig — Termin vergeben, Bestätigung per SMS.'; return; }
+      const z = schritte[i]; schritte.forEach((x) => x.classList.remove('aktiv')); z.classList.add('da', 'aktiv'); z.scrollIntoView({ block: 'nearest' });
+      const src = z.dataset.audio;
+      if (src) {
+        status.textContent = 'Vocaris spricht …'; welle(true);
+        ton = new Audio(src); aktuellerTon = ton;
+        try { await ton.play(); } catch (e) { welle(false); timer.push(setTimeout(() => spiele(i + 1), 1400)); return; }
+        ton.onended = () => { welle(false); if (laeuft) timer.push(setTimeout(() => spiele(i + 1), 500)); };
+      } else {
+        status.textContent = 'Anrufer spricht …';
+        timer.push(setTimeout(() => spiele(i + 1), 1700));
+      }
     };
-    setTimeout(tick, 350);
+    play.addEventListener('click', () => {
+      if (laeuft) { zurueck(); status.textContent = 'Angehalten.'; return; }
+      document.dispatchEvent(new Event('vocaris:ton-aus'));
+      if (schritte[schritte.length - 1].classList.contains('da')) reset();
+      laeuft = true; icon(true); play.classList.add('laeuft');
+      uhr = setInterval(() => { sek++; zeit.textContent = Math.floor(sek / 60) + ':' + String(sek % 60).padStart(2, '0'); }, 1000);
+      spiele(0);
+    });
+    document.addEventListener('vocaris:ton-aus', () => { if (laeuft) zurueck(); });
+  }
+
+  // ── Stimmenprobe: echte Aufnahmen der wählbaren Stimmen ──
+  const stimmen = document.querySelectorAll('[data-stimme]');
+  if (stimmen.length) {
+    let ton = null, aktiv = null;
+    const aus = () => { if (ton) { ton.pause(); ton = null; } if (aktiv) { aktiv.classList.remove('laeuft'); aktiv = null; } };
+    stimmen.forEach((k) => k.addEventListener('click', () => {
+      if (aktiv === k) { aus(); return; }
+      document.dispatchEvent(new Event('vocaris:ton-aus')); aus();
+      ton = new Audio(k.dataset.stimme); aktiv = k; k.classList.add('laeuft');
+      ton.onended = aus; ton.play().catch(aus);
+    }));
+    document.addEventListener('vocaris:ton-aus', () => { if (aktiv) aus(); });
   }
 
   // ── Vorher/Nachher-Regler ──
@@ -131,20 +170,4 @@
     }
   });
 
-  // ── Angebots-Karte: einmal je Sitzung, wenn tiefer gescrollt wird ──
-  if (document.querySelector('.vergleich') && !sessionStorage.getItem('vocaris.angebot.zu')) {
-    const k = document.createElement('div');
-    k.className = 'angebot'; k.setAttribute('role', 'dialog'); k.setAttribute('aria-label', 'Testanruf');
-    k.innerHTML = '<button class="zu" aria-label="Schließen">×</button>' +
-      '<h3>Lieber selbst hören?</h3>' +
-      '<p>Rufnummer eintragen — Vocaris ruft Sie in wenigen Sekunden zurück. Kostenlos, unverbindlich, ohne Anmeldung.</p>' +
-      '<div class="knoepfe"><a class="btn hell" href="#testanruf">Testanruf erhalten</a><a class="btn glas" href="demo.html">Persönliche Demo</a></div>';
-    document.body.appendChild(k);
-    k.querySelector('.zu').addEventListener('click', () => { k.classList.remove('da'); try { sessionStorage.setItem('vocaris.angebot.zu', '1'); } catch (e) {} });
-    let gezeigt = false;
-    window.addEventListener('scroll', () => {
-      if (gezeigt) return;
-      if (window.scrollY > window.innerHeight * 1.6) { gezeigt = true; k.classList.add('da'); }
-    }, { passive: true });
-  }
 })();

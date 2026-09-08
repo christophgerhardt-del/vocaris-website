@@ -69,7 +69,7 @@
     <div class="hero-grid">
       <div>
         <div class="eyebrow">KI-Telefonassistent · Telefonservice für Unternehmen</div>
-        <h1 data-tippen="Geht ran.|Handelt.|Rund um die Uhr.">Geht ran.<br>Handelt.<br>Rund um die Uhr.</h1>
+        <h1>Geht ran.<br>Handelt.<br>Rund um die Uhr.</h1>
         <p class="hero-sub">Vocaris nimmt Ihre Anrufe entgegen und ruft selbst an — in Echtzeit, natürlich im Klang, jederzeit unterbrechbar. Er bucht Termine, reserviert Tische, verbindet zu Menschen. In der EU gehostet, in 15 Minuten startklar.</p>
         <form class="hero-form callform" data-callform>
           <input type="tel" inputmode="tel" placeholder="+49 · Ihre Rufnummer" aria-label="Ihre Rufnummer" required>
@@ -79,23 +79,24 @@
         </form>
         <div class="hero-ctas" style="margin-top:14px"><a class="btn glas" href="demo.html">Persönliche Demo</a><span class="hinweis">Kostenlos und unverbindlich · Vocaris ruft in Sekunden zurück · keine Anmeldung</span></div>
       </div>
-      <div class="browser" id="heroBild" aria-label="Vocaris-Dashboard mit laufendem Anruf, Kennzahlen und Anrufprotokoll">
-        <div class="kopf"><span></span><span></span><span></span></div>
-        <div class="dash">
-          <aside><div class="dl"><svg viewBox="0 0 34 32" width="16" height="16" aria-hidden="true"><defs><linearGradient id="vmd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c5aee"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><g fill="url(#vmd)"><rect x="1" y="4" width="5" height="24" rx="2.5"/><rect x="8" y="9" width="5" height="14" rx="2.5"/><rect x="15" y="13.5" width="5" height="5" rx="2.5"/><rect x="22" y="9" width="5" height="14" rx="2.5"/><rect x="29" y="4" width="5" height="24" rx="2.5"/></g></svg>Vocaris</div>
-            <div class="dg">Betrieb</div><div class="di an"><i></i>Übersicht</div><div class="di"><i></i>Live</div><div class="di"><i></i>Anrufe &amp; Nachrichten</div>
-            <div class="dg">Assistent</div><div class="di"><i></i>Wissensdatenbank</div><div class="di"><i></i>Offene Fragen</div><div class="di"><i></i>Assistent</div>
-            <div class="dg">Funktionen</div><div class="di"><i></i>Telefonnummer</div><div class="di"><i></i>Reservierungen</div><div class="di"><i></i>Tischplan</div></aside>
-          <main>
-            <div class="live"><span class="punkt"></span><span><b>Laufender Anruf · 00:42</b><small>+49 89 … · „Tisch für vier um halb neun?“ · Vocaris antwortet</small></span><span class="welle"><i></i><i></i><i></i><i></i><i></i></span></div>
-            <div class="kpis"><div class="kpi"><span>Anrufe heute</span><b>37</b></div><div class="kpi"><span>Termine gebucht</span><b class="gruen">21</b></div><div class="kpi"><span>Ø Antwortzeit</span><b>0,7 s</b></div><div class="kpi"><span>Verpasst</span><b class="gruen">0</b></div></div>
-            <div class="liste"><div class="lk">Anrufe – heute</div>
-              <div class="lz"><small>18:41</small><span>Reservierung, 4 Personen, 20:30 Uhr — Name Weber</span><span class="tag g">gebucht</span></div>
-              <div class="lz"><small>18:12</small><span>Rückruf gewünscht — Frage zu Allergenen</span><span class="tag b">Rückruf</span></div>
-              <div class="lz"><small>17:55</small><span>Wasserschaden gemeldet — an Bereitschaft weitergeleitet</span><span class="tag a">dringend</span></div>
-              <div class="lz"><small>17:30</small><span>Öffnungszeiten am Sonntag beantwortet</span><span class="tag g">erledigt</span></div>
-            </div>
-          </main>
+      <div class="browser" id="heroBild" aria-label="Echter Anruf: Terminvergabe in einer Arztpraxis, zum Anhören">
+        <div class="kopf"><span></span><span></span><span></span><span class="kopf-titel">Anruf · Arztpraxis · Terminvergabe</span></div>
+        <div class="anruf-player" data-player>
+          <div class="ap-kopf">
+            <button type="button" class="ap-play" data-play aria-label="Anruf abspielen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
+            <div class="ap-info"><b>Echte Aufnahme</b><span data-status>Vocaris vergibt einen Kontrolltermin — hören Sie selbst.</span></div>
+            <div class="ap-bars" data-bars aria-hidden="true"></div>
+            <span class="ap-zeit" data-zeit>0:00</span>
+          </div>
+          <ol class="ap-lauf" data-lauf>
+            <li class="ap-z anrufer" data-schritt><span class="wer">Anrufer</span>Guten Tag, ich hätte gern einen Termin zur Kontrolle.</li>
+            <li class="ap-z vocaris" data-schritt data-audio="assets/demo/voc-1.mp3"><span class="wer">Vocaris</span>Guten Tag! Sehr gerne. Diese Woche hätte ich Donnerstag um 14:30 Uhr frei — würde Ihnen das passen?</li>
+            <li class="ap-z anrufer" data-schritt><span class="wer">Anrufer</span>Donnerstag ist schlecht — geht auch Freitag?</li>
+            <li class="ap-z vocaris" data-schritt data-audio="assets/demo/voc-2.mp3"><span class="wer">Vocaris</span>Natürlich. Am Freitag habe ich um 10 Uhr oder um 16 Uhr etwas frei.</li>
+            <li class="ap-z anrufer" data-schritt><span class="wer">Anrufer</span>Zehn Uhr klingt gut.</li>
+            <li class="ap-z vocaris" data-schritt data-audio="assets/demo/voc-3.mp3"><span class="wer">Vocaris</span>Wunderbar, dann trage ich Sie für Freitag um 10 Uhr ein. Sie bekommen gleich eine Bestätigung per SMS. Bis dahin!</li>
+          </ol>
+          <div class="ap-fuss"><span class="ap-ergebnis" data-ergebnis>✓ Termin Freitag 10:00 Uhr · Bestätigung per SMS</span><span class="ap-hinweis">Aufnahme aus dem Produkt, nicht nachgesprochen.</span></div>
         </div>
       </div>
     </div>
@@ -136,36 +137,24 @@
   </div>
 </section>
 
-<!-- Vorher/Nachher -->
-<section class="block soft">
+<!-- Stimmen -->
+<section class="block soft" id="stimmen">
   <div class="wrap">
     <div class="reveal">
-      <div class="eyebrow">Vorher / Nachher</div>
-      <h2>Zieh den Regler — so sah das Telefon gestern aus</h2>
-      <p class="intro">Links der Zettel neben dem Anrufbeantworter, wie er in tausenden Betrieben liegt. Rechts derselbe Abend in Vocaris — zieh den Griff ruhig ganz nach links und rechts.</p>
+      <div class="eyebrow">So klingt Vocaris</div>
+      <h2>Neun Stimmen. Sie wählen, wer für Sie abnimmt.</h2>
+      <p class="intro">Alle Hörproben sind echte Aufnahmen der Stimmen, die im Produkt zur Wahl stehen — derselbe Satz bei allen, damit Sie vergleichen können. Die Wahl gilt pro Firma und lässt sich jederzeit ändern.</p>
     </div>
-    <div class="vergleich reveal" style="margin-top:34px" aria-label="Vorher-Nachher-Vergleich: Zettel am Anrufbeantworter gegen Vocaris">
-      <div class="ebene nachher"><div class="proto">
-        <div class="kopfz"><span>Anrufe · Freitag</span><small>37 Anrufe · 0 verpasst</small></div>
-        <div class="anruf"><span class="zeit">18:41</span><span><b>Reservierung — Weber, 4 Personen, 20:30</b><small>Glutenfrei notiert · SMS-Bestätigung gesendet</small></span><span class="tag g">gebucht</span></div>
-        <div class="anruf"><span class="zeit">18:12</span><span><b>Rückruf gewünscht — Frage zu Allergenen</b><small>Nummer aufgenommen · als offene Frage im Dashboard</small></span><span class="tag b">Rückruf</span></div>
-        <div class="anruf"><span class="zeit">17:55</span><span><b>Absage — Tisch 6, 19:00</b><small>Warteliste angerufen · Platz nachbesetzt</small></span><span class="tag g">nachbesetzt</span></div>
-        <div class="anruf"><span class="zeit">17:30</span><span><b>Gruppenanfrage — 12 Personen, Samstag</b><small>Direkt an Sie durchgestellt</small></span><span class="tag a">durchgestellt</span></div>
-        <div class="anruf"><span class="zeit">17:02</span><span><b>Öffnungszeiten am Sonntag</b><small>Aus der Wissensbasis beantwortet</small></span><span class="tag g">erledigt</span></div>
-      </div></div>
-      <div class="ebene vorher"><div class="zettel"><div class="blatt">
-        <span class="fleck" style="width:15%;height:20%;right:8%;top:6%"></span><span class="fleck" style="width:8%;height:11%;left:24%;bottom:14%"></span>
-        <h5>Anrufbeantworter Freitag (abhören!!)</h5>
-        <ul><li>18:41 – Weber?? 4 Pers. – halb neun od. neun? <span class="krakel">zurückrufen!</span></li>
-        <li>18:12 – jemand wg. Allergie – <span class="krakel">Nr. unverständlich</span></li>
-        <li>17:55 – Absage Tisch 6 – <span class="krakel">wer kriegt den Tisch?</span></li>
-        <li>17:30 – Gruppe 12 Pers. Samstag – Rückruf nach Schicht</li>
-        <li>17:02 – Öffnungszeiten – aufgelegt</li></ul>
-        <div class="notiz">→ 3 Nachrichten abgebrochen, 2× nur Rauschen. Wer ruft morgen früh alle zurück???</div>
-      </div></div></div>
-      <div class="griff"></div>
-      <span class="etikett links">Vorher: Anrufbeantworter</span>
-      <span class="etikett rechts">Nachher: Vocaris</span>
+    <div class="stimmen" data-stimmen>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/marin.m4a" aria-label="Hörprobe Marin abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Marin</b><span>Neu — eigens für Telefonie</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/cedar.m4a" aria-label="Hörprobe Cedar abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Cedar</b><span>Neu — eigens für Telefonie</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/alloy.m4a" aria-label="Hörprobe Alloy abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Alloy</b><span>Aussprache im Test fehlerfrei</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/ash.m4a" aria-label="Hörprobe Ash abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Ash</b><span>Aussprache im Test fehlerfrei</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/ballad.m4a" aria-label="Hörprobe Ballad abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Ballad</b><span>Aussprache im Test fehlerfrei</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/coral.m4a" aria-label="Hörprobe Coral abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Coral</b><span>Hörprobe anhören</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/sage.m4a" aria-label="Hörprobe Sage abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Sage</b><span>Hörprobe anhören</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/shimmer.m4a" aria-label="Hörprobe Shimmer abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Shimmer</b><span>Hörprobe anhören</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      <button type="button" class="stimme reveal" data-stimme="assets/voices/verse.m4a" aria-label="Hörprobe Verse abspielen"><span class="st-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="st-text"><b>Verse</b><span>Hörprobe anhören</span></span><span class="st-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
     </div>
   </div>
 </section>
@@ -174,14 +163,14 @@
 <section class="block" id="simulator">
   <div class="wrap split">
     <div class="reveal">
-      <div class="eyebrow">So klingt es</div>
-      <h2>Ein Anruf, der sich selbst abspielt — in Ihrer Branche</h2>
+      <div class="eyebrow">Beispielgespräche</div>
+      <h2>So läuft ein Anruf in Ihrer Branche</h2>
       <ul class="punkte">
         <li><span class="hk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Echte Gespräche:</b> Vier Branchen, vier fachlich richtige Dialoge — mit Grenzen, die der Assistent selbst benennt.</span></li>
         <li><span class="hk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Unterbrechbar:</b> Wer dazwischenredet, wird gehört. Die Wellenform zeigt, wer gerade spricht.</span></li>
         <li><span class="hk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>Am Ende steht ein Ergebnis:</b> Tisch reserviert, Termin vergeben, Notfall weitergeleitet — nicht nur eine Notiz.</span></li>
       </ul>
-      <p style="margin-top:22px"><a class="leise" href="#testanruf">Lieber selbst hören? Testanruf oben →</a></p>
+      <p style="margin-top:22px"><a class="leise" href="#testanruf">Lieber am eigenen Telefon hören? Testanruf oben →</a></p>
     </div>
     <div class="reveal"><div class="sim-waehler" role="group" aria-label="Branche für das Beispielgespräch wählen">
         <button type="button" data-branche="restaurant" aria-pressed="true">Restaurant</button>
@@ -369,7 +358,7 @@
   <div class="wrap">
     <div class="fuss-grid">
       <div class="fuss-marke"><div class="logo"><span class="logo-mark"><svg viewBox="0 0 34 32" width="26" height="26" aria-hidden="true"><defs><linearGradient id="vm-fuss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c5aee"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><g fill="url(#vm-fuss)"><rect x="1" y="4" width="5" height="24" rx="2.5"/><rect x="8" y="9" width="5" height="14" rx="2.5"/><rect x="15" y="13.5" width="5" height="5" rx="2.5"/><rect x="22" y="9" width="5" height="14" rx="2.5"/><rect x="29" y="4" width="5" height="24" rx="2.5"/></g></svg></span>Vocaris</div><p>Der KI-Telefonassistent für Betriebe, die nicht immer ans Telefon können — Termine, Reservierungen, Rückrufe, rund um die Uhr. In der EU gehostet.</p><p style="margin-top:14px">Rheinstr. 26<br>80803 München</p></div>
-      <div><h4>Produkt</h4><a href="#produkt">Funktionen</a><a href="#simulator">So klingt es</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a><a href="preise.html">Preise</a><a href="demo.html">Demo buchen</a></div>
+      <div><h4>Produkt</h4><a href="#produkt">Funktionen</a><a href="#stimmen">Stimmen</a><a href="#simulator">Beispielgespräche</a><a href="#modelle">KI-Modelle</a><a href="#sicherheit">Sicherheit</a><a href="preise.html">Preise</a><a href="demo.html">Demo buchen</a></div>
       <div><h4>Branchen</h4><a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">HANDWERK &amp; BAU</a><a href="autowerkstatt.html">KFZ &amp; AUTOWERKSTATT</a><a href="friseur.html">FRISEUR &amp; SALON</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">SOFTWARE &amp; SAAS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">FITNESS &amp; STUDIO</a></div>
       <div><h4>Rechtliches</h4><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="app.html">Anmelden</a></div>
     </div>

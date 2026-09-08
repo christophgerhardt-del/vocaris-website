@@ -347,3 +347,79 @@ nav.top.fest .logo-mark,footer .logo-mark,.fuss-marke .logo-mark{background:none
    weißen Leiste gilt jetzt einfach der Verlauf aus dem SVG selbst. */
 nav.top.fest .logo-mark svg rect{fill:url(#vm-nav)}
 footer .logo-mark svg rect{fill:url(#vm-fuss)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RUHIGER, WERTIGER — die Interaktion dort, wo sie das Produkt zeigt
+   ══════════════════════════════════════════════════════════════════════════
+   Marineblauer Kopfbereich mit nur einem Lichtschein statt Vollfarbe; Knöpfe
+   einfarbig Indigo, der Verlauf bleibt dem Zeichen und der Live-Fläche
+   vorbehalten. Kein Anstupsen mehr: keine Angebots-Karte, kein Chat, der von
+   selbst aufgeht, keine Schreibmaschine. Was interaktiv ist, ist echt:
+   eine Aufnahme aus dem Produkt, neun echte Stimmen, gemessene Antwortzeiten.
+   ══════════════════════════════════════════════════════════════════════════ */
+.hero-farbe{
+  background:
+    radial-gradient(52% 70% at 78% 22%,rgba(92,90,238,.55) 0%,transparent 62%),
+    radial-gradient(40% 55% at 92% 75%,rgba(34,211,238,.35) 0%,transparent 60%),
+    radial-gradient(60% 80% at 10% 90%,rgba(79,139,245,.22) 0%,transparent 60%),
+    linear-gradient(160deg,#0a1a3a 0%,#0e2050 55%,#142a64 100%);
+  filter:none;
+}
+.hero-farbe::after{background-size:56px 56px;opacity:.7}
+.hero-inhalt{padding:124px 24px 56px}
+.hero-inhalt .eyebrow{color:#8fd3f4}
+.hero-sub{color:rgba(255,255,255,.82)}
+.hero-form input{border-radius:10px;box-shadow:0 10px 30px -14px rgba(0,0,0,.6)}
+.hero-form button,a.btn,button.btn{border-radius:10px;background:var(--marke);box-shadow:none}
+a.btn:hover,button.btn:hover{background:var(--marke-tief);filter:none;box-shadow:0 10px 24px -12px rgba(92,90,238,.55)}
+a.btn.hell{background:#fff;color:var(--v-navy)} a.btn.hell:hover{background:#f6f9fc}
+a.btn.glas,button.btn.glas{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28)}
+nav.top.fest a.btn.hell{background:var(--marke);color:#fff}
+.hero-ctas .hinweis{color:rgba(255,255,255,.62)}
+.angebot{display:none!important}
+.cta-band{background:linear-gradient(160deg,var(--v-navy-2),#2d2ba6 70%,#1a9fc4 130%)}
+.schritt::before{background:var(--marke)} .punkte .hk{background:var(--marke)}
+.zahl b{background:none;-webkit-text-fill-color:currentColor;color:var(--p-navy)}
+.karte:hover .ikon{background:var(--marke);color:#fff}
+.sim-blase.raus{background:var(--marke)}
+
+/* Browser-Rahmen: der Anruf zum Anhören */
+.browser{border-radius:12px;box-shadow:0 40px 80px -24px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+.browser .kopf{position:relative;background:#0f1d3d;padding:11px 12px}
+.browser .kopf span{background:rgba(255,255,255,.18)}
+.browser .kopf .kopf-titel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:auto;height:auto;border-radius:0;background:none;color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.anruf-player{background:#fff;display:flex;flex-direction:column;min-height:340px}
+.ap-kopf{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid var(--p-line)}
+.ap-play{flex:none;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;background:var(--marke);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .15s ease,background .2s ease;box-shadow:0 8px 20px -8px rgba(92,90,238,.7)}
+.ap-play:hover{transform:scale(1.06);background:var(--marke-tief)} .ap-play:focus-visible{outline:2px solid var(--marke);outline-offset:3px}
+.ap-play.laeuft{background:var(--v-navy)}
+.ap-info{min-width:0} .ap-info b{display:block;color:var(--p-navy);font-size:14px} .ap-info span{display:block;color:var(--p-faint);font-size:12.5px;line-height:1.35}
+.ap-bars{margin-left:auto;display:flex;gap:2.5px;align-items:center;height:22px;flex:none}
+.ap-bars i{display:block;width:3px;height:20%;border-radius:2px;background:var(--marke-hell);transition:height .1s linear}
+.anruf-player.spricht .ap-bars i{background:var(--marke)}
+.ap-zeit{flex:none;font-size:12px;color:var(--p-faint);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.ap-lauf{list-style:none;margin:0;padding:14px 18px;display:flex;flex-direction:column;gap:9px;flex:1;background:#f6f7fb}
+.ap-z{max-width:88%;padding:9px 13px;border-radius:12px;font-size:13.5px;line-height:1.45;opacity:.28;transition:opacity .25s ease,transform .25s ease;transform:translateY(2px)}
+.ap-z.da{opacity:1;transform:none} .ap-z.aktiv{box-shadow:0 0 0 2px var(--marke-hell)}
+.ap-z .wer{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.55;margin-bottom:2px}
+.ap-z.anrufer{align-self:flex-start;background:#fff;border:1px solid var(--p-line);color:var(--p-navy);border-bottom-left-radius:4px}
+.ap-z.vocaris{align-self:flex-end;background:var(--marke);color:#fff;border-bottom-right-radius:4px} .ap-z.vocaris .wer{opacity:.75}
+.ap-fuss{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 18px;border-top:1px solid var(--p-line);font-size:12.5px;flex-wrap:wrap}
+.ap-ergebnis{color:var(--p-gruen);font-weight:650;opacity:0;transition:opacity .3s ease} .ap-ergebnis.da{opacity:1}
+.ap-hinweis{color:var(--p-faint)}
+@media (max-width:560px){.ap-kopf{padding:12px 14px;gap:10px}.ap-lauf{padding:12px 14px}.ap-bars{display:none}.ap-info span{display:none}}
+
+/* Stimmenprobe */
+.stimmen{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
+@media (max-width:860px){.stimmen{grid-template-columns:repeat(2,1fr)}} @media (max-width:520px){.stimmen{grid-template-columns:1fr}}
+.stimme{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:1px solid var(--p-line);border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;box-shadow:var(--p-schatten-karte);transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+.stimme:hover{transform:translateY(-2px);box-shadow:var(--p-schatten-schwebe);border-color:var(--marke-hell)}
+.stimme:focus-visible{outline:2px solid var(--marke);outline-offset:2px}
+.st-play{flex:none;width:36px;height:36px;border-radius:50%;background:var(--marke-zart);color:var(--marke);display:flex;align-items:center;justify-content:center;transition:background .2s ease,color .2s ease}
+.stimme.laeuft .st-play{background:var(--marke);color:#fff}
+.st-text b{display:block;color:var(--p-navy);font-size:15px} .st-text span{display:block;color:var(--p-faint);font-size:12.5px}
+.st-bars{margin-left:auto;display:flex;gap:2px;align-items:center;height:18px;opacity:0;transition:opacity .2s ease}
+.stimme.laeuft .st-bars{opacity:1} .st-bars i{display:block;width:3px;height:30%;border-radius:2px;background:var(--marke);animation:stb .9s ease-in-out infinite}
+.st-bars i:nth-child(2){animation-delay:.12s}.st-bars i:nth-child(3){animation-delay:.24s}.st-bars i:nth-child(4){animation-delay:.36s}
+@keyframes stb{0%,100%{height:30%}50%{height:100%}}
+@media (prefers-reduced-motion:reduce){.st-bars i{animation:none;height:60%}.ap-bars i{transition:none}}
