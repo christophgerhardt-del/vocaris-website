@@ -456,3 +456,32 @@ nav.top.fest a.btn.hell{background:#1f5eff}
 .karte .ikon{background:#eaf1ff;color:#1f5eff}
 ::selection{background:#d6e4ff;color:#0a2fd0}
 .dash aside .di.an{background:#eaf1ff;color:#0a2fd0}
+
+/* Tippziele auf dem Handy: alles, was man antippt, mindestens 44 px hoch. */
+@media (max-width:640px){
+  .hero-form button,.hero-form .btn,a.btn,button.btn{min-height:48px}
+  .sim-waehler button{min-height:44px;padding:10px 14px}
+  .sim-nochmal{min-height:44px;padding:8px 12px;display:inline-flex;align-items:center}
+  .hero-form .consent{min-height:44px;align-items:center}
+  .rechner input:not([type=range]),.verlust input:not([type=range]),.rw input{min-height:44px}
+  .stimme{min-height:56px}
+  footer a,.fuss a{min-height:44px;display:inline-flex;align-items:center}
+}
+
+.hat-pfeil{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;margin-left:-8px}
+.sim-waehler button{min-height:40px}
+.logo{min-height:44px}
+@media (max-width:640px){
+  a.leise,.leise,.hero-inhalt a:not(.btn){min-height:44px;display:inline-flex;align-items:center}
+  [data-branchensuche],.finder input,input[type=search],input[type=text],input[type=number],input[type=tel],input[type=email]{min-height:44px}
+  footer.gross a,.fuss-spalten a,.fuss-unten a{min-height:44px;display:inline-flex;align-items:center}
+}
+
+/* Live-Status aus dem Backend: erscheint nur, wenn die Abfrage wirklich gelingt. */
+.status-zeile{display:inline-flex;align-items:center;gap:10px;margin:26px 0 0;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#dbe3f5;font-size:.92rem}
+.status-zeile[hidden]{display:none}
+.status-punkt{width:9px;height:9px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.22);animation:status-puls 2.4s ease-in-out infinite}
+.status-zeile.gestoert .status-punkt{background:#fbbf24;box-shadow:0 0 0 4px rgba(251,191,36,.22);animation:none}
+.status-mess{color:#8fa3c7}
+@keyframes status-puls{0%,100%{box-shadow:0 0 0 4px rgba(52,211,153,.22)}50%{box-shadow:0 0 0 7px rgba(52,211,153,.10)}}
+@media (prefers-reduced-motion:reduce){.status-punkt{animation:none}}

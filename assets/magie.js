@@ -33,6 +33,11 @@
       const offen = document.body.classList.toggle('menue-offen');
       burger.setAttribute('aria-expanded', String(offen));
     });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.body.classList.contains('menue-offen')) {
+        document.body.classList.remove('menue-offen'); burger.setAttribute('aria-expanded', 'false'); burger.focus();
+      }
+    });
     document.querySelectorAll('.mobil-menue a').forEach((a) => a.addEventListener('click', () => {
       document.body.classList.remove('menue-offen'); burger.setAttribute('aria-expanded', 'false');
     }));
@@ -170,4 +175,33 @@
     }
   });
 
+})();
+
+// ── Live-Status: eine echte Messung gegen das Backend, keine Behauptung ──────
+// Zeigt die Zeile nur, wenn /api/status antwortet. Antwortzeit = gemessene
+// Rundlaufzeit aus dem Browser des Besuchers, gerundet auf 10 ms.
+(() => {
+  const zeile = document.querySelector('[data-status]');
+  if (!zeile || !('fetch' in window)) return;
+  const text = zeile.querySelector('[data-status-text]');
+  const mess = zeile.querySelector('[data-status-mess]');
+  const start = performance.now();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  fetch('https://ki-anruf.onrender.com/api/status', { signal: ctrl.signal, cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('status ' + r.status))))
+    .then((d) => {
+      clearTimeout(timer);
+      const ms = Math.max(10, Math.round((performance.now() - start) / 10) * 10);
+      if (d && d.ok) {
+        text.textContent = 'Alle Systeme laufen';
+        mess.textContent = '· Antwort in ' + ms + ' ms · gerade geprüft';
+      } else {
+        zeile.classList.add('gestoert');
+        text.textContent = 'Eingeschränkter Betrieb';
+        mess.textContent = '· wir arbeiten daran';
+      }
+      zeile.hidden = false;
+    })
+    .catch(() => { clearTimeout(timer); /* nichts anzeigen: keine erfundene Verfügbarkeit */ });
 })();

@@ -814,3 +814,25 @@ h1,h2,h3{color:var(--text-1);}
 .logo:hover .mark{transform:none}
 
 h1,h2,h3{font-family:"Bricolage Grotesque","Schibsted Grotesk",system-ui,sans-serif;font-weight:600;letter-spacing:-.03em}
+
+
+/* Sprunglink für Tastatur und Vorleser: unsichtbar, bis er den Fokus bekommt. */
+.skip{position:absolute;left:12px;top:-60px;z-index:1000;background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;text-decoration:none;transition:top .15s}
+.skip:focus{top:12px;outline:3px solid #7fdcff}
+/* Tippziele: 44 px, gemessen im Handy-Test. */
+.nav-links a{padding:9px 0;min-height:40px;display:inline-flex;align-items:center}
+.nav-right a.contact{min-height:44px;display:inline-flex;align-items:center;padding:0 4px}
+@media (max-width:1000px){.nav.open .nav-links a{min-height:44px;display:flex;align-items:center}}
+@media (max-width:640px){.foot a,.foot .fl a,.foot .fr a{min-height:44px;display:inline-flex;align-items:center}.callform .consent,.consent{min-height:44px;align-items:center}}
+
+.nav .logo,.foot .logo{min-height:44px}
+.marke a{min-height:40px;display:inline-flex;align-items:center}
+@media (max-width:1000px){.marke a{min-height:44px}}
+@media (max-width:640px){a.back,a.demolink,.foot a,.hint a{min-height:44px;display:inline-flex;align-items:center}}
+/* Branchenleiste, Fußzeile, Rechner, Chat: Tippziele nachgemessen (Chrome 390 px). */
+.bb-l a{min-height:44px;display:inline-flex;align-items:center}
+.foot a,.foot .fl a,.foot .fr a{min-height:40px;display:inline-flex;align-items:center}
+@media (max-width:640px){.rechner input[type=range],.verlust input[type=range]{height:44px;margin:0}
+  .pa-zu{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .pa-schliessen{width:44px;height:44px;min-width:44px}
+  .pa-fuss textarea{min-height:44px}.pa-fuss button{min-height:44px}}
