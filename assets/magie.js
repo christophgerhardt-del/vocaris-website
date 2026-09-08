@@ -205,3 +205,22 @@
     })
     .catch(() => { clearTimeout(timer); /* nichts anzeigen: keine erfundene Verfügbarkeit */ });
 })();
+
+// ── Popups: Verlustrechner und Branchenliste liegen in <dialog> ──────────────
+(() => {
+  document.querySelectorAll('[data-popup]').forEach((knopf) => {
+    knopf.addEventListener('click', () => {
+      const d = document.getElementById(knopf.dataset.popup);
+      if (!d || typeof d.showModal !== 'function') return;
+      d.showModal();
+      const erstes = d.querySelector('input:not([type=hidden]), .popup-zu');
+      if (erstes) erstes.focus();
+    });
+  });
+  document.querySelectorAll('dialog.popup').forEach((d) => {
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    const zu = d.querySelector('.popup-zu');
+    if (zu) zu.addEventListener('click', () => d.close());
+    d.addEventListener('close', () => { document.dispatchEvent(new Event('vocaris:ton-aus')); });
+  });
+})();
