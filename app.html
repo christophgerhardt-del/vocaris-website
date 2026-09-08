@@ -4280,7 +4280,7 @@
         h.textContent = `#${t.number} · ${t.title}`;
         if (t.priority === 'high') { const b = document.createElement('span'); b.className = 'gap-badge'; b.style.marginLeft = '8px'; b.textContent = 'Hoch'; h.append(b); }
         const p = document.createElement('p');
-        p.textContent = `${t.caller_name || ''}${t.caller_phone ? ' · ' + t.caller_phone : ''}${t.caller_name || t.caller_phone ? ' · ' : ''}${when}`;
+        p.textContent = [t.caller_name, t.caller_phone, when].filter(Boolean).join(' · ');
         const detail = document.createElement('div'); detail.className = 'hidden'; detail.style.marginTop = '10px';
         div.append(h, p, detail);
         div.onclick = (e) => { if (e.target.closest('button, a, textarea, input')) return; detail.classList.toggle('hidden'); if (!detail.classList.contains('hidden') && !detail.dataset.geladen) renderTicketDetail(t, detail); };
