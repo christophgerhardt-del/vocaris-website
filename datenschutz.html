@@ -51,7 +51,7 @@
 
   <main class="legal" id="main">
     <h1>Datenschutzerklärung</h1>
-    <p class="updated">Stand: August 2026</p>
+    <p class="updated">Stand: 08. September 2026</p>
 
     <h2>1. Verantwortlicher</h2>
     <p>Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
@@ -75,9 +75,32 @@
        verarbeitet, um die Auslieferung zu ermöglichen und die Sicherheit zu gewährleisten.
        Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Eine Übermittlung in die USA kann erfolgen; Grundlage sind
        die EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework.</p>
-    <p>Wir setzen <strong>keine Tracking- oder Marketing-Cookies</strong> und keine Webanalyse ein. Im
-       Kundenbereich wird zur Anmeldung ein technisch notwendiges Sitzungs-Token lokal im Browser
-       (Local Storage) gespeichert.</p>
+    <p>Wir setzen <strong>keine Tracking- oder Marketing-Cookies</strong> und keine Webanalyse-Dienste
+       Dritter ein. Im Kundenbereich wird zur Anmeldung ein technisch notwendiges Sitzungs-Token lokal im
+       Browser (Local Storage) gespeichert.</p>
+
+    <h3>Anonyme Zählung von Seitenaufrufen</h3>
+    <p>Um zu erfahren, welche Seiten gelesen werden, zählen wir Seitenaufrufe ohne Cookies und ohne
+       Kennungen. Je Aufruf werden nur die aufgerufene Seite, eine eventuelle Herkunftsangabe in der Adresse
+       (z.&nbsp;B. <code>?src=qr</code>), die verweisende Seite (Referrer) und der Zeitpunkt in unserer
+       Datenbank bei Supabase (EU-Region) gespeichert. IP-Adresse, Gerät oder Browser werden nicht erfasst;
+       ein Rückschluss auf Personen ist nicht möglich. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f
+       DSGVO (Interesse an einer einfachen Reichweitenmessung).</p>
+
+    <h3>Website-Assistent (Chat)</h3>
+    <p>Auf der Website können Sie Fragen zu Vocaris in ein Chat-Fenster eingeben. Ihre Eingaben werden an
+       unseren Server übertragen und dort zusammen mit einem festen Wissenstext über Vocaris durch ein
+       Sprachmodell von OpenAI (OpenAI Ireland Ltd. bzw. OpenAI, L.L.C., USA) beantwortet. Die Übermittlung
+       in die USA stützt sich auf die EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework.
+       Bitte geben Sie im Chat keine personenbezogenen Daten Dritter ein. Wir speichern die Unterhaltung
+       nicht dauerhaft; zur Missbrauchsabwehr wird die Zahl der Anfragen je IP-Adresse für einen Tag
+       gezählt. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (Beantwortung von Fragen
+       Interessierter); die Nutzung ist freiwillig.</p>
+
+    <h3>Statusanzeige</h3>
+    <p>Im Abschnitt „Sicherheit“ fragt Ihr Browser einmalig unseren Server ab, um anzuzeigen, ob der Dienst
+       erreichbar ist. Dabei wird technisch bedingt Ihre IP-Adresse an unseren Hosting-Anbieter übertragen
+       (siehe oben); es werden keine weiteren Daten gesendet oder gespeichert.</p>
 
     <h2>4. Kontakt-, Demo-Anfragen und Testanruf</h2>
     <p>Wenn Sie über das Formular „Demo buchen“ eine Anfrage senden oder uns per E-Mail kontaktieren, verarbeiten
@@ -167,5 +190,6 @@
 </footer>
 <script src="assets/site.js"></script>
 <script src="assets/vocaris.js" defer></script>
+<script src="assets/assistent.js" defer></script>
 </body>
 </html>

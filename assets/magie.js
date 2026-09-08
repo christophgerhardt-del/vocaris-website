@@ -181,7 +181,7 @@
 // Zeigt die Zeile nur, wenn /api/status antwortet. Antwortzeit = gemessene
 // Rundlaufzeit aus dem Browser des Besuchers, gerundet auf 10 ms.
 (() => {
-  const zeile = document.querySelector('[data-status]');
+  const zeile = document.querySelector('[data-systemstatus]');
   if (!zeile || !('fetch' in window)) return;
   const text = zeile.querySelector('[data-status-text]');
   const mess = zeile.querySelector('[data-status-mess]');

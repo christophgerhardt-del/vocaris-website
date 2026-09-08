@@ -836,3 +836,8 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Schibsted Grotesk",system-ui,sans-se
   .pa-zu{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   .pa-schliessen{width:44px;height:44px;min-width:44px}
   .pa-fuss textarea{min-height:44px}.pa-fuss button{min-height:44px}}
+/* Gemessen (Chrome, preise.html): zwei ältere Regeln färbten den Text der
+   .faq-cta-Knöpfe in Markenblau – auf blauem Grund unsichtbar. Weiß gilt. */
+.faq-cta,.faq-cta:hover{color:#fff}
+.verlust-karte .faq-cta{color:#fff}
+.pa-zu{min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center}
