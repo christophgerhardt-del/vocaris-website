@@ -462,7 +462,8 @@
   function branchenfinder() {
     var feld = $('[data-branchensuche]');
     if (!feld) return;
-    var karten = $$('#branchen .icard');
+    // Alte Startseite: .icard — neue Startseite (Aufbau wie Presio): .karte. Beides bedienen.
+    var karten = $$('#branchen .karte, #branchen .icard');
     if (!karten.length) return;
     var zaehler = $('[data-branchentreffer]');
 

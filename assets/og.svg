@@ -3,32 +3,24 @@
        erwarten; abweichende Formate werden hart beschnitten. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#eff0ff"/><stop offset="1" stop-color="#f6f9fc"/>
+      <stop offset="0" stop-color="#eaf1ff"/><stop offset="1" stop-color="#f6f9fc"/>
     </linearGradient>
     <linearGradient id="v" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5c5aee"/><stop offset="1" stop-color="#3ecfd5"/>
+      <stop offset="0" stop-color="#1f5eff"/><stop offset="1" stop-color="#3ecfd5"/>
     </linearGradient>
     <radialGradient id="au" cx=".8" cy=".1" r=".8">
-      <stop offset="0" stop-color="#5c5aee" stop-opacity=".22"/>
-      <stop offset="1" stop-color="#5c5aee" stop-opacity="0"/>
+      <stop offset="0" stop-color="#1f5eff" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#1f5eff" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect width="1200" height="630" fill="url(#au)"/>
 
   <g transform="translate(96,150)">
-    <g transform="scale(3.4)">
-      <path d="M16 2C8.3 2 2 7.6 2 14.5c0 3.9 2 7.4 5.2 9.7v5.1c0 .6.7 1 1.2.6l5-3.6c.8.1 1.7.2 2.6.2 7.7 0 14-5.6 14-12.5S23.7 2 16 2z" fill="url(#v)"/>
-      <g fill="#fff">
-        <rect x="8.6" y="12" width="2.8" height="5" rx="1.4"/>
-        <rect x="13" y="8.8" width="2.8" height="11.4" rx="1.4"/>
-        <rect x="17.4" y="10.6" width="2.8" height="7.8" rx="1.4"/>
-        <rect x="21.8" y="12.6" width="2.8" height="3.8" rx="1.4"/>
-      </g>
-    </g>
-    <text x="130" y="78" font-family="Georgia,'Times New Roman',serif" font-size="76" fill="#0a2540">Vocaris</text>
-    <text x="4" y="176" font-family="Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="#0a2540">Der KI-Telefonassistent,</text>
-    <text x="4" y="230" font-family="Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="#0a2540">der ans Telefon geht.</text>
+    <g transform="scale(1.05)"><defs><radialGradient id="ogg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="ogh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="ogs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#ogg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#ogs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#ogh)"/></g>
+    <text x="130" y="78" font-family="'Bricolage Grotesque','Helvetica Neue',Helvetica,Arial,sans-serif" font-weight="600" font-size="72" letter-spacing="-2" fill="#08122e">Vocaris</text>
+    <text x="4" y="176" font-family="Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="#08122e">Der KI-Telefonassistent,</text>
+    <text x="4" y="230" font-family="Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="#08122e">der ans Telefon geht.</text>
     <text x="4" y="296" font-family="Helvetica,Arial,sans-serif" font-size="25" fill="#425466">Termine, Reservierungen, Rückrufe — rund um die Uhr. In der EU gehostet.</text>
   </g>
 </svg>
