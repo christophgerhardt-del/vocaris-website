@@ -65,6 +65,8 @@
     .login__trust span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500;
       color: var(--ink-soft); background: var(--paper); border: 1px solid var(--line); padding: 5px 11px; border-radius: 100px; }
     .login__trust svg { width: 13px; height: 13px; color: var(--accent); }
+    .login__sso { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; border: 1px solid var(--line); color: var(--ink); margin-top: 4px; }
+    .login__sso:hover { background: var(--paper-2); }
     .pw { position: relative; }
     .pw input { padding-right: 44px; }
     .pw__toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: 0;
@@ -378,6 +380,35 @@
     .tpl-cat { display: inline-block; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 8px; }
     .kb-cat-head { color: var(--ink-faint); margin: 20px 0 8px; }
     .kb-cat-head:first-child { margin-top: 4px; }
+    /* ---- Vorgänge ---- */
+    .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+    .tk-leiste input[type=search] { flex: 1 1 220px; min-width: 160px; }
+    .tk-leiste select { width: auto; }
+    .tk-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px 14px; align-items: center; cursor: pointer; }
+    .tk-nr { font-weight: 700; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+    .tk-titel { font-weight: 600; }
+    .tk-meta { grid-column: 2 / 4; color: var(--ink-faint); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+    .tk-chip { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: var(--paper-2); border: 1px solid var(--line); color: var(--ink-soft); }
+    .tk-chip.high { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
+    .tk-chip.low { background: #ecfdf5; border-color: #d1fae5; color: #047857; }
+    .tk-chip.ueber { background: #ffedd5; border-color: #fed7aa; color: #c2410c; }
+    .tk-chip.status { background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: transparent; color: var(--accent-ink); }
+    .tk-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); cursor: default; }
+    .tk-detail .grid2 label { margin-top: 6px; }
+    .tk-verlauf { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .tk-verlauf p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+    .tk-verlauf p.sys { color: var(--ink-faint); font-size: 12px; }
+    .tk-transkript { max-height: 260px; overflow: auto; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; font-size: 13px; }
+    .tk-transkript p { margin: 2px 0; }
+    .tk-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .tk-spalte { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; min-height: 220px; }
+    .tk-spalte h4 { margin: 4px 6px 10px; font-size: 13px; color: var(--ink-soft); display: flex; justify-content: space-between; }
+    .tk-spalte.ziel { outline: 2px dashed var(--accent); outline-offset: -4px; }
+    .tk-karte { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; box-shadow: var(--shadow-sm); }
+    .tk-karte:active { cursor: grabbing; }
+    .tk-karte b { display: block; font-size: 13.5px; margin-bottom: 4px; }
+    .tk-karte small { color: var(--ink-faint); }
+    @media (max-width: 760px) { .tk-board { grid-template-columns: 1fr; } .tk-row { grid-template-columns: 52px 1fr; } .tk-row > .tk-rechts { grid-column: 2; } }
     @media (max-width: 760px) {
       /* Gemessen (Chrome, 390 px): die 1fr-Spalte wuchs auf 1462 px, weil die
          Navigationszeile ihre Mindestbreite durchreichte. minmax(0,1fr) und
@@ -446,7 +477,10 @@
             </button>
           </div>
           <button id="authBtn" class="btn btn--primary login__submit">Anmelden</button>
-          <p id="authMsg" class="login__err"></p>
+                    <p id="authMsg" class="login__err"></p>
+          <div class="login__divider">oder</div>
+          <button type="button" id="ssoGoogle" class="btn login__sso"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.2z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.1.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg> Mit Google anmelden</button>
+          <p class="login__alt" style="margin-top:8px;font-size:12.5px">Anmeldung über Microsoft 365 richten wir für Ihre Firma auf Wunsch ein.</p>
           <p class="login__alt"><a href="#" id="forgotPw">Passwort vergessen?</a></p>
           <div class="login__divider">sicher &amp; DSGVO-konform</div>
           <div class="login__trust">
@@ -565,13 +599,24 @@
         <!-- Vorgänge (eingebautes Ticketsystem) -->
         <section id="sec-tickets" class="section hidden">
           <h1 class="pagehead">Vorgänge</h1>
-          <p class="pagesub">Jede Nachricht wird ein Vorgang mit Nummer, Status und Notizen. So bleibt nichts liegen, auch ohne eigenes Ticketsystem.</p>
-          <div class="deptbar" style="margin-bottom:14px">
-            <button class="deptseg active" data-tkfilter="open" type="button">Offen</button>
-            <button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button>
-            <button class="deptseg" data-tkfilter="done" type="button">Erledigt</button>
+          <p class="pagesub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf. So bleibt nichts liegen, auch ohne eigenes Ticketsystem.</p>
+          <div class="stats" id="tkStats">
+            <div class="stat"><span class="stat__l">Offen</span><b id="tkStOffen">–</b></div>
+            <div class="stat"><span class="stat__l">Überfällig</span><b id="tkStUeber" style="color:#c2410c">–</b></div>
+            <div class="stat"><span class="stat__l">Erledigt, 30 Tage</span><b id="tkStErl">–</b></div>
+            <div class="stat"><span class="stat__l">Ø Erledigung</span><b id="tkStDauer">–</b></div>
           </div>
-          <div class="panel">
+          <div class="tk-leiste">
+            <div class="deptbar"><button class="deptseg active" data-tkfilter="open" type="button">Offen</button><button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button><button class="deptseg" data-tkfilter="done" type="button">Erledigt</button><button class="deptseg" data-tkfilter="alle" type="button">Alle</button></div>
+            <input id="tkSuche" type="search" placeholder="Suchen: Betreff, Name, Nummer, #12 …" />
+            <select id="tkPrioFilter"><option value="">Alle Prioritäten</option><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select>
+            <select id="tkWer"><option value="">Alle Zuständigen</option></select>
+            <label class="chk" style="margin:0"><input type="checkbox" id="tkNurUeber" /> nur überfällig</label>
+            <div class="deptbar"><button class="deptseg active" data-tkansicht="liste" type="button">Liste</button><button class="deptseg" data-tkansicht="board" type="button">Board</button></div>
+            <button id="tkExport" class="btn btn--ghost sm" type="button">CSV</button>
+            <button id="tkNeuAuf" class="btn btn--primary sm" type="button">+ Vorgang</button>
+          </div>
+          <div class="panel hidden" id="tkNeuPanel">
             <h3>Neuer Vorgang</h3>
             <div class="grid2">
               <div><label style="margin-top:0">Betreff</label><input id="tkNeuTitel" placeholder="z. B. Rückruf Frau Beispiel wegen Angebot" /></div>
@@ -581,10 +626,16 @@
               <div><label>Name (optional)</label><input id="tkNeuName" /></div>
               <div><label>Telefon (optional)</label><input id="tkNeuTel" placeholder="+49 …" /></div>
             </div>
+            <div class="grid2">
+              <div><label>Zuständig (optional)</label><input id="tkNeuWer" list="tkWerListe" placeholder="Name" /></div>
+              <div><label>Frist (optional)</label><input id="tkNeuFrist" type="datetime-local" /></div>
+            </div>
             <label>Notiz</label><textarea id="tkNeuText" rows="2" placeholder="Worum geht es?"></textarea>
-            <div class="stack" style="margin-top:10px"><button id="tkNeuBtn" class="btn btn--primary">Vorgang anlegen</button></div>
+            <div class="stack" style="margin-top:10px"><button id="tkNeuBtn" class="btn btn--primary">Vorgang anlegen</button><button id="tkNeuZu" class="btn btn--ghost">Abbrechen</button></div>
           </div>
+          <datalist id="tkWerListe"></datalist>
           <div id="tickets"></div>
+          <div id="tkBoard" class="tk-board hidden"></div>
         </section>
 
         <!-- Wissensdatenbank -->
@@ -1663,6 +1714,15 @@
         : 'Wir haben dir einen Link zum Zurücksetzen geschickt (bitte auch im Spam schauen).';
     };
 
+    // Google-Anmeldung erst zeigen, wenn der Google-OAuth-Client die Supabase-Rückruf-Adresse kennt
+    // (https://nocsjyzmnskbyccrjayx.supabase.co/auth/v1/callback in der Google Cloud Console).
+    const SSO_GOOGLE_AKTIV = false;
+    if (!SSO_GOOGLE_AKTIV) { $('ssoGoogle').classList.add('hidden'); $('ssoGoogle').previousElementSibling.classList.add('hidden'); $('ssoGoogle').nextElementSibling.classList.add('hidden'); }
+    $('ssoGoogle').onclick = async () => {
+      $('authMsg').textContent = '';
+      const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
+      if (error) $('authMsg').textContent = error.message;
+    };
     sb.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') { showApp(session); openPwModal(true); return; }
       session ? showApp(session) : showAuth();
@@ -4251,70 +4311,190 @@
       });
     }
 
-    // ---- Vorgänge (eingebautes Ticketsystem) ----
-    let tkFilter = 'open';
+    // ---- Vorgänge (eingebautes Ticketsystem, Ausbaustufe 2) ----
+    let tkFilter = 'open', tkAnsicht = 'liste', tkAlle = [];
     const TK_STATUS = { open: 'Offen', in_progress: 'In Arbeit', done: 'Erledigt' };
     const TK_PRIO = { high: 'Hoch', normal: 'Normal', low: 'Niedrig' };
+    const fmtZeit = (s) => s ? new Date(s).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–';
+    const istUeber = (t) => t.status !== 'done' && t.due_at && new Date(t.due_at) < new Date();
     document.querySelectorAll('[data-tkfilter]').forEach((b) => b.onclick = () => {
       document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x === b));
       tkFilter = b.dataset.tkfilter; loadTickets();
     });
+    document.querySelectorAll('[data-tkansicht]').forEach((b) => b.onclick = () => {
+      document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x === b));
+      tkAnsicht = b.dataset.tkansicht; renderTickets();
+    });
+    ['tkSuche', 'tkPrioFilter', 'tkWer', 'tkNurUeber'].forEach((id) => { const e = $(id); if (e) e.oninput = e.onchange = renderTickets; });
+    $('tkNeuAuf').onclick = () => { $('tkNeuPanel').classList.toggle('hidden'); $('tkNeuTitel').focus(); };
+    $('tkNeuZu').onclick = () => $('tkNeuPanel').classList.add('hidden');
     async function loadTickets() {
       if (!tenant) return;
-      const [{ data: items }, { count }] = await Promise.all([
-        sb.from('tickets').select('*').eq('tenant_id', tenant.id).eq('status', tkFilter).order('created_at', { ascending: false }).limit(100),
-        sb.from('tickets').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
-      ]);
-      const badge = $('tkBadge');
-      if (badge) { badge.textContent = count || ''; badge.classList.toggle('hidden', !count); }
-      renderTickets(items || []);
+      let q = sb.from('tickets').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(300);
+      if (tkFilter !== 'alle') q = q.eq('status', tkFilter);
+      const [{ data: items }, { data: kz }] = await Promise.all([q, sb.rpc('tickets_kennzahlen', { t: tenant.id })]);
+      tkAlle = items || [];
+      const k = kz || {};
+      $('tkStOffen').textContent = k.offen ?? '–'; $('tkStUeber').textContent = k.ueberfaellig ?? '–';
+      $('tkStErl').textContent = k.erledigt_30 ?? '–'; $('tkStDauer').textContent = k.dauer_h != null ? (k.dauer_h < 48 ? k.dauer_h + ' h' : Math.round(k.dauer_h / 24) + ' Tage') : '–';
+      const badge = $('tkBadge'); if (badge) { badge.textContent = k.offen || ''; badge.classList.toggle('hidden', !k.offen); }
+      // Zuständige aus allen Vorgängen (für Filter und Vorschläge)
+      const { data: wer } = await sb.from('tickets').select('assignee').eq('tenant_id', tenant.id).not('assignee', 'is', null).limit(500);
+      const namen = [...new Set((wer || []).map((x) => x.assignee).filter(Boolean))].sort();
+      const sel = $('tkWer'); const cur = sel.value; sel.innerHTML = '<option value="">Alle Zuständigen</option>' + namen.map((n) => `<option>${n.replace(/</g, '&lt;')}</option>`).join(''); sel.value = cur;
+      $('tkWerListe').innerHTML = namen.map((n) => `<option value="${n.replace(/"/g, '&quot;')}">`).join('');
+      renderTickets();
     }
-    function renderTickets(items) {
-      const el = $('tickets');
-      if (!items.length) { el.innerHTML = `<div class="panel muted">Keine Vorgänge mit Status „${TK_STATUS[tkFilter]}". Nachrichten deines Assistenten erscheinen hier automatisch.</div>`; return; }
+    function tkGefiltert() {
+      const s = $('tkSuche').value.trim().toLowerCase(), prio = $('tkPrioFilter').value, wer = $('tkWer').value, nurUeber = $('tkNurUeber').checked;
+      return tkAlle.filter((t) => {
+        if (prio && t.priority !== prio) return false;
+        if (wer && t.assignee !== wer) return false;
+        if (nurUeber && !istUeber(t)) return false;
+        if (!s) return true;
+        if (s.startsWith('#')) return String(t.number) === s.slice(1);
+        return [t.title, t.body, t.caller_name, t.caller_phone, t.category, t.assignee, String(t.number)].some((x) => (x || '').toLowerCase().includes(s));
+      });
+    }
+    function chip(text, cls = '') { const c = document.createElement('span'); c.className = 'tk-chip ' + cls; c.textContent = text; return c; }
+    function renderTickets() {
+      const el = $('tickets'), board = $('tkBoard');
+      const items = tkGefiltert();
+      if (tkAnsicht === 'board') { el.classList.add('hidden'); board.classList.remove('hidden'); renderBoard(items); return; }
+      board.classList.add('hidden'); el.classList.remove('hidden');
+      if (!items.length) { el.innerHTML = `<div class="panel muted">Keine Vorgänge${tkFilter !== 'alle' ? ' mit Status „' + TK_STATUS[tkFilter] + '"' : ''}. Nachrichten deines Assistenten erscheinen hier automatisch.</div>`; return; }
       el.innerHTML = '';
-      for (const t of items) {
-        const div = document.createElement('div'); div.className = 'item'; div.style.cursor = 'pointer';
-        const when = new Date(t.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
-        const h = document.createElement('h4');
-        h.textContent = `#${t.number} · ${t.title}`;
-        if (t.priority === 'high') { const b = document.createElement('span'); b.className = 'gap-badge'; b.style.marginLeft = '8px'; b.textContent = 'Hoch'; h.append(b); }
-        const p = document.createElement('p');
-        p.textContent = [t.caller_name, t.caller_phone, when].filter(Boolean).join(' · ');
-        const detail = document.createElement('div'); detail.className = 'hidden'; detail.style.marginTop = '10px';
-        div.append(h, p, detail);
-        div.onclick = (e) => { if (e.target.closest('button, a, textarea, input')) return; detail.classList.toggle('hidden'); if (!detail.classList.contains('hidden') && !detail.dataset.geladen) renderTicketDetail(t, detail); };
-        el.append(div);
-      }
+      for (const t of items) el.append(tkZeile(t));
+    }
+    function tkZeile(t) {
+      const div = document.createElement('div'); div.className = 'item';
+      const row = document.createElement('div'); row.className = 'tk-row';
+      const nr = document.createElement('span'); nr.className = 'tk-nr'; nr.textContent = '#' + t.number;
+      const titel = document.createElement('span'); titel.className = 'tk-titel'; titel.textContent = t.title;
+      const rechts = document.createElement('span'); rechts.className = 'tk-rechts'; rechts.style.display = 'flex'; rechts.style.gap = '6px';
+      if (t.priority !== 'normal') rechts.append(chip(TK_PRIO[t.priority], t.priority));
+      if (istUeber(t)) rechts.append(chip('überfällig', 'ueber'));
+      if (tkFilter === 'alle') rechts.append(chip(TK_STATUS[t.status], 'status'));
+      const meta = document.createElement('span'); meta.className = 'tk-meta';
+      const teile = [t.caller_name, t.caller_phone, t.category, t.assignee ? '→ ' + t.assignee : null, 'Frist ' + fmtZeit(t.due_at), fmtZeit(t.created_at)].filter(Boolean);
+      teile.forEach((x) => { const s = document.createElement('span'); s.textContent = x; meta.append(s); });
+      row.append(nr, titel, rechts, meta);
+      const detail = document.createElement('div'); detail.className = 'tk-detail hidden';
+      div.append(row, detail);
+      row.onclick = () => { detail.classList.toggle('hidden'); if (!detail.classList.contains('hidden') && !detail.dataset.geladen) renderTicketDetail(t, detail); };
+      return div;
+    }
+    async function tkUpdate(t, patch, meldung) {
+      const { error } = await sb.from('tickets').update(patch).eq('id', t.id);
+      if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
+      toast(meldung || 'Gespeichert.'); await loadTickets(); return true;
     }
     async function renderTicketDetail(t, box) {
-      box.dataset.geladen = '1';
-      box.innerHTML = '';
+      box.dataset.geladen = '1'; box.innerHTML = '';
       const body = document.createElement('p'); body.style.whiteSpace = 'pre-wrap'; body.textContent = t.body || '—'; box.append(body);
-      if (t.caller_phone) { const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + t.caller_phone.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + t.caller_phone; box.append(a); }
-      const st = document.createElement('div'); st.className = 'stack'; st.style.marginTop = '10px';
+      // Aktionen zum Anrufer
+      const akt = document.createElement('div'); akt.className = 'stack';
+      if (t.caller_phone) {
+        const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + t.caller_phone.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + t.caller_phone; akt.append(a);
+        const smsB = document.createElement('button'); smsB.className = 'btn btn--ghost sm'; smsB.textContent = 'SMS an Anrufer'; akt.append(smsB);
+        const smsBox = document.createElement('div'); smsBox.className = 'hidden'; smsBox.style.marginTop = '8px';
+        smsBox.innerHTML = '<textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea>';
+        const send = document.createElement('button'); send.className = 'btn sm'; send.textContent = 'SMS senden'; send.style.marginTop = '6px'; smsBox.append(send);
+        smsB.onclick = () => smsBox.classList.toggle('hidden');
+        send.onclick = async () => {
+          const text = smsBox.querySelector('textarea').value.trim(); if (text.length < 5) return;
+          send.disabled = true;
+          try { const r = await fetch(API + '/api/tickets/' + t.id + '/sms', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('SMS gesendet.'); smsBox.classList.add('hidden'); box.dataset.geladen = ''; renderTicketDetail(t, box); }
+          catch (e) { toast('SMS: ' + e.message, 'err'); }
+          send.disabled = false;
+        };
+        box.append(akt, smsBox);
+      } else box.append(akt);
+      // Felder
+      const felder = document.createElement('div'); felder.className = 'grid2';
+      felder.innerHTML = `<div><label>Zuständig</label><input data-f="assignee" list="tkWerListe" value="${(t.assignee || '').replace(/"/g, '&quot;')}" placeholder="Name" /></div>
+        <div><label>Frist</label><input data-f="due_at" type="datetime-local" value="${t.due_at ? new Date(new Date(t.due_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}" /></div>
+        <div><label>Priorität</label><select data-f="priority"><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select></div>
+        <div><label>Kategorie</label><input data-f="category" value="${(t.category || '').replace(/"/g, '&quot;')}" placeholder="z. B. Termin, Angebot, Reklamation" /></div>`;
+      felder.querySelector('[data-f=priority]').value = t.priority;
+      const speichern = document.createElement('button'); speichern.className = 'btn sm'; speichern.textContent = 'Felder speichern'; speichern.style.marginTop = '8px';
+      speichern.onclick = () => {
+        const g = (f) => felder.querySelector('[data-f=' + f + ']').value;
+        const due = g('due_at') ? new Date(g('due_at')).toISOString() : null;
+        tkUpdate(t, { assignee: g('assignee').trim() || null, due_at: due, priority: g('priority'), category: g('category').trim() || null }, 'Vorgang aktualisiert.');
+      };
+      box.append(felder, speichern);
+      // Status
+      const st = document.createElement('div'); st.className = 'stack'; st.style.marginTop = '12px';
       for (const [k, label] of Object.entries(TK_STATUS)) {
         const b = document.createElement('button'); b.className = 'btn sm' + (t.status === k ? ' btn--primary' : ' btn--ghost'); b.textContent = label;
-        b.onclick = async () => { await sb.from('tickets').update({ status: k }).eq('id', t.id); toast(`Vorgang #${t.number}: ${label}.`); loadTickets(); };
+        b.onclick = () => tkUpdate(t, { status: k }, `Vorgang #${t.number}: ${label}.`);
         st.append(b);
       }
       box.append(st);
-      const notesEl = document.createElement('div'); notesEl.style.marginTop = '10px'; box.append(notesEl);
+      // Transkript des Anrufs
+      if (t.call_id) {
+        const { data: turns } = await sb.from('call_turns').select('role, content, created_at').eq('call_id', t.call_id).order('created_at').limit(200);
+        if (turns && turns.length) {
+          const h = document.createElement('label'); h.textContent = 'Gesprächsverlauf'; box.append(h);
+          const tr = document.createElement('div'); tr.className = 'tk-transkript';
+          turns.forEach((u) => { const p = document.createElement('p'); p.innerHTML = `<b>${u.role === 'caller' ? 'Anrufer' : 'Vocaris'}:</b> `; p.append(document.createTextNode(u.content)); tr.append(p); });
+          box.append(tr);
+        }
+      }
+      // Verlauf + Notizen
       const { data: notes } = await sb.from('ticket_notes').select('*').eq('ticket_id', t.id).order('created_at');
-      (notes || []).forEach((n) => { const d = document.createElement('p'); d.className = 'muted'; d.style.margin = '4px 0'; d.textContent = `${new Date(n.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })} · ${n.author}: ${n.body}`; notesEl.append(d); });
+      const verlauf = document.createElement('div'); verlauf.className = 'tk-verlauf';
+      const vh = document.createElement('label'); vh.textContent = 'Verlauf'; verlauf.append(vh);
+      const eintrag = (txt, cls) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = txt; verlauf.append(p); };
+      eintrag(fmtZeit(t.created_at) + ' · angelegt (' + ({ message: 'Nachricht', gap: 'offene Frage', call: 'Anruf', manual: 'von Hand', api: 'API' }[t.source] || t.source) + ')', 'sys');
+      (notes || []).forEach((n) => eintrag(`${fmtZeit(n.created_at)} · ${n.author}: ${n.body}`, n.author === 'System' ? 'sys' : ''));
       const ta = document.createElement('textarea'); ta.rows = 2; ta.placeholder = 'Notiz hinzufügen …'; ta.style.marginTop = '8px';
       const nb = document.createElement('button'); nb.className = 'btn sm'; nb.textContent = 'Notiz speichern'; nb.style.marginTop = '6px';
       nb.onclick = async () => { const v = ta.value.trim(); if (!v) return; await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); ta.value = ''; toast('Notiz gespeichert.'); box.dataset.geladen = ''; renderTicketDetail(t, box); };
-      box.append(ta, nb);
+      verlauf.append(ta, nb); box.append(verlauf);
     }
+    // Board mit Ziehen und Ablegen
+    function renderBoard(items) {
+      const board = $('tkBoard'); board.innerHTML = '';
+      const quelle = tkFilter === 'alle' ? items : tkAlleFuerBoard(items);
+      for (const [k, label] of Object.entries(TK_STATUS)) {
+        const sp = document.createElement('div'); sp.className = 'tk-spalte'; sp.dataset.status = k;
+        const liste = quelle.filter((t) => t.status === k);
+        sp.innerHTML = `<h4><span>${label}</span><span>${liste.length}</span></h4>`;
+        liste.forEach((t) => {
+          const k2 = document.createElement('div'); k2.className = 'tk-karte'; k2.draggable = true; k2.dataset.id = t.id;
+          k2.innerHTML = `<b>#${t.number} · ${t.title.replace(/</g, '&lt;')}</b><small>${[t.caller_name, t.assignee ? '→ ' + t.assignee : null, 'Frist ' + fmtZeit(t.due_at)].filter(Boolean).join(' · ')}</small>`;
+          if (t.priority === 'high') k2.prepend(chip('Hoch', 'high'));
+          if (istUeber(t)) k2.prepend(chip('überfällig', 'ueber'));
+          k2.ondragstart = (e) => { e.dataTransfer.setData('text/plain', t.id); };
+          k2.onclick = () => { tkAnsicht = 'liste'; document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x.dataset.tkansicht === 'liste')); $('tkSuche').value = '#' + t.number; renderTickets(); const d = document.querySelector('#tickets .tk-row'); if (d) d.click(); };
+          sp.append(k2);
+        });
+        sp.ondragover = (e) => { e.preventDefault(); sp.classList.add('ziel'); };
+        sp.ondragleave = () => sp.classList.remove('ziel');
+        sp.ondrop = async (e) => { e.preventDefault(); sp.classList.remove('ziel'); const id = e.dataTransfer.getData('text/plain'); const t = tkAlle.find((x) => x.id === id); if (t && t.status !== k) await tkUpdate(t, { status: k }, `Vorgang #${t.number}: ${label}.`); };
+        board.append(sp);
+      }
+    }
+    function tkAlleFuerBoard(items) { return items; }
+    // Beim Wechsel aufs Board alle Status laden, damit drei Spalten gefüllt sind.
+    document.querySelector('[data-tkansicht=board]').addEventListener('click', () => { if (tkFilter !== 'alle') { tkFilter = 'alle'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'alle')); loadTickets(); } });
+    $('tkExport').onclick = () => {
+      const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt']];
+      tkGefiltert().forEach((t) => rows.push([t.number, t.title, TK_STATUS[t.status], TK_PRIO[t.priority], t.category || '', t.assignee || '', t.caller_name || '', t.caller_phone || '', fmtZeit(t.due_at), fmtZeit(t.created_at), fmtZeit(t.closed_at)]));
+      const csv = rows.map((r) => r.map((x) => '"' + String(x ?? '').replace(/"/g, '""') + '"').join(';')).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'vorgaenge.csv'; a.click();
+    };
     $('tkNeuBtn').onclick = async () => {
       if (!tenant) return;
       const title = $('tkNeuTitel').value.trim(); if (!title) { toast('Bitte einen Betreff eingeben.', 'err'); return; }
       $('tkNeuBtn').disabled = true;
-      const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: $('tkNeuText').value.trim(), priority: $('tkNeuPrio').value, source: 'manual', caller_name: $('tkNeuName').value.trim() || null, caller_phone: $('tkNeuTel').value.trim() || null });
+      const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: $('tkNeuText').value.trim(), priority: $('tkNeuPrio').value, source: 'manual', caller_name: $('tkNeuName').value.trim() || null, caller_phone: $('tkNeuTel').value.trim() || null, assignee: $('tkNeuWer').value.trim() || null, due_at: $('tkNeuFrist').value ? new Date($('tkNeuFrist').value).toISOString() : null });
       $('tkNeuBtn').disabled = false;
       if (error) { toast('Fehler: ' + error.message, 'err'); return; }
-      ['tkNeuTitel', 'tkNeuText', 'tkNeuName', 'tkNeuTel'].forEach((id) => ($(id).value = ''));
+      ['tkNeuTitel', 'tkNeuText', 'tkNeuName', 'tkNeuTel', 'tkNeuWer', 'tkNeuFrist'].forEach((id) => ($(id).value = ''));
+      $('tkNeuPanel').classList.add('hidden');
       toast('Vorgang angelegt.'); tkFilter = 'open'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'open')); loadTickets();
     };
     // ---- Termine ----
