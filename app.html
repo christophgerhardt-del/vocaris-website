@@ -883,6 +883,41 @@
             <div id="crmList" style="margin-top:8px"></div>
           </div>
 
+          <!-- 3b · Ticketsystem -->
+          <div class="panel">
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>Ticketsystem</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Jede Nachricht (und auf Wunsch jede offene Frage und jeder Anruf) wird ein Ticket in deinem Helpdesk – mit Anliegen, Rückrufnummer und Dringlichkeit. Ohne passendes System nimm „Helpdesk-Postfach": Das funktioniert mit allem, was Tickets aus E-Mails macht (OTRS/Znuny, Jira, Zammad, Freshdesk …).</p>
+            <div class="grid2">
+              <div><label style="margin-top:0">Ticketsystem</label><select id="tkProvider"></select></div>
+              <div></div>
+            </div>
+            <div id="tkFields" class="grid2"></div>
+            <div class="if-grid" style="margin-top:8px">
+              <label class="chk"><input type="checkbox" id="tkOnMsg" checked /> <b>Nachricht / Rückruf</b></label>
+              <label class="chk"><input type="checkbox" id="tkOnGap" /> <b>Offene Frage</b></label>
+              <label class="chk"><input type="checkbox" id="tkOnCall" /> <b>Jeder Anruf</b> <span class="muted">– mit Zusammenfassung</span></label>
+            </div>
+            <div class="stack" style="margin-top:10px"><button id="tkAdd" class="btn">Ticketsystem verbinden</button><button id="tkTest" class="btn btn--ghost">Test-Ticket anlegen</button></div>
+            <p class="muted" id="tkHint" style="margin-top:6px;font-size:12.5px"></p>
+            <div id="tkList" style="margin-top:8px"></div>
+          </div>
+
+          <!-- 3c · API-Schlüssel -->
+          <div class="panel">
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L19 3.6m-2 2 2 2"/></svg>API-Schlüssel</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Für Make, n8n, Zapier oder eigene Software: Anrufe, Nachrichten, offene Fragen und Termine abrufen, Wissen ergänzen, Anrufe auslösen. Anleitung und Beispiele: <a href="https://vocaris.eu/api.html" target="_blank" rel="noopener">vocaris.eu/api.html</a>. Der Schlüssel wird nur einmal angezeigt.</p>
+            <div class="grid2">
+              <div><label style="margin-top:0">Bezeichnung</label><input id="akName" placeholder="z. B. n8n Produktiv" /></div>
+              <div style="display:flex;align-items:flex-end"><button id="akCreate" class="btn" style="width:100%">Schlüssel erstellen</button></div>
+            </div>
+            <div id="akNeu" class="hidden" style="margin-top:10px">
+              <label style="margin-top:0">Dein neuer Schlüssel – jetzt kopieren, er wird nicht noch einmal gezeigt</label>
+              <div class="stack"><input id="akKey" readonly style="flex:1;font-family:ui-monospace,monospace" /><button id="akCopy" class="btn">Kopieren</button></div>
+            </div>
+            <p class="muted" id="akHint" style="margin-top:6px;font-size:12.5px"></p>
+            <div id="akList" style="margin-top:8px"></div>
+          </div>
+
           <!-- 4 · Automatisierung & eigener Webhook -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Automatisierung & eigener Webhook</h3>
@@ -1716,6 +1751,8 @@
       $('whUrl').value = wh?.url ?? '';
       $('whSecret').value = wh?.secret || genSecret();
       renderCrmList();
+      renderTicketList();
+      renderKeyList();
 
       // Termine
       $('bkEnabled').checked = bk?.enabled ?? false;
@@ -4088,6 +4125,104 @@
       });
     }
 
+
+    // ---- Ticketsysteme (wie CRM: Register + Verbindungen) ----
+    const TICKET_SCHEMA = {
+      zammad: { label: 'Zammad', fields: [['base', 'Zammad-Adresse', 'https://helpdesk.meinefirma.de'], ['token', 'API-Token (Zugriff „ticket.agent")', ''], ['group', 'Gruppe', 'Users'], ['customer', 'Sammelkunde (E-Mail, wird angelegt)', 'telefon@meinefirma.de']] },
+      zendesk: { label: 'Zendesk', fields: [['subdomain', 'Subdomain', 'meinefirma'], ['email', 'Agenten-E-Mail', 'agent@meinefirma.de'], ['token', 'API-Token', '']] },
+      freshdesk: { label: 'Freshdesk', fields: [['domain', 'Domain', 'meinefirma'], ['apiKey', 'API-Key', '']] },
+      hubspot: { label: 'HubSpot Tickets', fields: [['token', 'Private-App-Token (tickets: write)', 'pat-eu1-…']] },
+      email: { label: 'Helpdesk-Postfach (E-Mail)', fields: [['to', 'Ticket-Adresse', 'support@meinefirma.de'], ['prefix', 'Betreff-Präfix (optional)', '[Vocaris]']] },
+    };
+    (function initTicketSelect() {
+      const sel = $('tkProvider'); if (!sel) return;
+      sel.innerHTML = Object.entries(TICKET_SCHEMA).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+      sel.onchange = renderTicketFields; renderTicketFields();
+    })();
+    function renderTicketFields() {
+      const sel = $('tkProvider'), box = $('tkFields'); if (!sel || !box) return;
+      const schema = TICKET_SCHEMA[sel.value]; box.innerHTML = '';
+      schema.fields.forEach(([key, label, ph]) => {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<label style="margin-top:6px">${label}</label>`;
+        const inp = document.createElement('input'); inp.dataset.k = key; inp.placeholder = ph || '';
+        if (/optional/i.test(label)) inp.dataset.optional = '1';
+        wrap.append(inp); box.append(wrap);
+      });
+    }
+    $('tkAdd').onclick = async () => {
+      if (!tenant) return;
+      const provider = $('tkProvider').value;
+      const config = {};
+      let missing = false;
+      $('tkFields').querySelectorAll('input').forEach((inp) => { const v = inp.value.trim(); if (!v && !inp.dataset.optional) missing = true; if (v) config[inp.dataset.k] = v; });
+      if (missing) { $('tkHint').textContent = 'Bitte alle Felder ausfüllen.'; return; }
+      $('tkAdd').disabled = true;
+      const { error } = await sb.from('ticket_connections').insert({
+        tenant_id: tenant.id, provider, config,
+        on_messages: $('tkOnMsg').checked, on_gaps: $('tkOnGap').checked, on_calls: $('tkOnCall').checked,
+      });
+      $('tkAdd').disabled = false;
+      if (error) { $('tkHint').textContent = 'Fehler: ' + error.message; return; }
+      $('tkHint').textContent = 'Verbunden. Mit „Test-Ticket anlegen" prüfst du, ob es ankommt.';
+      $('tkFields').querySelectorAll('input').forEach((i) => (i.value = ''));
+      renderTicketList();
+    };
+    $('tkTest').onclick = async () => {
+      if (!accessToken) return;
+      $('tkTest').disabled = true; $('tkHint').textContent = 'Lege Test-Ticket an …';
+      try {
+        const r = await fetch(API + '/api/ticket-test', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken } });
+        const j = await r.json();
+        if (!j.results || !j.results.length) $('tkHint').textContent = j.error || 'Kein Ticketsystem verbunden.';
+        else $('tkHint').textContent = j.results.map((x) => `${x.name}: ${x.ok ? 'angekommen' : 'Fehler ' + (x.error || x.status)}`).join(' · ');
+      } catch (e) { $('tkHint').textContent = 'Fehler: ' + e.message; }
+      $('tkTest').disabled = false;
+    };
+    async function renderTicketList() {
+      const el = $('tkList'); if (!el || !tenant) return;
+      const { data } = await sb.from('ticket_connections').select('*').eq('tenant_id', tenant.id).order('created_at');
+      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Noch kein Ticketsystem verbunden.</p>'; return; }
+      el.innerHTML = '';
+      data.forEach((c) => {
+        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
+        const ev = [c.on_messages && 'Nachrichten', c.on_gaps && 'offene Fragen', c.on_calls && 'Anrufe'].filter(Boolean).join(', ') || 'kein Ereignis';
+        const txt = document.createElement('span'); txt.textContent = (TICKET_SCHEMA[c.provider]?.label || c.provider) + ' · ' + ev + (c.enabled ? '' : ' (aus)');
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Trennen'; del.style.float = 'right';
+        del.onclick = async () => { if (!confirm('Dieses Ticketsystem trennen?')) return; await sb.from('ticket_connections').delete().eq('id', c.id); toast('Getrennt.'); renderTicketList(); };
+        row.append(del, txt); el.append(row);
+      });
+    }
+
+    // ---- API-Schlüssel ----
+    $('akCreate').onclick = async () => {
+      if (!accessToken) return;
+      $('akCreate').disabled = true; $('akHint').textContent = '';
+      try {
+        const r = await fetch(API + '/api/keys/create', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ name: $('akName').value.trim() || 'Standard' }) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Fehler');
+        $('akKey').value = j.key; $('akNeu').classList.remove('hidden'); $('akName').value = '';
+        toast('Schlüssel erstellt.'); renderKeyList();
+      } catch (e) { $('akHint').textContent = 'Fehler: ' + e.message; }
+      $('akCreate').disabled = false;
+    };
+    $('akCopy').onclick = async () => { try { await navigator.clipboard.writeText($('akKey').value); toast('Kopiert.'); } catch { $('akKey').select(); } };
+    async function renderKeyList() {
+      const el = $('akList'); if (!el || !tenant) return;
+      const { data } = await sb.from('api_keys').select('id, name, prefix, created_at, last_used_at, revoked_at').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      const aktiv = (data || []).filter((k) => !k.revoked_at);
+      if (!aktiv.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Noch kein Schlüssel.</p>'; return; }
+      el.innerHTML = '';
+      aktiv.forEach((k) => {
+        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
+        const wann = k.last_used_at ? 'zuletzt ' + new Date(k.last_used_at).toLocaleDateString('de-DE') : 'noch nie benutzt';
+        const txt = document.createElement('span'); txt.textContent = `${k.name} · ${k.prefix}… · ${wann}`;
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Widerrufen'; del.style.float = 'right';
+        del.onclick = async () => { if (!confirm('Diesen Schlüssel widerrufen? Verbundene Automatisierungen verlieren sofort den Zugriff.')) return; await sb.from('api_keys').update({ revoked_at: new Date().toISOString() }).eq('id', k.id); toast('Widerrufen.'); renderKeyList(); };
+        row.append(del, txt); el.append(row);
+      });
+    }
     // ---- Termine ----
     $('bkSave').onclick = async () => {
       if (!tenant) return;

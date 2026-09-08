@@ -548,3 +548,17 @@ dialog.popup::backdrop{background:rgba(8,18,46,.55);backdrop-filter:blur(3px)}
 .flyout::before{content:"";position:absolute;left:0;right:0;top:-18px;height:18px}
 .hat-menue.offen .flyout{transition-delay:0s}
 .flyout{transition:opacity .16s ease .12s,transform .16s ease .12s}
+/* Schnittstellen und API-Dokumentation */
+.int-tag{display:inline-block;margin-left:8px;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--marke-tief);background:var(--flaeche-tint);padding:2px 8px;border-radius:999px;vertical-align:middle}
+.doku{max-width:860px}
+.doku code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:var(--flaeche-tint);color:var(--marke-tief);padding:1px 6px;border-radius:6px}
+.doku h3{margin:28px 0 8px;font-size:1.15rem}
+pre.code{background:#08122e;color:#dbe3f5;border-radius:12px;padding:18px 20px;overflow:auto;font-size:.86rem;line-height:1.55;margin:14px 0 0;box-shadow:0 20px 40px -24px rgba(8,18,46,.6)}
+pre.code code{background:none;color:inherit;padding:0;font-size:inherit}
+.ep{background:#fff;border:1px solid var(--flaeche-2);border-radius:14px;padding:22px 24px;margin-top:16px;box-shadow:var(--p-schatten-karte)}
+.ep-kopf{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.ep-methode{font-size:.72rem;font-weight:700;letter-spacing:.08em;padding:4px 9px;border-radius:6px;background:#e6f7ee;color:#0f6b3a}
+.ep-methode.post{background:#eaf1ff;color:var(--marke-tief)}
+.ep-pfad{background:none!important;color:var(--navy)!important;font-size:1rem!important;padding:0!important;font-weight:600}
+.ep p{margin:0;color:var(--text-2)}
+.ep-antwort{margin-top:12px!important;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)!important;font-weight:600}

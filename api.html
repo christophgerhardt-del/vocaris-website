@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Telefonassistent für Ihre Branche | Vocaris</title>
-<meta name="description" content="Gastronomie, Praxen, Handwerk, Kanzleien, Hotels und zwölf weitere Branchen: Was Vocaris am Telefon jeweils übernimmt und wo die Grenzen liegen.">
+<title>API-Dokumentation | Vocaris</title>
+<meta name="description" content="Öffentliche API von Vocaris: Anrufe mit Transkript, Nachrichten, offene Fragen und Termine abrufen, Wissen ergänzen, Anrufe auslösen. Webhooks mit Signatur, Beispiele mit curl.">
 <meta name="robots" content="index,follow">
-<link rel="canonical" href="https://vocaris.eu/branchen.html">
-<meta property="og:title" content="Telefonassistent für Ihre Branche | Vocaris">
-<meta property="og:image" content="https://vocaris.eu/assets/og-branchen.png">
+<link rel="canonical" href="https://vocaris.eu/api.html">
+<meta property="og:title" content="API-Dokumentation | Vocaris">
+<meta property="og:image" content="https://vocaris.eu/assets/og-api.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta property="og:description" content="Gastronomie, Praxen, Handwerk, Kanzleien, Hotels und zwölf weitere Branchen: Was Vocaris am Telefon jeweils übernimmt und wo die Grenzen liegen.">
+<meta property="og:description" content="Öffentliche API von Vocaris: Anrufe mit Transkript, Nachrichten, offene Fragen und Termine abrufen, Wissen ergänzen, Anrufe auslösen. Webhooks mit Signatur, Beispiele mit curl.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://vocaris.eu/branchen.html">
+<meta property="og:url" content="https://vocaris.eu/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,36 +72,88 @@
 <div class="hero-band hero-klein">
   <div class="hero-farbe"></div>
   <div class="wrap hero-inhalt">
-    <div class="eyebrow">Branchen</div>
-    <h1>Für jeden Betrieb,<br>der ans Telefon muss.</h1>
-    <p class="hero-sub">Vocaris kennt Ihre Branche, vom ersten Klingeln bis zur Bestätigung. Jede hat ihre eigene Seite mit den Regeln, die dort gelten.</p>
+    <div class="eyebrow">API</div>
+    <h1>Vocaris in Ihrer Software.</h1>
+    <p class="hero-sub">Eine kleine, klare API mit Schlüssel je Firma. Lesen, was am Telefon passiert ist, Wissen ergänzen, Anrufe auslösen. Dazu signierte Webhooks für Make, n8n und Zapier.</p>
   </div>
 </div>
-<!-- Branchen -->
-<section class="block" id="branchen">
-  <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Siebzehn Branchen</div>
-      <h2>Finden Sie Ihre</h2>
-      <div class="finder" style="margin-top:22px"><label class="finder-feld"><span class="lupe" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="search" data-branchensuche placeholder="Ihre Branche suchen — z. B. Praxis, Werkstatt, Support" aria-label="Branche suchen"></label><div class="finder-treffer" data-branchentreffer role="status" aria-live="polite"></div></div>
+<section class="block" id="start">
+  <div class="wrap doku">
+    <div class="reveal"><div class="eyebrow">Erste Schritte</div><h2>Schlüssel holen, Anfrage senden</h2>
+    <p class="intro">Im Kundenbereich unter <b>Schnittstellen → API-Schlüssel</b> einen Schlüssel erstellen. Er beginnt mit <code>vk_live_</code> und wird nur einmal angezeigt. Jede Anfrage trägt ihn im Authorization-Header. Basis-Adresse: <code>https://ki-anruf.onrender.com</code>. Antworten sind JSON, Zeiten in ISO&nbsp;8601 (UTC), Fehler immer als <code>{"error": "…"}</code>. Höchstens 120 Anfragen je Minute und Schlüssel.</p></div>
+    <pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/me \
+  -H &quot;Authorization: Bearer vk_live_IHR_SCHLUESSEL&quot;</code></pre>
+  </div>
+</section>
+
+<section class="block soft" id="endpunkte">
+  <div class="wrap doku">
+    <div class="reveal"><div class="eyebrow">Endpunkte</div><h2>Lesen und schreiben</h2></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/me</code></div><p>Ihre Firma und die zugeordneten Rufnummern.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/me \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;tenant&quot;: { &quot;id&quot;: &quot;…&quot;, &quot;name&quot;: &quot;Praxis Dr. Sommer&quot; }, &quot;numbers&quot;: [ { &quot;number&quot;: &quot;+4989…&quot;, &quot;department&quot;: &quot;general&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/calls</code></div><p>Anrufe, neueste zuerst. Parameter: <code>limit</code> (bis 200), <code>since</code> (ISO-Zeit), <code>status</code> (active | ended).</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/calls?since=2026-09-01T00:00:00Z&amp;limit=50&quot; \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;calls&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;caller_number&quot;: &quot;+49…&quot;, &quot;status&quot;: &quot;ended&quot;, &quot;started_at&quot;: &quot;…&quot;, &quot;ended_at&quot;: &quot;…&quot;, &quot;summary&quot;: &quot;…&quot;, &quot;topic&quot;: &quot;Termin&quot;, &quot;sentiment&quot;: &quot;positiv&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/calls/:id</code></div><p>Ein Anruf mit vollständigem Transkript.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/calls/ANRUF_ID \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;call&quot;: { … }, &quot;transcript&quot;: [ { &quot;role&quot;: &quot;caller&quot;, &quot;content&quot;: &quot;…&quot;, &quot;created_at&quot;: &quot;…&quot; }, { &quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;…&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/messages</code></div><p>Aufgenommene Nachrichten und Rückrufwünsche. Parameter: <code>limit</code>, <code>since</code>.</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/messages?limit=20&quot; \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;messages&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;caller_name&quot;: &quot;…&quot;, &quot;callback_number&quot;: &quot;+49…&quot;, &quot;summary&quot;: &quot;…&quot;, &quot;category&quot;: &quot;…&quot;, &quot;urgency&quot;: &quot;hoch&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/gaps</code></div><p>Offene Fragen, die Vocaris nicht beantworten konnte. Parameter: <code>status</code> (open | answered), <code>limit</code>.</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/gaps?status=open&quot; \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;gaps&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;question&quot;: &quot;…&quot;, &quot;status&quot;: &quot;open&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/gaps/:id/answer</code></div><p>Offene Frage beantworten. Die Antwort wird zugleich als Wissenseintrag gespeichert, der Assistent kennt sie beim nächsten Anruf.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/gaps/FRAGE_ID/answer \
+  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;answer&quot;: &quot;Samstags von 9 bis 13 Uhr geöffnet.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;gap_id&quot;: &quot;…&quot;, &quot;knowledge_entry_created&quot;: true }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/appointments</code></div><p>Termine ab jetzt, aufsteigend. Parameter: <code>from</code>, <code>to</code> (ISO-Zeit), <code>limit</code> (bis 500).</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/appointments?to=2026-12-31T23:59:59Z&quot; \
+  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;appointments&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;starts_at&quot;: &quot;…&quot;, &quot;ends_at&quot;: &quot;…&quot;, &quot;customer_name&quot;: &quot;…&quot;, &quot;customer_phone&quot;: &quot;+49…&quot;, &quot;status&quot;: &quot;booked&quot;, &quot;source&quot;: &quot;assistant&quot; } ] }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/knowledge</code></div><p>Wissenseintrag anlegen, zum Beispiel aus Ihrem eigenen System heraus. Felder: <code>title</code>, <code>content</code>, optional <code>category</code>, <code>department</code>.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/knowledge \
+  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;title&quot;: &quot;Parkplätze&quot;, &quot;content&quot;: &quot;Zwei Kundenparkplätze hinter dem Haus, Einfahrt Gartenstraße.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;id&quot;: &quot;…&quot; }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/calls</code></div><p>Ausgehenden Anruf durch den Assistenten auslösen, von Ihrer Rufnummer aus. Feld: <code>to</code> im Format +49…</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/calls \
+  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;to&quot;: &quot;+491701234567&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;sid&quot;: &quot;…&quot; }</code></pre></div>
+  </div>
+</section>
+
+<section class="block" id="webhooks">
+  <div class="wrap doku">
+    <div class="reveal"><div class="eyebrow">Webhooks</div><h2>Ereignisse, die zu Ihnen kommen</h2>
+    <p class="intro">Unter <b>Schnittstellen → Automatisierung</b> tragen Sie eine Adresse und ein Geheimnis ein. Vocaris sendet dann pro Ereignis eine POST-Anfrage mit JSON. Vier Ereignisse: <code>message.captured</code>, <code>appointment.booked</code>, <code>gap.created</code>, <code>call.ended</code>. Bei <code>call.ended</code> holen Sie Zusammenfassung und Transkript über <code>GET /api/v1/calls/:id</code>, die Zusammenfassung entsteht wenige Sekunden nach dem Auflegen.</p></div>
+    <pre class="code"><code>POST https://ihre-adresse.de/vocaris
+Content-Type: application/json
+X-Vocaris-Event: message.captured
+X-Vocaris-Signature: sha256=3f1a…
+
+{
+  &quot;event&quot;: &quot;message.captured&quot;,
+  &quot;occurred_at&quot;: &quot;2026-09-08T12:00:00.000Z&quot;,
+  &quot;data&quot;: {
+    &quot;caller_name&quot;: &quot;Max Mustermann&quot;,
+    &quot;callback_number&quot;: &quot;+49 170 1234567&quot;,
+    &quot;caller_number&quot;: &quot;+49 170 1234567&quot;,
+    &quot;summary&quot;: &quot;Rückruf gewünscht zu Angebot&quot;,
+    &quot;category&quot;: &quot;Angebot&quot;,
+    &quot;urgency&quot;: &quot;mittel&quot;
+  }
+}</code></pre>
+    <h3>Signatur prüfen</h3>
+    <p>Der Header <code>X-Vocaris-Signature</code> ist HMAC-SHA256 über den rohen Anfragetext mit Ihrem Geheimnis. Vergleichen Sie zeitkonstant.</p>
+    <pre class="code"><code>// Node.js
+import { createHmac, timingSafeEqual } from &quot;node:crypto&quot;;
+const erwartet = &quot;sha256=&quot; + createHmac(&quot;sha256&quot;, GEHEIMNIS).update(rohText).digest(&quot;hex&quot;);
+const gueltig = timingSafeEqual(Buffer.from(erwartet), Buffer.from(req.headers[&quot;x-vocaris-signature&quot;] || &quot;&quot;));</code></pre>
+    <h3>Make, n8n, Zapier</h3>
+    <p>In allen drei Werkzeugen genügt ein „Webhook"-Auslöser: Adresse kopieren, bei Vocaris eintragen, „Test senden" klicken. Danach stehen die Felder aus <code>data</code> in Ihrem Szenario zur Verfügung. Für Abfragen (etwa Transkript nachladen) nutzen Sie einen HTTP-Schritt mit dem API-Schlüssel.</p>
+  </div>
+</section>
+
+<section class="block soft" id="fehler">
+  <div class="wrap doku">
+    <div class="reveal"><div class="eyebrow">Fehler und Grenzen</div><h2>Was Sie zurückbekommen</h2></div>
+    <div class="karten">
+      <div class="karte reveal"><h3>401</h3><p>Schlüssel fehlt, ist ungültig oder widerrufen.</p></div>
+      <div class="karte reveal"><h3>400 / 404</h3><p>Pflichtfeld fehlt oder falsch formatiert, beziehungsweise Objekt gehört nicht zu Ihrer Firma.</p></div>
+      <div class="karte reveal"><h3>429</h3><p>Mehr als 120 Anfragen je Minute mit einem Schlüssel. Kurz warten, dann erneut.</p></div>
     </div>
-    <div class="karten"><a class="karte reveal" href="restaurants.html" data-suchwoerter="gastronomie wirtshaus lokal kneipe café cafe bistro gaststätte tisch reservierung"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v20M11 2v7a2 2 0 0 1-2 2M7 11a2 2 0 0 1-2-2V2M17 2v20M17 2c-2 0-3 4-3 8h3"/></svg></div><h3>Gastronomie</h3><p>Tische reservieren, Stammgäste an der Nummer erkennen, Warteliste führen — während Sie im Service stehen. Bestätigung per SMS.</p><span class="mehr">Mehr für Restaurants</span></a>
-<a class="karte reveal" href="arztpraxen.html" data-suchwoerter="praxis arzt hausarzt zahnarzt facharzt mvz patient sprechstunde medizin"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div><h3>Arztpraxen</h3><p>Termine, Rezeptwünsche und Rückrufe annehmen, wenn morgens alle Leitungen glühen — DSGVO-konform und ohne Warteschleife.</p><span class="mehr">Mehr für Praxen</span></a>
-<a class="karte reveal" href="handwerk.html" data-suchwoerter="baustelle installateur elektriker sanitär maler dachdecker klempner heizung schreiner"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/></svg></div><h3>Handwerk &amp; Bau</h3><p>Anrufe annehmen und Notfälle erkennen, während beide Hände voll sind. Vocaris legt jeden Auftrag sortiert vor und ruft zurück.</p><span class="mehr">Mehr für Handwerk</span></a>
-<a class="karte reveal" href="autowerkstatt.html" data-suchwoerter="kfz auto werkstatt reifen autohaus mechaniker inspektion tüv"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 11l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5v6H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></div><h3>Kfz &amp; Autowerkstatt</h3><p>Serviceanfragen und TÜV-Termine annehmen, ohne die Hebebühne zu verlassen — Statusfragen inklusive, rund um die Uhr.</p><span class="mehr">Mehr für Werkstätten</span></a>
-<a class="karte reveal" href="friseur.html" data-suchwoerter="salon frisör barbier kosmetik nagelstudio beauty haare"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></div><h3>Friseur &amp; Salon</h3><p>Buchungen und Absagen annehmen, frei werdende Slots aus der Warteliste füllen, per SMS erinnern — Ihr Kalender bleibt voll.</p><span class="mehr">Mehr für Salons</span></a>
-<a class="karte reveal" href="kanzlei.html" data-suchwoerter="anwalt anwältin rechtsanwalt steuerberater notar mandant jurist recht"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7l7-4 7 4M3 12l2-5 2 5a2 2 0 0 1-4 0zM17 12l2-5 2 5a2 2 0 0 1-4 0zM8 21h8"/></svg></div><h3>Kanzleien</h3><p>Mandantenanrufe qualifizieren, Termine vergeben und vertrauliche Nachrichten aufnehmen — professionell, vertraulich und konform.</p><span class="mehr">Mehr für Kanzleien</span></a>
-<a class="karte reveal" href="hotel.html" data-suchwoerter="pension gasthof beherbergung zimmer rezeption gäste übernachtung"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13M3 12h18M7 12V9h4v3M13 12V9h4v3M3 21h18"/></svg></div><h3>Hotellerie</h3><p>Zimmeranfragen aufnehmen, Fragen zu Anreise und Frühstück beantworten, bei Bedarf an die Rezeption durchstellen — mehrsprachig.</p><span class="mehr">Mehr für Hotels</span></a>
-<a class="karte reveal" href="hausverwaltung.html" data-suchwoerter="immobilienverwaltung wohnung mieter hausmeister weg mängel"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10 21v-3h4v3"/></svg></div><h3>Hausverwaltung</h3><p>Mängelmeldungen strukturiert aufnehmen, Wasserschaden und Heizungsausfall sofort an die Bereitschaft geben, Dauerfragen selbst beantworten.</p><span class="mehr">Mehr für Verwaltungen</span></a>
-<a class="karte reveal" href="immobilienmakler.html" data-suchwoerter="makler immobilien besichtigung wohnung haus verkauf vermietung"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8M5 10v10h14V10M10 20v-6h4v6"/></svg></div><h3>Immobilien</h3><p>Objektfragen beantworten, Interessenten vorqualifizieren und Besichtigungstermine vergeben — während Sie im Termin stehen.</p><span class="mehr">Mehr für Makler</span></a>
-<a class="karte reveal" href="pflegedienst.html" data-suchwoerter="pflege ambulant altenpflege betreuung angehörige sozialstation"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg></div><h3>Ambulante Pflege</h3><p>Anliegen von Angehörigen und Ärzten vollständig erfassen, Dringendes an die Rufbereitschaft geben, neue Anfragen aufnehmen.</p><span class="mehr">Mehr für Pflegedienste</span></a>
-<a class="karte reveal" href="apotheke.html" data-suchwoerter="pharmazie medikament rezept notdienst hv"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 11v7M8.5 14.5h7M8 8V6a4 4 0 0 1 8 0v2"/></svg></div><h3>Apotheke</h3><p>Öffnungszeiten und Notdienst nennen, Vorbestellungen aufnehmen — und jede pharmazeutische Frage sofort an Ihr Team durchstellen.</p><span class="mehr">Mehr für Apotheken</span></a>
-<a class="karte reveal" href="versicherungsmakler.html" data-suchwoerter="versicherung schaden police vermittler assekuranz"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Versicherung</h3><p>Schadenmeldungen nach Ihrem Schema aufnehmen, Beratungstermine vergeben, nach Dringlichkeit sortieren — auch nach dem Unwetter.</p><span class="mehr">Mehr für Makler</span></a>
-<a class="karte reveal" href="software.html" data-suchwoerter="saas it software support kundenservice helpdesk technik entwickler app hotline"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8M12 18v2M7 9l2 2-2 2M12 13h4"/></svg></div><h3>Software &amp; SaaS</h3><p>Supportanrufe annehmen, nach Dringlichkeit sortieren und Bekanntes aus Ihrer Wissensbasis beantworten — Ihr Team bleibt in der Arbeit.</p><span class="mehr">Mehr für Softwareanbieter</span></a>
-<a class="karte reveal" href="onlineshop.html" data-suchwoerter="shop e-commerce handel versand bestellung retoure webshop kundenservice"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></div><h3>Onlinehandel</h3><p>Fragen zu Lieferung, Rückgabe und Zahlung beantworten, Reklamationen aufnehmen — auch abends, wenn bestellt wird.</p><span class="mehr">Mehr für Onlineshops</span></a>
-<a class="karte reveal" href="physiotherapie.html" data-suchwoerter="physio praxis krankengymnastik therapie reha massage heilmittel"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M8 22l2-8 2 2 2-2 2 8M6 12l4-2 2 2 2-2 4 2"/></svg></div><h3>Physiotherapie</h3><p>Rezeptreihen am Stück vergeben, kurzfristige Ausfälle aus der Warteliste nachbesetzen, Rezeptfragen beantworten.</p><span class="mehr">Mehr für Physiotherapie</span></a>
-<a class="karte reveal" href="tierarzt.html" data-suchwoerter="praxis tiere hund katze veterinär tiermedizin notdienst"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="5" cy="13" r="2"/><circle cx="19" cy="13" r="2"/><path d="M12 12c-3 0-5 3-5 5.5A3 3 0 0 0 10 21c1 0 1.5-.5 2-.5s1 .5 2 .5a3 3 0 0 0 3-3.5C17 15 15 12 12 12z"/></svg></div><h3>Tierarztpraxis</h3><p>Termine vergeben, Notfälle nach Ihren Regeln erkennen und außerhalb der Sprechzeiten den Notdienst nennen.</p><span class="mehr">Mehr für Tierarztpraxen</span></a>
-<a class="karte reveal" href="fitnessstudio.html" data-suchwoerter="fitness studio gym sport training probetraining verein"><div class="ikon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M2 8v8M22 8v8M6 12h12"/></svg></div><h3>Fitness &amp; Studio</h3><p>Tarife und Kurszeiten erklären, Probetrainings vergeben, Mitgliederanliegen aufnehmen — auch wenn die Theke leer ist.</p><span class="mehr">Mehr für Fitnessstudios</span></a></div>
+    <p class="intro reveal" style="margin-top:22px">Schlüssel lassen sich im Kundenbereich jederzeit widerrufen. Jeder Schlüssel sieht ausschließlich Daten der eigenen Firma. Fragen an <a class="leise" href="demo.html">unser Team</a>.</p>
   </div>
 </section>
 
@@ -124,7 +176,7 @@
   <div class="wrap">
     <div class="fuss-grid">
       <div class="fuss-marke"><div class="logo"><span class="logo-mark"><svg viewBox="0 0 100 100" width="26" height="26" aria-hidden="true"><defs><radialGradient id="vk-fussg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-fussh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-fusss" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-fussg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-fusss)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-fussh)"/></svg></span>Vocaris</div><p>Der KI-Telefonassistent für Betriebe, die nicht immer ans Telefon können — Termine, Reservierungen, Rückrufe, rund um die Uhr. In der EU gehostet.</p><p style="margin-top:14px">Rheinstr. 26<br>80803 München</p></div>
-      <div><h4>Produkt</h4><a href="funktionen.html">Funktionen</a><a href="funktionen.html#beispiele">Beispielgespräche</a><a href="fragen.html">Häufige Fragen</a><a href="branchen.html">Alle Branchen</a><a href="ki-modelle.html">KI-Modelle</a><a href="sicherheit.html">Sicherheit</a><a href="preise.html">Preise</a><a href="demo.html">Demo buchen</a></div>
+      <div><h4>Produkt</h4><a href="funktionen.html">Funktionen</a><a href="funktionen.html#beispiele">Beispielgespräche</a><a href="schnittstellen.html">Schnittstellen</a><a href="api.html">API</a><a href="fragen.html">Häufige Fragen</a><a href="branchen.html">Alle Branchen</a><a href="ki-modelle.html">KI-Modelle</a><a href="sicherheit.html">Sicherheit</a><a href="preise.html">Preise</a><a href="demo.html">Demo buchen</a></div>
       <div><h4>Branchen</h4><a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">Handwerk &amp; Bau</a><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a><a href="friseur.html">Friseur &amp; Salon</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">Software &amp; SaaS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">Fitness &amp; Studio</a></div>
       <div><h4>Rechtliches</h4><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="app.html">Anmelden</a></div>
     </div>
