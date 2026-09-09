@@ -402,7 +402,7 @@
     .db-grid .panel { margin-bottom: 0; min-width: 0; }
     .db-8 { grid-column: span 8; } .db-6 { grid-column: span 6; } .db-4 { grid-column: span 4; }
     .db-panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-    .db-panelkopf h3 { margin: 0; } .db-panelkopf a { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .db-panelkopf h3 { margin: 0; white-space: nowrap; } .db-panelkopf a { font-size: 13px; color: var(--accent); text-decoration: none; }
     .db-liste { display: flex; flex-direction: column; gap: 8px; }
     .db-zeile { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); cursor: pointer; }
     .db-zeile:hover { border-color: var(--accent); }
@@ -422,6 +422,33 @@
     .db-legende i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
     @media (max-width: 1100px) { .db-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .db-8, .db-6, .db-4 { grid-column: span 12; } }
     @media (max-width: 480px) { .db-kpis { grid-template-columns: 1fr 1fr; } .db-kpi .v { font-size: 22px; } }
+    .db-kpi.klick { cursor: pointer; } .db-kpi.klick:hover { border-color: var(--accent); }
+    .db-kopfrechts { display: flex; gap: 10px; align-items: center; }
+    .db-mehr { font-size: 13px; color: var(--accent); text-decoration: none; padding: 4px 2px; }
+    .db-editleiste { display: none; justify-content: space-between; gap: 14px; align-items: flex-start; padding: 12px 16px; margin-bottom: 14px; border: 1px dashed var(--accent); border-radius: var(--r); background: color-mix(in srgb, var(--accent) 6%, var(--white)); font-size: 13.5px; }
+    .db-edit .db-editleiste { display: flex; }
+    .db-hinzu { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .db-hinzu button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px dashed var(--line); background: var(--white); cursor: pointer; color: var(--accent-ink); }
+    .db-hinzu button:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--white)); }
+    .db-hinzu button small { font-weight: 500; color: var(--ink-faint); }
+    .db-edit [data-widget] { position: relative; outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; cursor: grab; }
+    .db-edit [data-widget].zieht { opacity: .4; }
+    .db-edit [data-widget].drop-vor { box-shadow: -5px 0 0 var(--accent); } .db-edit [data-widget].drop-nach { box-shadow: 5px 0 0 var(--accent); }
+    .db-edit .db-kpi { padding-top: 34px; } .db-edit .db-grid .panel { padding-top: 40px; }
+    .db-werk { position: absolute; top: 6px; right: 6px; display: flex; gap: 1px; background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 2px; z-index: 2; box-shadow: var(--shadow-sm); }
+    .db-werk button, .db-werk .griff { font: inherit; font-size: 13px; line-height: 1; border: 0; background: transparent; padding: 5px 7px; border-radius: 6px; cursor: pointer; color: var(--ink-soft); }
+    .db-werk button:hover { background: var(--paper-2); color: var(--ink); } .db-werk [data-w=weg]:hover { color: #b91c1c; }
+    .db-werk .griff { cursor: grab; }
+    .db-chip { font: inherit; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent-ink); cursor: pointer; }
+    .statchart .col { cursor: default; border-radius: 6px; } .statchart .col:hover .bar:not(.zero) { opacity: 1; } .statchart .col.aktiv .bar { background: #08122e; opacity: 1; }
+    .db-stunden div.aktiv { outline: 2px solid #08122e; outline-offset: 1px; }
+    .db-thema.aktiv .b span { background: #08122e; } .db-thema.aktiv .n { font-weight: 700; }
+    .db-stimm span, .db-legende span { cursor: pointer; } .db-legende span.aktiv { font-weight: 700; color: var(--ink); }
+    .db-aktionen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .db-aktionen-grid .btn { width: 100%; justify-content: center; }
+    .db-notizen { width: 100%; min-height: 150px; resize: vertical; font: inherit; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); box-sizing: border-box; }
+    .call-card.blitz { outline: 2px solid var(--accent); outline-offset: 2px; transition: outline-color .6s; }
+    @media (max-width: 760px) { .db-editleiste { flex-direction: column; } }
+    @media (max-width: 480px) { #dbStand { display: none; } }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
     .tk-leiste input[type=search] { flex: 1 1 220px; min-width: 160px; }
@@ -584,50 +611,23 @@
             </div>
             <div class="db-aktionen">
               <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
+              <span class="muted" id="dbStand" style="font-size:12.5px"></span>
+              <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" title="Neu laden">↻</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-tickets">+ Vorgang</button>
-              <button class="btn btn--primary sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
+              <button class="btn btn--ghost sm" type="button" id="dbAnpassen">Anpassen</button>
             </div>
           </div>
 
-          <div class="db-kpis">
-            <div class="db-kpi"><div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div></div>
-            <div class="db-kpi"><div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d" id="dbHeuteSub">Anrufe seit Mitternacht</div></div>
-            <div class="db-kpi"><div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div></div>
-            <div class="db-kpi"><div class="k">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div></div>
-            <div class="db-kpi"><div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div></div>
-            <div class="db-kpi" data-geh="sec-tickets" role="button" tabindex="0"><div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div></div>
-            <div class="db-kpi" data-geh="sec-gaps" role="button" tabindex="0"><div class="k">Offene Fragen</div><div class="v" id="ovGaps">–</div><div class="d">warten auf eine Antwort</div></div>
-            <div class="db-kpi" data-geh="sec-booking" role="button" tabindex="0"><div class="k">Termine</div><div class="v" id="dbTermine">–</div><div class="d" id="dbTermineSub">&nbsp;</div></div>
+          <div class="db-editleiste" id="dbEditLeiste">
+            <div>
+              <b>Dashboard anpassen:</b> Kacheln mit ⠿ ziehen oder mit ‹ › verschieben, mit × entfernen, Breite mit ⅓ ½ ⅔ 1/1 ändern.
+              <div class="db-hinzu" id="dbHinzu" style="margin-top:8px"></div>
+            </div>
+            <div class="stack"><button class="btn btn--ghost sm" type="button" id="dbReset">Zurücksetzen</button></div>
           </div>
-
-          <div class="db-grid">
-            <div class="panel db-8">
-              <div class="db-panelkopf"><h3>Anrufe je Tag</h3><span class="muted" id="dbChartSub"></span></div>
-              <div id="statChart" class="statchart"></div>
-              <div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted">wann Ihr Telefon klingelt</span></div>
-              <div id="dbStunden" class="db-stunden"></div>
-            </div>
-            <div class="panel db-4">
-              <h3>Ihr Assistent</h3>
-              <dl class="db-fakten" id="dbFakten"></dl>
-              <p class="muted" id="dbSystem" style="margin-top:10px;font-size:12.5px"></p>
-            </div>
-            <div class="panel db-6">
-              <div class="db-panelkopf"><h3>Letzte Anrufe</h3><a href="#" data-geh="sec-live">Alle</a></div>
-              <div id="dbAnrufeListe" class="db-liste"></div>
-            </div>
-            <div class="panel db-6">
-              <div class="db-panelkopf"><h3>Offene Vorgänge</h3><a href="#" data-geh="sec-tickets">Alle</a></div>
-              <div id="dbVorgaenge" class="db-liste"></div>
-            </div>
-            <div class="panel db-4"><h3>Themen</h3><div id="dbThemen" class="db-themen"></div></div>
-            <div class="panel db-4"><h3>Stimmung der Anrufer</h3><div id="dbStimmung"></div></div>
-            <div class="panel db-4">
-              <div class="db-panelkopf"><h3>Nächste Termine</h3><a href="#" data-geh="sec-booking">Alle</a></div>
-              <div id="dbTermineListe" class="db-liste"></div>
-            </div>
-          </div>
+          <div class="db-kpis" id="dbKpis"></div>
+          <div class="db-grid" id="dbGrid"></div>
 
           <div class="panel" id="dbStart">
             <h3>So testest du deinen Assistenten</h3>
@@ -3357,7 +3357,7 @@
       renderLive();
     }
     function callCard(x, live) {
-      const div = document.createElement('div'); div.className = 'call-card';
+      const div = document.createElement('div'); div.className = 'call-card'; div.dataset.callId = x.call.id;
       const head = document.createElement('div'); head.className = 'call-head';
       const who = document.createElement('span'); who.className = 'who';
       who.textContent = x.call.caller_number || 'Anrufer';
@@ -4040,112 +4040,281 @@
       toast('Verworfen.'); loadAll();
     }
 
-    // ---- Anruf-Statistik (Übersicht) ----
     // ---- Dashboard ----
-    let dbTage = 14;
-    document.querySelectorAll('#dbZeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#dbZeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); dbTage = Number(b.dataset.tage); loadDashboard(); });
-    document.querySelectorAll('#sec-overview [data-geh]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); document.querySelector('.nav-item[data-target="' + el.dataset.geh + '"]')?.click(); }));
-    document.querySelectorAll('#sec-overview .db-kpi[role=button]').forEach((el) => el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } }));
+    // Kacheln (Widgets) aus einem Katalog; Reihenfolge, Breite und Auswahl legt
+    // der Nutzer selbst fest („Anpassen"). Das Layout liegt im Browser und im
+    // Nutzerprofil (user_metadata.dashboard[tenant]) und gilt so auf jedem Gerät.
+    let dbTage = 14, dbEdit = false, dbDaten = null, dbFilter = null, dbLayout = null, dbLayoutFuer = null, dbSpeicherTimer = null, dbZieh = null, dbNotizTimer = null;
+    const dbLeer = document.createElement('div');
+    const q = (id) => document.getElementById(id) || dbLeer;
+    const geh = (ziel) => document.querySelector('.nav-item[data-target="' + ziel + '"]')?.click();
     const PLAN_MINUTEN = { klein: 250, standard: 700, gross: 2000, groß: 2000 };
     const fmtDauer = (s) => { const g = Math.round(s); return g >= 60 ? Math.floor(g / 60) + ':' + String(g % 60).padStart(2, '0') + ' Min' : g + ' s'; };
-    async function loadStats() { return loadDashboard(); }
-    async function loadDashboard() {
+    const kopf = (titel, ziel, extra) => '<div class="db-panelkopf"><h3>' + titel + '</h3><span class="db-kopfrechts">' + (extra || '') + (ziel ? '<a href="#" data-geh="' + ziel + '">Alle</a>' : '') + '</span></div>';
+    const leerText = (t) => '<p class="muted" style="font-size:13px">' + t + '</p>';
+    const DB_WIDGETS = [
+      // Kennzahlen
+      { id: 'anrufe', art: 'kpi', titel: 'Anrufe', std: true, ziel: 'sec-live', html: () => '<div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div>' },
+      { id: 'heute', art: 'kpi', titel: 'Anrufe heute', std: true, ziel: 'sec-live', html: () => '<div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d">Anrufe seit Mitternacht</div>' },
+      { id: 'dauer', art: 'kpi', titel: 'Ø Gesprächsdauer', std: true, ziel: 'sec-live', html: () => '<div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div>' },
+      { id: 'minuten', art: 'kpi', titel: 'Minuten im Monat', std: true, html: () => '<div class="k">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div>' },
+      { id: 'nachrichten', art: 'kpi', titel: 'Nachrichten', std: true, ziel: 'sec-messages', html: () => '<div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div>' },
+      { id: 'offen', art: 'kpi', titel: 'Offene Vorgänge', std: true, ziel: 'sec-tickets', html: () => '<div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div>' },
+      { id: 'fragen', art: 'kpi', titel: 'Offene Fragen', std: true, ziel: 'sec-gaps', html: () => '<div class="k">Offene Fragen</div><div class="v" id="ovGaps">–</div><div class="d">warten auf eine Antwort</div>' },
+      { id: 'termine', art: 'kpi', titel: 'Termine', std: true, ziel: 'sec-booking', html: () => '<div class="k">Termine</div><div class="v" id="dbTermine">–</div><div class="d" id="dbTermineSub">&nbsp;</div>' },
+      { id: 'abgewiesen', art: 'kpi', titel: 'Abgewiesene Anrufe', std: false, ziel: 'sec-number', html: () => '<div class="k">Abgewiesen</div><div class="v" id="dbAbgewiesen">–</div><div class="d" id="dbAbgewiesenSub">durch die Sperrliste</div>' },
+      { id: 'wissen', art: 'kpi', titel: 'Wissensstand', std: false, ziel: 'sec-kb', html: () => '<div class="k">Wissen</div><div class="v" id="dbWissen">–</div><div class="d" id="dbWissenSub">Einträge</div>' },
+      { id: 'negativ', art: 'kpi', titel: 'Unzufriedene Anrufer', std: false, ziel: 'sec-live', html: () => '<div class="k">Unzufrieden</div><div class="v" id="dbNegativ">–</div><div class="d" id="dbNegativSub">Anrufe mit negativer Stimmung</div>' },
+      // Kacheln
+      { id: 'verlauf', art: 'panel', titel: 'Anrufe je Tag und Uhrzeit', std: true, groesse: 8, html: () => kopf('Anrufe je Tag', null, '<span class="muted" id="dbChartSub"></span>') + '<div id="statChart" class="statchart"></div><div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted">wann dein Telefon klingelt · zum Filtern anklicken</span></div><div id="dbStunden" class="db-stunden"></div>' },
+      { id: 'assistent', art: 'panel', titel: 'Dein Assistent', std: true, groesse: 4, html: () => '<h3>Dein Assistent</h3><dl class="db-fakten" id="dbFakten"></dl><p class="muted" id="dbSystem" style="margin-top:10px;font-size:12.5px"></p>' },
+      { id: 'anrufliste', art: 'panel', titel: 'Letzte Anrufe', std: true, groesse: 6, html: () => kopf('Letzte Anrufe', 'sec-live', '<span id="dbAnrufeFilter"></span>') + '<div id="dbAnrufeListe" class="db-liste"></div>' },
+      { id: 'vorgaenge', art: 'panel', titel: 'Offene Vorgänge', std: true, groesse: 6, html: () => kopf('Offene Vorgänge', 'sec-tickets') + '<div id="dbVorgaenge" class="db-liste"></div>' },
+      { id: 'themen', art: 'panel', titel: 'Themen', std: true, groesse: 4, html: () => kopf('Themen', null, '<span class="muted">zum Filtern anklicken</span>') + '<div id="dbThemen" class="db-themen"></div>' },
+      { id: 'stimmung', art: 'panel', titel: 'Stimmung der Anrufer', std: true, groesse: 4, html: () => '<h3>Stimmung der Anrufer</h3><div id="dbStimmung"></div>' },
+      { id: 'terminliste', art: 'panel', titel: 'Nächste Termine', std: true, groesse: 4, html: () => kopf('Nächste Termine', 'sec-booking') + '<div id="dbTermineListe" class="db-liste"></div>' },
+      { id: 'fragenliste', art: 'panel', titel: 'Offene Fragen', std: false, groesse: 4, html: () => kopf('Offene Fragen', 'sec-gaps') + '<div id="dbFragenListe" class="db-liste"></div>' },
+      { id: 'nachrichtenliste', art: 'panel', titel: 'Neueste Nachrichten', std: false, groesse: 6, html: () => kopf('Neueste Nachrichten', 'sec-messages') + '<div id="dbNachrichtenListe" class="db-liste"></div>' },
+      { id: 'wochentag', art: 'panel', titel: 'Anrufe je Wochentag', std: false, groesse: 4, html: () => kopf('Anrufe je Wochentag', null, '<span class="muted">im Zeitraum</span>') + '<div id="dbWochentag" class="db-themen"></div>' },
+      { id: 'aktionen', art: 'panel', titel: 'Schnellaktionen', std: false, groesse: 4, html: () => '<h3>Schnellaktionen</h3><div class="db-aktionen-grid"><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button><button class="btn btn--ghost sm" type="button" data-geh="sec-tickets">Vorgang anlegen</button><button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button><button class="btn btn--ghost sm" type="button" data-geh="sec-gaps">Fragen beantworten</button><button class="btn btn--ghost sm" type="button" data-geh="sec-number">Nummer sperren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-assistant">Assistent anpassen</button></div>' },
+      { id: 'notizen', art: 'panel', titel: 'Merkzettel', std: false, groesse: 4, html: () => '<h3>Merkzettel</h3><textarea id="dbNotizen" class="db-notizen" placeholder="Kurze Notizen für dich, z. B. was heute noch zu erledigen ist. Wird automatisch gespeichert."></textarea>' },
+    ];
+    const DB_STD = () => ({ v: 1, reihenfolge: DB_WIDGETS.filter((w) => w.std).map((w) => w.id), groesse: {}, notizen: '' });
+    const dbWidget = (id) => DB_WIDGETS.find((w) => w.id === id);
+    const dbSchluessel = () => 'vocaris.dashboard.' + tenant.id;
+    const groesseLabel = (g) => ({ 4: '⅓', 6: '½', 8: '⅔', 12: '1/1' })[g] || '½';
+
+    async function dbLayoutLaden() {
+      let l = null;
+      try { l = JSON.parse(localStorage.getItem(dbSchluessel()) || 'null'); } catch { /* egal */ }
+      try { const { data } = await sb.auth.getUser(); const m = data?.user?.user_metadata?.dashboard?.[tenant.id]; if (m && Array.isArray(m.reihenfolge) && (!l || (m.stand || 0) >= (l.stand || 0))) l = m; } catch { /* egal */ }
+      dbLayout = l && Array.isArray(l.reihenfolge) ? l : DB_STD();
+      dbLayout.reihenfolge = dbLayout.reihenfolge.filter((id, i, a) => dbWidget(id) && a.indexOf(id) === i);
+      dbLayout.groesse = dbLayout.groesse || {}; dbLayout.notizen = dbLayout.notizen || '';
+      dbLayoutFuer = tenant.id;
+    }
+    function dbLayoutSpeichern() {
+      dbLayout.stand = Date.now();
+      try { localStorage.setItem(dbSchluessel(), JSON.stringify(dbLayout)); } catch { /* egal */ }
+      clearTimeout(dbSpeicherTimer);
+      dbSpeicherTimer = setTimeout(async () => {
+        try { const { data } = await sb.auth.getUser(); const alle = Object.assign({}, data?.user?.user_metadata?.dashboard || {}); alle[tenant.id] = dbLayout; await sb.auth.updateUser({ data: { dashboard: alle } }); } catch { /* Browser-Kopie reicht */ }
+      }, 1500);
+    }
+
+    const werkzeuge = (w) => '<div class="db-werk"><span class="griff" title="Ziehen zum Verschieben">⠿</span><button type="button" data-w="links" title="nach vorn">‹</button><button type="button" data-w="rechts" title="nach hinten">›</button>' + (w.art === 'panel' ? '<button type="button" data-w="groesse" title="Breite ändern">' + groesseLabel(dbLayout.groesse[w.id] || w.groesse) + '</button>' : '') + '<button type="button" data-w="weg" title="Vom Dashboard entfernen">×</button></div>';
+
+    function renderDashboardLayout() {
+      const kp = q('dbKpis'), gr = q('dbGrid'); kp.innerHTML = ''; gr.innerHTML = '';
+      for (const id of dbLayout.reihenfolge) {
+        const w = dbWidget(id); if (!w) continue;
+        const el = document.createElement('div'); el.dataset.widget = id;
+        if (w.art === 'kpi') { el.className = 'db-kpi' + (w.ziel ? ' klick' : ''); if (w.ziel) { el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.geh = w.ziel; } }
+        else el.className = 'panel db-' + (dbLayout.groesse[id] || w.groesse);
+        el.innerHTML = w.html();
+        if (dbEdit) { el.draggable = true; el.insertAdjacentHTML('afterbegin', werkzeuge(w)); }
+        (w.art === 'kpi' ? kp : gr).append(el);
+      }
+      kp.classList.toggle('hidden', !kp.children.length);
+      q('sec-overview').classList.toggle('db-edit', dbEdit);
+      q('dbAnpassen').textContent = dbEdit ? 'Fertig' : 'Anpassen';
+      q('dbAnpassen').classList.toggle('btn--primary', dbEdit); q('dbAnpassen').classList.toggle('btn--ghost', !dbEdit);
+      const nt = q('dbNotizen'); if (nt.tagName === 'TEXTAREA') { nt.value = dbLayout.notizen; nt.oninput = () => { dbLayout.notizen = nt.value; clearTimeout(dbNotizTimer); dbNotizTimer = setTimeout(dbLayoutSpeichern, 800); }; }
+      // Auswahl zum Hinzufügen
+      const fehlen = DB_WIDGETS.filter((w) => !dbLayout.reihenfolge.includes(w.id));
+      q('dbHinzu').innerHTML = fehlen.length ? fehlen.map((w) => '<button type="button" data-hinzu="' + w.id + '">+ ' + w.titel + (w.art === 'kpi' ? ' <small>Kennzahl</small>' : '') + '</button>').join('') : '<span class="muted">Alle Kacheln sind auf dem Dashboard.</span>';
+      if (dbDaten) zeichneDashboard();
+    }
+
+    function dbVerschieben(id, richtung) {
+      const r = dbLayout.reihenfolge; const art = dbWidget(id).art; const i = r.indexOf(id); if (i < 0) return;
+      let j = i + richtung; while (j >= 0 && j < r.length && dbWidget(r[j]).art !== art) j += richtung;
+      if (j < 0 || j >= r.length) return;
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+
+    // Anpassen-Modus: Werkzeuge, Ziehen, Hinzufügen
+    (function dbEditWiring() {
+      const sec = q('sec-overview');
+      q('dbAnpassen').onclick = () => { dbEdit = !dbEdit; if (!dbEdit) dbLayoutSpeichern(); renderDashboardLayout(); };
+      q('dbReset').onclick = () => { if (!confirm('Dashboard auf die Standard-Anordnung zurücksetzen?')) return; const n = dbLayout.notizen; dbLayout = DB_STD(); dbLayout.notizen = n; dbLayoutSpeichern(); renderDashboardLayout(); };
+      q('dbAktualisieren').onclick = () => ladeDashboard();
+      sec.addEventListener('click', (e) => {
+        const hz = e.target.closest('[data-hinzu]');
+        if (hz) { dbLayout.reihenfolge.push(hz.dataset.hinzu); dbLayoutSpeichern(); renderDashboardLayout(); return; }
+        const wk = e.target.closest('[data-w]');
+        if (wk) {
+          const id = wk.closest('[data-widget]').dataset.widget; const w = dbWidget(id);
+          if (wk.dataset.w === 'links') dbVerschieben(id, -1);
+          else if (wk.dataset.w === 'rechts') dbVerschieben(id, 1);
+          else if (wk.dataset.w === 'groesse') { const g = dbLayout.groesse[id] || w.groesse; dbLayout.groesse[id] = { 4: 6, 6: 8, 8: 12, 12: 4 }[g] || 6; }
+          else if (wk.dataset.w === 'weg') dbLayout.reihenfolge = dbLayout.reihenfolge.filter((x) => x !== id);
+          dbLayoutSpeichern(); renderDashboardLayout(); return;
+        }
+        const g = e.target.closest('[data-geh]');
+        if (g && !(dbEdit && g.matches('.db-kpi'))) { e.preventDefault(); geh(g.dataset.geh); }
+      });
+      sec.addEventListener('keydown', (e) => { const k = e.target.closest?.('.db-kpi[role=button]'); if (k && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); k.click(); } });
+      sec.addEventListener('dragstart', (e) => { const w = e.target.closest?.('[data-widget]'); if (!w || !dbEdit) return; dbZieh = w.dataset.widget; w.classList.add('zieht'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dbZieh); } catch { /* egal */ } });
+      sec.addEventListener('dragover', (e) => {
+        const w = e.target.closest?.('[data-widget]'); if (!w || !dbZieh || w.dataset.widget === dbZieh || dbWidget(w.dataset.widget).art !== dbWidget(dbZieh).art) return;
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        const r = w.getBoundingClientRect(); const vor = w.matches('.db-kpi') ? e.clientX < r.left + r.width / 2 : (e.clientX < r.left + r.width / 2);
+        w.classList.toggle('drop-vor', vor); w.classList.toggle('drop-nach', !vor);
+      });
+      sec.addEventListener('dragleave', (e) => { e.target.closest?.('[data-widget]')?.classList.remove('drop-vor', 'drop-nach'); });
+      sec.addEventListener('drop', (e) => {
+        const w = e.target.closest?.('[data-widget]'); if (!w || !dbZieh) return; e.preventDefault();
+        const vor = w.classList.contains('drop-vor'); w.classList.remove('drop-vor', 'drop-nach');
+        const r = dbLayout.reihenfolge.filter((x) => x !== dbZieh); let j = r.indexOf(w.dataset.widget); if (!vor) j++;
+        r.splice(j, 0, dbZieh); dbLayout.reihenfolge = r; dbZieh = null; dbLayoutSpeichern(); renderDashboardLayout();
+      });
+      sec.addEventListener('dragend', () => { dbZieh = null; sec.querySelectorAll('.zieht, .drop-vor, .drop-nach').forEach((x) => x.classList.remove('zieht', 'drop-vor', 'drop-nach')); });
+      document.querySelectorAll('#dbZeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#dbZeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); dbTage = Number(b.dataset.tage); dbFilter = null; ladeDashboard(); });
+      setInterval(() => { if (tenant && dbDaten && !dbEdit && document.visibilityState === 'visible' && !q('sec-overview').classList.contains('hidden')) ladeDashboard(); }, 90000);
+    })();
+
+    async function loadStats() {
+      if (!tenant) return;
+      if (!dbLayout || dbLayoutFuer !== tenant.id) { dbDaten = null; dbFilter = null; await dbLayoutLaden(); renderDashboardLayout(); }
+      return ladeDashboard();
+    }
+    async function loadDashboard() { return loadStats(); }
+
+    // Daten holen (ein Rutsch), dann zeichnen
+    async function ladeDashboard() {
       if (!tenant) return;
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - dbTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * dbTage * 864e5);
       const heute0 = new Date(jetzt); heute0.setHours(0, 0, 0, 0);
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
       const in7 = new Date(jetzt.getTime() + 7 * 864e5);
-      const davorAbfrage = sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString());
-      const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }] = await Promise.all([
+      const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }, { data: msgs }, { data: block }] = await Promise.all([
         sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(3000),
-        davorAbfrage,
+        sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
         sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).limit(5000),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
         sb.rpc('tickets_kennzahlen', { t: tenant.id }),
         sb.from('tickets').select('id, number, title, priority, due_at, caller_name, status').eq('tenant_id', tenant.id).neq('status', 'done').order('due_at', { ascending: true }).limit(5),
-        sb.from('knowledge_gaps').select('id, question, created_at').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }).limit(3),
+        sb.from('knowledge_gaps').select('id, question, created_at').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }).limit(5),
         sb.from('appointments').select('id, starts_at, ends_at, customer_name, customer_phone, notes').eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', heute0.toISOString()).lte('starts_at', in7.toISOString()).order('starts_at').limit(50),
         sb.from('phone_numbers').select('phone_number, department').or('tenant_id.eq.' + tenant.id + ',inbound_tenant_id.eq.' + tenant.id),
         sb.from('assistant_config').select('voice_provider, voice_id, language').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
         sb.from('subscriptions').select('plan, status, trial_ends_at, current_period_end').eq('tenant_id', tenant.id).maybeSingle(),
         sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
         sb.from('knowledge_gaps').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
+        sb.from('messages').select('id, caller_name, caller_number, callback_number, summary, category, urgency, created_at').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
+        sb.from('blocked_numbers').select('hits').eq('tenant_id', tenant.id),
       ]);
-      const c = calls || [];
-      const dbDavorZahl = davorN ?? null;
-      const dauer = (x) => x.duration_seconds || (x.ended_at ? (new Date(x.ended_at) - new Date(x.started_at)) / 1000 : 0);
-      // KPIs
-      $('dbAnrufe').textContent = c.length;
-      const dlt = $('dbAnrufeDelta'); dlt.className = 'd';
-      if (dbDavorZahl !== null) { const diff = c.length - dbDavorZahl; dlt.textContent = (diff >= 0 ? '+' : '') + diff + ' gegenüber den ' + dbTage + ' Tagen davor'; dlt.classList.add(diff > 0 ? 'plus' : diff < 0 ? 'minus' : 'x'); } else dlt.textContent = 'letzte ' + dbTage + ' Tage';
-      $('dbHeute').textContent = c.filter((x) => new Date(x.started_at) >= heute0).length;
-      const mitDauer = c.map(dauer).filter((s) => s > 0 && s < 3600);
+      dbDaten = { c: calls || [], davorN: davorN ?? null, monat: monat || [], msgN: msgN ?? 0, kz: kz || {}, offene: offene || [], gaps: gaps || [], appts: appts || [], nums: nums || [], cfg, sub, kbN: kbN ?? 0, gapsN: gapsN ?? 0, msgs: msgs || [], blockHits: (block || []).reduce((a, b) => a + (b.hits || 0), 0), blockN: (block || []).length, jetzt, heute0 };
+      zeichneDashboard();
+      q('dbStand').textContent = 'Stand ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      try { const r = await fetch(API + '/api/status', { cache: 'no-store' }); const j = await r.json(); q('dbSystem').innerHTML = j.ok ? '<span class="statusdot"></span> Alle Systeme laufen' : 'Eingeschränkter Betrieb'; } catch { q('dbSystem').textContent = ''; }
+    }
+
+    const dauerVon = (x) => x.duration_seconds || (x.ended_at ? (new Date(x.ended_at) - new Date(x.started_at)) / 1000 : 0);
+    const filterSetzen = (f) => { dbFilter = dbFilter && dbFilter.art === f.art && dbFilter.wert === f.wert ? null : f; zeichneDashboard(); };
+    const zeile = (b, t, z) => { const el = document.createElement('div'); el.className = 'db-zeile'; el.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; el.querySelector('b').textContent = b; el.querySelector('.t').textContent = t; el.querySelector('.z').textContent = z; return el; };
+
+    // Alles aus dbDaten in die vorhandenen Kacheln schreiben (fehlende Kacheln werden übersprungen)
+    function zeichneDashboard() {
+      if (!dbDaten) return;
+      const { c, davorN, monat, msgN, kz, offene, gaps, appts, nums, cfg, sub, kbN, gapsN, msgs, jetzt, heute0 } = dbDaten;
+      // Kennzahlen
+      q('dbAnrufe').textContent = c.length;
+      const dlt = q('dbAnrufeDelta'); dlt.className = 'd';
+      if (davorN !== null) { const diff = c.length - davorN; dlt.textContent = (diff >= 0 ? '+' : '') + diff + ' gegenüber den ' + dbTage + ' Tagen davor'; dlt.classList.add(diff > 0 ? 'plus' : diff < 0 ? 'minus' : 'x'); } else dlt.textContent = 'letzte ' + dbTage + ' Tage';
+      q('dbHeute').textContent = c.filter((x) => new Date(x.started_at) >= heute0).length;
+      const mitDauer = c.map(dauerVon).filter((s) => s > 0 && s < 3600);
       const avg = mitDauer.length ? mitDauer.reduce((a, b) => a + b, 0) / mitDauer.length : 0;
-      $('dbDauer').textContent = avg ? fmtDauer(avg) : '–';
-      $('dbDauerSub').textContent = mitDauer.length ? 'längster ' + fmtDauer(Math.max(...mitDauer)) : 'noch keine Gespräche';
-      const minuten = (monat || []).reduce((a, x) => a + dauer(x), 0) / 60;
-      $('dbMinuten').textContent = Math.round(minuten);
+      q('dbDauer').textContent = avg ? fmtDauer(avg) : '–';
+      q('dbDauerSub').textContent = mitDauer.length ? 'längster ' + fmtDauer(Math.max(...mitDauer)) : 'noch keine Gespräche';
+      const minuten = monat.reduce((a, x) => a + dauerVon(x), 0) / 60;
+      q('dbMinuten').textContent = Math.round(minuten);
       const plan = String(sub?.plan || 'trial').toLowerCase(); const inkl = PLAN_MINUTEN[plan];
-      const balken = $('dbMinutenBalken');
-      if (inkl) { const q = Math.min(100, minuten / inkl * 100); balken.style.width = q + '%'; balken.classList.toggle('warn', q > 90); $('dbMinutenSub').textContent = Math.round(minuten) + ' von ' + inkl + ' Minuten im Tarif ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
-      else { balken.style.width = '0%'; $('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE') : '') : 'Tarif ' + plan; }
-      $('ovMsg').textContent = msgN ?? 0;
-      const k = kz || {}; $('dbOffen').textContent = k.offen ?? 0; const ue = $('dbUeber'); ue.className = 'd' + (k.ueberfaellig ? ' minus' : ''); ue.textContent = k.ueberfaellig ? k.ueberfaellig + ' überfällig' : 'nichts überfällig';
-      $('ovGaps').textContent = gapsN ?? 0;
-      const heuteT = (appts || []).filter((a) => new Date(a.starts_at) < new Date(heute0.getTime() + 864e5)).length;
-      $('dbTermine').textContent = heuteT; $('dbTermineSub').textContent = 'heute · ' + (appts || []).length + ' in 7 Tagen';
-      // Verlauf je Tag
+      const balken = q('dbMinutenBalken');
+      if (inkl) { const qq = Math.min(100, minuten / inkl * 100); balken.style.width = qq + '%'; balken.classList.toggle('warn', qq > 90); q('dbMinutenSub').textContent = Math.round(minuten) + ' von ' + inkl + ' Minuten im Tarif ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
+      else { balken.style.width = '0%'; q('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE') : '') : 'Tarif ' + plan; }
+      q('ovMsg').textContent = msgN;
+      q('dbOffen').textContent = kz.offen ?? 0; const ue = q('dbUeber'); ue.className = 'd' + (kz.ueberfaellig ? ' minus' : ''); ue.textContent = kz.ueberfaellig ? kz.ueberfaellig + ' überfällig' : 'nichts überfällig';
+      q('ovGaps').textContent = gapsN;
+      const heuteT = appts.filter((a) => new Date(a.starts_at) < new Date(heute0.getTime() + 864e5)).length;
+      q('dbTermine').textContent = heuteT; q('dbTermineSub').textContent = 'heute · ' + appts.length + ' in 7 Tagen';
+      q('dbAbgewiesen').textContent = dbDaten.blockHits; q('dbAbgewiesenSub').textContent = dbDaten.blockN ? 'durch ' + dbDaten.blockN + ' Sperr-Einträge' : 'keine Sperren eingerichtet';
+      q('dbWissen').textContent = kbN; q('dbWissenSub').textContent = 'Einträge · ' + gapsN + ' offene Fragen';
+      const negN = c.filter((x) => x.sentiment === 'negativ').length; q('dbNegativ').textContent = negN; q('dbNegativSub').textContent = c.length ? Math.round(negN / c.length * 100) + ' % der Anrufe im Zeitraum' : 'keine Anrufe im Zeitraum';
+      // Verlauf je Tag + Uhrzeit (klickbar = Filter für die Anrufliste)
       const tage = []; for (let i = dbTage - 1; i >= 0; i--) { const d = new Date(heute0); d.setDate(d.getDate() - i); tage.push({ d, n: 0 }); }
       const idx = new Map(tage.map((t, i) => [t.d.getTime(), i]));
-      const stunden = new Array(24).fill(0);
-      for (const x of c) { const d = new Date(x.started_at); const key = new Date(d); key.setHours(0, 0, 0, 0); if (idx.has(key.getTime())) tage[idx.get(key.getTime())].n++; stunden[d.getHours()]++; }
+      const stunden = new Array(24).fill(0); const wtage = new Array(7).fill(0);
+      for (const x of c) { const d = new Date(x.started_at); const key = new Date(d); key.setHours(0, 0, 0, 0); if (idx.has(key.getTime())) tage[idx.get(key.getTime())].n++; stunden[d.getHours()]++; wtage[d.getDay()]++; }
       const max = Math.max(1, ...tage.map((t) => t.n)); const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-      $('dbChartSub').textContent = c.length + ' Anrufe in ' + dbTage + ' Tagen';
-      $('statChart').innerHTML = tage.map((t) => { const hh = t.n ? Math.max(3, Math.round(t.n / max * 92)) : 3; const lab = dbTage > 14 ? (t.d.getDate() % 5 === 0 || t.n ? t.d.getDate() + '.' : '') : wd[t.d.getDay()]; return '<div class="col"><div class="c">' + (t.n || '') + '</div><div class="bar' + (t.n ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div></div>'; }).join('');
-      const smax = Math.max(1, ...stunden);
-      $('dbStunden').innerHTML = stunden.map((n, hI) => '<div title="' + hI + ' Uhr: ' + n + '" style="background:' + (n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)') + '">' + (hI % 6 === 0 ? '<span>' + hI + '</span>' : '') + '</div>').join('');
-      // Fakten
+      q('dbChartSub').textContent = c.length + ' Anrufe in ' + dbTage + ' Tagen';
+      const chart = q('statChart'); chart.innerHTML = '';
+      tage.forEach((t) => { const hh = t.n ? Math.max(3, Math.round(t.n / max * 66)) : 3; const lab = dbTage > 14 ? (t.d.getDate() % 5 === 0 || t.n ? t.d.getDate() + '.' : '') : wd[t.d.getDay()];
+        const col = document.createElement('div'); col.className = 'col' + (dbFilter?.art === 'tag' && dbFilter.wert === t.d.getTime() ? ' aktiv' : ''); col.title = t.d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' }) + ': ' + t.n + (t.n === 1 ? ' Anruf' : ' Anrufe');
+        col.innerHTML = '<div class="c">' + (t.n || '') + '</div><div class="bar' + (t.n ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div>';
+        if (t.n) col.onclick = () => filterSetzen({ art: 'tag', wert: t.d.getTime(), label: t.d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) }); chart.append(col); });
+      const smax = Math.max(1, ...stunden); const st = q('dbStunden'); st.innerHTML = '';
+      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.title = hI + '–' + (hI + 1) + ' Uhr: ' + n; d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (dbFilter?.art === 'stunde' && dbFilter.wert === hI) d.classList.add('aktiv'); if (n) d.onclick = () => filterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); st.append(d); });
+      // Wochentage
+      const wmax = Math.max(1, ...wtage); const wt = q('dbWochentag'); wt.innerHTML = '';
+      [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'wochentag' && dbFilter.wert === i ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'][i]; if (wtage[i]) d.onclick = () => filterSetzen({ art: 'wochentag', wert: i, label: ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'][i] }); wt.append(d); });
+      // Fakten zum Assistenten
       const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
       const stimmeRoh = cfg?.voice_id && !/^[A-Za-z0-9]{15,}$/.test(cfg.voice_id) ? cfg.voice_id.replace(/^en_/, '').replace(/_/g, ' ') : '';
       const stimme = stimmeRoh ? ' · ' + stimmeRoh.charAt(0).toUpperCase() + stimmeRoh.slice(1) : '';
-      const nummern = (nums || []).map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
-      $('dbFakten').innerHTML = [
-        ['Status', (nums || []).length ? '<span class="statusdot"></span> Aktiv' : '<span class="statusdot" style="background:var(--accent-3)"></span> Einrichtung'],
+      const nummern = nums.map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
+      q('dbFakten').innerHTML = [
+        ['Status', nums.length ? '<span class="statusdot"></span> Aktiv' : '<span class="statusdot" style="background:var(--accent-3)"></span> Einrichtung'],
         ['Rufnummer', nummern + '<a href="#" data-geh="sec-number">ändern</a>'],
         ['KI und Stimme', anbieter + stimme + '<a href="#" data-geh="sec-assistant">ändern</a>'],
         ['Sprache', (cfg?.language || 'de') === 'en' ? 'Englisch' : 'Deutsch'],
-        ['Wissen', (kbN ?? 0) + ' Einträge<a href="#" data-geh="sec-kb">pflegen</a>'],
+        ['Wissen', kbN + ' Einträge<a href="#" data-geh="sec-kb">pflegen</a>'],
         ['Tarif', inkl ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' · ' + inkl + ' Min' : (plan === 'trial' ? 'Testphase' : plan)],
       ].map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
-      $('dbFakten').querySelectorAll('[data-geh]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); document.querySelector('.nav-item[data-target="' + el.dataset.geh + '"]')?.click(); }));
-      // Letzte Anrufe
-      const la = $('dbAnrufeListe'); la.innerHTML = '';
-      if (!c.length) la.innerHTML = '<p class="muted" style="font-size:13px">Noch keine Anrufe im Zeitraum.</p>';
-      c.slice(0, 5).forEach((x) => { const z = document.createElement('div'); z.className = 'db-zeile'; const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
-        z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = (x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''); z.querySelector('.t').textContent = new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauer(x) ? ' · ' + fmtDauer(dauer(x)) : ''); z.querySelector('.z').textContent = (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung'));
-        z.onclick = () => document.querySelector('.nav-item[data-target="sec-live"]')?.click(); la.append(z); });
+      // Letzte Anrufe (mit Filter aus Diagramm, Uhrzeit, Thema, Stimmung, Wochentag)
+      const la = q('dbAnrufeListe'); la.innerHTML = '';
+      let liste = c;
+      if (dbFilter) liste = c.filter((x) => { const d = new Date(x.started_at); switch (dbFilter.art) { case 'tag': { const k = new Date(d); k.setHours(0, 0, 0, 0); return k.getTime() === dbFilter.wert; } case 'stunde': return d.getHours() === dbFilter.wert; case 'wochentag': return d.getDay() === dbFilter.wert; case 'thema': return x.topic === dbFilter.wert; case 'stimmung': return x.sentiment === dbFilter.wert; default: return true; } });
+      q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" title="Filter entfernen">' + dbFilter.label + ' · ' + liste.length + ' ×</button>' : '';
+      const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
+      if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
+      liste.slice(0, dbFilter ? 8 : 5).forEach((x) => { const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
+        const z = zeile((x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''), new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
+        z.title = 'In „Live" öffnen'; z.onclick = () => { geh('sec-live'); setTimeout(() => { const k = document.querySelector('.call-card[data-call-id="' + x.id + '"]'); if (k) { k.scrollIntoView({ behavior: 'smooth', block: 'center' }); k.classList.add('blitz'); setTimeout(() => k.classList.remove('blitz'), 2500); } }, 350); }; la.append(z); });
+      if (liste.length > (dbFilter ? 8 : 5)) { const m = document.createElement('a'); m.href = '#'; m.dataset.geh = 'sec-live'; m.className = 'db-mehr'; m.textContent = 'Alle ' + liste.length + ' in „Live" ansehen'; la.append(m); }
       // Offene Vorgänge
-      const lv = $('dbVorgaenge'); lv.innerHTML = '';
-      if (!(offene || []).length) lv.innerHTML = '<p class="muted" style="font-size:13px">Keine offenen Vorgänge.</p>';
-      (offene || []).forEach((t) => { const z = document.createElement('div'); z.className = 'db-zeile'; const ueber = t.due_at && new Date(t.due_at) < jetzt;
-        z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = '#' + t.number + ' · ' + t.title; z.querySelector('.t').textContent = (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''); if (ueber) z.querySelector('.t').style.color = '#c2410c'; z.querySelector('.z').textContent = (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : '');
-        z.onclick = () => { document.querySelector('.nav-item[data-target="sec-tickets"]')?.click(); setTimeout(() => { const s = $('tkSuche'); if (s) { s.value = '#' + t.number; s.dispatchEvent(new Event('input')); } }, 300); }; lv.append(z); });
-      // Themen
+      const lv = q('dbVorgaenge'); lv.innerHTML = '';
+      if (!offene.length) lv.innerHTML = leerText('Keine offenen Vorgänge.');
+      offene.forEach((t) => { const ueber = t.due_at && new Date(t.due_at) < jetzt;
+        const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
+        if (ueber) z.querySelector('.t').style.color = '#c2410c';
+        z.onclick = () => { geh('sec-tickets'); setTimeout(() => { const s = $('tkSuche'); if (s) { s.value = '#' + t.number; s.dispatchEvent(new Event('input')); } }, 300); }; lv.append(z); });
+      // Themen (klickbar)
       const themen = {}; c.forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
       const top = Object.entries(themen).sort((a, b) => b[1] - a[1]).slice(0, 6); const tmax = top[0]?.[1] || 1;
-      $('dbThemen').innerHTML = top.length ? top.map(([t, n]) => '<div class="db-thema"><div class="n"><span></span><span>' + n + '</span></div><div class="b"><span style="width:' + Math.round(n / tmax * 100) + '%"></span></div></div>').join('') : '<p class="muted" style="font-size:13px">Themen erscheinen, sobald Anrufe zusammengefasst sind.</p>';
-      $('dbThemen').querySelectorAll('.db-thema .n span:first-child').forEach((el, i) => el.textContent = top[i][0]);
-      // Stimmung
-      const st = { positiv: 0, neutral: 0, negativ: 0 }; c.forEach((x) => { if (st[x.sentiment] !== undefined) st[x.sentiment]++; }); const stN = st.positiv + st.neutral + st.negativ;
-      $('dbStimmung').innerHTML = stN ? '<div class="db-stimm">' + [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']].map(([kk, col]) => '<span style="width:' + (st[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']].map(([kk, col]) => '<span><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(st[kk] / stN * 100) + ' %</span>').join('') + '</div>' : '<p class="muted" style="font-size:13px">Stimmung erscheint, sobald Anrufe ausgewertet sind.</p>';
+      const th = q('dbThemen'); th.innerHTML = top.length ? '' : leerText('Themen erscheinen, sobald Anrufe zusammengefasst sind.');
+      top.forEach(([t, n]) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'thema' && dbFilter.wert === t ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + n + '</span></div><div class="b"><span style="width:' + Math.round(n / tmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = t; d.onclick = () => filterSetzen({ art: 'thema', wert: t, label: t }); th.append(d); });
+      // Stimmung (klickbar)
+      const sti = { positiv: 0, neutral: 0, negativ: 0 }; c.forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
+      const farben = [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']];
+      const sm = q('dbStimmung');
+      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" title="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" class="' + (dbFilter?.art === 'stimmung' && dbFilter.wert === kk ? 'aktiv' : '') + '"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' %</span>').join('') + '</div>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
+      sm.querySelectorAll('[data-stimmung]').forEach((el) => el.onclick = () => filterSetzen({ art: 'stimmung', wert: el.dataset.stimmung, label: 'Stimmung ' + el.dataset.stimmung }));
       // Termine
-      const lt = $('dbTermineListe'); lt.innerHTML = '';
-      if (!(appts || []).length) lt.innerHTML = '<p class="muted" style="font-size:13px">Keine Termine in den nächsten 7 Tagen.</p>';
-      (appts || []).slice(0, 5).forEach((a) => { const z = document.createElement('div'); z.className = 'db-zeile'; z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = a.customer_name || 'Termin'; z.querySelector('.t').textContent = new Date(a.starts_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); z.querySelector('.z').textContent = [a.customer_phone, a.notes].filter(Boolean).join(' · '); z.onclick = () => document.querySelector('.nav-item[data-target="sec-booking"]')?.click(); lt.append(z); });
+      const lt = q('dbTermineListe'); lt.innerHTML = '';
+      if (!appts.length) lt.innerHTML = leerText('Keine Termine in den nächsten 7 Tagen.');
+      appts.slice(0, 5).forEach((a) => { const z = zeile(a.customer_name || 'Termin', new Date(a.starts_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), [a.customer_phone, a.notes].filter(Boolean).join(' · ')); z.onclick = () => geh('sec-booking'); lt.append(z); });
+      // Offene Fragen
+      const lf = q('dbFragenListe'); lf.innerHTML = '';
+      if (!gaps.length) lf.innerHTML = leerText('Keine offenen Fragen. Dein Assistent konnte alles beantworten.');
+      gaps.forEach((g) => { const z = zeile(g.question, new Date(g.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), 'Antwort hinterlegen'); z.onclick = () => geh('sec-gaps'); lf.append(z); });
+      // Neueste Nachrichten
+      const ln = q('dbNachrichtenListe'); ln.innerHTML = '';
+      if (!msgs.length) ln.innerHTML = leerText('Noch keine Nachrichten.');
+      msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => geh('sec-messages'); ln.append(z); });
       // Einstiegshilfe nur, solange nichts läuft
-      $('dbStart').classList.toggle('hidden', c.length > 0 && (nums || []).length > 0);
-      // Systemstatus
-      try { const r = await fetch(API + '/api/status', { cache: 'no-store' }); const j = await r.json(); $('dbSystem').innerHTML = j.ok ? '<span class="statusdot"></span> Alle Systeme laufen' : 'Eingeschränkter Betrieb'; } catch { $('dbSystem').textContent = ''; }
+      q('dbStart').classList.toggle('hidden', c.length > 0 && nums.length > 0);
     }
 
     // ---- Kosten / Marge (vom Backend, da Tarif-Kalkulation serverseitig) ----
