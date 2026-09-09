@@ -1061,6 +1061,18 @@
             <div id="numResults" style="margin-top:12px"></div>
             <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12px">Hinweis: Deutsche Rufnummern erfordern bei der Bestellung einen Adressnachweis (Regulatory-Prüfung). Die Nummer wird automatisch aktiv, sobald die Prüfung durch ist.</p>
           </div>
+          <!-- Sperrliste -->
+          <div class="panel" id="blockPanel">
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>Gesperrte Nummern</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Anrufe von diesen Nummern werden abgewiesen, bevor der Assistent abnimmt. Sie kosten keine Gesprächsminute. Erlaubt: eine Nummer (+49 …), ein Bereich mit Stern am Ende (+4930*) oder „anonym" für unterdrückte Rufnummern.</p>
+            <div class="grid2">
+              <div><label style="margin-top:0">Nummer</label><input id="blockNummer" placeholder="+49 … oder anonym" /></div>
+              <div><label style="margin-top:0">Grund (optional)</label><input id="blockGrund" placeholder="z. B. Werbeanrufe" /></div>
+            </div>
+            <div class="stack" style="margin-top:10px"><button id="blockAdd" class="btn" type="button">Nummer sperren</button></div>
+            <p class="muted" id="blockHint" style="margin-top:6px;font-size:12.5px"></p>
+            <div id="blockList" style="margin-top:8px"></div>
+          </div>
         </section>
 
         <!-- Tischplan (große Vollansicht) -->
@@ -1840,6 +1852,7 @@
       renderTicketList();
       renderKeyList();
       loadTickets();
+      renderBlockList();
 
       // Termine
       $('bkEnabled').checked = bk?.enabled ?? false;
@@ -3987,7 +4000,24 @@
         h.textContent = `${m.caller_name || 'Unbekannt'} — ${m.category || '—'} / ${m.urgency || '—'}`;
         const p = document.createElement('p');
         p.textContent = `${m.summary || ''}\nRückruf: ${m.callback_number || m.caller_number || '—'} · ${when}`;
-        div.append(h, p); el.append(div);
+        const akt = document.createElement('div'); akt.className = 'stack'; akt.style.marginTop = '8px';
+        const nr = (m.callback_number || m.caller_number || '').trim();
+        if (nr) {
+          const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Anrufen'; akt.append(tel);
+          const bl = document.createElement('button'); bl.className = 'btn btn--ghost sm'; bl.textContent = 'Nummer sperren';
+          bl.onclick = async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); };
+          akt.append(bl);
+        }
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Löschen'; del.style.marginLeft = 'auto';
+        del.onclick = async () => {
+          if (!confirm('Diese Nachricht endgültig löschen?')) return;
+          const { error } = await sb.from('messages').delete().eq('id', m.id);
+          if (error) { toast('Fehler: ' + error.message, 'err'); return; }
+          div.remove(); toast('Nachricht gelöscht.');
+          if (!el.querySelector('.item')) renderMessages([]);
+        };
+        akt.append(del);
+        div.append(h, p, akt); el.append(div);
       }
     }
 
@@ -4397,6 +4427,7 @@
       if (t.caller_phone) {
         const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + t.caller_phone.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + t.caller_phone; akt.append(a);
         const smsB = document.createElement('button'); smsB.className = 'btn btn--ghost sm'; smsB.textContent = 'SMS an Anrufer'; akt.append(smsB);
+        const blockB = document.createElement('button'); blockB.className = 'btn btn--ghost sm'; blockB.textContent = 'Nummer sperren'; blockB.onclick = async () => { if (confirm(t.caller_phone + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) { await sperren(t.caller_phone, 'Aus Vorgang #' + t.number); } }; akt.append(blockB);
         const smsBox = document.createElement('div'); smsBox.className = 'hidden'; smsBox.style.marginTop = '8px';
         smsBox.innerHTML = '<textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea>';
         const send = document.createElement('button'); send.className = 'btn sm'; send.textContent = 'SMS senden'; send.style.marginTop = '6px'; smsBox.append(send);
@@ -4431,6 +4462,9 @@
         b.onclick = () => tkUpdate(t, { status: k }, `Vorgang #${t.number}: ${label}.`);
         st.append(b);
       }
+      const delT = document.createElement('button'); delT.className = 'btn btn--ghost sm'; delT.textContent = 'Löschen'; delT.style.marginLeft = 'auto';
+      delT.onclick = async () => { if (!confirm(`Vorgang #${t.number} endgültig löschen?`)) return; const { error } = await sb.from('tickets').delete().eq('id', t.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } toast('Vorgang gelöscht.'); loadTickets(); };
+      st.append(delT);
       box.append(st);
       // Transkript des Anrufs
       if (t.call_id) {
@@ -4497,6 +4531,38 @@
       $('tkNeuPanel').classList.add('hidden');
       toast('Vorgang angelegt.'); tkFilter = 'open'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'open')); loadTickets();
     };
+
+    // ---- Sperrliste ----
+    function blockNormal(s) {
+      s = String(s || '').trim();
+      if (s.toLowerCase() === 'anonym') return 'anonym';
+      const stern = s.endsWith('*'); let n = (stern ? s.slice(0, -1) : s).replace(/[^\d+]/g, '');
+      if (n.startsWith('00')) n = '+' + n.slice(2);
+      if (/^0\d+/.test(n)) n = '+49' + n.slice(1);
+      return /^\+\d{3,15}$/.test(n) ? n + (stern ? '*' : '') : null;
+    }
+    async function sperren(nummer, grund) {
+      if (!tenant) return false;
+      const phone = blockNormal(nummer);
+      if (!phone) { toast('Bitte eine Nummer im Format +49 … eingeben.', 'err'); return false; }
+      const { error } = await sb.from('blocked_numbers').upsert({ tenant_id: tenant.id, phone, reason: grund || null }, { onConflict: 'tenant_id,phone' });
+      if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
+      toast(phone + ' gesperrt.'); renderBlockList(); return true;
+    }
+    $('blockAdd').onclick = async () => { if (await sperren($('blockNummer').value, $('blockGrund').value.trim())) { $('blockNummer').value = ''; $('blockGrund').value = ''; } };
+    async function renderBlockList() {
+      const el = $('blockList'); if (!el || !tenant) return;
+      const { data } = await sb.from('blocked_numbers').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Keine gesperrten Nummern.</p>'; return; }
+      el.innerHTML = '';
+      data.forEach((b) => {
+        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
+        const txt = document.createElement('span'); txt.textContent = `${b.phone}${b.reason ? ' · ' + b.reason : ''} · ${b.hits ? b.hits + '× abgewiesen' : 'noch kein Anruf'}`;
+        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Freigeben'; del.style.float = 'right';
+        del.onclick = async () => { await sb.from('blocked_numbers').delete().eq('id', b.id); toast('Freigegeben.'); renderBlockList(); };
+        row.append(del, txt); el.append(row);
+      });
+    }
     // ---- Termine ----
     $('bkSave').onclick = async () => {
       if (!tenant) return;
