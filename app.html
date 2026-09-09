@@ -543,6 +543,11 @@
     .num-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
     .num-grid .panel { margin-bottom: 0; }
     @media (max-width: 1000px) { .num-split { grid-template-columns: 1fr; } }
+    .num-grid > .panel:only-child { grid-column: 1 / -1; }
+    .bk-split { grid-template-columns: minmax(0, 8fr) minmax(300px, 4fr); }
+    .if-status { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 12px; }
+    .if-status .db-kpi { padding: 10px 14px; } .if-status .db-kpi .v { font-size: 22px; }
+    @media (max-width: 1100px) { .if-status { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bk-split { grid-template-columns: 1fr; } }
     @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
@@ -1063,44 +1068,33 @@
 
         <!-- Termine -->
         <section id="sec-booking" class="section hidden">
-          <h1 class="pagehead">Termine</h1>
-          <p class="pagesub">Dein Assistent kann am Telefon Termine vergeben — basierend auf deinen Öffnungszeiten (unter „Assistent"). Gebuchte Termine erscheinen hier und in deinem verbundenen Kalender.</p>
-
-          <div class="panel">
-            <h3>Kalender verbinden</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein.</p>
-            <div id="bkCal"><span class="muted">Lade …</span></div>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Termine</h1>
+              <p class="pagesub" style="margin-bottom:0">Dein Assistent vergibt am Telefon Termine auf Basis deiner Öffnungszeiten. Gebuchte Termine erscheinen hier und im verbundenen Kalender.</p>
+            </div>
+            <div class="db-aktionen">
+              <button class="btn btn--ghost sm" type="button" id="bbAuf" data-tip="Urlaub, Pausen oder wöchentliche Zeiten ohne Termine">Zeiten sperren</button>
+              <button class="btn btn--primary sm" type="button" id="bkNeuAuf">+ Termin</button>
+            </div>
           </div>
-
-          <div class="panel">
-            <label class="chk"><input type="checkbox" id="bkEnabled" /> <b>Terminbuchung aktiv</b> <span class="muted">– der Assistent darf Termine vergeben</span></label>
-            <div class="grid2" style="margin-top:8px">
-              <div><label>Termindauer (Min.)</label><input id="bkSlot" type="number" min="5" step="5" /></div>
-              <div><label>Puffer dazwischen (Min.)</label><input id="bkBuffer" type="number" min="0" step="5" /></div>
+          <div class="as-split bk-split">
+            <div>
+          <div class="panel hidden" id="bkNeuPanel">
+            <h3>Termin von Hand eintragen</h3>
+            <div class="grid2">
+              <div><label>Datum</label><input id="bkNewDate" type="date" /></div>
+              <div><label>Uhrzeit</label><input id="bkNewTime" type="time" /></div>
             </div>
             <div class="grid2">
-              <div><label>Frühestens ab (Std. im Voraus)</label><input id="bkLead" type="number" min="0" /></div>
-              <div><label>Buchbar bis (Tage im Voraus)</label><input id="bkHorizon" type="number" min="1" /></div>
+              <div style="flex:2"><label>Name</label><input id="bkNewName" placeholder="Name des Kunden" /></div>
+              <div style="flex:2"><label>Notiz (optional)</label><input id="bkNewNote" placeholder="z.B. Beratung" /></div>
             </div>
-            <div class="stack" style="margin-top:12px"><button id="bkSave" class="btn btn--primary">Speichern</button></div>
-            <p class="muted" id="bkHint" style="margin-top:8px"></p>
+            <div class="stack" style="margin-top:12px"><button id="bkAdd" class="btn">Termin eintragen</button></div>
           </div>
 
-          <div class="panel">
-            <div class="cal-head">
-              <span class="cal-title" id="calTitle">Woche</span>
-              <div class="cal-nav">
-                <button id="calPrev">‹</button>
-                <button id="calToday">Heute</button>
-                <button id="calNext">›</button>
-              </div>
-            </div>
-            <div id="calWeek"><span class="muted">Lade Kalender …</span></div>
-            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12.5px">Indigo = Vocaris-Termine · grau schraffiert = belegt (verbundener Kalender) · coral schraffiert = manuell gesperrt (zum Freigeben klicken). <b>Tipp:</b> in eine freie Stelle im Kalender klicken sperrt diese Stunde.</p>
-          </div>
-
-          <div class="panel">
-            <h3>Verfügbarkeit & Sperren</h3>
+          <div class="panel hidden" id="bbPanel">
+            <h3>Zeiten sperren</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Deine <b>freien</b> Zeiten kommen aus den Öffnungszeiten (unter „Assistent"). Hier sperrst du Zeiten, in denen Vocaris <b>keine</b> Termine vergeben soll.</p>
             <div class="deptbar" style="margin-bottom:16px">
               <button class="deptseg active" data-bbmode="once" type="button">Einmalig / Urlaub</button>
@@ -1138,6 +1132,46 @@
           </div>
 
           <div class="panel">
+            <div class="cal-head">
+              <span class="cal-title" id="calTitle">Woche</span>
+              <div class="cal-nav">
+                <button id="calPrev">‹</button>
+                <button id="calToday">Heute</button>
+                <button id="calNext">›</button>
+              </div>
+            </div>
+            <div id="calWeek"><span class="muted">Lade Kalender …</span></div>
+            <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12.5px">Indigo = Vocaris-Termine · grau schraffiert = belegt (verbundener Kalender) · coral schraffiert = manuell gesperrt (zum Freigeben klicken). <b>Tipp:</b> in eine freie Stelle im Kalender klicken sperrt diese Stunde.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Anstehende Termine</h3>
+            <div id="bkList"></div>
+          </div>
+            </div>
+            <div class="as-seite">
+          <div class="panel">
+            <h3>Terminbuchung</h3>
+            <label class="chk" style="margin-top:0"><input type="checkbox" id="bkEnabled" /> <b>Terminbuchung aktiv</b> <span class="muted">– der Assistent darf Termine vergeben</span></label>
+            <div class="grid2" style="margin-top:8px">
+              <div><label>Termindauer (Min.)</label><input id="bkSlot" type="number" min="5" step="5" /></div>
+              <div><label>Puffer dazwischen (Min.)</label><input id="bkBuffer" type="number" min="0" step="5" /></div>
+            </div>
+            <div class="grid2">
+              <div><label>Frühestens ab (Std. im Voraus)</label><input id="bkLead" type="number" min="0" /></div>
+              <div><label>Buchbar bis (Tage im Voraus)</label><input id="bkHorizon" type="number" min="1" /></div>
+            </div>
+            <div class="stack" style="margin-top:12px"><button id="bkSave" class="btn btn--primary">Speichern</button></div>
+            <p class="muted" id="bkHint" style="margin-top:8px"></p>
+          </div>
+
+          <div class="panel">
+            <h3>Kalender verbinden</h3>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein.</p>
+            <div id="bkCal"><span class="muted">Lade …</span></div>
+          </div>
+
+          <div class="panel">
             <h3>Kalender-Abo (ohne Anmeldung)</h3>
             <p class="muted" style="margin-bottom:10px">Diesen Link in Google/Apple/Outlook als „Kalender abonnieren" hinzufügen — neue Termine erscheinen automatisch. Link geheim halten.</p>
             <div class="grid2">
@@ -1146,30 +1180,25 @@
             </div>
           </div>
 
-          <div class="panel">
-            <h3>Termin manuell anlegen</h3>
-            <div class="grid2">
-              <div><label>Datum</label><input id="bkNewDate" type="date" /></div>
-              <div><label>Uhrzeit</label><input id="bkNewTime" type="time" /></div>
             </div>
-            <div class="grid2">
-              <div style="flex:2"><label>Name</label><input id="bkNewName" placeholder="Name des Kunden" /></div>
-              <div style="flex:2"><label>Notiz (optional)</label><input id="bkNewNote" placeholder="z.B. Beratung" /></div>
-            </div>
-            <div class="stack" style="margin-top:12px"><button id="bkAdd" class="btn">Termin eintragen</button></div>
-          </div>
-
-          <div class="panel">
-            <h3>Anstehende Termine</h3>
-            <div id="bkList"></div>
           </div>
         </section>
 
         <!-- Schnittstellen / Webhook -->
         <section id="sec-webhooks" class="section hidden">
-          <h1 class="pagehead">Schnittstellen</h1>
-          <p class="pagesub">Leite Anliegen, Termine und offene Fragen automatisch dorthin, wo dein Team arbeitet — Benachrichtigungen, CRM oder Automatisierung.</p>
-
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Schnittstellen</h1>
+              <p class="pagesub" style="margin-bottom:0">Leite Anliegen, Termine und offene Fragen dorthin, wo dein Team arbeitet: Benachrichtigungen, CRM, Ticketsystem, Automatisierung oder eigene Software.</p>
+            </div>
+            <div class="db-aktionen">
+              <a class="btn btn--ghost sm" href="https://vocaris.eu/api.html" target="_blank" rel="noopener">API-Doku</a>
+              <a class="btn btn--ghost sm" href="https://vocaris.eu/schnittstellen.html" target="_blank" rel="noopener">Übersicht</a>
+            </div>
+          </div>
+          <div class="db-kpis if-status" id="ifStatus"></div>
+          <div class="deptbar" id="ifTabs" style="margin-bottom:14px"><button class="deptseg active" data-iftab="ereignisse" type="button">Ereignisse</button><button class="deptseg" data-iftab="benachrichtigungen" type="button">Benachrichtigungen</button><button class="deptseg" data-iftab="crm" type="button">CRM</button><button class="deptseg" data-iftab="ticket" type="button">Ticketsystem</button><button class="deptseg" data-iftab="api" type="button">API-Schlüssel</button><button class="deptseg" data-iftab="webhook" type="button">Webhook</button></div>
+          <div data-if="ereignisse">
           <!-- 1 · Aktivierung & Ereignisse -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Aktivierung & Ereignisse</h3>
@@ -1183,6 +1212,8 @@
             </div>
           </div>
 
+          </div>
+          <div data-if="benachrichtigungen" class="hidden">
           <!-- 2 · Team-Benachrichtigungen -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Team-Benachrichtigungen</h3>
@@ -1200,6 +1231,8 @@
             </div>
           </div>
 
+          </div>
+          <div data-if="crm" class="hidden">
           <!-- 3 · CRM-Anbindung -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>CRM-Anbindung <span class="muted" style="font-weight:400;font-size:13px">(legt automatisch Leads an)</span></h3>
@@ -1214,6 +1247,8 @@
             <div id="crmList" style="margin-top:8px"></div>
           </div>
 
+          </div>
+          <div data-if="ticket" class="hidden">
           <!-- 3b · Ticketsystem -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>Ticketsystem</h3>
@@ -1233,6 +1268,8 @@
             <div id="tkList" style="margin-top:8px"></div>
           </div>
 
+          </div>
+          <div data-if="api" class="hidden">
           <!-- 3c · API-Schlüssel -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L19 3.6m-2 2 2 2"/></svg>API-Schlüssel</h3>
@@ -1249,6 +1286,8 @@
             <div id="akList" style="margin-top:8px"></div>
           </div>
 
+          </div>
+          <div data-if="webhook" class="hidden">
           <!-- 4 · Automatisierung & eigener Webhook -->
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Automatisierung & eigener Webhook</h3>
@@ -1277,6 +1316,8 @@
             </details>
           </div>
 
+          </div>
+          <div data-if="ereignisse benachrichtigungen webhook">
           <!-- Aktionen -->
           <div class="panel">
             <div class="stack">
@@ -1285,6 +1326,7 @@
             </div>
             <p class="muted" id="whHint" style="margin-top:8px"></p>
             <p class="muted" style="text-align:left;padding:0;margin-top:6px;font-size:12px">„Speichern" sichert Ereignisse, Benachrichtigungen & Webhook. CRM-Verbindungen werden direkt beim „CRM verbinden" gespeichert. „Test senden" prüft alle aktiven Ziele (legt ggf. einen Test-Lead an).</p>
+          </div>
           </div>
         </section>
 
@@ -1916,7 +1958,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -2092,7 +2134,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -2227,6 +2269,40 @@
         wrap.append(card);
       });
     }
+    // ---- Termine: Aufklapp-Bereiche ----
+    (function termineWiring() {
+      const k = $('bkNeuAuf'); if (!k) return;
+      k.onclick = () => { $('bkNeuPanel').classList.toggle('hidden'); $('bbPanel').classList.add('hidden'); if (!$('bkNeuPanel').classList.contains('hidden')) $('bkNewDate')?.focus(); };
+      $('bbAuf').onclick = () => { $('bbPanel').classList.toggle('hidden'); $('bkNeuPanel').classList.add('hidden'); };
+    })();
+    // ---- Schnittstellen: Reiter + Statusleiste ----
+    function ifStatus() {
+      const box = $('ifStatus'); if (!box) return;
+      const an = $('whEnabled')?.checked; const kanaele = [['E-Mail', $('whEmail')?.value], ['Slack', $('whSlack')?.value], ['Teams', $('whTeams')?.value], ['Telegram', $('whTgToken')?.value]].filter(([, v]) => (v || '').trim()).map(([k]) => k);
+      const ereignisse = [['whMsg', 'Nachrichten'], ['whAppt', 'Termine'], ['whGap', 'offene Fragen'], ['whCall', 'Anrufe']].filter(([id]) => $(id)?.checked).map(([, l]) => l);
+      const zaehl = (id) => document.querySelectorAll('#' + id + ' .item').length;
+      const kacheln = [
+        ['ereignisse', 'Ereignisse', an ? ereignisse.length : 0, an ? (ereignisse.join(', ') || 'keines gewählt') : 'Hauptschalter aus'],
+        ['benachrichtigungen', 'Benachrichtigungen', kanaele.length, kanaele.join(', ') || 'kein Kanal eingetragen'],
+        ['crm', 'CRM', zaehl('crmList'), zaehl('crmList') ? 'verbunden' : 'nicht verbunden'],
+        ['ticket', 'Ticketsystem', zaehl('tkList'), zaehl('tkList') ? 'verbunden' : 'eingebaute Vorgänge'],
+        ['api', 'API-Schlüssel', zaehl('akList'), zaehl('akList') ? 'aktiv' : 'keiner erstellt'],
+        ['webhook', 'Webhook', ($('whUrl')?.value || '').trim() ? 1 : 0, ($('whUrl')?.value || '').trim() ? 'URL hinterlegt' : 'keine URL'],
+      ];
+      box.innerHTML = kacheln.map(([k, t, n, d]) => '<div class="db-kpi klick' + (document.querySelector('#ifTabs .deptseg.active')?.dataset.iftab === k ? ' aktiv' : '') + '" data-iftab="' + k + '" role="button" tabindex="0"><div class="k">' + t + '</div><div class="v">' + n + '</div><div class="d">' + escHtml(d) + '</div></div>').join('');
+    }
+    function ifTab(k) {
+      document.querySelectorAll('#ifTabs [data-iftab]').forEach((b) => b.classList.toggle('active', b.dataset.iftab === k));
+      document.querySelectorAll('#sec-webhooks [data-if]').forEach((el) => el.classList.toggle('hidden', !el.dataset.if.split(' ').includes(k)));
+      ifStatus();
+    }
+    (function schnittstellenWiring() {
+      const sec = $('sec-webhooks'); if (!sec) return;
+      sec.addEventListener('click', (e) => { const t = e.target.closest('[data-iftab]'); if (t) ifTab(t.dataset.iftab); });
+      sec.addEventListener('input', () => { clearTimeout(sec._ifT); sec._ifT = setTimeout(ifStatus, 200); });
+      sec.addEventListener('change', ifStatus);
+      new MutationObserver(() => { clearTimeout(sec._ifT); sec._ifT = setTimeout(ifStatus, 100); }).observe(sec, { childList: true, subtree: true });
+    })();
     (function nummerWiring() {
       const k = $('numAddKnopf'); if (!k) return;
       k.onclick = () => { $('numAddPanel').classList.toggle('hidden'); if (!$('numAddPanel').classList.contains('hidden')) $('numArea')?.focus(); };
