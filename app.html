@@ -508,6 +508,8 @@
     .bubble.blitz { outline: 2px solid var(--accent); outline-offset: 2px; }
     .db-tip { max-width: 420px; white-space: normal; line-height: 1.35; }
     .lv-zurueck { display: none; margin-bottom: 8px; }
+    .mg-zeile.erledigt { opacity: .62; } .mg-zeile.erledigt:hover, .mg-zeile.erledigt.aktiv { opacity: 1; }
+    .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
     @media (max-width: 900px) {
       .lv-split { grid-template-columns: 1fr; } .lv-detail { position: static; }
@@ -637,7 +639,7 @@
         <div class="nav-group">Betrieb</div>
         <button class="nav-item active" data-target="sec-overview" data-dashboard="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
         <button class="nav-item" data-target="sec-live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h4"/></svg>Live <span id="liveBadge" class="gap-badge hidden" style="background:#28c76f"></span></button>
-        <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Anrufe &amp; Nachrichten</button>
+        <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nachrichten <span id="msgBadge" class="gap-badge hidden"></span></button>
         <button class="nav-item" data-target="sec-tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge <span id="tkBadge" class="gap-badge hidden"></span></button>
         <div class="nav-group">Assistent</div>
         <button class="nav-item" data-target="sec-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Wissensdatenbank</button>
@@ -745,9 +747,29 @@
 
         <!-- Nachrichten -->
         <section id="sec-messages" class="section hidden">
-          <h1 class="pagehead">Anrufe &amp; Nachrichten</h1>
-          <p class="pagesub">Rückrufe und Anliegen, die dein Assistent entgegengenommen hat.</p>
-          <div id="messages"></div>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Nachrichten</h1>
+              <p class="pagesub" style="margin-bottom:0" id="mgSub">Rückrufe und Anliegen, die dein Assistent aufgenommen hat.</p>
+            </div>
+            <div class="db-aktionen">
+              <input id="mgSuche" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
+              <div class="deptbar" id="mgStatus"><button class="deptseg active" data-status="new" type="button">Offen</button><button class="deptseg" data-status="done" type="button">Erledigt</button><button class="deptseg" data-status="" type="button">Alle</button></div>
+              <button class="btn btn--ghost sm" type="button" id="mgNeu" title="Neu laden">↻</button>
+            </div>
+          </div>
+          <div class="lv-filter">
+            <div class="lv-chips" id="mgDringend"><button class="lv-chip aktiv" type="button" data-dringend="">Alle</button><button class="lv-chip" type="button" data-dringend="hoch">🔴 dringend</button><button class="lv-chip" type="button" data-dringend="mittel">🟠 mittel</button><button class="lv-chip" type="button" data-dringend="niedrig">⚪ niedrig</button></div>
+            <select id="mgKategorie" class="lv-select"><option value="">Alle Kategorien</option></select>
+            <span class="muted" id="mgAnzahl"></span>
+          </div>
+          <div class="lv-split">
+            <div>
+              <div class="panel lv-liste" id="mgListe"></div>
+              <button class="btn btn--ghost sm hidden" type="button" id="mgMehr" style="margin-top:10px">Ältere Nachrichten laden</button>
+            </div>
+            <div class="panel lv-detail" id="mgDetail"></div>
+          </div>
         </section>
 
         <!-- Vorgänge (eingebautes Ticketsystem) -->
@@ -1669,7 +1691,7 @@
         }
       }
     }
-    const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Anrufe & Nachrichten', 'sec-tickets': 'Vorgänge',
+    const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Nachrichten', 'sec-tickets': 'Vorgänge',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
       'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
 
@@ -1801,7 +1823,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', b.dataset.target === 'sec-overview' || b.dataset.target === 'sec-live');
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -1977,14 +1999,14 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
       const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
         sb.from('phone_numbers').select('phone_number, department, tenant_id, inbound_tenant_id').or('tenant_id.eq.' + tenant.id + ',inbound_tenant_id.eq.' + tenant.id),
         sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
-        sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(50),
+        sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(200),
         sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }),
         sb.from('webhook_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
         sb.from('booking_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
@@ -3439,7 +3461,8 @@
     const fmtNr = (n) => (n || 'Anrufer').replace(/^(\+\d{2})(\d{3})(\d+)$/, '$1 $2 $3');
     const escHtml = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     /** Text als HTML mit hervorgehobenen Suchtreffern. */
-    const markieren = (t) => { const s = lvSuche.trim(); const h = escHtml(t); if (!s) return h; const re = new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return h.replace(re, (m) => '<mark>' + m + '</mark>'); };
+    const markierenMit = (t, such) => { const s = (such || '').trim(); const h = escHtml(t); if (!s) return h; const re = new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return h.replace(re, (m) => '<mark>' + m + '</mark>'); };
+    const markieren = (t) => markierenMit(t, lvSuche);
     const lvTagKey = (iso) => { const d = new Date(iso); d.setHours(0, 0, 0, 0); return d.getTime(); };
     const lvTagTitel = (key) => { const h0 = lvHeute0().getTime(); if (key === h0) return 'Heute'; if (key === h0 - 864e5) return 'Gestern'; return new Date(key).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' }); };
     /** Beim Betreten von „Live": merken, was bis dahin gesehen war (für die Neu-Markierung). */
@@ -3609,6 +3632,30 @@
       });
       lvTimer = setInterval(() => document.querySelectorAll('[data-seit]').forEach((el) => { el.textContent = fmtSeit(el.dataset.seit); }), 1000);
     })();
+    /** Kasten 'Assistent ruft zurück': Auftrag + Name, startet den Anruf und legt einen Vorgang 'in Arbeit' an. */
+    function rueckrufBox(nr, nameVorschlag, auftragVorschlag, danach) {
+      const auftragBox = document.createElement('div'); auftragBox.className = 'hidden call-auftrag';
+      auftragBox.innerHTML = `<label>Was soll der Assistent klären?</label>
+        <textarea rows="2" data-auftrag placeholder="z. B. Termin am Freitag um 10 Uhr bestätigen und fragen, ob die Versichertenkarte mitgebracht wird."></textarea>
+        <div class="grid2" style="margin-top:6px"><div><label style="margin-top:0">Name des Angerufenen (optional)</label><input data-name placeholder="z. B. Frau Beispiel" /></div><div style="display:flex;align-items:flex-end"><button class="btn btn--primary" data-los type="button">Jetzt anrufen lassen</button></div></div>
+        <p class="muted" data-hint style="font-size:12.5px;margin-top:6px">Der Assistent stellt sich mit Ihrem Betrieb vor, nennt den Grund und erledigt den Auftrag. Das Gespräch erscheint oben unter „Live", die Zusammenfassung danach hier.</p>`;
+      if (nameVorschlag) auftragBox.querySelector('[data-name]').value = nameVorschlag;
+      if (auftragVorschlag) auftragBox.querySelector('[data-auftrag]').value = auftragVorschlag;
+      auftragBox.querySelector('[data-los]').onclick = async () => {
+        const auftrag = auftragBox.querySelector('[data-auftrag]').value.trim(); const name = auftragBox.querySelector('[data-name]').value.trim();
+        if (auftrag.length < 5) { toast('Bitte kurz beschreiben, was geklärt werden soll.', 'err'); return; }
+        const b = auftragBox.querySelector('[data-los]'); b.disabled = true;
+        try {
+          const r = await fetch(API + '/api/call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: nr.replace(/\s+/g, ''), auftrag, name }) });
+          const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
+          toast('Anruf gestartet.'); auftragBox.classList.add('hidden');
+          await sb.from('tickets').insert({ tenant_id: tenant.id, title: ('Rückruf' + (name ? ' ' + name : '') + ': ' + auftrag).slice(0, 160), body: 'Auftrag an den Assistenten: ' + auftrag, status: 'in_progress', source: 'call', caller_name: name || null, caller_phone: nr || null, category: 'Rückruf' });
+          if (danach) danach(); else loadTickets();
+        } catch (e) { toast('Anruf: ' + e.message, 'err'); }
+        b.disabled = false;
+      };
+      return auftragBox;
+    }
     /** Handlungsleiste unter einem Anruf: zurückrufen (selbst oder Assistent mit Auftrag), Vorgang, sperren, löschen. */
     function callAktionen(x, karte) {
       const c = x.call; const nr = (c.caller_number || '').trim();
@@ -3634,25 +3681,7 @@
         liveCalls.delete(c.id); if (lvAuswahl === c.id) lvAuswahl = null; renderLive(); toast('Anruf gelöscht.');
       });
       del.style.marginLeft = 'auto';
-      // Auftrag für den Assistenten
-      const auftragBox = document.createElement('div'); auftragBox.className = 'hidden call-auftrag';
-      auftragBox.innerHTML = `<label>Was soll der Assistent klären?</label>
-        <textarea rows="2" data-auftrag placeholder="z. B. Termin am Freitag um 10 Uhr bestätigen und fragen, ob die Versichertenkarte mitgebracht wird."></textarea>
-        <div class="grid2" style="margin-top:6px"><div><label style="margin-top:0">Name des Angerufenen (optional)</label><input data-name placeholder="z. B. Frau Beispiel" /></div><div style="display:flex;align-items:flex-end"><button class="btn btn--primary" data-los type="button">Jetzt anrufen lassen</button></div></div>
-        <p class="muted" data-hint style="font-size:12.5px;margin-top:6px">Der Assistent stellt sich mit Ihrem Betrieb vor, nennt den Grund und erledigt den Auftrag. Das Gespräch erscheint oben unter „Live", die Zusammenfassung danach hier.</p>`;
-      auftragBox.querySelector('[data-los]').onclick = async () => {
-        const auftrag = auftragBox.querySelector('[data-auftrag]').value.trim(); const name = auftragBox.querySelector('[data-name]').value.trim();
-        if (auftrag.length < 5) { toast('Bitte kurz beschreiben, was geklärt werden soll.', 'err'); return; }
-        const b = auftragBox.querySelector('[data-los]'); b.disabled = true;
-        try {
-          const r = await fetch(API + '/api/call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: nr.replace(/\s+/g, ''), auftrag, name }) });
-          const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
-          toast('Anruf gestartet.'); auftragBox.classList.add('hidden');
-          await sb.from('tickets').insert({ tenant_id: tenant.id, title: ('Rückruf' + (name ? ' ' + name : '') + ': ' + auftrag).slice(0, 160), body: 'Auftrag an den Assistenten: ' + auftrag, status: 'in_progress', source: 'call', caller_name: name || null, caller_phone: nr || null, category: 'Rückruf' });
-          loadTickets();
-        } catch (e) { toast('Anruf: ' + e.message, 'err'); }
-        b.disabled = false;
-      };
+      const auftragBox = rueckrufBox(nr, '', '');
       const wrap = document.createElement('div'); wrap.append(leiste, auftragBox); return wrap;
     }
     // Ein Anruf gilt nur als „live", wenn er als aktiv markiert IST und nicht älter
@@ -3745,6 +3774,11 @@
           const i = e.turns.findIndex((x) => x.id === t.id);
           if (i >= 0) e.turns[i] = t; else e.turns.push(t);
           liveCalls.set(t.call_id, e); renderLive();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          if (p.eventType === 'DELETE') { if (p.old?.id) mgItems.delete(p.old.id); }
+          else if (p.new?.id) { const neu = !mgItems.has(p.new.id); mgItems.set(p.new.id, Object.assign(mgItems.get(p.new.id) || {}, p.new)); if (neu && p.eventType === 'INSERT') toast('Neue Nachricht' + (p.new.caller_name ? ' von ' + p.new.caller_name : '') + '.'); }
+          renderNachrichten();
         })
         .subscribe();
     }
@@ -4529,7 +4563,7 @@
       // Neueste Nachrichten
       const ln = q('dbNachrichtenListe'); ln.innerHTML = '';
       if (!msgs.length) ln.innerHTML = leerText('Noch keine Nachrichten.');
-      msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => geh('sec-messages'); ln.append(z); });
+      msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => { geh('sec-messages'); nachrichtOeffnen(m.id); }; ln.append(z); });
       // Einstiegshilfe nur, solange nichts läuft
       q('dbStart').classList.toggle('hidden', c.length > 0 && nums.length > 0);
     }
@@ -4562,37 +4596,140 @@
       }
     }
     // ---- Nachrichten ----
-    function renderMessages(items) {
-      const el = $('messages');
-      if (!items.length) { el.innerHTML = '<div class="panel muted">Noch keine Nachrichten. Sobald dein Assistent einen Rückruf aufnimmt, erscheint er hier.</div>'; return; }
-      el.innerHTML = '';
-      for (const m of items) {
-        const div = document.createElement('div'); div.className = 'item';
-        const when = new Date(m.created_at).toLocaleString('de-DE');
-        const h = document.createElement('h4');
-        h.textContent = `${m.caller_name || 'Unbekannt'} — ${m.category || '—'} / ${m.urgency || '—'}`;
-        const p = document.createElement('p');
-        p.textContent = `${m.summary || ''}\nRückruf: ${m.callback_number || m.caller_number || '—'} · ${when}`;
-        const akt = document.createElement('div'); akt.className = 'stack'; akt.style.marginTop = '8px';
-        const nr = (m.callback_number || m.caller_number || '').trim();
-        if (nr) {
-          const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Anrufen'; akt.append(tel);
-          const bl = document.createElement('button'); bl.className = 'btn btn--ghost sm'; bl.textContent = 'Nummer sperren';
-          bl.onclick = async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); };
-          akt.append(bl);
-        }
-        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Löschen'; del.style.marginLeft = 'auto';
-        del.onclick = async () => {
-          if (!confirm('Diese Nachricht endgültig löschen?')) return;
-          const { error } = await sb.from('messages').delete().eq('id', m.id);
-          if (error) { toast('Fehler: ' + error.message, 'err'); return; }
-          div.remove(); toast('Nachricht gelöscht.');
-          if (!el.querySelector('.item')) renderMessages([]);
-        };
-        akt.append(del);
-        div.append(h, p, akt); el.append(div);
-      }
+    // ---- Nachrichten (Posteingang) ----
+    // Liste links (nach Tagen), Detail rechts; Status offen/erledigt, Notiz,
+    // Rückruf durch den Assistenten, Sprung ins Gespräch. Neue Nachrichten
+    // kommen per Echtzeit-Ereignis herein.
+    const mgItems = new Map();
+    let mgAuswahl = null, mgSuche = '', mgStatus = 'new', mgDringend = '', mgKategorie = '', mgSuchTimer = null, mgNotizTimer = null, mgGeladen = 0, mgAlle = false;
+    const MG_SEITE = 200;
+    const MG_DRING = { hoch: ['#dc2626', 'dringend'], mittel: ['#f59e0b', 'mittel'], niedrig: ['#94a3b8', 'niedrig'] };
+    const mgDringKey = (u) => { const v = String(u || '').toLowerCase(); if (/hoch|high|dringend|urgent/.test(v)) return 'hoch'; if (/niedrig|low|gering/.test(v)) return 'niedrig'; return v ? 'mittel' : ''; };
+    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; renderNachrichten(); }
+    async function mgLaden(mehr) {
+      if (!tenant) return;
+      if (!mehr) { mgGeladen = 0; mgAlle = false; }
+      const { data } = await sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).range(mgGeladen, mgGeladen + MG_SEITE - 1);
+      if (!mehr) mgItems.clear();
+      (data || []).forEach((m) => mgItems.set(m.id, m));
+      mgGeladen += (data || []).length; if ((data || []).length < MG_SEITE) mgAlle = true;
+      renderNachrichten();
     }
+    function mgGefiltert(ausser) {
+      const s = mgSuche.trim().toLowerCase();
+      return [...mgItems.values()].filter((m) => {
+        if (ausser !== 'status' && mgStatus && (m.status || 'new') !== mgStatus) return false;
+        if (ausser !== 'dringend' && mgDringend && mgDringKey(m.urgency) !== mgDringend) return false;
+        if (ausser !== 'kategorie' && mgKategorie && m.category !== mgKategorie) return false;
+        if (s && ![m.caller_name, m.caller_number, m.callback_number, m.summary, m.category, m.note].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        return true;
+      }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+    const mgZaehler = (sel, key, werte) => document.querySelectorAll(sel).forEach((b) => { let z = b.querySelector('small'); if (!z) { z = document.createElement('small'); b.append(z); } z.textContent = ' ' + (werte[b.dataset[key] || ''] ?? 0); });
+    function renderNachrichten() {
+      if (!$('mgListe')) return;
+      const alle = [...mgItems.values()];
+      const offen = alle.filter((m) => (m.status || 'new') === 'new').length;
+      const badge = $('msgBadge'); if (badge) { badge.textContent = offen || ''; badge.classList.toggle('hidden', !offen); }
+      $('mgSub').textContent = offen ? (offen === 1 ? 'Eine offene Nachricht.' : offen + ' offene Nachrichten.') : 'Alles erledigt. Neue Rückrufe und Anliegen erscheinen hier sofort.';
+      const bs = mgGefiltert('status'); const stN = { '': bs.length, new: 0, done: 0 }; bs.forEach((m) => { stN[m.status || 'new']++; }); mgZaehler('#mgStatus [data-status]', 'status', stN);
+      const bd = mgGefiltert('dringend'); const dN = { '': bd.length, hoch: 0, mittel: 0, niedrig: 0 }; bd.forEach((m) => { const k = mgDringKey(m.urgency); if (k) dN[k]++; }); mgZaehler('#mgDringend .lv-chip', 'dringend', dN);
+      const bk = mgGefiltert('kategorie'); const kN = {}; bk.forEach((m) => { if (m.category) kN[m.category] = (kN[m.category] || 0) + 1; });
+      const kats = [...new Set(alle.map((m) => m.category).filter(Boolean))].sort((a, b) => (kN[b] || 0) - (kN[a] || 0) || a.localeCompare(b, 'de'));
+      const sel = $('mgKategorie'); const cur = mgKategorie; sel.innerHTML = '<option value="">Alle Kategorien</option>';
+      kats.forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = k + ' (' + (kN[k] || 0) + ')'; sel.append(o); }); sel.value = kats.includes(cur) ? cur : ''; mgKategorie = sel.value;
+      const liste = mgGefiltert(); $('mgAnzahl').textContent = liste.length + (liste.length === 1 ? ' Nachricht' : ' Nachrichten');
+      if (mgAuswahl && !mgItems.has(mgAuswahl)) mgAuswahl = null;
+      if (!mgAuswahl && liste.length && window.innerWidth > 900) mgAuswahl = liste[0].id;
+      const ul = $('mgListe'); ul.innerHTML = '';
+      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Nachrichten für diese Auswahl.' : 'Noch keine Nachrichten. Sobald dein Assistent einen Rückruf aufnimmt, erscheint er hier.') + '</p>';
+      let tagKey = null;
+      liste.forEach((m) => { const k = lvTagKey(m.created_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } ul.append(mgZeile(m)); });
+      $('mgMehr').classList.toggle('hidden', mgAlle);
+      renderNachrichtDetail();
+    }
+    function mgZeile(m) {
+      const z = document.createElement('div'); const erledigt = m.status === 'done'; const dk = mgDringKey(m.urgency);
+      z.className = 'lv-zeile mg-zeile' + (m.id === mgAuswahl ? ' aktiv' : '') + (erledigt ? ' erledigt' : ''); z.dataset.msgId = m.id;
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic hidden"></span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
+      const dot = z.querySelector('.lv-dot'); if (erledigt) { dot.classList.add('haken'); dot.dataset.tip = 'Erledigt'; } else if (dk) { dot.style.background = MG_DRING[dk][0]; dot.dataset.tip = 'Dringlichkeit: ' + MG_DRING[dk][1]; } else dot.dataset.tip = 'Dringlichkeit nicht angegeben';
+      z.querySelector('b').innerHTML = markierenMit(m.caller_name || fmtNr(m.callback_number || m.caller_number || '') || 'Unbekannt', mgSuche);
+      if (m.category) { const tp = z.querySelector('.call-topic'); tp.innerHTML = markierenMit(m.category, mgSuche); tp.classList.remove('hidden'); }
+      z.querySelector('.lv-text').innerHTML = markierenMit(m.summary || 'ohne Zusammenfassung', mgSuche); if (m.summary && m.summary.length > 70) z.querySelector('.lv-text').dataset.tip = m.summary;
+      const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(m.created_at); r[1].textContent = erledigt ? 'erledigt' : (m.caller_name ? fmtNr(m.callback_number || m.caller_number || '') : '');
+      z.onclick = () => { mgAuswahl = m.id; renderNachrichten(); };
+      return z;
+    }
+    async function mgAendern(m, patch) {
+      const { error } = await sb.from('messages').update(patch).eq('id', m.id);
+      if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
+      Object.assign(m, patch); return true;
+    }
+    function renderNachrichtDetail() {
+      const d = $('mgDetail'); const m = mgAuswahl ? mgItems.get(mgAuswahl) : null;
+      $('sec-messages').classList.toggle('lv-zeigt-detail', !!m);
+      if (!m) { d.innerHTML = '<p class="lv-leer">Wähle links eine Nachricht, um Details, Rückruf und Notiz zu sehen.</p>'; return; }
+      const nr = (m.callback_number || m.caller_number || '').trim(); const dk = mgDringKey(m.urgency); const erledigt = m.status === 'done';
+      d.innerHTML = '<div class="lv-detailkopf"><div><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr"></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0"><button class="btn sm" type="button" data-erledigt></button></div></div>'
+        + '<div class="call-summary" data-zusammenfassung></div>'
+        + '<div class="stack" style="margin-top:10px" data-aktionen></div><div data-rueckruf></div>'
+        + '<label style="margin-top:14px">Notiz</label><textarea class="db-notizen" style="min-height:80px" data-notiz placeholder="Eigene Notiz zu dieser Nachricht, z. B. das Ergebnis des Rückrufs. Wird automatisch gespeichert."></textarea>';
+      d.querySelector('.lv-nr').textContent = m.caller_name || 'Unbekannter Anrufer';
+      d.querySelector('.lv-zurueck').onclick = () => { mgAuswahl = null; renderNachrichten(); };
+      const meta = d.querySelector('.lv-meta'); const chip = (t, tip, klick) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); };
+      chip(new Date(m.created_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
+      if (nr) chip(fmtNr(nr), 'Rückrufnummer · Klick kopiert sie', async () => { try { await navigator.clipboard.writeText(nr); toast('Nummer kopiert.'); } catch { toast(nr); } });
+      if (dk) chip(MG_DRING[dk][1], 'Dringlichkeit, vom Assistenten eingeschätzt · Klick filtert die Liste', () => { mgDringend = mgDringend === dk ? '' : dk; document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.classList.toggle('aktiv', (b.dataset.dringend || '') === mgDringend)); renderNachrichten(); });
+      if (m.category) chip(m.category, 'Kategorie · Klick filtert die Liste', () => { mgKategorie = mgKategorie === m.category ? '' : m.category; renderNachrichten(); });
+      if (erledigt) chip('erledigt' + (m.done_at ? ' am ' + new Date(m.done_at).toLocaleDateString('de-DE') : ''));
+      const eb = d.querySelector('[data-erledigt]'); eb.textContent = erledigt ? 'Wieder öffnen' : 'Erledigt'; eb.className = 'btn sm ' + (erledigt ? 'btn--ghost' : 'btn--primary'); eb.dataset.tip = erledigt ? 'Zurück in „Offen"' : 'Als erledigt markieren (Taste E)';
+      eb.onclick = async () => { if (await mgAendern(m, erledigt ? { status: 'new', done_at: null } : { status: 'done', done_at: new Date().toISOString() })) { toast(erledigt ? 'Wieder geöffnet.' : 'Erledigt.'); renderNachrichten(); } };
+      const zs = d.querySelector('[data-zusammenfassung]'); zs.innerHTML = m.summary ? markierenMit(m.summary, mgSuche) : '<span class="muted">Keine Zusammenfassung.</span>';
+      const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; akt.append(b); return b; };
+      const rb = d.querySelector('[data-rueckruf]');
+      if (nr) {
+        const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; akt.append(tel);
+        const box = rueckrufBox(nr, m.caller_name || '', m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '', () => { loadTickets(); if (!erledigt) mgAendern(m, { status: 'done', done_at: new Date().toISOString() }).then(renderNachrichten); });
+        rb.append(box);
+        knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
+        knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
+      }
+      knopf('Vorgang anlegen', '', async () => {
+        const title = ((m.category ? m.category + ': ' : '') + (m.summary ? m.summary.slice(0, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
+        const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' });
+        if (error) { toast('Fehler: ' + error.message, 'err'); return; } toast('Vorgang angelegt.'); loadTickets();
+      });
+      if (m.call_id) knopf('Gespräch öffnen', '', () => { geh('sec-live'); liveOeffnen(m.call_id); });
+      const del = knopf('Löschen', '', async () => { if (!confirm('Diese Nachricht endgültig löschen?')) return; const { error } = await sb.from('messages').delete().eq('id', m.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } mgItems.delete(m.id); mgAuswahl = null; toast('Nachricht gelöscht.'); renderNachrichten(); }); del.style.marginLeft = 'auto';
+      const nt = d.querySelector('[data-notiz]'); nt.value = m.note || ''; nt.oninput = () => { clearTimeout(mgNotizTimer); mgNotizTimer = setTimeout(() => mgAendern(m, { note: nt.value.trim() || null }), 700); };
+    }
+    /** Nachricht aus dem Dashboard heraus öffnen. */
+    async function nachrichtOeffnen(id) {
+      if (!mgItems.has(id)) { const { data } = await sb.from('messages').select('*').eq('id', id).maybeSingle(); if (data) mgItems.set(id, data); }
+      mgAuswahl = id;
+      if (mgItems.has(id) && !mgGefiltert().some((x) => x.id === id)) { mgStatus = ''; mgDringend = ''; mgKategorie = ''; mgSuche = ''; $('mgSuche').value = ''; document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.classList.toggle('active', b.dataset.status === '')); document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.classList.toggle('aktiv', !b.dataset.dringend)); }
+      renderNachrichten();
+      setTimeout(() => document.querySelector('.mg-zeile[data-msg-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
+    }
+    (function nachrichtenWiring() {
+      const s = $('mgSuche'); if (!s) return;
+      s.oninput = () => { clearTimeout(mgSuchTimer); mgSuchTimer = setTimeout(() => { mgSuche = s.value; renderNachrichten(); }, 150); };
+      document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgStatus [data-status]').forEach((x) => x.classList.toggle('active', x === b)); mgStatus = b.dataset.status; renderNachrichten(); });
+      document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgDringend .lv-chip').forEach((x) => x.classList.toggle('aktiv', x === b)); mgDringend = b.dataset.dringend || ''; renderNachrichten(); });
+      $('mgKategorie').onchange = () => { mgKategorie = $('mgKategorie').value; renderNachrichten(); };
+      $('mgMehr').onclick = () => mgLaden(true); $('mgNeu').onclick = () => mgLaden();
+      document.addEventListener('keydown', (e) => {
+        if ($('sec-messages').classList.contains('hidden')) return;
+        if (e.key === 'Escape') { if (e.target === s && s.value) { s.value = ''; mgSuche = ''; renderNachrichten(); } else if (window.innerWidth <= 900 && mgAuswahl) { mgAuswahl = null; renderNachrichten(); } return; }
+        if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key === '/') { e.preventDefault(); s.focus(); s.select(); return; }
+        if ((e.key === 'e' || e.key === 'E') && mgAuswahl) { document.querySelector('#mgDetail [data-erledigt]')?.click(); return; }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        const liste = mgGefiltert(); if (!liste.length) return; e.preventDefault();
+        const i = liste.findIndex((x) => x.id === mgAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        mgAuswahl = liste[j].id; renderNachrichten(); document.querySelector('.mg-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
+      });
+    })();
 
     $('callBtn').onclick = async () => {
       const to = $('callTo').value.trim();
