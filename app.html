@@ -383,6 +383,45 @@
     .bubble.spricht::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: spricht 1s infinite; }
     @keyframes spricht { 0%, 100% { opacity: .2 } 50% { opacity: 1 } }
     .call-auftrag { margin-top: 10px; padding: 12px 14px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; }
+    /* ---- Dashboard ---- */
+    .main--dashboard { max-width: none; }
+    .db-kopf { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+    .db-aktionen { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .db-status { color: var(--accent-ink); font-weight: 600; }
+    .db-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .db-kpi { background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow-sm); min-width: 0; }
+    .db-kpi[role=button] { cursor: pointer; } .db-kpi[role=button]:hover { border-color: var(--accent); }
+    .db-kpi .k { font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
+    .db-kpi .v { font-size: 28px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin: 4px 0 2px; }
+    .db-kpi .d { font-size: 12px; color: var(--ink-faint); }
+    .db-kpi .d.plus { color: #0f6b3a; } .db-kpi .d.minus { color: #b91c1c; }
+    .db-balken { height: 6px; border-radius: 4px; background: var(--paper-2); overflow: hidden; margin: 6px 0 4px; }
+    .db-balken span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width .4s; }
+    .db-balken span.warn { background: #c2410c; }
+    .db-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .db-grid .panel { margin-bottom: 0; min-width: 0; }
+    .db-8 { grid-column: span 8; } .db-6 { grid-column: span 6; } .db-4 { grid-column: span 4; }
+    .db-panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+    .db-panelkopf h3 { margin: 0; } .db-panelkopf a { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .db-liste { display: flex; flex-direction: column; gap: 8px; }
+    .db-zeile { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); cursor: pointer; }
+    .db-zeile:hover { border-color: var(--accent); }
+    .db-zeile b { font-size: 13.5px; } .db-zeile small { color: var(--ink-faint); font-size: 12px; } .db-zeile .t { color: var(--ink-faint); font-size: 12px; white-space: nowrap; }
+    .db-zeile .z { grid-column: 1 / -1; font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .db-fakten { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; font-size: 13.5px; }
+    .db-fakten dt { color: var(--ink-faint); } .db-fakten dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+    .db-fakten a { color: var(--accent); text-decoration: none; font-weight: 500; font-size: 12.5px; margin-left: 6px; }
+    .db-stunden { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; }
+    .db-stunden div { height: 22px; border-radius: 4px; background: var(--paper-2); position: relative; }
+    .db-stunden div span { position: absolute; left: 0; right: 0; bottom: -16px; font-size: 9px; color: var(--ink-faint); text-align: center; }
+    .db-themen { display: flex; flex-direction: column; gap: 8px; }
+    .db-thema { font-size: 13px; } .db-thema .n { display: flex; justify-content: space-between; margin-bottom: 3px; } .db-thema .b { height: 6px; background: var(--paper-2); border-radius: 4px; overflow: hidden; } .db-thema .b span { display: block; height: 100%; background: var(--accent); }
+    .db-stimm { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--paper-2); margin: 6px 0 10px; }
+    .db-stimm span { display: block; height: 100%; }
+    .db-legende { display: flex; gap: 14px; font-size: 12.5px; color: var(--ink-soft); flex-wrap: wrap; }
+    .db-legende i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+    @media (max-width: 1100px) { .db-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .db-8, .db-6, .db-4 { grid-column: span 12; } }
+    @media (max-width: 480px) { .db-kpis { grid-template-columns: 1fr 1fr; } .db-kpi .v { font-size: 22px; } }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
     .tk-leiste input[type=search] { flex: 1 1 220px; min-width: 160px; }
@@ -503,7 +542,7 @@
       <a class="brand" href="./"><span class="m"><svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
       <nav>
         <div class="nav-group">Betrieb</div>
-        <button class="nav-item active" data-target="sec-overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Übersicht</button>
+        <button class="nav-item active" data-target="sec-overview" data-dashboard="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
         <button class="nav-item" data-target="sec-live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h4"/></svg>Live <span id="liveBadge" class="gap-badge hidden" style="background:#28c76f"></span></button>
         <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Anrufe &amp; Nachrichten</button>
         <button class="nav-item" data-target="sec-tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge <span id="tkBadge" class="gap-badge hidden"></span></button>
@@ -538,40 +577,64 @@
       <div id="content" class="hidden">
         <!-- Übersicht -->
         <section id="sec-overview" class="section">
-          <div class="hero-card">
-            <span class="eyebrow2">Dein KI-Telefonassistent</span>
-            <h2 id="ovSub">—</h2>
-            <span id="ovStatus" class="hero-pill">—</span>
-            <div class="hero-card__wave" id="ovWave" aria-hidden="true"></div>
-          </div>
-          <div class="stats">
-            <div class="stat">
-              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-              <div><div class="k">Wissens-Einträge</div><div class="v" id="ovKb">0</div></div>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Dashboard</h1>
+              <p class="pagesub" style="margin-bottom:0"><span id="ovSub">—</span> · <span id="ovStatus" class="db-status">—</span></p>
             </div>
-            <div class="stat">
-              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-              <div><div class="k">Nachrichten</div><div class="v" id="ovMsg">0</div></div>
-            </div>
-            <div class="stat">
-              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-              <div><div class="k">Offene Fragen</div><div class="v" id="ovGaps">0</div></div>
-            </div>
-            <div class="stat">
-              <span class="stat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg></span>
-              <div><div class="k">Sprache</div><div class="v" id="ovLang" style="font-size:18px">—</div></div>
+            <div class="db-aktionen">
+              <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-tickets">+ Vorgang</button>
+              <button class="btn btn--primary sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
             </div>
           </div>
-          <div class="panel">
-            <h3>Anrufe – letzte 14 Tage</h3>
-            <div id="statSummary" class="statsum"></div>
-            <div id="statChart" class="statchart"></div>
+
+          <div class="db-kpis">
+            <div class="db-kpi"><div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div></div>
+            <div class="db-kpi"><div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d" id="dbHeuteSub">Anrufe seit Mitternacht</div></div>
+            <div class="db-kpi"><div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div></div>
+            <div class="db-kpi"><div class="k">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div></div>
+            <div class="db-kpi"><div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div></div>
+            <div class="db-kpi" data-geh="sec-tickets" role="button" tabindex="0"><div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div></div>
+            <div class="db-kpi" data-geh="sec-gaps" role="button" tabindex="0"><div class="k">Offene Fragen</div><div class="v" id="ovGaps">–</div><div class="d">warten auf eine Antwort</div></div>
+            <div class="db-kpi" data-geh="sec-booking" role="button" tabindex="0"><div class="k">Termine</div><div class="v" id="dbTermine">–</div><div class="d" id="dbTermineSub">&nbsp;</div></div>
           </div>
-          <div class="panel">
+
+          <div class="db-grid">
+            <div class="panel db-8">
+              <div class="db-panelkopf"><h3>Anrufe je Tag</h3><span class="muted" id="dbChartSub"></span></div>
+              <div id="statChart" class="statchart"></div>
+              <div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted">wann Ihr Telefon klingelt</span></div>
+              <div id="dbStunden" class="db-stunden"></div>
+            </div>
+            <div class="panel db-4">
+              <h3>Ihr Assistent</h3>
+              <dl class="db-fakten" id="dbFakten"></dl>
+              <p class="muted" id="dbSystem" style="margin-top:10px;font-size:12.5px"></p>
+            </div>
+            <div class="panel db-6">
+              <div class="db-panelkopf"><h3>Letzte Anrufe</h3><a href="#" data-geh="sec-live">Alle</a></div>
+              <div id="dbAnrufeListe" class="db-liste"></div>
+            </div>
+            <div class="panel db-6">
+              <div class="db-panelkopf"><h3>Offene Vorgänge</h3><a href="#" data-geh="sec-tickets">Alle</a></div>
+              <div id="dbVorgaenge" class="db-liste"></div>
+            </div>
+            <div class="panel db-4"><h3>Themen</h3><div id="dbThemen" class="db-themen"></div></div>
+            <div class="panel db-4"><h3>Stimmung der Anrufer</h3><div id="dbStimmung"></div></div>
+            <div class="panel db-4">
+              <div class="db-panelkopf"><h3>Nächste Termine</h3><a href="#" data-geh="sec-booking">Alle</a></div>
+              <div id="dbTermineListe" class="db-liste"></div>
+            </div>
+          </div>
+
+          <div class="panel" id="dbStart">
             <h3>So testest du deinen Assistenten</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Pflege unter <b>Wissensdatenbank</b>, worüber er Auskunft geben soll, und passe unter <b>Assistent</b> Begrüßung, Öffnungszeiten und Stimme an. Änderungen wirken sofort beim nächsten Anruf.</p>
-            <button id="wizStartBtn" class="btn btn--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;margin-right:7px;vertical-align:-3px"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l1.9 5.1L20 10l-5.1 1.9L13 17l-1.9-5.1L6 10l5.1-1.9L13 3z"/></svg>Einrichtungs-Assistent starten</button>
+            <button id="wizStartBtn" class="btn btn--primary">Einrichtungs-Assistent starten</button>
           </div>
+          <div class="hidden" id="ovKb"></div><div class="hidden" id="ovLang"></div><div class="hidden" id="statSummary"></div>
         </section>
 
         <!-- Live -->
@@ -1519,7 +1582,7 @@
         }
       }
     }
-    const TITLES = { 'sec-overview': 'Übersicht', 'sec-messages': 'Anrufe & Nachrichten', 'sec-tickets': 'Vorgänge',
+    const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Anrufe & Nachrichten', 'sec-tickets': 'Vorgänge',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
       'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
 
@@ -1651,6 +1714,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
+        document.querySelector('.main')?.classList.toggle('main--dashboard', b.dataset.target === 'sec-overview');
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
       };
@@ -1823,6 +1887,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
+      if (document.querySelector('.nav-item.active')?.dataset.target === 'sec-overview') document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -1870,12 +1935,8 @@
 
       // Übersicht
       $('ovSub').textContent = tenant.name;
-      $('ovKb').textContent = kbCount ?? 0;
       // Frischer Mandant (Standardname, kein Wissen) → Einrichtungs-Assistent anbieten.
       if (!wizShown && (!tenant.name || tenant.name === 'Mein Unternehmen') && (kbCount ?? 0) === 0) { wizShown = true; setTimeout(openWizard, 500); }
-      $('ovMsg').textContent = (msgs ?? []).length;
-      $('ovGaps').textContent = (gaps ?? []).length;
-      $('ovLang').textContent = (genCfg?.language ?? 'de') === 'en' ? 'Englisch' : 'Deutsch';
 
       // Badge an der Navigation
       const badge = $('gapBadge');
@@ -3980,14 +4041,111 @@
     }
 
     // ---- Anruf-Statistik (Übersicht) ----
-    async function loadStats() {
+    // ---- Dashboard ----
+    let dbTage = 14;
+    document.querySelectorAll('#dbZeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#dbZeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); dbTage = Number(b.dataset.tage); loadDashboard(); });
+    document.querySelectorAll('#sec-overview [data-geh]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); document.querySelector('.nav-item[data-target="' + el.dataset.geh + '"]')?.click(); }));
+    document.querySelectorAll('#sec-overview .db-kpi[role=button]').forEach((el) => el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } }));
+    const PLAN_MINUTEN = { klein: 250, standard: 700, gross: 2000, groß: 2000 };
+    const fmtDauer = (s) => { const g = Math.round(s); return g >= 60 ? Math.floor(g / 60) + ':' + String(g % 60).padStart(2, '0') + ' Min' : g + ' s'; };
+    async function loadStats() { return loadDashboard(); }
+    async function loadDashboard() {
       if (!tenant) return;
-      const since = new Date(Date.now() - 14 * 864e5).toISOString();
-      const [{ data: calls }, { count: leads }] = await Promise.all([
-        sb.from('calls').select('started_at, ended_at').eq('tenant_id', tenant.id).gte('started_at', since).limit(2000),
-        sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
+      const jetzt = new Date(); const start = new Date(jetzt.getTime() - dbTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * dbTage * 864e5);
+      const heute0 = new Date(jetzt); heute0.setHours(0, 0, 0, 0);
+      const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
+      const in7 = new Date(jetzt.getTime() + 7 * 864e5);
+      const davorAbfrage = sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString());
+      const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }] = await Promise.all([
+        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(3000),
+        davorAbfrage,
+        sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).limit(5000),
+        sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
+        sb.rpc('tickets_kennzahlen', { t: tenant.id }),
+        sb.from('tickets').select('id, number, title, priority, due_at, caller_name, status').eq('tenant_id', tenant.id).neq('status', 'done').order('due_at', { ascending: true }).limit(5),
+        sb.from('knowledge_gaps').select('id, question, created_at').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }).limit(3),
+        sb.from('appointments').select('id, starts_at, ends_at, customer_name, customer_phone, notes').eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', heute0.toISOString()).lte('starts_at', in7.toISOString()).order('starts_at').limit(50),
+        sb.from('phone_numbers').select('phone_number, department').or('tenant_id.eq.' + tenant.id + ',inbound_tenant_id.eq.' + tenant.id),
+        sb.from('assistant_config').select('voice_provider, voice_id, language').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
+        sb.from('subscriptions').select('plan, status, trial_ends_at, current_period_end').eq('tenant_id', tenant.id).maybeSingle(),
+        sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
+        sb.from('knowledge_gaps').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
       ]);
-      renderStats(calls ?? [], leads ?? 0);
+      const c = calls || [];
+      const dbDavorZahl = davorN ?? null;
+      const dauer = (x) => x.duration_seconds || (x.ended_at ? (new Date(x.ended_at) - new Date(x.started_at)) / 1000 : 0);
+      // KPIs
+      $('dbAnrufe').textContent = c.length;
+      const dlt = $('dbAnrufeDelta'); dlt.className = 'd';
+      if (dbDavorZahl !== null) { const diff = c.length - dbDavorZahl; dlt.textContent = (diff >= 0 ? '+' : '') + diff + ' gegenüber den ' + dbTage + ' Tagen davor'; dlt.classList.add(diff > 0 ? 'plus' : diff < 0 ? 'minus' : 'x'); } else dlt.textContent = 'letzte ' + dbTage + ' Tage';
+      $('dbHeute').textContent = c.filter((x) => new Date(x.started_at) >= heute0).length;
+      const mitDauer = c.map(dauer).filter((s) => s > 0 && s < 3600);
+      const avg = mitDauer.length ? mitDauer.reduce((a, b) => a + b, 0) / mitDauer.length : 0;
+      $('dbDauer').textContent = avg ? fmtDauer(avg) : '–';
+      $('dbDauerSub').textContent = mitDauer.length ? 'längster ' + fmtDauer(Math.max(...mitDauer)) : 'noch keine Gespräche';
+      const minuten = (monat || []).reduce((a, x) => a + dauer(x), 0) / 60;
+      $('dbMinuten').textContent = Math.round(minuten);
+      const plan = String(sub?.plan || 'trial').toLowerCase(); const inkl = PLAN_MINUTEN[plan];
+      const balken = $('dbMinutenBalken');
+      if (inkl) { const q = Math.min(100, minuten / inkl * 100); balken.style.width = q + '%'; balken.classList.toggle('warn', q > 90); $('dbMinutenSub').textContent = Math.round(minuten) + ' von ' + inkl + ' Minuten im Tarif ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
+      else { balken.style.width = '0%'; $('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE') : '') : 'Tarif ' + plan; }
+      $('ovMsg').textContent = msgN ?? 0;
+      const k = kz || {}; $('dbOffen').textContent = k.offen ?? 0; const ue = $('dbUeber'); ue.className = 'd' + (k.ueberfaellig ? ' minus' : ''); ue.textContent = k.ueberfaellig ? k.ueberfaellig + ' überfällig' : 'nichts überfällig';
+      $('ovGaps').textContent = gapsN ?? 0;
+      const heuteT = (appts || []).filter((a) => new Date(a.starts_at) < new Date(heute0.getTime() + 864e5)).length;
+      $('dbTermine').textContent = heuteT; $('dbTermineSub').textContent = 'heute · ' + (appts || []).length + ' in 7 Tagen';
+      // Verlauf je Tag
+      const tage = []; for (let i = dbTage - 1; i >= 0; i--) { const d = new Date(heute0); d.setDate(d.getDate() - i); tage.push({ d, n: 0 }); }
+      const idx = new Map(tage.map((t, i) => [t.d.getTime(), i]));
+      const stunden = new Array(24).fill(0);
+      for (const x of c) { const d = new Date(x.started_at); const key = new Date(d); key.setHours(0, 0, 0, 0); if (idx.has(key.getTime())) tage[idx.get(key.getTime())].n++; stunden[d.getHours()]++; }
+      const max = Math.max(1, ...tage.map((t) => t.n)); const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+      $('dbChartSub').textContent = c.length + ' Anrufe in ' + dbTage + ' Tagen';
+      $('statChart').innerHTML = tage.map((t) => { const hh = t.n ? Math.max(3, Math.round(t.n / max * 92)) : 3; const lab = dbTage > 14 ? (t.d.getDate() % 5 === 0 || t.n ? t.d.getDate() + '.' : '') : wd[t.d.getDay()]; return '<div class="col"><div class="c">' + (t.n || '') + '</div><div class="bar' + (t.n ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div></div>'; }).join('');
+      const smax = Math.max(1, ...stunden);
+      $('dbStunden').innerHTML = stunden.map((n, hI) => '<div title="' + hI + ' Uhr: ' + n + '" style="background:' + (n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)') + '">' + (hI % 6 === 0 ? '<span>' + hI + '</span>' : '') + '</div>').join('');
+      // Fakten
+      const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
+      const stimmeRoh = cfg?.voice_id && !/^[A-Za-z0-9]{15,}$/.test(cfg.voice_id) ? cfg.voice_id.replace(/^en_/, '').replace(/_/g, ' ') : '';
+      const stimme = stimmeRoh ? ' · ' + stimmeRoh.charAt(0).toUpperCase() + stimmeRoh.slice(1) : '';
+      const nummern = (nums || []).map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
+      $('dbFakten').innerHTML = [
+        ['Status', (nums || []).length ? '<span class="statusdot"></span> Aktiv' : '<span class="statusdot" style="background:var(--accent-3)"></span> Einrichtung'],
+        ['Rufnummer', nummern + '<a href="#" data-geh="sec-number">ändern</a>'],
+        ['KI und Stimme', anbieter + stimme + '<a href="#" data-geh="sec-assistant">ändern</a>'],
+        ['Sprache', (cfg?.language || 'de') === 'en' ? 'Englisch' : 'Deutsch'],
+        ['Wissen', (kbN ?? 0) + ' Einträge<a href="#" data-geh="sec-kb">pflegen</a>'],
+        ['Tarif', inkl ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' · ' + inkl + ' Min' : (plan === 'trial' ? 'Testphase' : plan)],
+      ].map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
+      $('dbFakten').querySelectorAll('[data-geh]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); document.querySelector('.nav-item[data-target="' + el.dataset.geh + '"]')?.click(); }));
+      // Letzte Anrufe
+      const la = $('dbAnrufeListe'); la.innerHTML = '';
+      if (!c.length) la.innerHTML = '<p class="muted" style="font-size:13px">Noch keine Anrufe im Zeitraum.</p>';
+      c.slice(0, 5).forEach((x) => { const z = document.createElement('div'); z.className = 'db-zeile'; const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
+        z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = (x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''); z.querySelector('.t').textContent = new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauer(x) ? ' · ' + fmtDauer(dauer(x)) : ''); z.querySelector('.z').textContent = (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung'));
+        z.onclick = () => document.querySelector('.nav-item[data-target="sec-live"]')?.click(); la.append(z); });
+      // Offene Vorgänge
+      const lv = $('dbVorgaenge'); lv.innerHTML = '';
+      if (!(offene || []).length) lv.innerHTML = '<p class="muted" style="font-size:13px">Keine offenen Vorgänge.</p>';
+      (offene || []).forEach((t) => { const z = document.createElement('div'); z.className = 'db-zeile'; const ueber = t.due_at && new Date(t.due_at) < jetzt;
+        z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = '#' + t.number + ' · ' + t.title; z.querySelector('.t').textContent = (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''); if (ueber) z.querySelector('.t').style.color = '#c2410c'; z.querySelector('.z').textContent = (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : '');
+        z.onclick = () => { document.querySelector('.nav-item[data-target="sec-tickets"]')?.click(); setTimeout(() => { const s = $('tkSuche'); if (s) { s.value = '#' + t.number; s.dispatchEvent(new Event('input')); } }, 300); }; lv.append(z); });
+      // Themen
+      const themen = {}; c.forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
+      const top = Object.entries(themen).sort((a, b) => b[1] - a[1]).slice(0, 6); const tmax = top[0]?.[1] || 1;
+      $('dbThemen').innerHTML = top.length ? top.map(([t, n]) => '<div class="db-thema"><div class="n"><span></span><span>' + n + '</span></div><div class="b"><span style="width:' + Math.round(n / tmax * 100) + '%"></span></div></div>').join('') : '<p class="muted" style="font-size:13px">Themen erscheinen, sobald Anrufe zusammengefasst sind.</p>';
+      $('dbThemen').querySelectorAll('.db-thema .n span:first-child').forEach((el, i) => el.textContent = top[i][0]);
+      // Stimmung
+      const st = { positiv: 0, neutral: 0, negativ: 0 }; c.forEach((x) => { if (st[x.sentiment] !== undefined) st[x.sentiment]++; }); const stN = st.positiv + st.neutral + st.negativ;
+      $('dbStimmung').innerHTML = stN ? '<div class="db-stimm">' + [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']].map(([kk, col]) => '<span style="width:' + (st[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']].map(([kk, col]) => '<span><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(st[kk] / stN * 100) + ' %</span>').join('') + '</div>' : '<p class="muted" style="font-size:13px">Stimmung erscheint, sobald Anrufe ausgewertet sind.</p>';
+      // Termine
+      const lt = $('dbTermineListe'); lt.innerHTML = '';
+      if (!(appts || []).length) lt.innerHTML = '<p class="muted" style="font-size:13px">Keine Termine in den nächsten 7 Tagen.</p>';
+      (appts || []).slice(0, 5).forEach((a) => { const z = document.createElement('div'); z.className = 'db-zeile'; z.innerHTML = '<b></b><span class="t"></span><span class="z"></span>'; z.querySelector('b').textContent = a.customer_name || 'Termin'; z.querySelector('.t').textContent = new Date(a.starts_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); z.querySelector('.z').textContent = [a.customer_phone, a.notes].filter(Boolean).join(' · '); z.onclick = () => document.querySelector('.nav-item[data-target="sec-booking"]')?.click(); lt.append(z); });
+      // Einstiegshilfe nur, solange nichts läuft
+      $('dbStart').classList.toggle('hidden', c.length > 0 && (nums || []).length > 0);
+      // Systemstatus
+      try { const r = await fetch(API + '/api/status', { cache: 'no-store' }); const j = await r.json(); $('dbSystem').innerHTML = j.ok ? '<span class="statusdot"></span> Alle Systeme laufen' : 'Eingeschränkter Betrieb'; } catch { $('dbSystem').textContent = ''; }
     }
 
     // ---- Kosten / Marge (vom Backend, da Tarif-Kalkulation serverseitig) ----
@@ -4017,32 +4175,6 @@
         brk.textContent = '';
       }
     }
-    function renderStats(calls, leads) {
-      const days = [], now = new Date();
-      for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i); days.push({ d, count: 0 }); }
-      const idx = new Map(days.map((b, i) => [b.d.getTime(), i]));
-      const dayKey = (iso) => { const x = new Date(iso); x.setHours(0, 0, 0, 0); return x.getTime(); };
-      let durSum = 0, durN = 0, last7 = 0; const sevenAgo = Date.now() - 7 * 864e5;
-      for (const c of calls) {
-        const k = dayKey(c.started_at); if (idx.has(k)) days[idx.get(k)].count++;
-        if (new Date(c.started_at).getTime() >= sevenAgo) last7++;
-        if (c.ended_at) { const s = (new Date(c.ended_at) - new Date(c.started_at)) / 1000; if (s > 0 && s < 3600) { durSum += s; durN++; } }
-      }
-      const avg = durN ? Math.round(durSum / durN) : 0;
-      const avgStr = avg ? Math.floor(avg / 60) + ':' + String(avg % 60).padStart(2, '0') + ' Min' : '–';
-      $('statSummary').innerHTML =
-        '<div><div class="n">' + calls.length + '</div><div class="l">Anrufe (14 Tage)</div></div>' +
-        '<div><div class="n">' + last7 + '</div><div class="l">letzte 7 Tage</div></div>' +
-        '<div><div class="n">' + avgStr + '</div><div class="l">Ø Dauer</div></div>' +
-        '<div><div class="n">' + leads + '</div><div class="l">Nachrichten/Leads</div></div>';
-      const max = Math.max(1, ...days.map((b) => b.count));
-      const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-      $('statChart').innerHTML = days.map((b) => {
-        const h = b.count ? Math.max(3, Math.round((b.count / max) * 92)) : 3;
-        return '<div class="col"><div class="c">' + (b.count || '') + '</div><div class="bar' + (b.count ? '' : ' zero') + '" style="height:' + h + 'px"></div><div class="d">' + wd[b.d.getDay()] + '</div></div>';
-      }).join('');
-    }
-
     // ---- Nachrichten ----
     function renderMessages(items) {
       const el = $('messages');
