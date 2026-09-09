@@ -523,6 +523,12 @@
     .tk-sms { margin-top: 8px; } .tk-notiz { margin-top: 8px; } .tk-notiz textarea { min-height: 56px; } .tk-notiz .btn { margin-top: 6px; }
     .lv-meta span.ueber { color: #c2410c; border-color: #fed7aa; background: #ffedd5; }
     .tk-karte.zieht { opacity: .4; }
+    .kb-felder { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 560px; }
+    .kb-inhalt { min-height: 220px; font-size: 14px; line-height: 1.5; }
+    .kb-hinweis { font-size: 12.5px; color: #b45309; margin: 6px 0 0; min-height: 0; }
+    .kb-drop.drag-over { padding: 0; } .kb-drop.drag-over::after { content: none; }
+    .kb-drop.drag-over .lv-liste { outline: 2px dashed var(--accent); outline-offset: -4px; }
+    #kbStreifen a { color: var(--accent); font-weight: 600; text-decoration: none; }
     @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
@@ -842,46 +848,32 @@
 
         <!-- Wissensdatenbank -->
         <section id="sec-kb" class="section hidden">
-          <h1 class="pagehead">Wissensdatenbank</h1>
-          <p class="pagesub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
-          <div class="deptbar" data-deptbar>
-            <button class="deptseg active" data-dept="general">Allgemein</button>
-            <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
-            <button class="deptseg" data-dept="support">Support</button>
-          </div>
-          <p class="dept-hint" id="kbDeptHint"></p>
-
-          <div class="panel hidden" id="menuPanel">
-            <h3>🍽 Speisekarte</h3>
-            <p class="muted" style="margin-bottom:12px">Lade deine Speisekarte als <b>PDF</b> oder <b>Foto</b> hoch. Vocaris liest sie aus, damit der Telefon-Assistent Fragen zu Gerichten, Preisen und z. B. vegetarischen/veganen Optionen beantworten kann.</p>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <button id="menuBtn" class="btn btn--primary" type="button">Speisekarte hochladen</button>
-              <span id="menuStatus" class="muted"></span>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Wissensdatenbank</h1>
+              <p class="pagesub" style="margin-bottom:0" id="kbSub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
             </div>
-            <input type="file" id="menuFile" accept=".pdf,application/pdf,image/*" hidden />
-            <div id="menuPreview" style="margin-top:12px"></div>
-          </div>
-
-          <div class="panel">
-            <h3>Aus Website importieren</h3>
-            <p class="muted" style="margin-bottom:12px">Gib die Adresse deiner Website an — Vocaris liest sie und schlägt fertige Wissens-Einträge vor. Du übernimmst nur, was passt.</p>
-            <div class="grid2">
-              <div style="flex:3"><input id="ingestUrl" placeholder="https://deine-website.de" /></div>
-              <div><button id="ingestBtn" class="btn btn--primary" style="width:100%">Website lesen</button></div>
+            <div class="db-aktionen">
+              <input id="kbSuche" class="lv-suche" type="search" placeholder="Titel oder Inhalt suchen" autocomplete="off" />
+              <div class="deptbar" data-deptbar>
+                <button class="deptseg active" data-dept="general">Allgemein</button>
+                <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
+                <button class="deptseg" data-dept="support">Support</button>
+              </div>
+              <button class="btn btn--ghost sm" type="button" id="kbImportAuf" data-tip="Website lesen, Dokumente oder Speisekarte hochladen">Importieren</button>
+              <button class="btn btn--ghost sm" type="button" id="kbVorlagenAuf" data-tip="Fertige Einträge für deine Branche">Vorlagen</button>
+              <button class="btn btn--ghost sm" type="button" id="kbTestAuf" data-tip="Frag den Assistenten im Chat, was er weiß">Probefrage</button>
+              <button class="btn btn--primary sm" type="button" id="kbNeuAuf">+ Eintrag</button>
             </div>
-            <p class="muted" id="ingestHint" style="margin-top:8px"></p>
-            <div id="ingestResults" style="margin-top:12px"></div>
           </div>
-          <div class="panel">
-            <h3>Dokumente hochladen</h3>
-            <p class="muted" style="margin-bottom:12px">Lade ein oder mehrere Dokumente hoch (PDF, Word, Excel) — Vocaris liest sie, holt sich die wichtigsten Infos und legt sie automatisch als Einträge in der oben gewählten Abteilung an.</p>
-            <div id="docDrop" class="doc-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:22px;height:22px;vertical-align:-5px;margin-right:8px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
-            <input type="file" id="docFiles" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
-            <p class="muted" id="docHint" style="margin-top:10px"></p>
+          <p class="dept-hint" id="kbDeptHint" style="margin:0 0 10px"></p>
+          <div class="lv-filter">
+            <div class="lv-chips" id="kbKatChips"></div>
+            <span class="muted" id="kbAnzahl"></span>
+            <span class="lv-streifen" id="kbStreifen" style="margin-left:auto"></span>
           </div>
-          <div id="kbDrop" class="kb-drop"><div id="kbList"></div></div>
-          <div class="panel">
-            <h3>Neuen Eintrag hinzufügen</h3>
+          <div class="panel hidden" id="kbNeuPanel">
+            <h3>Neuer Eintrag</h3>
             <div class="grid2">
               <div><label>Kategorie</label>
                 <input id="kbCat" list="kbCats" placeholder="z.B. Öffnungszeiten" />
@@ -897,21 +889,67 @@
             </div>
             <label>Inhalt</label>
             <textarea id="kbContent" placeholder="z.B. Montag bis Freitag von 8 bis 17 Uhr ..."></textarea>
-            <div class="stack"><button id="addKbBtn" class="btn btn--primary">Eintrag hinzufügen</button></div>
+            <div class="stack"><button id="addKbBtn" class="btn btn--primary">Eintrag hinzufügen</button><button class="btn btn--ghost" type="button" onclick="document.getElementById('kbNeuPanel').classList.add('hidden')">Abbrechen</button></div>
           </div>
-          <div class="panel">
+          <div class="panel hidden" id="kbImportPanel">
+            <div class="deptbar" id="kbImpTabs" style="margin-bottom:12px"><button class="deptseg active" data-imp="web" type="button">Website</button><button class="deptseg" data-imp="doc" type="button">Dokumente</button><button class="deptseg hidden" data-imp="menu" type="button" id="kbImpMenuTab">Speisekarte</button></div>
+          <div id="kbImpWeb">
+            <p class="muted" style="margin-bottom:12px;text-align:left;padding:0">Gib die Adresse deiner Website an — Vocaris liest sie und schlägt fertige Wissens-Einträge vor. Du übernimmst nur, was passt.</p>
+            <div class="grid2">
+              <div style="flex:3"><input id="ingestUrl" placeholder="https://deine-website.de" /></div>
+              <div><button id="ingestBtn" class="btn btn--primary" style="width:100%">Website lesen</button></div>
+            </div>
+            <p class="muted" id="ingestHint" style="margin-top:8px"></p>
+            <div id="ingestResults" style="margin-top:12px"></div>
+          </div>
+          <div id="kbImpDoc" class="hidden">
+            <p class="muted" style="margin-bottom:12px;text-align:left;padding:0">Lade ein oder mehrere Dokumente hoch (PDF, Word, Excel) — Vocaris liest sie, holt sich die wichtigsten Infos und legt sie automatisch als Einträge in der oben gewählten Abteilung an.</p>
+            <div id="docDrop" class="doc-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:22px;height:22px;vertical-align:-5px;margin-right:8px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
+            <input type="file" id="docFiles" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
+            <p class="muted" id="docHint" style="margin-top:10px"></p>
+          </div>
+          <div class="hidden" id="menuPanel">
+            <h3 style="font-size:14px">Speisekarte</h3>
+            <p class="muted" style="margin-bottom:12px">Lade deine Speisekarte als <b>PDF</b> oder <b>Foto</b> hoch. Vocaris liest sie aus, damit der Telefon-Assistent Fragen zu Gerichten, Preisen und z. B. vegetarischen/veganen Optionen beantworten kann.</p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button id="menuBtn" class="btn btn--primary" type="button">Speisekarte hochladen</button>
+              <span id="menuStatus" class="muted"></span>
+            </div>
+            <input type="file" id="menuFile" accept=".pdf,application/pdf,image/*" hidden />
+            <div id="menuPreview" style="margin-top:12px"></div>
+          </div>
+
+          </div>
+          <div class="panel hidden" id="kbVorlagenPanel">
             <h3>Vorlagen für deine Branche</h3>
-            <p class="muted" style="margin-bottom:14px">Branche wählen, dann einen Vorschlag per <b>Drag &amp; Drop</b> nach oben in deine Wissensdatenbank ziehen — oder auf „Übernehmen" tippen. Texte danach einfach anpassen.</p>
+            <p class="muted" style="margin-bottom:14px">Branche wählen, dann einen Vorschlag per <b>Drag &amp; Drop</b> nach unten in die Liste ziehen — oder auf „Übernehmen" tippen. Texte danach einfach anpassen.</p>
             <div class="branch-chips" id="branchChips"></div>
             <div class="tpl-grid" id="tplGrid"></div>
+          </div>
+          <div class="lv-split">
+            <div><div id="kbDrop" class="kb-drop"><div class="panel lv-liste" id="kbListe"></div></div></div>
+            <div class="panel lv-detail" id="kbDetail"></div>
           </div>
         </section>
 
         <!-- Offene Fragen -->
         <section id="sec-gaps" class="section hidden">
-          <h1 class="pagehead">Offene Fragen</h1>
-          <p class="pagesub">Fragen, die dein Assistent nicht beantworten konnte. Beantworte sie hier — die Antwort wandert automatisch in die Wissensdatenbank, und beim nächsten Mal weiß er Bescheid.</p>
-          <div id="gapList"></div>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Offene Fragen</h1>
+              <p class="pagesub" style="margin-bottom:0" id="gapSub">Fragen, die dein Assistent nicht beantworten konnte.</p>
+            </div>
+            <div class="db-aktionen">
+              <input id="gapSuche" class="lv-suche" type="search" placeholder="Frage oder Antwort suchen" autocomplete="off" />
+              <div class="deptbar" id="gapStatusBar"><button class="deptseg active" data-gapstatus="open" type="button">Offen</button><button class="deptseg" data-gapstatus="answered" type="button">Beantwortet</button></div>
+              <button class="btn btn--ghost sm" type="button" id="gapNeu" title="Neu laden">↻</button>
+              <span class="muted" id="gapAnzahl" style="font-size:12.5px"></span>
+            </div>
+          </div>
+          <div class="lv-split">
+            <div><div class="panel lv-liste" id="gapListe"></div></div>
+            <div class="panel lv-detail" id="gapDetail"></div>
+          </div>
         </section>
 
         <!-- Assistent -->
@@ -1778,7 +1816,7 @@
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
         // gehört zum Betreiber, nicht in den kuratierten Restaurant-Bereich.
         elementeAus: ['outboundCallPanel', 'lvAnrufKnopf', 'numAddPanel'],
-        elementeAn: ['menuPanel'],            // Speisekarte hochladen
+        elementeAn: ['menuPanel', 'kbImpMenuTab'], // Speisekarte hochladen (Reiter im Import)
         selektorenAus: ['[data-deptbar]', '.dept-hint'], // nur ein Bereich, kein Vertrieb/Support
         // Restaurants haben nur EINEN Bereich – der Hinweis auf Vertrieb und
         // Support wäre dort schlicht verwirrend.
@@ -1849,7 +1887,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -2025,7 +2063,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -3810,6 +3848,10 @@
           if (p.eventType === 'INSERT' && p.new?.number && p.new.source !== 'manual') toast('Neuer Vorgang #' + p.new.number + (p.new.title ? ': ' + p.new.title.slice(0, 60) : '') + '.');
           clearTimeout(tkLadeTimer); tkLadeTimer = setTimeout(loadTickets, 400);
         })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'knowledge_gaps', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          const g = p.new; if (!g || g.status !== 'open' || gapItems.some((x) => x.id === g.id)) return;
+          gapItems.unshift(g); toast('Neue offene Frage: ' + (g.question || '').slice(0, 70)); renderFragen(); if (typeof renderWissen === 'function') renderWissen();
+        })
         .subscribe();
     }
 
@@ -3847,65 +3889,125 @@
     };
 
     // ---- Wissensdatenbank (Inline-Bearbeitung) ----
-    function renderKb(items) {
-      const el = $('kbList');
-      if (!items.length) { el.innerHTML = '<div class="panel muted">Noch keine Einträge. Zieh unten eine Branchen-Vorlage hier herein oder lege einen Eintrag an.</div>'; return; }
-      el.innerHTML = '';
-      const byCat = {};
-      for (const it of items) { const c = it.category || 'Allgemein'; (byCat[c] ||= []).push(it); }
-      for (const cat of Object.keys(byCat)) {
-        const head = document.createElement('div'); head.className = 'kb-cat-head';
-        head.textContent = cat + ' · ' + byCat[cat].length;
-        el.append(head);
-        for (const it of byCat[cat]) el.append(kbCard(it));
-      }
+    // ---- Wissensdatenbank (Liste links nach Kategorie, Eintrag rechts) ----
+    let kbItems = [], kbAuswahl = null, kbSuche = '', kbKat = '', kbSuchTimer = null, kbNeuId = null;
+    function renderKb(items) { kbItems = items || []; if (kbAuswahl && !kbItems.some((x) => x.id === kbAuswahl)) kbAuswahl = null; renderWissen(); }
+    async function loadKb() {
+      if (!tenant) return;
+      const { data } = await sb.from('knowledge_base').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).order('created_at');
+      renderKb(data || []);
     }
-    function kbCard(it) {
-      const div = document.createElement('div'); div.className = 'item';
-      const render = () => {
-        div.innerHTML = '';
-        const h = document.createElement('h4'); h.textContent = it.title;
-        const p = document.createElement('p'); p.textContent = it.content;
-        const row = document.createElement('div'); row.className = 'stack';
-        const e = document.createElement('button'); e.className = 'btn btn--ghost sm'; e.textContent = 'Bearbeiten';
-        const d = document.createElement('button'); d.className = 'btn btn--danger sm'; d.textContent = 'Löschen';
-        e.onclick = edit; d.onclick = () => del(it.id);
-        row.append(e, d); div.append(h, p, row);
-      };
-      const edit = () => {
-        div.innerHTML = '';
-        const ca = document.createElement('input'); ca.value = it.category || ''; ca.placeholder = 'Kategorie (z.B. Öffnungszeiten)';
-        const ti = document.createElement('input'); ti.value = it.title; ti.style.marginTop = '8px';
-        const co = document.createElement('textarea'); co.value = it.content; co.style.marginTop = '8px';
-        const row = document.createElement('div'); row.className = 'stack';
-        const s = document.createElement('button'); s.className = 'btn btn--primary sm'; s.textContent = 'Speichern';
-        const c = document.createElement('button'); c.className = 'btn btn--ghost sm'; c.textContent = 'Abbrechen';
-        s.onclick = async () => {
-          const { error } = await sb.from('knowledge_base')
-            .update({ category: ca.value.trim() || null, title: ti.value.trim(), content: co.value.trim() }).eq('id', it.id);
-          if (error) return toast('Fehler: ' + error.message, 'err');
-          toast('Aktualisiert.'); loadAll();
-        };
-        c.onclick = render;
-        row.append(s, c); div.append(ca, ti, co, row);
-      };
-      render(); return div;
+    const kbKatName = (it) => it.category || 'Allgemein';
+    function kbGefiltert(ausser) {
+      const s = kbSuche.trim().toLowerCase();
+      return kbItems.filter((it) => {
+        if (ausser !== 'kat' && kbKat && kbKatName(it) !== kbKat) return false;
+        if (s && ![it.title, it.content, it.category].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        return true;
+      }).sort((a, b) => kbKatName(a).localeCompare(kbKatName(b), 'de') || a.title.localeCompare(b.title, 'de'));
     }
-    async function del(id) {
-      if (!confirm('Diesen Eintrag löschen?')) return;
-      const { error } = await sb.from('knowledge_base').delete().eq('id', id);
-      if (error) return toast('Fehler: ' + error.message, 'err');
-      toast('Gelöscht.'); loadAll();
+    function renderWissen() {
+      if (!$('kbListe')) return;
+      const alle = kbItems;
+      const kats = [...new Set(alle.map(kbKatName))].sort((a, b) => a.localeCompare(b, 'de'));
+      $('kbSub').textContent = alle.length ? alle.length + (alle.length === 1 ? ' Eintrag' : ' Einträge') + ' in ' + (kats.length === 1 ? 'einer Kategorie' : kats.length + ' Kategorien') + (document.querySelector('#sec-kb [data-deptbar]')?.classList.contains('hidden') ? '' : ' · Bereich ' + (DEPT_LABEL[currentDept] || currentDept)) + '. Der Assistent antwortet nur auf dieser Grundlage.' : 'Noch leer. Importiere deine Website, lade Dokumente hoch oder nimm eine Vorlage.';
+      // Kategorie-Chips mit Zählern
+      const basis = kbGefiltert('kat'); const kN = {}; basis.forEach((it) => { const k = kbKatName(it); kN[k] = (kN[k] || 0) + 1; });
+      const chips = $('kbKatChips'); chips.innerHTML = '';
+      [['', 'Alle'], ...kats.map((k) => [k, k])].forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lv-chip' + (kbKat === k ? ' aktiv' : ''); b.innerHTML = escHtml(label) + ' <small>' + (k ? (kN[k] || 0) : basis.length) + '</small>'; b.onclick = () => { kbKat = kbKat === k ? '' : k; renderWissen(); }; chips.append(b); });
+      const zuletzt = alle.length ? new Date(Math.max(...alle.map((x) => new Date(x.created_at).getTime()))) : null;
+      const offeneFragen = (typeof gapItems !== 'undefined' ? gapItems.length : 0);
+      $('kbStreifen').innerHTML = (zuletzt ? 'zuletzt ergänzt ' + lvWann(zuletzt.toISOString()) : '') + (offeneFragen ? (zuletzt ? ' · ' : '') + '<a href="#" data-geh="sec-gaps">' + offeneFragen + (offeneFragen === 1 ? ' offene Frage' : ' offene Fragen') + '</a>' : '');
+      const liste = kbGefiltert(); $('kbAnzahl').textContent = liste.length + (liste.length === 1 ? ' Eintrag' : ' Einträge');
+      if (kbAuswahl && !alle.some((x) => x.id === kbAuswahl)) kbAuswahl = null;
+      if (!kbAuswahl && liste.length && window.innerWidth > 900) kbAuswahl = liste[0].id;
+      const ul = $('kbListe'); ul.innerHTML = '';
+      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Einträge für diese Auswahl.' : 'Noch keine Einträge. Zieh eine Vorlage hierher, importiere deine Website oder lege einen Eintrag an.') + '</p>';
+      let grp = null;
+      liste.forEach((it) => { const k = kbKatName(it); if (k !== grp) { grp = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = k; ul.append(h); } ul.append(kbZeile(it)); });
+      renderWissenDetail();
     }
+    function kbZeile(it) {
+      const z = document.createElement('div'); z.className = 'lv-zeile kb-zeile' + (it.id === kbAuswahl ? ' aktiv' : ''); z.dataset.kbId = it.id;
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts"><span></span></div>';
+      const kurz = (it.content || '').length < 40; const dot = z.querySelector('.lv-dot'); dot.style.background = kurz ? '#f59e0b' : 'var(--accent)'; dot.dataset.tip = kurz ? 'Sehr kurzer Eintrag – mehr Details helfen dem Assistenten' : 'Eintrag mit ' + (it.content || '').length + ' Zeichen';
+      z.querySelector('b').innerHTML = markierenMit(it.title, kbSuche);
+      z.querySelector('.lv-text').innerHTML = markierenMit((it.content || '').replace(/\s+/g, ' ').slice(0, 140), kbSuche);
+      z.querySelector('.lv-rechts span').textContent = new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      z.onclick = () => { kbAuswahl = it.id; renderWissen(); };
+      return z;
+    }
+    async function kbUpdate(it, patch, meldung) {
+      const { error } = await sb.from('knowledge_base').update(patch).eq('id', it.id);
+      if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
+      Object.assign(it, patch); if (meldung) toast(meldung); return true;
+    }
+    function renderWissenDetail() {
+      const d = $('kbDetail'); const it = kbAuswahl ? kbItems.find((x) => x.id === kbAuswahl) : null;
+      $('sec-kb').classList.toggle('lv-zeigt-detail', !!it);
+      if (!it) { d.innerHTML = '<p class="lv-leer">Wähle links einen Eintrag, um ihn zu lesen und zu bearbeiten.</p>'; return; }
+      const deptSichtbar = !document.querySelector('#sec-kb [data-deptbar]')?.classList.contains('hidden');
+      d.innerHTML = '<div class="lv-detailkopf"><div style="min-width:0;flex:1"><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr tk-titel-edit" data-tip="Klicken zum Umbenennen"><span data-titel></span></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopf></div></div>'
+        + '<div class="tk-felder kb-felder"><div><label>Kategorie</label><input data-f="category" list="kbCats" placeholder="z. B. Öffnungszeiten" /></div>' + (deptSichtbar ? '<div><label>Bereich</label><select data-f="department"><option value="general">Allgemein</option><option value="vertrieb">Vertrieb</option><option value="support">Support</option></select></div>' : '') + '</div>'
+        + '<label>Inhalt</label><textarea class="kb-inhalt" data-f="content"></textarea><p class="kb-hinweis" data-hinweis></p>'
+        + '<div class="stack" style="margin-top:8px" data-aktionen></div>';
+      d.querySelector('.lv-zurueck').onclick = () => { kbAuswahl = null; renderWissen(); };
+      const tt = d.querySelector('[data-titel]'); tt.textContent = it.title;
+      d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = it.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== it.title) { await kbUpdate(it, { title: v.slice(0, 200) }, 'Titel geändert.'); renderWissen(); } else renderWissenDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = it.title; inp.blur(); } }; };
+      const meta = d.querySelector('.lv-meta'); const mchip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
+      mchip(kbKatName(it)); if (deptSichtbar) mchip(DEPT_LABEL[it.department] || it.department); mchip('angelegt ' + new Date(it.created_at).toLocaleDateString('de-DE')); mchip((it.content || '').length + ' Zeichen', 'Länge des Inhalts');
+      const kopf = d.querySelector('[data-kopf]'); const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'btn btn--primary sm'; sp.textContent = 'Speichern'; sp.dataset.tip = 'Strg+Enter im Text'; kopf.append(sp);
+      const fCat = d.querySelector('[data-f=category]'); fCat.value = it.category || '';
+      fCat.onchange = async () => { const v = fCat.value.trim() || null; if (v !== (it.category || null) && await kbUpdate(it, { category: v }, 'Kategorie gespeichert.')) renderWissen(); };
+      const fDep = d.querySelector('[data-f=department]'); if (fDep) { fDep.value = it.department || 'general'; fDep.onchange = async () => { const v = fDep.value; if (v !== it.department && await kbUpdate(it, { department: v }, 'Verschoben nach „' + DEPT_LABEL[v] + '".')) { kbItems = kbItems.filter((x) => x.id !== it.id); kbAuswahl = null; renderWissen(); } }; }
+      const ta = d.querySelector('[data-f=content]'); ta.value = it.content || '';
+      const hinweis = d.querySelector('[data-hinweis]'); const pruefe = () => { const n = ta.value.trim().length; hinweis.textContent = n < 40 ? 'Sehr kurz. Ein, zwei ganze Sätze mit den wichtigsten Angaben helfen dem Assistenten beim Antworten.' : (n > 1500 ? 'Sehr lang. Teile den Eintrag lieber in mehrere Themen, dann findet der Assistent das Passende schneller.' : ''); }; pruefe(); ta.oninput = pruefe;
+      const speichern = async () => { const v = ta.value.trim(); if (!v) { toast('Der Inhalt darf nicht leer sein.', 'err'); return; } if (v === it.content) { toast('Keine Änderung.'); return; } if (await kbUpdate(it, { content: v }, 'Gespeichert. Der Assistent weiß es beim nächsten Anruf.')) renderWissen(); };
+      sp.onclick = speichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') speichern(); };
+      ta.onblur = () => { if (ta.value.trim() && ta.value.trim() !== it.content) speichern(); };
+      const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; akt.append(b); return b; };
+      knopf('Probefrage stellen', '', () => { if (typeof waOpen === 'function') { waOpen(true); const w = $('waText'); if (w) { w.value = 'Was weißt du zu „' + it.title + '"?'; w.focus(); } } });
+      knopf('Kopieren', '', async () => { try { await navigator.clipboard.writeText(it.title + '\n' + (it.content || '')); toast('Kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } });
+      knopf('Duplizieren', '', async () => { const { data, error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: it.department || currentDept, category: it.category, title: it.title + ' (Kopie)', content: it.content }).select().maybeSingle(); if (error) { toast('Fehler: ' + error.message, 'err'); return; } if (data) { kbItems.push(data); kbAuswahl = data.id; } toast('Kopie angelegt.'); renderWissen(); });
+      const del = knopf('Löschen', '', async () => { if (!confirm('Eintrag „' + it.title + '" löschen?')) return; const { error } = await sb.from('knowledge_base').delete().eq('id', it.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } kbItems = kbItems.filter((x) => x.id !== it.id); kbAuswahl = null; toast('Gelöscht.'); renderWissen(); }); del.style.marginLeft = 'auto';
+    }
+    async function del(id) { const it = kbItems.find((x) => x.id === id); if (!it) return; if (!confirm('Diesen Eintrag löschen?')) return; const { error } = await sb.from('knowledge_base').delete().eq('id', id); if (error) return toast('Fehler: ' + error.message, 'err'); kbItems = kbItems.filter((x) => x.id !== id); toast('Gelöscht.'); renderWissen(); }
     $('addKbBtn').onclick = async () => {
       if (!tenant) return;
       const category = $('kbCat').value.trim() || null;
       const title = $('kbTitle').value.trim(), content = $('kbContent').value.trim();
       if (!title || !content) return toast('Titel und Inhalt nötig.', 'err');
-      const { error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: currentDept, category, title, content });
+      const { data, error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: currentDept, category, title, content }).select().maybeSingle();
       if (error) return toast('Fehler: ' + error.message, 'err');
-      $('kbCat').value = ''; $('kbTitle').value = ''; $('kbContent').value = ''; toast('Hinzugefügt.'); loadAll();
+      $('kbCat').value = ''; $('kbTitle').value = ''; $('kbContent').value = ''; $('kbNeuPanel').classList.add('hidden'); toast('Hinzugefügt.');
+      if (data) { kbItems.push(data); kbAuswahl = data.id; kbKat = ''; } renderWissen();
     };
+    (function wissenWiring() {
+      const s = $('kbSuche'); if (!s) return;
+      s.oninput = () => { clearTimeout(kbSuchTimer); kbSuchTimer = setTimeout(() => { kbSuche = s.value; renderWissen(); }, 150); };
+      const umschalten = (id, andere) => { const p = $(id); const auf = p.classList.contains('hidden'); andere.forEach((a) => $(a).classList.add('hidden')); p.classList.toggle('hidden', !auf); return auf; };
+      $('kbNeuAuf').onclick = () => { if (umschalten('kbNeuPanel', ['kbImportPanel', 'kbVorlagenPanel'])) $('kbTitle').focus(); };
+      $('kbImportAuf').onclick = () => { if (umschalten('kbImportPanel', ['kbNeuPanel', 'kbVorlagenPanel'])) kbImpZeigen(document.querySelector('#kbImpTabs .deptseg.active')?.dataset.imp || 'web'); };
+      $('kbVorlagenAuf').onclick = () => umschalten('kbVorlagenPanel', ['kbNeuPanel', 'kbImportPanel']);
+      $('kbTestAuf').onclick = () => { if (typeof waOpen === 'function') waOpen(true); };
+      document.querySelectorAll('#kbImpTabs [data-imp]').forEach((b) => b.onclick = () => kbImpZeigen(b.dataset.imp));
+      document.addEventListener('keydown', (e) => {
+        if ($('sec-kb').classList.contains('hidden')) return;
+        if (e.key === 'Escape') { if (e.target === s && s.value) { s.value = ''; kbSuche = ''; renderWissen(); } else if (window.innerWidth <= 900 && kbAuswahl) { kbAuswahl = null; renderWissen(); } return; }
+        if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key === '/') { e.preventDefault(); s.focus(); s.select(); return; }
+        if (e.key === 'n' || e.key === 'N') { $('kbNeuAuf').click(); return; }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        const liste = kbGefiltert(); if (!liste.length) return; e.preventDefault();
+        const i = liste.findIndex((x) => x.id === kbAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        kbAuswahl = liste[j].id; renderWissen(); document.querySelector('.kb-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
+      });
+    })();
+    function kbImpZeigen(k) {
+      document.querySelectorAll('#kbImpTabs [data-imp]').forEach((b) => b.classList.toggle('active', b.dataset.imp === k));
+      $('kbImpWeb').classList.toggle('hidden', k !== 'web'); $('kbImpDoc').classList.toggle('hidden', k !== 'doc');
+      const m = $('menuPanel'); if (m) m.classList.toggle('hidden', k !== 'menu');
+    }
 
     // ---- Persona: Öffnungszeiten-Raster ----
     const H_DAYS = [['mon','Mo'],['tue','Di'],['wed','Mi'],['thu','Do'],['fri','Fr'],['sat','Sa'],['sun','So']];
@@ -4255,63 +4357,137 @@
       renderChips(); renderCards();
     }
 
-    // ---- Offene Fragen (Lern-Schleife) ----
-    function renderGaps(items) {
-      const el = $('gapList');
-      if (!items.length) { el.innerHTML = '<div class="panel muted">Keine offenen Fragen. Wenn dein Assistent etwas nicht beantworten kann, erscheint die Frage hier.</div>'; return; }
-      el.innerHTML = '';
-      for (const g of items) {
-        const div = document.createElement('div'); div.className = 'item';
-        const h = document.createElement('h4'); h.textContent = g.question;
-        const dep = g.department || 'general';
-        if (dep !== 'general') {
-          const b = document.createElement('span'); b.className = 'dept-badge ' + dep;
-          b.textContent = DEPT_LABEL[dep] || dep; b.style.marginLeft = '8px';
-          h.append(b);
+    // ---- Offene Fragen (Lern-Schleife): Liste links, Antwort rechts ----
+    let gapItems = [], gapBeantwortet = null, gapAuswahl = null, gapStatus = 'open', gapSuche = '', gapSuchTimer = null;
+    function renderGaps(items) { gapItems = items || []; renderFragen(); }
+    async function loadGaps() {
+      if (!tenant) return;
+      const { data } = await sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false });
+      gapBeantwortet = null; renderGaps(data || []);
+    }
+    async function gapBeantworteteLaden() {
+      const { data } = await sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).neq('status', 'open').order('answered_at', { ascending: false, nullsFirst: false }).limit(200);
+      gapBeantwortet = data || []; renderFragen();
+    }
+    function gapGefiltert() {
+      const s = gapSuche.trim().toLowerCase(); const quelle = gapStatus === 'open' ? gapItems : (gapBeantwortet || []);
+      return quelle.filter((g) => !s || [g.question, g.answer].some((v) => (v || '').toLowerCase().includes(s)));
+    }
+    function renderFragen() {
+      if (!$('gapListe')) return;
+      const offen = gapItems.length;
+      const badge = $('gapBadge'); if (badge) { badge.textContent = offen || ''; badge.classList.toggle('hidden', !offen); }
+      $('gapSub').textContent = offen ? (offen === 1 ? 'Eine Frage wartet auf eine Antwort.' : offen + ' Fragen warten auf eine Antwort.') + ' Deine Antwort wandert direkt in die Wissensdatenbank.' : 'Keine offenen Fragen. Wenn dein Assistent etwas nicht beantworten kann, erscheint die Frage hier.';
+      document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => { let z = b.querySelector('small'); if (!z) { z = document.createElement('small'); b.append(z); } z.textContent = ' ' + (b.dataset.gapstatus === 'open' ? offen : (gapBeantwortet ? gapBeantwortet.length : '')); });
+      if (gapStatus !== 'open' && gapBeantwortet === null) { gapBeantworteteLaden(); }
+      const liste = gapGefiltert(); $('gapAnzahl').textContent = liste.length + (liste.length === 1 ? ' Frage' : ' Fragen');
+      const quelle = gapStatus === 'open' ? gapItems : (gapBeantwortet || []);
+      if (gapAuswahl && !quelle.some((g) => g.id === gapAuswahl)) gapAuswahl = null;
+      if (!gapAuswahl && liste.length && window.innerWidth > 900) gapAuswahl = liste[0].id;
+      const ul = $('gapListe'); ul.innerHTML = '';
+      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (gapStatus === 'open' ? (gapItems.length ? 'Keine Treffer.' : 'Alles beantwortet. Neue Fragen erscheinen hier sofort nach dem Anruf.') : (gapBeantwortet === null ? 'Wird geladen …' : 'Noch nichts beantwortet.')) + '</p>';
+      let tagKey = null;
+      liste.forEach((g) => { const iso = gapStatus === 'open' ? g.created_at : (g.answered_at || g.created_at); const k = lvTagKey(iso); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } ul.append(gapZeile(g)); });
+      renderFrageDetail();
+    }
+    function gapZeile(g) {
+      const z = document.createElement('div'); z.className = 'lv-zeile gap-zeile' + (g.id === gapAuswahl ? ' aktiv' : ''); z.dataset.gapId = g.id;
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
+      const dot = z.querySelector('.lv-dot'); if (g.status === 'open') { dot.style.background = 'var(--accent-3)'; dot.dataset.tip = 'Wartet auf Antwort'; } else if (g.answer) { dot.classList.add('haken'); dot.dataset.tip = 'Beantwortet, steht in der Wissensdatenbank'; } else { dot.dataset.tip = 'Verworfen'; }
+      z.querySelector('b').innerHTML = markierenMit(g.question, gapSuche);
+      z.querySelector('.lv-text').innerHTML = g.status === 'open' ? 'Frage aus einem Anruf' : (g.answer ? markierenMit(g.answer.replace(/\s+/g, ' ').slice(0, 140), gapSuche) : 'verworfen');
+      const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(g.status === 'open' ? g.created_at : (g.answered_at || g.created_at)); const dep = g.department || 'general'; r[1].textContent = dep !== 'general' ? (DEPT_LABEL[dep] || dep) : '';
+      z.onclick = () => { gapAuswahl = g.id; renderFragen(); };
+      return z;
+    }
+    async function frageOeffnen(id) {
+      if (!gapItems.some((g) => g.id === id)) { const { data } = await sb.from('knowledge_gaps').select('*').eq('id', id).maybeSingle(); if (data) { if (data.status === 'open') gapItems.unshift(data); else { gapStatus = 'answered'; if (!gapBeantwortet) gapBeantwortet = []; if (!gapBeantwortet.some((g) => g.id === id)) gapBeantwortet.unshift(data); } } }
+      gapAuswahl = id; gapSuche = ''; if ($('gapSuche')) $('gapSuche').value = '';
+      document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.classList.toggle('active', b.dataset.gapstatus === gapStatus));
+      renderFragen();
+      setTimeout(() => document.querySelector('.gap-zeile[data-gap-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
+    }
+    function renderFrageDetail() {
+      const d = $('gapDetail'); const quelle = gapStatus === 'open' ? gapItems : (gapBeantwortet || []); const g = gapAuswahl ? quelle.find((x) => x.id === gapAuswahl) : null;
+      $('sec-gaps').classList.toggle('lv-zeigt-detail', !!g);
+      if (!g) { d.innerHTML = '<p class="lv-leer">Wähle links eine Frage. Deine Antwort landet als Eintrag in der Wissensdatenbank.</p>'; return; }
+      const dep = g.department || 'general';
+      d.innerHTML = '<div class="lv-detailkopf"><div style="min-width:0;flex:1"><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr" data-frage></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopf></div></div>'
+        + (g.status === 'open'
+          ? '<label>Antwort</label><textarea class="kb-inhalt" data-antwort placeholder="Antwort eingeben – sie wird als Eintrag in die Wissensdatenbank übernommen (Strg+Enter speichert)."></textarea><p class="kb-hinweis" data-hinweis></p><div class="stack" style="margin-top:8px" data-aktionen></div><div data-aehnlich></div>'
+          : '<div class="call-summary" data-antwortText></div><div class="stack" style="margin-top:8px" data-aktionen></div>');
+      d.querySelector('.lv-zurueck').onclick = () => { gapAuswahl = null; renderFragen(); };
+      d.querySelector('[data-frage]').textContent = g.question;
+      const meta = d.querySelector('.lv-meta'); const mchip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
+      mchip('gefragt ' + fmtZeit(g.created_at)); mchip('Antwort geht nach „' + (DEPT_LABEL[dep] || 'Allgemein') + '"', 'Bereich der Wissensdatenbank');
+      if (g.status !== 'open') mchip(g.answer ? 'beantwortet ' + fmtZeit(g.answered_at) : 'verworfen');
+      const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn, wohin) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; (wohin || akt).append(b); return b; };
+      if (g.status === 'open') {
+        const ta = d.querySelector('[data-antwort]'); const hinweis = d.querySelector('[data-hinweis]');
+        ta.oninput = () => { hinweis.textContent = ta.value.trim().length && ta.value.trim().length < 30 ? 'Ein, zwei ganze Sätze reichen. Je klarer, desto besser antwortet der Assistent.' : ''; };
+        const save = knopf('Beantworten & ins Wissen übernehmen', 'btn--primary', () => answerGap(g, ta.value.trim(), save), d.querySelector('[data-kopf]'));
+        ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') answerGap(g, ta.value.trim(), save); };
+        knopf('✨ KI-Antwort vorschlagen', '', async function () {
+          this.disabled = true; const orig = this.textContent; this.textContent = 'Entwerfe …';
+          try { const res = await apiFetch('/api/gap-suggest', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ question: g.question, department: dep }) }); const j = await res.json(); if (!res.ok) throw new Error(j.error || 'Fehler'); ta.value = j.answer || ''; ta.focus(); ta.oninput(); }
+          catch (e) { toast('Fehler: ' + e.message, 'err'); }
+          this.disabled = false; this.textContent = orig;
+        });
+        knopf('Kopieren', '', async () => { try { await navigator.clipboard.writeText(g.question); toast('Frage kopiert.'); } catch { toast(g.question); } });
+        const verw = knopf('Verwerfen', '', () => dismissGap(g.id)); verw.style.marginLeft = 'auto';
+        // Ähnliche Einträge aus der Wissensdatenbank
+        const woerter = [...new Set(g.question.split(/[^\p{L}\d]+/u).filter((w) => w.length > 4))].sort((a, b) => b.length - a.length).slice(0, 4);
+        if (woerter.length) {
+          const meinId = g.id;
+          sb.from('knowledge_base').select('id, title, content, category, department').eq('tenant_id', tenant.id).or(woerter.map((w) => 'title.ilike.%' + w + '%,content.ilike.%' + w + '%').join(',')).limit(3).then(({ data }) => {
+            if (gapAuswahl !== meinId || !data || !data.length) return;
+            const box = d.querySelector('[data-aehnlich]'); box.innerHTML = '<div class="db-panelkopf" style="margin-top:16px"><h3 style="font-size:14px;margin:0">Vielleicht schon beantwortet</h3><span class="muted">Einträge mit ähnlichen Begriffen</span></div><div class="db-liste"></div>';
+            const l = box.querySelector('.db-liste');
+            data.forEach((it) => { const z = zeile(it.title, (it.category || 'Allgemein') + (it.department && it.department !== 'general' ? ' · ' + (DEPT_LABEL[it.department] || it.department) : ''), (it.content || '').slice(0, 160)); z.dataset.tip = 'Klick übernimmt den Text als Antwort'; z.onclick = () => { ta.value = it.content || ''; ta.focus(); ta.oninput(); }; l.append(z); });
+          });
         }
-        const when = document.createElement('p'); when.className = 'muted';
-        when.textContent = 'Gefragt am ' + new Date(g.created_at).toLocaleString('de-DE')
-          + ' · Antwort geht in „' + (DEPT_LABEL[dep] || 'Allgemein') + '"';
-        const ta = document.createElement('textarea');
-        ta.placeholder = 'Antwort eingeben – sie wird automatisch in die Wissensdatenbank übernommen ...';
-        ta.style.marginTop = '10px';
-        const row = document.createElement('div'); row.className = 'stack';
-        const save = document.createElement('button'); save.className = 'btn btn--primary sm';
-        save.textContent = 'Beantworten & ins Wissen übernehmen';
-        const dismiss = document.createElement('button'); dismiss.className = 'btn btn--ghost sm';
-        dismiss.textContent = 'Verwerfen';
-        const suggest = document.createElement('button'); suggest.className = 'btn btn--ghost sm'; suggest.textContent = '✨ KI-Antwort vorschlagen';
-        suggest.onclick = async () => {
-          suggest.disabled = true; const orig = suggest.textContent; suggest.textContent = 'Entwerfe …';
-          try {
-            const res = await apiFetch('/api/gap-suggest', {
-              method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
-              body: JSON.stringify({ question: g.question, department: g.department || 'general' }),
-            });
-            const d = await res.json();
-            if (!res.ok) throw new Error(d.error || 'Fehler');
-            ta.value = d.answer || ''; ta.focus();
-          } catch (e) { toast('Fehler: ' + e.message, 'err'); }
-          suggest.disabled = false; suggest.textContent = orig;
-        };
-        save.onclick = () => answerGap(g, ta.value.trim(), save);
-        dismiss.onclick = () => dismissGap(g.id);
-        row.append(save, suggest, dismiss); div.append(h, when, ta, row); el.append(div);
+      } else {
+        d.querySelector('[data-antwortText]').innerHTML = g.answer ? markierenMit(g.answer, gapSuche) : '<span class="muted">Ohne Antwort verworfen.</span>';
+        knopf('Wieder öffnen', 'btn--primary', async () => { const { error } = await sb.from('knowledge_gaps').update({ status: 'open', answer: null, answered_at: null }).eq('id', g.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); g.status = 'open'; g.answer = null; gapItems.unshift(g); gapStatus = 'open'; gapAuswahl = g.id; document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.classList.toggle('active', b.dataset.gapstatus === 'open')); toast('Wieder offen.'); renderFragen(); });
+        if (g.answer) knopf('In der Wissensdatenbank suchen', '', () => { geh('sec-kb'); kbSuche = g.question.slice(0, 40); if ($('kbSuche')) $('kbSuche').value = kbSuche; renderWissen(); });
+        const del = knopf('Löschen', '', async () => { if (!confirm('Diese Frage endgültig löschen?')) return; const { error } = await sb.from('knowledge_gaps').delete().eq('id', g.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); gapAuswahl = null; toast('Gelöscht.'); renderFragen(); }); del.style.marginLeft = 'auto';
       }
     }
     async function answerGap(g, answer, btn) {
       if (!answer) return toast('Bitte eine Antwort eingeben.', 'err');
-      btn.disabled = true;
-      const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: g.department || 'general', title: g.question, content: answer });
-      if (ins.error) { btn.disabled = false; return toast('Fehler: ' + ins.error.message, 'err'); }
-      await sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: new Date().toISOString() }).eq('id', g.id);
-      toast('Gespeichert – der Assistent weiß es jetzt.'); loadAll();
+      if (btn) btn.disabled = true;
+      const dep = g.department || 'general';
+      const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
+      if (ins.error) { if (btn) btn.disabled = false; return toast('Fehler: ' + ins.error.message, 'err'); }
+      const jetzt = new Date().toISOString();
+      await sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: jetzt }).eq('id', g.id);
+      gapItems = gapItems.filter((x) => x.id !== g.id); g.status = 'answered'; g.answer = answer; g.answered_at = jetzt; if (gapBeantwortet) gapBeantwortet.unshift(g);
+      gapAuswahl = null; toast('Gespeichert – der Assistent weiß es jetzt.'); renderFragen();
+      if (ins.data && dep === currentDept) { kbItems.push(ins.data); renderWissen(); }
     }
     async function dismissGap(id) {
-      if (!confirm('Diese Frage verwerfen?')) return;
-      await sb.from('knowledge_gaps').update({ status: 'answered' }).eq('id', id);
-      toast('Verworfen.'); loadAll();
+      if (!confirm('Diese Frage verwerfen? Sie wandert dann nach „Beantwortet" ohne Antwort.')) return;
+      const g = gapItems.find((x) => x.id === id);
+      await sb.from('knowledge_gaps').update({ status: 'answered', answer: null, answered_at: new Date().toISOString() }).eq('id', id);
+      gapItems = gapItems.filter((x) => x.id !== id); if (g && gapBeantwortet) { g.status = 'answered'; gapBeantwortet.unshift(g); }
+      gapAuswahl = null; toast('Verworfen.'); renderFragen();
     }
+    (function fragenWiring() {
+      const s = $('gapSuche'); if (!s) return;
+      s.oninput = () => { clearTimeout(gapSuchTimer); gapSuchTimer = setTimeout(() => { gapSuche = s.value; renderFragen(); }, 150); };
+      document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.onclick = () => { document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((x) => x.classList.toggle('active', x === b)); gapStatus = b.dataset.gapstatus; gapAuswahl = null; renderFragen(); });
+      $('gapNeu').onclick = () => loadGaps();
+      document.addEventListener('keydown', (e) => {
+        if ($('sec-gaps').classList.contains('hidden')) return;
+        if (e.key === 'Escape') { if (e.target === s && s.value) { s.value = ''; gapSuche = ''; renderFragen(); } else if (window.innerWidth <= 900 && gapAuswahl) { gapAuswahl = null; renderFragen(); } return; }
+        if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key === '/') { e.preventDefault(); s.focus(); s.select(); return; }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        const liste = gapGefiltert(); if (!liste.length) return; e.preventDefault();
+        const i = liste.findIndex((x) => x.id === gapAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        gapAuswahl = liste[j].id; renderFragen(); document.querySelector('.gap-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
+      });
+    })();
 
     // ---- Dashboard ----
     // Kacheln (Widgets) aus einem Katalog; Reihenfolge, Breite und Auswahl legt
@@ -4589,7 +4765,7 @@
       // Offene Fragen
       const lf = q('dbFragenListe'); lf.innerHTML = '';
       if (!gaps.length) lf.innerHTML = leerText('Keine offenen Fragen. Dein Assistent konnte alles beantworten.');
-      gaps.forEach((g) => { const z = zeile(g.question, new Date(g.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), 'Antwort hinterlegen'); z.onclick = () => geh('sec-gaps'); lf.append(z); });
+      gaps.forEach((g) => { const z = zeile(g.question, new Date(g.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), 'Antwort hinterlegen'); z.onclick = () => { geh('sec-gaps'); frageOeffnen(g.id); }; lf.append(z); });
       // Neueste Nachrichten
       const ln = q('dbNachrichtenListe'); ln.innerHTML = '';
       if (!msgs.length) ln.innerHTML = leerText('Noch keine Nachrichten.');
