@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="styles.css" />
   <style>
     body { background: var(--paper-2); }
+    html { scrollbar-gutter: stable; }
     /* ---- Login (Split-Screen) ---- */
     .login { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
     .login__brand { position: relative; color: #fff; padding: 48px 52px; display: flex; flex-direction: column;
@@ -404,6 +405,7 @@
     .db-panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
     .db-panelkopf h3 { margin: 0; white-space: nowrap; } .db-panelkopf a { font-size: 13px; color: var(--accent); text-decoration: none; }
     .db-liste { display: flex; flex-direction: column; gap: 8px; }
+    #dbAnrufeListe { min-height: 120px; }
     .db-zeile { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); cursor: pointer; }
     .db-zeile:hover { border-color: var(--accent); }
     .db-zeile b { font-size: 13.5px; } .db-zeile small { color: var(--ink-faint); font-size: 12px; } .db-zeile .t { color: var(--ink-faint); font-size: 12px; white-space: nowrap; }
