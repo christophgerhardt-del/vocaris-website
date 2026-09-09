@@ -508,7 +508,22 @@
     .bubble.blitz { outline: 2px solid var(--accent); outline-offset: 2px; }
     .db-tip { max-width: 420px; white-space: normal; line-height: 1.35; }
     .lv-zurueck { display: none; margin-bottom: 8px; }
-    .mg-zeile.erledigt { opacity: .62; } .mg-zeile.erledigt:hover, .mg-zeile.erledigt.aktiv { opacity: 1; }
+    .lv-zeile.erledigt { opacity: .62; } .lv-zeile.erledigt:hover, .lv-zeile.erledigt.aktiv { opacity: 1; }
+    .tk-kpis { margin-bottom: 12px; } .db-kpi.aktiv { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+    .db-kpi .d b { color: var(--ink); }
+    .lv-tag.ueber { color: #c2410c; }
+    .tk-zeile.ueber { box-shadow: inset 3px 0 0 #c2410c; }
+    .tk-titel-edit { cursor: text; } .tk-titel-input { font: inherit; font-size: 18px; font-weight: 600; width: 100%; padding: 2px 6px; border: 1px solid var(--accent); border-radius: 6px; }
+    .tk-felder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 6px 0 10px; }
+    .tk-felder label { margin-top: 0; font-size: 12px; } .tk-felder input, .tk-felder select { padding: 7px 10px; font-size: 13px; }
+    .tk-fristkurz { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+    .tk-fristkurz button { font: inherit; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-soft); cursor: pointer; }
+    .tk-fristkurz button:hover { border-color: var(--accent); color: var(--accent-ink); }
+    .tk-statusknoepfe .btn { margin: 0; }
+    .tk-sms { margin-top: 8px; } .tk-notiz { margin-top: 8px; } .tk-notiz textarea { min-height: 56px; } .tk-notiz .btn { margin-top: 6px; }
+    .lv-meta span.ueber { color: #c2410c; border-color: #fed7aa; background: #ffedd5; }
+    .tk-karte.zieht { opacity: .4; }
+    @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
     @media (max-width: 900px) {
@@ -774,23 +789,31 @@
 
         <!-- Vorgänge (eingebautes Ticketsystem) -->
         <section id="sec-tickets" class="section hidden">
-          <h1 class="pagehead">Vorgänge</h1>
-          <p class="pagesub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf. So bleibt nichts liegen, auch ohne eigenes Ticketsystem.</p>
-          <div class="stats" id="tkStats">
-            <div class="stat"><span class="stat__l">Offen</span><b id="tkStOffen">–</b></div>
-            <div class="stat"><span class="stat__l">Überfällig</span><b id="tkStUeber" style="color:#c2410c">–</b></div>
-            <div class="stat"><span class="stat__l">Erledigt, 30 Tage</span><b id="tkStErl">–</b></div>
-            <div class="stat"><span class="stat__l">Ø Erledigung</span><b id="tkStDauer">–</b></div>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Vorgänge</h1>
+              <p class="pagesub" style="margin-bottom:0" id="tkSub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
+            </div>
+            <div class="db-aktionen">
+              <input id="tkSuche" class="lv-suche" type="search" placeholder="Betreff, Name, Nummer, #12 …" autocomplete="off" />
+              <div class="deptbar" id="tkStatusBar"><button class="deptseg active" data-tkfilter="open" type="button">Offen</button><button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button><button class="deptseg" data-tkfilter="done" type="button">Erledigt</button><button class="deptseg" data-tkfilter="alle" type="button">Alle</button></div>
+              <div class="deptbar"><button class="deptseg active" data-tkansicht="liste" type="button">Liste</button><button class="deptseg" data-tkansicht="board" type="button">Board</button></div>
+              <button class="btn btn--ghost sm" type="button" id="tkNeu2" title="Neu laden">↻</button>
+              <button id="tkExport" class="btn btn--ghost sm" type="button" title="Aktuelle Auswahl als CSV">CSV</button>
+              <button id="tkNeuAuf" class="btn btn--primary sm" type="button">+ Vorgang</button>
+            </div>
           </div>
-          <div class="tk-leiste">
-            <div class="deptbar"><button class="deptseg active" data-tkfilter="open" type="button">Offen</button><button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button><button class="deptseg" data-tkfilter="done" type="button">Erledigt</button><button class="deptseg" data-tkfilter="alle" type="button">Alle</button></div>
-            <input id="tkSuche" type="search" placeholder="Suchen: Betreff, Name, Nummer, #12 …" />
-            <select id="tkPrioFilter"><option value="">Alle Prioritäten</option><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select>
-            <select id="tkWer"><option value="">Alle Zuständigen</option></select>
-            <label class="chk" style="margin:0"><input type="checkbox" id="tkNurUeber" /> nur überfällig</label>
-            <div class="deptbar"><button class="deptseg active" data-tkansicht="liste" type="button">Liste</button><button class="deptseg" data-tkansicht="board" type="button">Board</button></div>
-            <button id="tkExport" class="btn btn--ghost sm" type="button">CSV</button>
-            <button id="tkNeuAuf" class="btn btn--primary sm" type="button">+ Vorgang</button>
+          <div class="db-kpis tk-kpis">
+            <div class="db-kpi klick" data-tkstat="offen" role="button" tabindex="0"><div class="k">Offen</div><div class="v" id="tkStOffen">–</div><div class="d">noch nicht erledigt</div></div>
+            <div class="db-kpi klick" data-tkstat="ueber" role="button" tabindex="0"><div class="k">Überfällig</div><div class="v" id="tkStUeber" style="color:#c2410c">–</div><div class="d">Frist überschritten · Klick filtert</div></div>
+            <div class="db-kpi klick" data-tkstat="heute" role="button" tabindex="0"><div class="k">Heute fällig</div><div class="v" id="tkStHeute">–</div><div class="d">bis Mitternacht · Klick filtert</div></div>
+            <div class="db-kpi klick" data-tkstat="erledigt" role="button" tabindex="0"><div class="k">Erledigt, 30 Tage</div><div class="v" id="tkStErl">–</div><div class="d">Ø Erledigung in <b id="tkStDauer">–</b></div></div>
+          </div>
+          <div class="lv-filter">
+            <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">🔴 hoch</button><button class="lv-chip" type="button" data-tkprio="normal">🔵 normal</button><button class="lv-chip" type="button" data-tkprio="low">⚪ niedrig</button></div>
+            <select id="tkWer" class="lv-select"><option value="">Alle Zuständigen</option></select>
+            <select id="tkKat" class="lv-select"><option value="">Alle Kategorien</option></select>
+            <span class="muted" id="tkAnzahl"></span>
           </div>
           <div class="panel hidden" id="tkNeuPanel">
             <h3>Neuer Vorgang</h3>
@@ -809,8 +832,11 @@
             <label>Notiz</label><textarea id="tkNeuText" rows="2" placeholder="Worum geht es?"></textarea>
             <div class="stack" style="margin-top:10px"><button id="tkNeuBtn" class="btn btn--primary">Vorgang anlegen</button><button id="tkNeuZu" class="btn btn--ghost">Abbrechen</button></div>
           </div>
-          <datalist id="tkWerListe"></datalist>
-          <div id="tickets"></div>
+          <datalist id="tkWerListe"></datalist><datalist id="tkKatListe"></datalist>
+          <div class="lv-split" id="tkSplit">
+            <div><div class="panel lv-liste" id="tkListe"></div></div>
+            <div class="panel lv-detail" id="tkDetail"></div>
+          </div>
           <div id="tkBoard" class="tk-board hidden"></div>
         </section>
 
@@ -1823,7 +1849,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -1999,7 +2025,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-messages'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -3780,6 +3806,10 @@
           else if (p.new?.id) { const neu = !mgItems.has(p.new.id); mgItems.set(p.new.id, Object.assign(mgItems.get(p.new.id) || {}, p.new)); if (neu && p.eventType === 'INSERT') toast('Neue Nachricht' + (p.new.caller_name ? ' von ' + p.new.caller_name : '') + '.'); }
           renderNachrichten();
         })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          if (p.eventType === 'INSERT' && p.new?.number && p.new.source !== 'manual') toast('Neuer Vorgang #' + p.new.number + (p.new.title ? ': ' + p.new.title.slice(0, 60) : '') + '.');
+          clearTimeout(tkLadeTimer); tkLadeTimer = setTimeout(loadTickets, 400);
+        })
         .subscribe();
     }
 
@@ -4540,7 +4570,7 @@
       offene.forEach((t) => { const ueber = t.due_at && new Date(t.due_at) < jetzt;
         const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
         if (ueber) z.querySelector('.t').style.color = '#c2410c';
-        z.onclick = () => { geh('sec-tickets'); setTimeout(() => { const s = $('tkSuche'); if (s) { s.value = '#' + t.number; s.dispatchEvent(new Event('input')); } }, 300); }; lv.append(z); });
+        z.onclick = () => { geh('sec-tickets'); vorgangOeffnen(t.id); }; lv.append(z); });
       // Themen (klickbar)
       const themen = {}; c.forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
       const top = Object.entries(themen).sort((a, b) => b[1] - a[1]).slice(0, 6); const tmax = top[0]?.[1] || 1;
@@ -5051,179 +5081,267 @@
       });
     }
 
-    // ---- Vorgänge (eingebautes Ticketsystem, Ausbaustufe 2) ----
-    let tkFilter = 'open', tkAnsicht = 'liste', tkAlle = [];
+    // ---- Vorgänge (eingebautes Ticketsystem, Ausbaustufe 3) ----
+    // Liste links nach Fälligkeit gruppiert, Detail rechts mit Feldern, die
+    // beim Verlassen speichern; Board mit Ziehen bleibt als zweite Ansicht.
+    let tkFilter = 'open', tkAnsicht = 'liste', tkAlle = [], tkAuswahl = null, tkSuche = '', tkPrio = '', tkWerF = '', tkKat = '', tkNurUeber = false, tkNurHeute = false, tkSuchTimer = null, tkKz = {}, tkLadeTimer = null;
+    const tkNotizen = new Map(), tkTurns = new Map();
     const TK_STATUS = { open: 'Offen', in_progress: 'In Arbeit', done: 'Erledigt' };
     const TK_PRIO = { high: 'Hoch', normal: 'Normal', low: 'Niedrig' };
+    const TK_PRIO_FARBE = { high: '#dc2626', normal: '#3d8bff', low: '#94a3b8' };
+    const TK_QUELLE = { message: 'aus Nachricht', gap: 'aus offener Frage', call: 'aus Anruf', manual: 'von Hand', api: 'per API' };
     const fmtZeit = (s) => s ? new Date(s).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–';
     const istUeber = (t) => t.status !== 'done' && t.due_at && new Date(t.due_at) < new Date();
-    document.querySelectorAll('[data-tkfilter]').forEach((b) => b.onclick = () => {
-      document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x === b));
-      tkFilter = b.dataset.tkfilter; loadTickets();
-    });
-    document.querySelectorAll('[data-tkansicht]').forEach((b) => b.onclick = () => {
-      document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x === b));
-      tkAnsicht = b.dataset.tkansicht; renderTickets();
-    });
-    ['tkSuche', 'tkPrioFilter', 'tkWer', 'tkNurUeber'].forEach((id) => { const e = $(id); if (e) e.oninput = e.onchange = renderTickets; });
-    $('tkNeuAuf').onclick = () => { $('tkNeuPanel').classList.toggle('hidden'); $('tkNeuTitel').focus(); };
-    $('tkNeuZu').onclick = () => $('tkNeuPanel').classList.add('hidden');
+    const istHeuteFaellig = (t) => { if (t.status === 'done' || !t.due_at) return false; const d = new Date(t.due_at); const h0 = lvHeute0(); return d >= h0 && d < new Date(h0.getTime() + 864e5); };
+    /** Frist relativ: „seit 2 h", „in 45 Min", „morgen 09:00", „Fr., 12.09. 09:00". */
+    function fmtFrist(iso) {
+      if (!iso) return 'ohne Frist';
+      const d = new Date(iso); const diff = d - Date.now(); const abs = Math.abs(diff); const uhr = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const spanne = abs < 3600e3 ? Math.max(1, Math.round(abs / 60e3)) + ' Min' : abs < 48 * 3600e3 ? Math.round(abs / 3600e3) + ' h' : Math.round(abs / 864e5) + ' Tagen';
+      if (diff < 0) return 'überfällig seit ' + spanne;
+      if (abs < 12 * 3600e3) return 'in ' + spanne;
+      const h0 = lvHeute0(); if (d < new Date(h0.getTime() + 864e5)) return 'heute ' + uhr; if (d < new Date(h0.getTime() + 2 * 864e5)) return 'morgen ' + uhr;
+      return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' ' + uhr;
+    }
+    function tkGruppe(t) {
+      if (t.status === 'done') return ['9-erledigt', 'Erledigt'];
+      if (!t.due_at) return ['8-ohne', 'Ohne Frist'];
+      const d = new Date(t.due_at); const h0 = lvHeute0().getTime();
+      if (d < Date.now()) return ['0-ueber', 'Überfällig'];
+      if (d < h0 + 864e5) return ['1-heute', 'Heute fällig'];
+      if (d < h0 + 2 * 864e5) return ['2-morgen', 'Morgen'];
+      if (d < h0 + 7 * 864e5) return ['3-woche', 'Diese Woche'];
+      return ['4-spaeter', 'Später'];
+    }
     async function loadTickets() {
       if (!tenant) return;
-      let q = sb.from('tickets').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(300);
-      if (tkFilter !== 'alle') q = q.eq('status', tkFilter);
-      const [{ data: items }, { data: kz }] = await Promise.all([q, sb.rpc('tickets_kennzahlen', { t: tenant.id })]);
-      tkAlle = items || [];
-      const k = kz || {};
-      $('tkStOffen').textContent = k.offen ?? '–'; $('tkStUeber').textContent = k.ueberfaellig ?? '–';
-      $('tkStErl').textContent = k.erledigt_30 ?? '–'; $('tkStDauer').textContent = k.dauer_h != null ? (k.dauer_h < 48 ? k.dauer_h + ' h' : Math.round(k.dauer_h / 24) + ' Tage') : '–';
-      const badge = $('tkBadge'); if (badge) { badge.textContent = k.offen || ''; badge.classList.toggle('hidden', !k.offen); }
-      // Zuständige aus allen Vorgängen (für Filter und Vorschläge)
-      const { data: wer } = await sb.from('tickets').select('assignee').eq('tenant_id', tenant.id).not('assignee', 'is', null).limit(500);
-      const namen = [...new Set((wer || []).map((x) => x.assignee).filter(Boolean))].sort();
-      const sel = $('tkWer'); const cur = sel.value; sel.innerHTML = '<option value="">Alle Zuständigen</option>' + namen.map((n) => `<option>${n.replace(/</g, '&lt;')}</option>`).join(''); sel.value = cur;
-      $('tkWerListe').innerHTML = namen.map((n) => `<option value="${n.replace(/"/g, '&quot;')}">`).join('');
+      const [{ data: items }, { data: kz }] = await Promise.all([
+        sb.from('tickets').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(500),
+        sb.rpc('tickets_kennzahlen', { t: tenant.id }),
+      ]);
+      tkAlle = items || []; tkKz = kz || {};
       renderTickets();
     }
-    function tkGefiltert() {
-      const s = $('tkSuche').value.trim().toLowerCase(), prio = $('tkPrioFilter').value, wer = $('tkWer').value, nurUeber = $('tkNurUeber').checked;
+    function tkGefiltert(ausser) {
+      const s = tkSuche.trim().toLowerCase();
       return tkAlle.filter((t) => {
-        if (prio && t.priority !== prio) return false;
-        if (wer && t.assignee !== wer) return false;
-        if (nurUeber && !istUeber(t)) return false;
+        if (ausser !== 'status' && tkFilter !== 'alle' && (tkFilter === 'open' ? t.status === 'done' : t.status !== tkFilter)) return false; // „Offen" = alles, was nicht erledigt ist
+        if (ausser !== 'prio' && tkPrio && t.priority !== tkPrio) return false;
+        if (ausser !== 'wer' && tkWerF && t.assignee !== tkWerF) return false;
+        if (ausser !== 'kat' && tkKat && t.category !== tkKat) return false;
+        if (ausser !== 'ueber' && tkNurUeber && !istUeber(t)) return false;
+        if (ausser !== 'heute' && tkNurHeute && !istHeuteFaellig(t)) return false;
         if (!s) return true;
-        if (s.startsWith('#')) return String(t.number) === s.slice(1);
-        return [t.title, t.body, t.caller_name, t.caller_phone, t.category, t.assignee, String(t.number)].some((x) => (x || '').toLowerCase().includes(s));
+        if (s.startsWith('#')) return String(t.number).startsWith(s.slice(1));
+        return [t.title, t.body, t.caller_name, t.caller_phone, t.category, t.assignee, '#' + t.number].some((x) => (x || '').toLowerCase().includes(s));
+      }).sort((a, b) => {
+        // Offene: dringendste zuerst (überfällig, dann nächste Frist, ohne Frist zuletzt); Erledigte: zuletzt erledigt zuerst
+        if (a.status === 'done' && b.status === 'done') return new Date(b.closed_at || b.updated_at) - new Date(a.closed_at || a.updated_at);
+        if (a.status === 'done') return 1; if (b.status === 'done') return -1;
+        const fa = a.due_at ? new Date(a.due_at).getTime() : Infinity, fb = b.due_at ? new Date(b.due_at).getTime() : Infinity;
+        return fa - fb || new Date(b.created_at) - new Date(a.created_at);
       });
     }
     function chip(text, cls = '') { const c = document.createElement('span'); c.className = 'tk-chip ' + cls; c.textContent = text; return c; }
     function renderTickets() {
-      const el = $('tickets'), board = $('tkBoard');
-      const items = tkGefiltert();
-      if (tkAnsicht === 'board') { el.classList.add('hidden'); board.classList.remove('hidden'); renderBoard(items); return; }
-      board.classList.add('hidden'); el.classList.remove('hidden');
-      if (!items.length) { el.innerHTML = `<div class="panel muted">Keine Vorgänge${tkFilter !== 'alle' ? ' mit Status „' + TK_STATUS[tkFilter] + '"' : ''}. Nachrichten deines Assistenten erscheinen hier automatisch.</div>`; return; }
-      el.innerHTML = '';
-      for (const t of items) el.append(tkZeile(t));
+      if (!$('tkListe')) return;
+      const alle = tkAlle; const k = tkKz;
+      const heuteN = alle.filter(istHeuteFaellig).length;
+      const badge = $('tkBadge'); if (badge) { badge.textContent = k.offen || ''; badge.classList.toggle('hidden', !k.offen); }
+      $('tkSub').textContent = k.offen ? (k.offen + (k.offen === 1 ? ' offener Vorgang' : ' offene Vorgänge') + (k.ueberfaellig ? ', ' + k.ueberfaellig + ' überfällig' : '') + '.') : 'Nichts offen. Nachrichten deines Assistenten werden hier automatisch zu Vorgängen.';
+      // Kennzahlen (klickbar)
+      $('tkStOffen').textContent = k.offen ?? '–'; $('tkStUeber').textContent = k.ueberfaellig ?? '–'; $('tkStHeute').textContent = heuteN; $('tkStErl').textContent = k.erledigt_30 ?? '–';
+      $('tkStDauer').textContent = k.dauer_h != null ? (k.dauer_h < 48 ? k.dauer_h + ' h' : Math.round(k.dauer_h / 24) + ' Tage') : '–';
+      document.querySelector('[data-tkstat=ueber]')?.classList.toggle('aktiv', tkNurUeber); document.querySelector('[data-tkstat=heute]')?.classList.toggle('aktiv', tkNurHeute);
+      document.querySelector('[data-tkstat=offen]')?.classList.toggle('aktiv', tkFilter === 'open' && !tkNurUeber && !tkNurHeute); document.querySelector('[data-tkstat=erledigt]')?.classList.toggle('aktiv', tkFilter === 'done');
+      // Zähler in Status, Priorität, Zuständige, Kategorien
+      const bs = tkGefiltert('status'); const stN = { alle: bs.length, open: 0, in_progress: 0, done: 0 }; bs.forEach((t) => { stN[t.status] = (stN[t.status] || 0) + 1; if (t.status === 'in_progress') stN.open++; }); mgZaehler('#tkStatusBar [data-tkfilter]', 'tkfilter', stN);
+      const bp = tkGefiltert('prio'); const pN = { '': bp.length, high: 0, normal: 0, low: 0 }; bp.forEach((t) => { pN[t.priority] = (pN[t.priority] || 0) + 1; }); mgZaehler('#tkPrioChips .lv-chip', 'tkprio', pN);
+      const fuelle = (sel, key, leer, wert) => { const bw = tkGefiltert(key); const n = {}; bw.forEach((t) => { const v = t[wert]; if (v) n[v] = (n[v] || 0) + 1; }); const werte = [...new Set(alle.map((t) => t[wert]).filter(Boolean))].sort((a, b) => (n[b] || 0) - (n[a] || 0) || a.localeCompare(b, 'de')); const cur = sel.value; sel.innerHTML = '<option value="">' + leer + '</option>'; werte.forEach((w) => { const o = document.createElement('option'); o.value = w; o.textContent = w + ' (' + (n[w] || 0) + ')'; sel.append(o); }); sel.value = werte.includes(cur) ? cur : ''; return werte; };
+      const namen = fuelle($('tkWer'), 'wer', 'Alle Zuständigen', 'assignee'); tkWerF = $('tkWer').value;
+      fuelle($('tkKat'), 'kat', 'Alle Kategorien', 'category'); tkKat = $('tkKat').value;
+      $('tkWerListe').innerHTML = namen.map((n) => '<option value="' + n.replace(/"/g, '&quot;') + '">').join('');
+      // Liste oder Board
+      const items = tkGefiltert(); $('tkAnzahl').textContent = items.length + (items.length === 1 ? ' Vorgang' : ' Vorgänge');
+      const split = $('tkSplit'), board = $('tkBoard');
+      if (tkAnsicht === 'board') { split.classList.add('hidden'); board.classList.remove('hidden'); renderBoard(tkGefiltert('status')); return; }
+      board.classList.add('hidden'); split.classList.remove('hidden');
+      if (tkAuswahl && !tkAlle.some((t) => t.id === tkAuswahl)) tkAuswahl = null;
+      if (!tkAuswahl && items.length && window.innerWidth > 900) tkAuswahl = items[0].id;
+      const ul = $('tkListe'); ul.innerHTML = '';
+      if (!items.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Vorgänge für diese Auswahl.' : 'Noch keine Vorgänge. Nachrichten deines Assistenten erscheinen hier automatisch, oder lege einen von Hand an.') + '</p>';
+      let grp = null;
+      items.forEach((t) => { const [key, titel] = tkGruppe(t); if (key !== grp) { grp = key; const h = document.createElement('div'); h.className = 'lv-tag' + (key === '0-ueber' ? ' ueber' : ''); h.textContent = titel; ul.append(h); } ul.append(tkZeile(t)); });
+      renderTicketDetail();
     }
     function tkZeile(t) {
-      const div = document.createElement('div'); div.className = 'item';
-      const row = document.createElement('div'); row.className = 'tk-row';
-      const nr = document.createElement('span'); nr.className = 'tk-nr'; nr.textContent = '#' + t.number;
-      const titel = document.createElement('span'); titel.className = 'tk-titel'; titel.textContent = t.title;
-      const rechts = document.createElement('span'); rechts.className = 'tk-rechts'; rechts.style.display = 'flex'; rechts.style.gap = '6px';
-      if (t.priority !== 'normal') rechts.append(chip(TK_PRIO[t.priority], t.priority));
-      if (istUeber(t)) rechts.append(chip('überfällig', 'ueber'));
-      if (tkFilter === 'alle') rechts.append(chip(TK_STATUS[t.status], 'status'));
-      const meta = document.createElement('span'); meta.className = 'tk-meta';
-      const teile = [t.caller_name, t.caller_phone, t.category, t.assignee ? '→ ' + t.assignee : null, 'Frist ' + fmtZeit(t.due_at), fmtZeit(t.created_at)].filter(Boolean);
-      teile.forEach((x) => { const s = document.createElement('span'); s.textContent = x; meta.append(s); });
-      row.append(nr, titel, rechts, meta);
-      const detail = document.createElement('div'); detail.className = 'tk-detail hidden';
-      div.append(row, detail);
-      row.onclick = () => { detail.classList.toggle('hidden'); if (!detail.classList.contains('hidden') && !detail.dataset.geladen) renderTicketDetail(t, detail); };
-      return div;
+      const z = document.createElement('div'); const ueber = istUeber(t);
+      z.className = 'lv-zeile tk-zeile' + (t.id === tkAuswahl ? ' aktiv' : '') + (ueber ? ' ueber' : '') + (t.status === 'done' ? ' erledigt' : ''); z.dataset.ticketId = t.id;
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
+      const dot = z.querySelector('.lv-dot');
+      if (t.status === 'done') { dot.classList.add('haken'); dot.dataset.tip = 'Erledigt ' + fmtZeit(t.closed_at); } else { dot.style.background = TK_PRIO_FARBE[t.priority] || TK_PRIO_FARBE.normal; dot.dataset.tip = 'Priorität ' + (TK_PRIO[t.priority] || 'Normal') + (t.status === 'in_progress' ? ' · in Arbeit' : ''); }
+      z.querySelector('b').innerHTML = '<span class="tk-nr">#' + t.number + '</span> ' + markierenMit(t.title, tkSuche) + (t.status === 'in_progress' && tkFilter !== 'in_progress' ? ' <span class="lv-neu">in Arbeit</span>' : '');
+      const teile = [t.caller_name, t.category, t.assignee ? '→ ' + t.assignee : null].filter(Boolean);
+      z.querySelector('.lv-text').innerHTML = teile.length ? markierenMit(teile.join(' · '), tkSuche) : markierenMit((t.body || '').slice(0, 90) || TK_QUELLE[t.source] || '', tkSuche);
+      if (t.body && t.body.length > 40) z.querySelector('.lv-text').dataset.tip = t.body.slice(0, 300);
+      const r = z.querySelectorAll('.lv-rechts span');
+      if (t.status === 'done') { r[0].textContent = 'erledigt'; r[1].textContent = lvWann(t.closed_at || t.updated_at); }
+      else { r[0].textContent = fmtFrist(t.due_at); r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].style.color = '#c2410c'; r[1].textContent = lvWann(t.created_at); }
+      z.onclick = () => { tkAuswahl = t.id; renderTickets(); };
+      return z;
     }
     async function tkUpdate(t, patch, meldung) {
       const { error } = await sb.from('tickets').update(patch).eq('id', t.id);
       if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
-      toast(meldung || 'Gespeichert.'); await loadTickets(); return true;
+      Object.assign(t, patch); tkNotizen.delete(t.id);
+      if (meldung) toast(meldung);
+      const { data: kz } = await sb.rpc('tickets_kennzahlen', { t: tenant.id }); tkKz = kz || tkKz;
+      renderTickets(); return true;
     }
-    async function renderTicketDetail(t, box) {
-      box.dataset.geladen = '1'; box.innerHTML = '';
-      const body = document.createElement('p'); body.style.whiteSpace = 'pre-wrap'; body.textContent = t.body || '—'; box.append(body);
-      // Aktionen zum Anrufer
-      const akt = document.createElement('div'); akt.className = 'stack';
-      if (t.caller_phone) {
-        const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + t.caller_phone.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + t.caller_phone; akt.append(a);
-        const smsB = document.createElement('button'); smsB.className = 'btn btn--ghost sm'; smsB.textContent = 'SMS an Anrufer'; akt.append(smsB);
-        const blockB = document.createElement('button'); blockB.className = 'btn btn--ghost sm'; blockB.textContent = 'Nummer sperren'; blockB.onclick = async () => { if (confirm(t.caller_phone + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) { await sperren(t.caller_phone, 'Aus Vorgang #' + t.number); } }; akt.append(blockB);
-        const smsBox = document.createElement('div'); smsBox.className = 'hidden'; smsBox.style.marginTop = '8px';
-        smsBox.innerHTML = '<textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea>';
-        const send = document.createElement('button'); send.className = 'btn sm'; send.textContent = 'SMS senden'; send.style.marginTop = '6px'; smsBox.append(send);
-        smsB.onclick = () => smsBox.classList.toggle('hidden');
-        send.onclick = async () => {
-          const text = smsBox.querySelector('textarea').value.trim(); if (text.length < 5) return;
-          send.disabled = true;
-          try { const r = await fetch(API + '/api/tickets/' + t.id + '/sms', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('SMS gesendet.'); smsBox.classList.add('hidden'); box.dataset.geladen = ''; renderTicketDetail(t, box); }
+    async function vorgangOeffnen(id) {
+      if (!tkAlle.some((t) => t.id === id)) { const { data } = await sb.from('tickets').select('*').eq('id', id).maybeSingle(); if (data) tkAlle.unshift(data); }
+      tkAuswahl = id; tkAnsicht = 'liste'; document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x.dataset.tkansicht === 'liste'));
+      if (!tkGefiltert().some((t) => t.id === id)) { tkFilter = 'alle'; tkPrio = ''; tkWerF = ''; tkKat = ''; tkNurUeber = false; tkNurHeute = false; tkSuche = ''; $('tkSuche').value = ''; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'alle')); document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.classList.toggle('aktiv', !b.dataset.tkprio)); }
+      renderTickets();
+      setTimeout(() => document.querySelector('.tk-zeile[data-ticket-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
+    }
+    function renderTicketDetail() {
+      const d = $('tkDetail'); const t = tkAuswahl ? tkAlle.find((x) => x.id === tkAuswahl) : null;
+      $('sec-tickets').classList.toggle('lv-zeigt-detail', !!t);
+      if (!t) { d.innerHTML = '<p class="lv-leer">Wähle links einen Vorgang, um Details, Verlauf und Aktionen zu sehen.</p>'; return; }
+      const nr = (t.caller_phone || '').trim(); const ueber = istUeber(t);
+      d.innerHTML = '<div class="lv-detailkopf"><div style="min-width:0;flex:1"><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr tk-titel-edit" data-tip="Klicken zum Umbenennen"><span class="tk-nr">#' + t.number + '</span> <span data-titel></span></h2><div class="lv-meta"></div></div><div class="stack tk-statusknoepfe" style="margin:0" data-status></div></div>'
+        + '<div class="tk-felder" data-felder></div>'
+        + '<div class="call-summary" data-body></div>'
+        + '<div class="stack" style="margin-top:10px" data-aktionen></div><div data-rueckruf></div><div class="hidden tk-sms" data-smsbox><textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea><button class="btn sm" type="button" data-smssenden style="margin-top:6px">SMS senden</button></div>'
+        + '<div data-transkript></div>'
+        + '<div class="tk-verlauf" data-verlauf><label>Verlauf</label><p class="sys">wird geladen …</p></div>'
+        + '<div class="tk-notiz"><textarea rows="2" data-notiz placeholder="Notiz hinzufügen … (Strg+Enter speichert)"></textarea><button class="btn sm" type="button" data-notizspeichern>Notiz speichern</button></div>';
+      d.querySelector('.lv-zurueck').onclick = () => { tkAuswahl = null; renderTickets(); };
+      // Titel umbenennen
+      const tt = d.querySelector('[data-titel]'); tt.textContent = t.title;
+      d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = t.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== t.title) await tkUpdate(t, { title: v.slice(0, 160) }, 'Betreff geändert.'); else renderTicketDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = t.title; inp.blur(); } }; };
+      // Kennzeichen
+      const meta = d.querySelector('.lv-meta'); const mchip = (txt, tip, klick, cls) => { const s = document.createElement('span'); s.textContent = txt; if (tip) s.dataset.tip = tip; if (cls) s.classList.add(cls); if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); };
+      mchip((TK_QUELLE[t.source] || t.source) + ' · ' + fmtZeit(t.created_at), 'Angelegt');
+      if (t.status !== 'done') mchip(fmtFrist(t.due_at), t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist', null, ueber ? 'ueber' : ''); else mchip('erledigt ' + fmtZeit(t.closed_at));
+      mchip('Priorität ' + (TK_PRIO[t.priority] || 'Normal'), 'Klick filtert die Liste', () => { tkPrio = tkPrio === t.priority ? '' : t.priority; document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.classList.toggle('aktiv', (b.dataset.tkprio || '') === tkPrio)); renderTickets(); });
+      if (t.category) mchip(t.category, 'Kategorie · Klick filtert die Liste', () => { tkKat = tkKat === t.category ? '' : t.category; renderTickets(); });
+      if (t.assignee) mchip('→ ' + t.assignee, 'Zuständig · Klick filtert die Liste', () => { tkWerF = tkWerF === t.assignee ? '' : t.assignee; renderTickets(); });
+      // Status
+      const st = d.querySelector('[data-status]');
+      for (const [k, label] of Object.entries(TK_STATUS)) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm' + (t.status === k ? ' btn--primary' : ' btn--ghost'); b.textContent = label; b.dataset.tip = k === 'done' ? 'Taste E' : (k === 'in_progress' ? 'Taste A' : ''); b.onclick = () => { if (t.status !== k) tkUpdate(t, { status: k }, 'Vorgang #' + t.number + ': ' + label + '.'); }; st.append(b); }
+      // Felder (speichern beim Verlassen)
+      const f = d.querySelector('[data-felder]');
+      f.innerHTML = '<div><label>Zuständig</label><input data-f="assignee" list="tkWerListe" placeholder="Name" /></div>'
+        + '<div><label>Frist</label><input data-f="due_at" type="datetime-local" /><div class="tk-fristkurz"><button type="button" data-frist="2h">+2 h</button><button type="button" data-frist="morgen">Morgen 9 Uhr</button><button type="button" data-frist="woche">+1 Woche</button><button type="button" data-frist="keine">keine</button></div></div>'
+        + '<div><label>Priorität</label><select data-f="priority"><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select></div>'
+        + '<div><label>Kategorie</label><input data-f="category" list="tkKatListe" placeholder="z. B. Termin, Angebot" /></div>';
+      f.querySelector('[data-f=assignee]').value = t.assignee || ''; f.querySelector('[data-f=priority]').value = t.priority || 'normal'; f.querySelector('[data-f=category]').value = t.category || '';
+      f.querySelector('[data-f=due_at]').value = t.due_at ? new Date(new Date(t.due_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
+      $('tkKatListe').innerHTML = [...new Set(tkAlle.map((x) => x.category).filter(Boolean))].map((k) => '<option value="' + k.replace(/"/g, '&quot;') + '">').join('');
+      f.querySelector('[data-f=assignee]').onchange = (e) => { const v = e.target.value.trim() || null; if (v !== (t.assignee || null)) tkUpdate(t, { assignee: v }, v ? 'Zuständig: ' + v : 'Zuständigkeit entfernt.'); };
+      f.querySelector('[data-f=category]').onchange = (e) => { const v = e.target.value.trim() || null; if (v !== (t.category || null)) tkUpdate(t, { category: v }, 'Kategorie gespeichert.'); };
+      f.querySelector('[data-f=priority]').onchange = (e) => tkUpdate(t, { priority: e.target.value }, 'Priorität: ' + TK_PRIO[e.target.value] + '.');
+      f.querySelector('[data-f=due_at]').onchange = (e) => tkUpdate(t, { due_at: e.target.value ? new Date(e.target.value).toISOString() : null }, e.target.value ? 'Frist gesetzt.' : 'Frist entfernt.');
+      f.querySelectorAll('[data-frist]').forEach((b) => b.onclick = () => { const k = b.dataset.frist; let d2 = null; const j = new Date(); if (k === '2h') d2 = new Date(j.getTime() + 2 * 3600e3); if (k === 'morgen') { d2 = new Date(j); d2.setDate(d2.getDate() + 1); d2.setHours(9, 0, 0, 0); } if (k === 'woche') d2 = new Date(j.getTime() + 7 * 864e5); tkUpdate(t, { due_at: d2 ? d2.toISOString() : null }, d2 ? 'Frist: ' + fmtFrist(d2.toISOString()) + '.' : 'Frist entfernt.'); });
+      // Text
+      const bd = d.querySelector('[data-body]'); bd.innerHTML = t.body ? markierenMit(t.body, tkSuche).replace(/\n/g, '<br>') : '<span class="muted">Keine Beschreibung.</span>';
+      // Aktionen
+      const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; akt.append(b); return b; };
+      const smsBox = d.querySelector('[data-smsbox]');
+      if (nr) {
+        const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + nr.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + fmtNr(nr); akt.append(a);
+        const box = rueckrufBox(nr, t.caller_name || '', 'Rückruf zu Vorgang #' + t.number + ': ' + t.title.slice(0, 120), () => { tkUpdate(t, { status: 'in_progress' }); });
+        d.querySelector('[data-rueckruf]').append(box);
+        knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
+        knopf('SMS an Anrufer', '', () => { smsBox.classList.toggle('hidden'); if (!smsBox.classList.contains('hidden')) smsBox.querySelector('textarea').focus(); });
+        smsBox.querySelector('[data-smssenden]').onclick = async () => {
+          const text = smsBox.querySelector('textarea').value.trim(); if (text.length < 5) return; const send = smsBox.querySelector('[data-smssenden]'); send.disabled = true;
+          try { const r = await fetch(API + '/api/tickets/' + t.id + '/sms', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('SMS gesendet.'); smsBox.classList.add('hidden'); tkNotizen.delete(t.id); renderTicketDetail(); }
           catch (e) { toast('SMS: ' + e.message, 'err'); }
           send.disabled = false;
         };
-        box.append(akt, smsBox);
-      } else box.append(akt);
-      // Felder
-      const felder = document.createElement('div'); felder.className = 'grid2';
-      felder.innerHTML = `<div><label>Zuständig</label><input data-f="assignee" list="tkWerListe" value="${(t.assignee || '').replace(/"/g, '&quot;')}" placeholder="Name" /></div>
-        <div><label>Frist</label><input data-f="due_at" type="datetime-local" value="${t.due_at ? new Date(new Date(t.due_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}" /></div>
-        <div><label>Priorität</label><select data-f="priority"><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select></div>
-        <div><label>Kategorie</label><input data-f="category" value="${(t.category || '').replace(/"/g, '&quot;')}" placeholder="z. B. Termin, Angebot, Reklamation" /></div>`;
-      felder.querySelector('[data-f=priority]').value = t.priority;
-      const speichern = document.createElement('button'); speichern.className = 'btn sm'; speichern.textContent = 'Felder speichern'; speichern.style.marginTop = '8px';
-      speichern.onclick = () => {
-        const g = (f) => felder.querySelector('[data-f=' + f + ']').value;
-        const due = g('due_at') ? new Date(g('due_at')).toISOString() : null;
-        tkUpdate(t, { assignee: g('assignee').trim() || null, due_at: due, priority: g('priority'), category: g('category').trim() || null }, 'Vorgang aktualisiert.');
-      };
-      box.append(felder, speichern);
-      // Status
-      const st = document.createElement('div'); st.className = 'stack'; st.style.marginTop = '12px';
-      for (const [k, label] of Object.entries(TK_STATUS)) {
-        const b = document.createElement('button'); b.className = 'btn sm' + (t.status === k ? ' btn--primary' : ' btn--ghost'); b.textContent = label;
-        b.onclick = () => tkUpdate(t, { status: k }, `Vorgang #${t.number}: ${label}.`);
-        st.append(b);
+        knopf('Nummer sperren', '', async () => { if (confirm(fmtNr(nr) + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Vorgang #' + t.number); });
       }
-      const delT = document.createElement('button'); delT.className = 'btn btn--ghost sm'; delT.textContent = 'Löschen'; delT.style.marginLeft = 'auto';
-      delT.onclick = async () => { if (!confirm(`Vorgang #${t.number} endgültig löschen?`)) return; const { error } = await sb.from('tickets').delete().eq('id', t.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } toast('Vorgang gelöscht.'); loadTickets(); };
-      st.append(delT);
-      box.append(st);
-      // Transkript des Anrufs
-      if (t.call_id) {
-        const { data: turns } = await sb.from('call_turns').select('role, content, created_at').eq('call_id', t.call_id).order('created_at').limit(200);
-        if (turns && turns.length) {
-          const h = document.createElement('label'); h.textContent = 'Gesprächsverlauf'; box.append(h);
-          const tr = document.createElement('div'); tr.className = 'tk-transkript';
-          turns.forEach((u) => { const p = document.createElement('p'); p.innerHTML = `<b>${u.role === 'caller' ? 'Anrufer' : 'Vocaris'}:</b> `; p.append(document.createTextNode(u.content)); tr.append(p); });
-          box.append(tr);
-        }
-      }
-      // Verlauf + Notizen
-      const { data: notes } = await sb.from('ticket_notes').select('*').eq('ticket_id', t.id).order('created_at');
-      const verlauf = document.createElement('div'); verlauf.className = 'tk-verlauf';
-      const vh = document.createElement('label'); vh.textContent = 'Verlauf'; verlauf.append(vh);
-      const eintrag = (txt, cls) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = txt; verlauf.append(p); };
-      eintrag(fmtZeit(t.created_at) + ' · angelegt (' + ({ message: 'Nachricht', gap: 'offene Frage', call: 'Anruf', manual: 'von Hand', api: 'API' }[t.source] || t.source) + ')', 'sys');
-      (notes || []).forEach((n) => eintrag(`${fmtZeit(n.created_at)} · ${n.author}: ${n.body}`, n.author === 'System' ? 'sys' : ''));
-      const ta = document.createElement('textarea'); ta.rows = 2; ta.placeholder = 'Notiz hinzufügen …'; ta.style.marginTop = '8px';
-      const nb = document.createElement('button'); nb.className = 'btn sm'; nb.textContent = 'Notiz speichern'; nb.style.marginTop = '6px';
-      nb.onclick = async () => { const v = ta.value.trim(); if (!v) return; await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); ta.value = ''; toast('Notiz gespeichert.'); box.dataset.geladen = ''; renderTicketDetail(t, box); };
-      verlauf.append(ta, nb); box.append(verlauf);
+      if (t.call_id) knopf('Gespräch öffnen', '', () => { geh('sec-live'); liveOeffnen(t.call_id); });
+      if (t.message_id) knopf('Nachricht öffnen', '', () => { geh('sec-messages'); nachrichtOeffnen(t.message_id); });
+      knopf('Kopieren', '', async () => { try { await navigator.clipboard.writeText('#' + t.number + ' ' + t.title + '\n' + (t.body || '') + (nr ? '\n' + fmtNr(nr) : '')); toast('Kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } });
+      const del = knopf('Löschen', '', async () => { if (!confirm('Vorgang #' + t.number + ' endgültig löschen?')) return; const { error } = await sb.from('tickets').delete().eq('id', t.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } tkAlle = tkAlle.filter((x) => x.id !== t.id); tkAuswahl = null; toast('Vorgang gelöscht.'); loadTickets(); }); del.style.marginLeft = 'auto';
+      // Notiz
+      const ta = d.querySelector('[data-notiz]'); const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); if (error) { toast('Fehler: ' + error.message, 'err'); return; } ta.value = ''; toast('Notiz gespeichert.'); tkNotizen.delete(t.id); renderTicketDetail(); };
+      d.querySelector('[data-notizspeichern]').onclick = notizSpeichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') notizSpeichern(); };
+      // Verlauf + Gesprächsverlauf (zwischengespeichert)
+      const meinId = t.id;
+      (async () => {
+        if (!tkNotizen.has(meinId)) { const { data: notes } = await sb.from('ticket_notes').select('*').eq('ticket_id', meinId).order('created_at'); tkNotizen.set(meinId, notes || []); }
+        if (t.call_id && !tkTurns.has(meinId)) { const { data: turns } = await sb.from('call_turns').select('role, content, created_at').eq('call_id', t.call_id).order('created_at').limit(200); tkTurns.set(meinId, turns || []); }
+        if (tkAuswahl !== meinId) return;
+        const v = d.querySelector('[data-verlauf]'); v.innerHTML = '<label>Verlauf</label>';
+        const eintrag = (txt, cls) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = txt; v.append(p); };
+        eintrag(fmtZeit(t.created_at) + ' · angelegt (' + (TK_QUELLE[t.source] || t.source) + ')', 'sys');
+        tkNotizen.get(meinId).forEach((n) => eintrag(fmtZeit(n.created_at) + ' · ' + n.author + ': ' + (n.author === 'System' ? n.body.replace(/\bin_progress\b/g, 'In Arbeit').replace(/\bopen\b/g, 'Offen').replace(/\bdone\b/g, 'Erledigt') : n.body), n.author === 'System' ? 'sys' : ''));
+        const turns = tkTurns.get(meinId) || [];
+        if (turns.length) { const tr = d.querySelector('[data-transkript]'); tr.innerHTML = '<div class="db-panelkopf" style="margin-top:14px"><h3 style="font-size:14px;margin:0">Gesprächsverlauf</h3><span class="muted">' + turns.length + ' Beiträge</span></div><div class="transcript" style="max-height:260px"></div>'; const box = tr.querySelector('.transcript'); turns.forEach((u) => { const b = document.createElement('div'); b.className = 'bubble ' + (u.role === 'caller' ? 'caller' : 'assistant'); b.textContent = u.content; box.append(b); }); }
+      })();
     }
-    // Board mit Ziehen und Ablegen
+    // Board mit Ziehen und Ablegen (Klick auf eine Karte öffnet sie in der Liste)
     function renderBoard(items) {
       const board = $('tkBoard'); board.innerHTML = '';
-      const quelle = tkFilter === 'alle' ? items : tkAlleFuerBoard(items);
       for (const [k, label] of Object.entries(TK_STATUS)) {
         const sp = document.createElement('div'); sp.className = 'tk-spalte'; sp.dataset.status = k;
-        const liste = quelle.filter((t) => t.status === k);
-        sp.innerHTML = `<h4><span>${label}</span><span>${liste.length}</span></h4>`;
+        const liste = items.filter((t) => t.status === k);
+        sp.innerHTML = '<h4><span>' + label + '</span><span>' + liste.length + '</span></h4>';
+        if (!liste.length) { const p = document.createElement('p'); p.className = 'muted'; p.style.cssText = 'font-size:12.5px;padding:8px'; p.textContent = 'Hierher ziehen'; sp.append(p); }
         liste.forEach((t) => {
           const k2 = document.createElement('div'); k2.className = 'tk-karte'; k2.draggable = true; k2.dataset.id = t.id;
-          k2.innerHTML = `<b>#${t.number} · ${t.title.replace(/</g, '&lt;')}</b><small>${[t.caller_name, t.assignee ? '→ ' + t.assignee : null, 'Frist ' + fmtZeit(t.due_at)].filter(Boolean).join(' · ')}</small>`;
+          k2.innerHTML = '<b></b><small></small>'; k2.querySelector('b').textContent = '#' + t.number + ' · ' + t.title; k2.querySelector('small').textContent = [t.caller_name, t.assignee ? '→ ' + t.assignee : null, t.status !== 'done' ? fmtFrist(t.due_at) : null].filter(Boolean).join(' · ');
           if (t.priority === 'high') k2.prepend(chip('Hoch', 'high'));
           if (istUeber(t)) k2.prepend(chip('überfällig', 'ueber'));
-          k2.ondragstart = (e) => { e.dataTransfer.setData('text/plain', t.id); };
-          k2.onclick = () => { tkAnsicht = 'liste'; document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x.dataset.tkansicht === 'liste')); $('tkSuche').value = '#' + t.number; renderTickets(); const d = document.querySelector('#tickets .tk-row'); if (d) d.click(); };
+          k2.ondragstart = (e) => { e.dataTransfer.setData('text/plain', t.id); k2.classList.add('zieht'); };
+          k2.ondragend = () => k2.classList.remove('zieht');
+          k2.onclick = () => { tkAnsicht = 'liste'; document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x.dataset.tkansicht === 'liste')); vorgangOeffnen(t.id); };
           sp.append(k2);
         });
         sp.ondragover = (e) => { e.preventDefault(); sp.classList.add('ziel'); };
         sp.ondragleave = () => sp.classList.remove('ziel');
-        sp.ondrop = async (e) => { e.preventDefault(); sp.classList.remove('ziel'); const id = e.dataTransfer.getData('text/plain'); const t = tkAlle.find((x) => x.id === id); if (t && t.status !== k) await tkUpdate(t, { status: k }, `Vorgang #${t.number}: ${label}.`); };
+        sp.ondrop = async (e) => { e.preventDefault(); sp.classList.remove('ziel'); const id = e.dataTransfer.getData('text/plain'); const t = tkAlle.find((x) => x.id === id); if (t && t.status !== k) await tkUpdate(t, { status: k }, 'Vorgang #' + t.number + ': ' + label + '.'); };
         board.append(sp);
       }
     }
-    function tkAlleFuerBoard(items) { return items; }
-    // Beim Wechsel aufs Board alle Status laden, damit drei Spalten gefüllt sind.
-    document.querySelector('[data-tkansicht=board]').addEventListener('click', () => { if (tkFilter !== 'alle') { tkFilter = 'alle'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'alle')); loadTickets(); } });
+    (function vorgaengeWiring() {
+      if (!$('tkListe')) return;
+      document.querySelectorAll('[data-tkfilter]').forEach((b) => b.onclick = () => { document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x === b)); tkFilter = b.dataset.tkfilter; if (tkFilter === 'done') { tkNurUeber = false; tkNurHeute = false; } renderTickets(); });
+      document.querySelectorAll('[data-tkansicht]').forEach((b) => b.onclick = () => { document.querySelectorAll('[data-tkansicht]').forEach((x) => x.classList.toggle('active', x === b)); tkAnsicht = b.dataset.tkansicht; if (tkAnsicht === 'board' && tkFilter !== 'alle') { tkFilter = 'alle'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'alle')); } renderTickets(); });
+      document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#tkPrioChips .lv-chip').forEach((x) => x.classList.toggle('aktiv', x === b)); tkPrio = b.dataset.tkprio || ''; renderTickets(); });
+      document.querySelectorAll('[data-tkstat]').forEach((b) => b.onclick = () => {
+        const k = b.dataset.tkstat;
+        if (k === 'ueber') { tkNurUeber = !tkNurUeber; tkNurHeute = false; if (tkNurUeber && tkFilter === 'done') tkFilter = 'open'; }
+        else if (k === 'heute') { tkNurHeute = !tkNurHeute; tkNurUeber = false; if (tkNurHeute && tkFilter === 'done') tkFilter = 'open'; }
+        else if (k === 'offen') { tkFilter = 'open'; tkNurUeber = false; tkNurHeute = false; }
+        else if (k === 'erledigt') { tkFilter = 'done'; tkNurUeber = false; tkNurHeute = false; }
+        document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === tkFilter)); renderTickets();
+      });
+      $('tkWer').onchange = () => { tkWerF = $('tkWer').value; renderTickets(); }; $('tkKat').onchange = () => { tkKat = $('tkKat').value; renderTickets(); };
+      const s = $('tkSuche'); s.oninput = () => { clearTimeout(tkSuchTimer); tkSuchTimer = setTimeout(() => { tkSuche = s.value; renderTickets(); }, 150); };
+      $('tkNeuAuf').onclick = () => { $('tkNeuPanel').classList.toggle('hidden'); if (!$('tkNeuPanel').classList.contains('hidden')) $('tkNeuTitel').focus(); };
+      $('tkNeuZu').onclick = () => $('tkNeuPanel').classList.add('hidden');
+      $('tkNeu2').onclick = () => loadTickets();
+      document.addEventListener('keydown', (e) => {
+        if ($('sec-tickets').classList.contains('hidden')) return;
+        if (e.key === 'Escape') { if (e.target === s && s.value) { s.value = ''; tkSuche = ''; renderTickets(); } else if (window.innerWidth <= 900 && tkAuswahl) { tkAuswahl = null; renderTickets(); } return; }
+        if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key === '/') { e.preventDefault(); s.focus(); s.select(); return; }
+        const t = tkAuswahl && tkAlle.find((x) => x.id === tkAuswahl);
+        if (t && (e.key === 'e' || e.key === 'E')) { tkUpdate(t, { status: t.status === 'done' ? 'open' : 'done' }, t.status === 'done' ? 'Vorgang #' + t.number + ' wieder geöffnet.' : 'Vorgang #' + t.number + ' erledigt.'); return; }
+        if (t && (e.key === 'a' || e.key === 'A')) { if (t.status !== 'in_progress') tkUpdate(t, { status: 'in_progress' }, 'Vorgang #' + t.number + ': In Arbeit.'); return; }
+        if (e.key === 'n' || e.key === 'N') { $('tkNeuAuf').click(); return; }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        const liste = tkGefiltert(); if (!liste.length) return; e.preventDefault();
+        const i = liste.findIndex((x) => x.id === tkAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        tkAuswahl = liste[j].id; renderTickets(); document.querySelector('.tk-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
+      });
+    })();
     $('tkExport').onclick = () => {
       const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt']];
       tkGefiltert().forEach((t) => rows.push([t.number, t.title, TK_STATUS[t.status], TK_PRIO[t.priority], t.category || '', t.assignee || '', t.caller_name || '', t.caller_phone || '', fmtZeit(t.due_at), fmtZeit(t.created_at), fmtZeit(t.closed_at)]));
@@ -5234,12 +5352,13 @@
       if (!tenant) return;
       const title = $('tkNeuTitel').value.trim(); if (!title) { toast('Bitte einen Betreff eingeben.', 'err'); return; }
       $('tkNeuBtn').disabled = true;
-      const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: $('tkNeuText').value.trim(), priority: $('tkNeuPrio').value, source: 'manual', caller_name: $('tkNeuName').value.trim() || null, caller_phone: $('tkNeuTel').value.trim() || null, assignee: $('tkNeuWer').value.trim() || null, due_at: $('tkNeuFrist').value ? new Date($('tkNeuFrist').value).toISOString() : null });
+      const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: $('tkNeuText').value.trim(), priority: $('tkNeuPrio').value, source: 'manual', caller_name: $('tkNeuName').value.trim() || null, caller_phone: $('tkNeuTel').value.trim() || null, assignee: $('tkNeuWer').value.trim() || null, due_at: $('tkNeuFrist').value ? new Date($('tkNeuFrist').value).toISOString() : null }).select().maybeSingle();
       $('tkNeuBtn').disabled = false;
       if (error) { toast('Fehler: ' + error.message, 'err'); return; }
       ['tkNeuTitel', 'tkNeuText', 'tkNeuName', 'tkNeuTel', 'tkNeuWer', 'tkNeuFrist'].forEach((id) => ($(id).value = ''));
       $('tkNeuPanel').classList.add('hidden');
-      toast('Vorgang angelegt.'); tkFilter = 'open'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'open')); loadTickets();
+      toast('Vorgang angelegt.'); tkFilter = 'open'; document.querySelectorAll('[data-tkfilter]').forEach((x) => x.classList.toggle('active', x.dataset.tkfilter === 'open'));
+      await loadTickets(); if (data) vorgangOeffnen(data.id);
     };
 
     // ---- Sperrliste ----
