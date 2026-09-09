@@ -505,12 +505,6 @@
     .lv-chip small { font-weight: 600; color: var(--ink-faint); } .lv-chip.aktiv small { color: var(--accent-ink); }
     .lv-text mark, .bubble mark, .call-summary mark, .lv-mitte mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 1px; }
     .lv-meta span.klick { cursor: pointer; } .lv-meta span.klick:hover { border-color: var(--accent); color: var(--accent-ink); }
-    .lv-zeitleiste { position: relative; height: 14px; background: var(--paper-2); border-radius: 7px; margin: 0 0 22px; }
-    .lv-zeitleiste span { position: absolute; top: 0; height: 100%; cursor: pointer; opacity: .85; }
-    .lv-zeitleiste span:hover { opacity: 1; outline: 2px solid var(--ink); outline-offset: 1px; z-index: 1; }
-    .lv-zeitleiste span.caller { background: #cbd5e1; } .lv-zeitleiste span.assistant { background: var(--accent); }
-    .lv-zeitleiste span:first-of-type { border-radius: 7px 0 0 7px; } .lv-zeitleiste span:last-of-type { border-radius: 0 7px 7px 0; }
-    .lv-zeitleiste i { position: absolute; top: 16px; left: 0; font-style: normal; font-size: 10.5px; color: var(--ink-faint); } .lv-zeitleiste i.r { left: auto; right: 0; }
     .bubble.blitz { outline: 2px solid var(--accent); outline-offset: 2px; }
     .db-tip { max-width: 420px; white-space: normal; line-height: 1.35; }
     .lv-zurueck { display: none; margin-bottom: 8px; }
@@ -3577,7 +3571,6 @@
         + '<div class="call-summary hidden" data-zusammenfassung></div>'
         + '<div data-aktionen></div>'
         + '<div class="db-panelkopf" style="margin-top:14px"><h3 style="font-size:14px;margin:0">Gesprächsverlauf</h3><span class="db-kopfrechts"><span class="muted" data-turns></span><button class="btn btn--ghost sm" type="button" data-kopieren>Kopieren</button></span></div>'
-        + '<div class="lv-zeitleiste hidden" data-zeitleiste></div>'
         + '<div class="transcript lv-transkript" data-transkript></div>';
       d.querySelector('.lv-nr').textContent = fmtNr(c.caller_number);
       d.querySelector('.lv-zurueck').onclick = () => { lvAuswahl = null; renderLive(); };
@@ -3593,14 +3586,6 @@
       d.querySelector('[data-turns]').textContent = x.turns.length ? x.turns.length + ' Beiträge' : '';
       d.querySelector('[data-kopieren]').onclick = async () => { const txt = x.turns.map((t) => (t.role === 'caller' ? 'Anrufer: ' : 'Assistent: ') + t.content).join('\n'); try { await navigator.clipboard.writeText(txt || (c.summary || '')); toast('Gesprächsverlauf kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } };
       transkriptZeichnen(x, d.querySelector('[data-transkript]'), live);
-      // Zeitleiste: wer hat wann gesprochen – Klick springt zum Beitrag
-      const zl = d.querySelector('[data-zeitleiste]');
-      if (x.turns.length >= 2) {
-        const t0 = new Date(c.started_at).getTime(); const ende = live ? Date.now() : Math.max(new Date(c.ended_at || x.turns[x.turns.length - 1].created_at).getTime(), new Date(x.turns[x.turns.length - 1].created_at).getTime() + 5000);
-        const gesamt = Math.max(1, ende - t0); zl.innerHTML = ''; zl.classList.remove('hidden');
-        x.turns.forEach((t, i) => { const von = Math.max(0, new Date(t.created_at).getTime() - t0); const bis = i + 1 < x.turns.length ? Math.max(von + 800, new Date(x.turns[i + 1].created_at).getTime() - t0) : gesamt; const seg = document.createElement('span'); seg.className = t.role === 'caller' ? 'caller' : 'assistant'; seg.style.left = (von / gesamt * 100) + '%'; seg.style.width = Math.max(0.8, (bis - von) / gesamt * 100) + '%'; seg.dataset.tip = (t.role === 'caller' ? 'Anrufer' : 'Assistent') + ' · ' + Math.floor(von / 60000) + ':' + String(Math.floor(von / 1000) % 60).padStart(2, '0') + ' · ' + t.content.slice(0, 90) + (t.content.length > 90 ? ' …' : ''); seg.onclick = () => { const bl = d.querySelector('.bubble[data-i="' + i + '"]'); if (bl) { bl.scrollIntoView({ behavior: 'smooth', block: 'center' }); bl.classList.add('blitz'); setTimeout(() => bl.classList.remove('blitz'), 1500); } }; zl.append(seg); });
-        const ll = document.createElement('i'); ll.textContent = '0:00'; const lr = document.createElement('i'); lr.className = 'r'; lr.textContent = Math.floor(gesamt / 60000) + ':' + String(Math.floor(gesamt / 1000) % 60).padStart(2, '0'); zl.append(ll, lr);
-      }
     }
     // Bedienung: Suche, Zeitraum, Stimmung, Thema, Nachladen, Tastatur, laufende Uhr
     (function liveWiring() {
