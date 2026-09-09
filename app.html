@@ -529,6 +529,16 @@
     .kb-drop.drag-over { padding: 0; } .kb-drop.drag-over::after { content: none; }
     .kb-drop.drag-over .lv-liste { outline: 2px dashed var(--accent); outline-offset: -4px; }
     #kbStreifen a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .as-split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(280px, 4fr); gap: 14px; align-items: start; }
+    .as-form .panel h3 { margin-bottom: 10px; }
+    .as-seite { position: sticky; top: 14px; display: flex; flex-direction: column; gap: 14px; }
+    .as-seite .panel { margin-bottom: 0; }
+    .as-vorschau { background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.5; margin-bottom: 12px; min-height: 48px; }
+    .as-vorschau .muted { display: block; font-size: 12px; margin-bottom: 4px; }
+    .as-nav a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--ink-soft); text-decoration: none; font-size: 13.5px; }
+    .as-nav a:hover { background: var(--paper-2); color: var(--ink); }
+    #sec-assistant .db-aktionen .lv-neu { background: #fef3c7; color: #b45309; padding: 3px 9px; font-size: 11.5px; }
+    @media (max-width: 1000px) { .as-split { grid-template-columns: 1fr; } .as-seite { position: static; } .as-nav { display: none; } }
     @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
@@ -954,96 +964,96 @@
 
         <!-- Assistent -->
         <section id="sec-assistant" class="section hidden">
-          <h1 class="pagehead">Assistent</h1>
-          <p class="pagesub">Name, Begrüßung, Verhalten, Sprache und Stimme.</p>
-          <div class="deptbar" data-deptbar>
-            <button class="deptseg active" data-dept="general">Allgemein</button>
-            <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
-            <button class="deptseg" data-dept="support">Support</button>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Assistent</h1>
+              <p class="pagesub" style="margin-bottom:0" id="asSub">Name, Begrüßung, Verhalten, Öffnungszeiten, Sprache und Stimme.</p>
+            </div>
+            <div class="db-aktionen">
+              <div class="deptbar" data-deptbar>
+                <button class="deptseg active" data-dept="general">Allgemein</button>
+                <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
+                <button class="deptseg" data-dept="support">Support</button>
+              </div>
+              <span class="lv-neu hidden" id="asDirty" data-tip="Es gibt Änderungen, die noch nicht gespeichert sind">ungespeichert</span>
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button id="saveBtn" class="btn btn--primary sm" data-tip="Strg+S">Speichern</button>
+            </div>
           </div>
-          <p class="dept-hint" id="asDeptHint"></p>
-          <div class="panel">
-            <label>Branchen-Vorlage (füllt die Felder vor – danach anpassbar)</label>
-            <div class="branch-chips" id="personaPresets"></div>
-
-            <label>Name deines Unternehmens</label>
-            <input id="bizName" placeholder="z.B. Mustermann Sanitär GmbH" />
-
-            <label>Begrüßung (wird beim Abnehmen gesagt)</label>
-            <textarea id="greeting"></textarea>
-
-            <div class="grid2">
-              <div style="flex:2">
-                <label>Rolle des Assistenten</label>
-                <input id="roleDesc" placeholder="z.B. die telefonische Rezeption der Praxis" />
+          <p class="dept-hint" id="asDeptHint" style="margin:0 0 12px"></p>
+          <div class="as-split">
+            <div class="as-form">
+              <div class="panel" id="asGrund">
+                <h3>Grundlagen</h3>
+                <label style="margin-top:0">Branchen-Vorlage <span class="muted">füllt die Felder vor, danach anpassbar</span></label>
+                <div class="branch-chips" id="personaPresets"></div>
+                <div class="grid2">
+                  <div style="flex:2"><label>Name deines Unternehmens</label><input id="bizName" placeholder="z.B. Mustermann Sanitär GmbH" /></div>
+                  <div><label>Sprache</label><select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select></div>
+                </div>
+                <div class="grid2">
+                  <div style="flex:2"><label>Rolle des Assistenten</label><input id="roleDesc" placeholder="z.B. die telefonische Rezeption der Praxis" /></div>
+                  <div><label>Tonalität</label><select id="tone"><option value="sie_formell">Sie – förmlich</option><option value="sie_freundlich">Sie – freundlich</option><option value="du_locker">Du – locker</option></select></div>
+                </div>
+                <label>Begrüßung <span class="muted">wird beim Abnehmen gesagt</span></label>
+                <textarea id="greeting" rows="2"></textarea>
+                <label>Verabschiedung <span class="muted">optional</span></label>
+                <input id="closing" placeholder="z.B. Vielen Dank für Ihren Anruf, einen schönen Tag!" />
               </div>
-              <div>
-                <label>Tonalität</label>
-                <select id="tone">
-                  <option value="sie_formell">Sie – förmlich</option>
-                  <option value="sie_freundlich">Sie – freundlich</option>
-                  <option value="du_locker">Du – locker</option>
-                </select>
+              <div class="panel" id="asZeiten">
+                <h3>Öffnungszeiten</h3>
+                <div id="hoursGrid" class="hours"></div>
+                <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z.B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
+                <label>Standort / Anfahrt <span class="muted">optional</span></label>
+                <input id="location" placeholder="z.B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
               </div>
-            </div>
-
-            <label>Öffnungszeiten</label>
-            <div id="hoursGrid" class="hours"></div>
-            <p class="muted" style="margin:4px 0 14px">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z.B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
-
-            <label>Standort / Anfahrt (optional)</label>
-            <input id="location" placeholder="z.B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
-
-            <label>Verhalten</label>
-            <textarea id="behaviorRules" placeholder="z.B. Bei Terminwunsch keine Zusage machen, sondern einen Rückruf mit Name, Nummer und Anliegen aufnehmen."></textarea>
-
-            <label>Grenzen / Tabus <span class="muted">(Standard-Sicherheitsregeln gelten zusätzlich automatisch)</span></label>
-            <textarea id="guardrails" placeholder="z.B. Keine medizinische Beratung oder Diagnosen am Telefon."></textarea>
-
-            <label>Verabschiedung (optional)</label>
-            <input id="closing" placeholder="z.B. Vielen Dank für Ihren Anruf, einen schönen Tag!" />
-
-            <label>Zusätzliche Hinweise (frei, optional)</label>
-            <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
-
-            <div class="grid2">
-              <div>
-                <label>Sprache</label>
-                <select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select>
+              <div class="panel" id="asVerhalten">
+                <h3>Verhalten</h3>
+                <label style="margin-top:0">Verhalten</label>
+                <textarea id="behaviorRules" placeholder="z.B. Bei Terminwunsch keine Zusage machen, sondern einen Rückruf mit Name, Nummer und Anliegen aufnehmen."></textarea>
+                <label>Grenzen / Tabus <span class="muted">Standard-Sicherheitsregeln gelten zusätzlich automatisch</span></label>
+                <textarea id="guardrails" placeholder="z.B. Keine medizinische Beratung oder Diagnosen am Telefon."></textarea>
+                <label>Zusätzliche Hinweise <span class="muted">frei, optional</span></label>
+                <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
               </div>
-            </div>
-            <label style="margin-top:14px">Stimme des Assistenten</label>
-            <p class="muted" style="margin:0 0 10px">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sprechen Deutsch. Die Hörproben klingen genau so wie am echten Telefon – schmalbandig, nicht geschönt.</p>
-            <div id="voicePicker" class="voicegrid"></div>
-            <audio id="voiceAudio" preload="none"></audio>
-            <input id="voiceId" type="hidden" />
-
-            <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
-              <input type="checkbox" id="fwdEnabled" style="width:auto;margin:0">
-              <span>Rufumleitung an einen Menschen aktivieren</span>
-            </label>
-            <p class="muted" style="margin-top:4px">Wenn der Anrufer eine Person sprechen möchte (oder der Assistent nicht weiterhelfen kann), verbindet er direkt zur hinterlegten Nummer. <b>Auch für Bestellungen zum Abholen/Liefern:</b> der Assistent leitet solche Anrufe an diese Mitarbeiter-Nummer weiter.</p>
-            <div class="grid2" style="margin-top:8px">
-              <div style="flex:2">
-                <label>Weiterleiten an (Telefonnummer)</label>
-                <input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" />
+              <div class="panel" id="asStimme">
+                <h3>Stimme</h3>
+                <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sprechen Deutsch. Die Hörproben klingen genau so wie am echten Telefon – schmalbandig, nicht geschönt.</p>
+                <div id="voicePicker" class="voicegrid"></div>
+                <audio id="voiceAudio" preload="none"></audio>
+                <input id="voiceId" type="hidden" />
               </div>
-              <div>
-                <label>Wann</label>
-                <select id="fwdHours">
-                  <option value="true">Nur während der Öffnungszeiten</option>
-                  <option value="false">Immer (rund um die Uhr)</option>
-                </select>
+              <div class="panel" id="asWeiter">
+                <h3>Weiterleitung an Menschen</h3>
+                <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="fwdEnabled" style="width:auto;margin:0"><span>Rufumleitung an einen Menschen aktivieren</span></label>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Wenn der Anrufer eine Person sprechen möchte (oder der Assistent nicht weiterhelfen kann), verbindet er direkt zur hinterlegten Nummer. <b>Auch für Bestellungen zum Abholen/Liefern:</b> der Assistent leitet solche Anrufe an diese Mitarbeiter-Nummer weiter.</p>
+                <div class="grid2" style="margin-top:8px">
+                  <div style="flex:2"><label>Weiterleiten an (Telefonnummer)</label><input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" /></div>
+                  <div><label>Wann</label><select id="fwdHours"><option value="true">Nur während der Öffnungszeiten</option><option value="false">Immer (rund um die Uhr)</option></select></div>
+                </div>
+              </div>
+              <div class="panel" id="asRecht">
+                <h3>Hinweis zu Gesprächsbeginn</h3>
+                <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asDisclosure" style="width:auto;margin:0"><span>KI-/Aufzeichnungs-Hinweis zu Gesprächsbeginn ansagen</span></label>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Empfohlen für DE: Der Assistent sagt zu Beginn einen kurzen Satz, dass das Gespräch von einem digitalen Assistenten geführt und verarbeitet wird. Gilt für alle Abteilungen.</p>
               </div>
             </div>
-
-            <label style="margin-top:18px;display:flex;align-items:center;gap:9px;cursor:pointer">
-              <input type="checkbox" id="asDisclosure" style="width:auto;margin:0">
-              <span>KI-/Aufzeichnungs-Hinweis zu Gesprächsbeginn ansagen</span>
-            </label>
-            <p class="muted" style="margin-top:4px">Empfohlen für DE: Der Assistent sagt zu Beginn einen kurzen Satz, dass das Gespräch von einem digitalen Assistenten geführt und verarbeitet wird. Gilt für alle Abteilungen.</p>
-
-            <div class="stack"><button id="saveBtn" class="btn btn--primary">Speichern</button></div>
+            <div class="as-seite">
+              <div class="panel as-zusammen" id="asZusammen">
+                <h3>So meldet sich dein Assistent</h3>
+                <div class="as-vorschau" id="asVorschau"></div>
+                <dl class="db-fakten" id="asFakten"></dl>
+                <div class="stack" style="margin-top:12px">
+                  <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+                  <button class="btn btn--ghost sm" type="button" id="asProbe">Probefrage</button>
+                  <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen</button>
+                </div>
+              </div>
+              <div class="panel as-nav" id="asNav">
+                <h3>Abschnitte</h3>
+                <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStimme">Stimme</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1882,12 +1892,14 @@
     // ---- Navigation ----
     document.querySelectorAll('.nav-item').forEach((b) => {
       b.onclick = () => {
+        if (typeof asDirty !== 'undefined' && asDirty && b.dataset.target !== 'sec-assistant' && !confirm('Im Assistenten gibt es ungespeicherte Änderungen. Ohne Speichern weiter?')) return;
+        if (typeof asDirty !== 'undefined' && asDirty && b.dataset.target !== 'sec-assistant') { asSetzeDirty(false); if (tenant) loadDept(); }
         document.querySelectorAll('.section').forEach((s) => s.classList.toggle('hidden', s.id !== b.dataset.target));
         document.querySelectorAll('.nav-item').forEach((n) => n.classList.toggle('active', n === b));
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -2063,7 +2075,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -2172,6 +2184,7 @@
         else { const { data: gen } = await sb.from('assistant_config').select('ai_disclosure').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(); $('asDisclosure').checked = gen?.ai_disclosure ?? false; }
       }
       renderKb(kb ?? []);
+      asSetzeDirty(false); asVorschau();
     }
 
     // ---- Nummern je Abteilung rendern ----
@@ -3855,6 +3868,41 @@
         .subscribe();
     }
 
+    // ---- Assistent: Vorschau, Ungespeichert-Anzeige, Abschnitts-Sprünge ----
+    let asDirty = false;
+    const TON_LABEL = { sie_formell: 'Sie, förmlich', sie_freundlich: 'Sie, freundlich', du_locker: 'Du, locker' };
+    function asVorschau() {
+      if (!$('asVorschau')) return;
+      const name = $('bizName').value.trim() || 'Mein Unternehmen';
+      const greet = $('greeting').value.trim();
+      $('asVorschau').innerHTML = '<span class="muted">Beim Abnehmen</span>' + escHtml(greet || ('Guten Tag, hier ist der Assistent von ' + name + '. Wie kann ich helfen?')) + ($('asDisclosure')?.checked ? '<span class="muted" style="margin-top:6px">davor: kurzer Hinweis, dass ein digitaler Assistent spricht</span>' : '');
+      const h = readHours(); const tage = ['so', 'mo', 'di', 'mi', 'do', 'fr', 'sa']; const heute = new Date().getDay();
+      const schluessel = (typeof H_DAYS !== 'undefined' && H_DAYS[(heute + 6) % 7]) ? H_DAYS[(heute + 6) % 7][0] : tage[heute];
+      const iv = h[schluessel] || []; const jetzt = new Date().toTimeString().slice(0, 5);
+      const offen = iv.some(([a, b]) => a <= jetzt && jetzt <= b);
+      const zeiten = iv.length ? iv.map(([a, b]) => a + '–' + b).join(', ') + ' Uhr' : 'geschlossen';
+      const stimme = (typeof VOICES !== 'undefined' ? VOICES.find((v) => v.id === $('voiceId').value) : null);
+      const fakten = [
+        ['Rolle', $('roleDesc').value.trim() || '–'],
+        ['Ton', TON_LABEL[$('tone').value] || $('tone').value],
+        ['Sprache', $('language').value === 'en' ? 'Englisch' : 'Deutsch'],
+        ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
+        ['Stimme', stimme ? stimme.name : ($('voiceId').value || 'Standard')],
+        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') : 'aus'],
+      ];
+      $('asFakten').innerHTML = fakten.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
+    }
+    function asSetzeDirty(v) { asDirty = v; $('asDirty')?.classList.toggle('hidden', !v); if ($('saveBtn')) $('saveBtn').textContent = v ? 'Speichern' : 'Gespeichert'; }
+    (function assistentWiring() {
+      const sec = $('sec-assistant'); if (!sec) return;
+      sec.addEventListener('input', (e) => { if (e.target.closest('.as-form')) { asSetzeDirty(true); asVorschau(); } });
+      sec.addEventListener('change', (e) => { if (e.target.closest('.as-form')) { asSetzeDirty(true); asVorschau(); } });
+      sec.addEventListener('click', (e) => { const a = e.target.closest('[data-as]'); if (a) { e.preventDefault(); $(a.dataset.as)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } const g = e.target.closest('[data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
+      $('asProbe').onclick = () => { if (typeof waOpen === 'function') waOpen(true); };
+      const vp = $('voicePicker'); if (vp) new MutationObserver(() => { asVorschau(); }).observe(vp, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 's' && !sec.classList.contains('hidden')) { e.preventDefault(); $('saveBtn').click(); } });
+      window.addEventListener('beforeunload', (e) => { if (asDirty) { e.preventDefault(); e.returnValue = ''; } });
+    })();
     // ---- Assistent speichern (Name + Config) ----
     $('saveBtn').onclick = async () => {
       if (!tenant) return;
@@ -3885,7 +3933,7 @@
       if (err) return toast('Fehler: ' + err.message, 'err');
       tenant.name = name; $('ovSub').textContent = name;
       $('ovLang').textContent = $('language').value === 'en' ? 'Englisch' : 'Deutsch';
-      toast('Gespeichert.');
+      asSetzeDirty(false); asVorschau(); toast('Gespeichert.');
     };
 
     // ---- Wissensdatenbank (Inline-Bearbeitung) ----
