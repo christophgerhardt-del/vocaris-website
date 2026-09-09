@@ -4657,7 +4657,7 @@
       { id: 'wissen', art: 'kpi', titel: 'Wissensstand', std: false, ziel: 'sec-kb', html: () => '<div class="k">Wissen</div><div class="v" id="dbWissen">–</div><div class="d" id="dbWissenSub">Einträge</div>' },
       { id: 'negativ', art: 'kpi', titel: 'Unzufriedene Anrufer', std: false, ziel: 'sec-live', html: () => '<div class="k">Unzufrieden</div><div class="v" id="dbNegativ">–</div><div class="d" id="dbNegativSub">Anrufe mit negativer Stimmung</div>' },
       // Kacheln
-      { id: 'verlauf', art: 'panel', titel: 'Anrufe je Tag und Uhrzeit', std: true, groesse: 8, html: () => kopf('Anrufe je Tag', null, '<span class="muted" id="dbChartSub"></span>') + '<div id="statChart" class="statchart"></div><div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted">wann dein Telefon klingelt · zum Filtern anklicken</span></div><div id="dbStunden" class="db-stunden"></div>' },
+      { id: 'verlauf', art: 'panel', titel: 'Anrufe je Tag und Uhrzeit', std: true, groesse: 8, html: () => kopf('Anrufe je Tag', null, '<span class="muted" id="dbChartSub"></span>') + '<div id="statChart" class="statchart"></div><div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted" id="dbStundenSub">wann dein Telefon klingelt · zum Filtern anklicken</span></div><div id="dbStunden" class="db-stunden"></div>' },
       { id: 'assistent', art: 'panel', titel: 'Dein Assistent', std: true, groesse: 4, html: () => '<h3>Dein Assistent</h3><dl class="db-fakten" id="dbFakten"></dl><p class="muted" id="dbSystem" style="margin-top:10px;font-size:12.5px"></p>' },
       { id: 'anrufliste', art: 'panel', titel: 'Letzte Anrufe', std: true, groesse: 6, html: () => kopf('Letzte Anrufe', 'sec-live', '<span id="dbAnrufeFilter"></span>') + '<div id="dbAnrufeListe" class="db-liste"></div>' },
       { id: 'vorgaenge', art: 'panel', titel: 'Offene Vorgänge', std: true, groesse: 6, html: () => kopf('Offene Vorgänge', 'sec-tickets') + '<div id="dbVorgaenge" class="db-liste"></div>' },
@@ -4837,13 +4837,19 @@
       q('dbAbgewiesen').textContent = dbDaten.blockHits; q('dbAbgewiesenSub').textContent = dbDaten.blockN ? 'durch ' + dbDaten.blockN + ' Sperr-Einträge' : 'keine Sperren eingerichtet';
       q('dbWissen').textContent = kbN; q('dbWissenSub').textContent = 'Einträge · ' + gapsN + ' offene Fragen';
       const negN = c.filter((x) => x.sentiment === 'negativ').length; q('dbNegativ').textContent = negN; q('dbNegativSub').textContent = c.length ? Math.round(negN / c.length * 100) + ' % der Anrufe im Zeitraum' : 'keine Anrufe im Zeitraum';
+      // Kreuzfilter: der gewählte Filter gilt für alle Darstellungen außer der eigenen Dimension
+      const passt = (x) => { if (!dbFilter) return true; const d = new Date(x.started_at); switch (dbFilter.art) { case 'tag': { const k = new Date(d); k.setHours(0, 0, 0, 0); return k.getTime() === dbFilter.wert; } case 'stunde': return d.getHours() === dbFilter.wert; case 'wochentag': return d.getDay() === dbFilter.wert; case 'thema': return x.topic === dbFilter.wert; case 'stimmung': return x.sentiment === dbFilter.wert; default: return true; } };
+      const ausser = (art) => (dbFilter && dbFilter.art !== art) ? c.filter(passt) : c;
       // Verlauf je Tag + Uhrzeit (klickbar = Filter für die Anrufliste)
       const tage = []; for (let i = dbTage - 1; i >= 0; i--) { const d = new Date(heute0); d.setDate(d.getDate() - i); tage.push({ d, n: 0 }); }
       const idx = new Map(tage.map((t, i) => [t.d.getTime(), i]));
       const stunden = new Array(24).fill(0); const wtage = new Array(7).fill(0);
-      for (const x of c) { const d = new Date(x.started_at); const key = new Date(d); key.setHours(0, 0, 0, 0); if (idx.has(key.getTime())) tage[idx.get(key.getTime())].n++; stunden[d.getHours()]++; wtage[d.getDay()]++; }
+      for (const x of ausser('tag')) { const d = new Date(x.started_at); const key = new Date(d); key.setHours(0, 0, 0, 0); if (idx.has(key.getTime())) tage[idx.get(key.getTime())].n++; }
+      for (const x of ausser('stunde')) stunden[new Date(x.started_at).getHours()]++;
+      for (const x of ausser('wochentag')) wtage[new Date(x.started_at).getDay()]++;
       const max = Math.max(1, ...tage.map((t) => t.n)); const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-      q('dbChartSub').textContent = c.length + ' Anrufe in ' + dbTage + ' Tagen';
+      q('dbChartSub').textContent = (dbFilter && dbFilter.art !== 'tag' ? ausser('tag').length + ' von ' + c.length + ' Anrufen · ' + dbFilter.label : c.length + ' Anrufe in ' + dbTage + ' Tagen');
+      q('dbStundenSub').textContent = dbFilter && dbFilter.art !== 'stunde' ? 'nur ' + dbFilter.label + ' · zum Filtern anklicken' : 'wann dein Telefon klingelt · zum Filtern anklicken';
       const chart = q('statChart'); chart.innerHTML = '';
       chart.classList.toggle('dicht', dbTage > 14);
       let labMonat = -1;
@@ -4874,7 +4880,7 @@
       // Letzte Anrufe (mit Filter aus Diagramm, Uhrzeit, Thema, Stimmung, Wochentag)
       const la = q('dbAnrufeListe'); la.innerHTML = '';
       let liste = c;
-      if (dbFilter) liste = c.filter((x) => { const d = new Date(x.started_at); switch (dbFilter.art) { case 'tag': { const k = new Date(d); k.setHours(0, 0, 0, 0); return k.getTime() === dbFilter.wert; } case 'stunde': return d.getHours() === dbFilter.wert; case 'wochentag': return d.getDay() === dbFilter.wert; case 'thema': return x.topic === dbFilter.wert; case 'stimmung': return x.sentiment === dbFilter.wert; default: return true; } });
+      if (dbFilter) liste = c.filter(passt);
       q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" title="Filter entfernen">' + dbFilter.label + ' · ' + liste.length + ' ×</button>' : '';
       const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
@@ -4890,12 +4896,12 @@
         if (ueber) z.querySelector('.t').style.color = '#c2410c';
         z.onclick = () => { geh('sec-tickets'); vorgangOeffnen(t.id); }; lv.append(z); });
       // Themen (klickbar)
-      const themen = {}; c.forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
+      const themen = {}; ausser('thema').forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
       const top = Object.entries(themen).sort((a, b) => b[1] - a[1]).slice(0, 6); const tmax = top[0]?.[1] || 1;
       const th = q('dbThemen'); th.innerHTML = top.length ? '' : leerText('Themen erscheinen, sobald Anrufe zusammengefasst sind.');
       top.forEach(([t, n]) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'thema' && dbFilter.wert === t ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + n + '</span></div><div class="b"><span style="width:' + Math.round(n / tmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = t; d.onclick = () => filterSetzen({ art: 'thema', wert: t, label: t }); th.append(d); });
       // Stimmung (klickbar)
-      const sti = { positiv: 0, neutral: 0, negativ: 0 }; c.forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
+      const sti = { positiv: 0, neutral: 0, negativ: 0 }; ausser('stimmung').forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
       const farben = [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']];
       const sm = q('dbStimmung');
       sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" title="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" class="' + (dbFilter?.art === 'stimmung' && dbFilter.wert === kk ? 'aktiv' : '') + '"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' %</span>').join('') + '</div>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
