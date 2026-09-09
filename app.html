@@ -498,6 +498,21 @@
     .lv-banner .transcript { max-height: 260px; }
     .lv-leer { color: var(--ink-faint); text-align: center; padding: 50px 20px; font-size: 14px; margin: 0; }
     .lv-streifen { font-size: 12.5px; color: var(--ink-faint); }
+    .lv-tag { position: sticky; top: -6px; z-index: 1; background: var(--white); font-size: 11px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; padding: 10px 12px 4px; }
+    .lv-tag:first-child { padding-top: 6px; }
+    .lv-neu { font-size: 10.5px; font-weight: 700; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, var(--white)); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
+    .lv-zeile.neu b { color: var(--ink); }
+    .lv-chip small { font-weight: 600; color: var(--ink-faint); } .lv-chip.aktiv small { color: var(--accent-ink); }
+    .lv-text mark, .bubble mark, .call-summary mark, .lv-mitte mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 1px; }
+    .lv-meta span.klick { cursor: pointer; } .lv-meta span.klick:hover { border-color: var(--accent); color: var(--accent-ink); }
+    .lv-zeitleiste { position: relative; height: 14px; background: var(--paper-2); border-radius: 7px; margin: 0 0 22px; }
+    .lv-zeitleiste span { position: absolute; top: 0; height: 100%; cursor: pointer; opacity: .85; }
+    .lv-zeitleiste span:hover { opacity: 1; outline: 2px solid var(--ink); outline-offset: 1px; z-index: 1; }
+    .lv-zeitleiste span.caller { background: #cbd5e1; } .lv-zeitleiste span.assistant { background: var(--accent); }
+    .lv-zeitleiste span:first-of-type { border-radius: 7px 0 0 7px; } .lv-zeitleiste span:last-of-type { border-radius: 0 7px 7px 0; }
+    .lv-zeitleiste i { position: absolute; top: 16px; left: 0; font-style: normal; font-size: 10.5px; color: var(--ink-faint); } .lv-zeitleiste i.r { left: auto; right: 0; }
+    .bubble.blitz { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .db-tip { max-width: 420px; white-space: normal; line-height: 1.35; }
     .lv-zurueck { display: none; margin-bottom: 8px; }
     #lvDetail .stack .btn { margin: 0; }
     @media (max-width: 900px) {
@@ -1797,6 +1812,7 @@
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
         if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
+        if (b.dataset.target === 'sec-live' && typeof liveBesucht === 'function' && tenant) { liveBesucht(); renderLive(); }
       };
     });
 
@@ -3425,7 +3441,15 @@
     // ---- Live-Anrufe (Echtzeit) ----
     // Liste links, Detail rechts. Anrufe werden seitenweise geladen (100), der
     // Gesprächsverlauf erst beim Öffnen eines Anrufs (aktive Anrufe sofort).
-    let lvAuswahl = null, lvSuche = '', lvZeitraum = 7, lvStimmung = '', lvThema = '', lvGeladen = 0, lvAlleGeladen = false, lvTimer = null, lvSuchTimer = null;
+    let lvAuswahl = null, lvSuche = '', lvZeitraum = 7, lvStimmung = '', lvThema = '', lvGeladen = 0, lvAlleGeladen = false, lvTimer = null, lvSuchTimer = null, lvGesehenAlt = 0;
+    const fmtNr = (n) => (n || 'Anrufer').replace(/^(\+\d{2})(\d{3})(\d+)$/, '$1 $2 $3');
+    const escHtml = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    /** Text als HTML mit hervorgehobenen Suchtreffern. */
+    const markieren = (t) => { const s = lvSuche.trim(); const h = escHtml(t); if (!s) return h; const re = new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return h.replace(re, (m) => '<mark>' + m + '</mark>'); };
+    const lvTagKey = (iso) => { const d = new Date(iso); d.setHours(0, 0, 0, 0); return d.getTime(); };
+    const lvTagTitel = (key) => { const h0 = lvHeute0().getTime(); if (key === h0) return 'Heute'; if (key === h0 - 864e5) return 'Gestern'; return new Date(key).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' }); };
+    /** Beim Betreten von „Live": merken, was bis dahin gesehen war (für die Neu-Markierung). */
+    function liveBesucht() { try { const k = 'vocaris.live.gesehen.' + tenant.id; lvGesehenAlt = Number(localStorage.getItem(k) || 0); localStorage.setItem(k, String(Date.now())); } catch { /* egal */ } }
     const LV_SEITE = 100;
     const lvHeute0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
     const fmtSeit = (iso) => { const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -3461,7 +3485,7 @@
       renderLive();
       setTimeout(() => document.querySelector('.lv-zeile[data-call-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
     }
-    function lvGefiltert() {
+    function lvGefiltert(ausser) {
       const jetzt = Date.now(); const s = lvSuche.trim().toLowerCase(); const h0 = lvHeute0();
       return [...liveCalls.values()].filter((x) => {
         const c = x.call;
@@ -3469,8 +3493,8 @@
           if (lvZeitraum === 1 && new Date(c.started_at) < h0) return false;
           if (lvZeitraum > 1 && jetzt - new Date(c.started_at) > lvZeitraum * 864e5) return false;
         }
-        if (lvStimmung && c.sentiment !== lvStimmung) return false;
-        if (lvThema && c.topic !== lvThema) return false;
+        if (ausser !== 'stimmung' && lvStimmung && c.sentiment !== lvStimmung) return false;
+        if (ausser !== 'thema' && lvThema && c.topic !== lvThema) return false;
         if (s && ![c.caller_number, c.topic, c.summary, ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
         return true;
       }).sort((a, b) => (callIsActive(b.call) - callIsActive(a.call)) || (new Date(b.call.started_at) - new Date(a.call.started_at)));
@@ -3482,7 +3506,7 @@
       x.turns.forEach((t, i) => {
         const b = document.createElement('div'); b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
         if (live && i === x.turns.length - 1 && t.role === 'caller') b.classList.add('spricht');
-        b.textContent = t.content;
+        b.innerHTML = markieren(t.content); b.dataset.i = i;
         const off = Math.max(0, Math.round((new Date(t.created_at).getTime() - start) / 1000));
         const tm = document.createElement('time'); tm.textContent = (t.role === 'caller' ? 'Anrufer' : 'Assistent') + ' · ' + Math.floor(off / 60) + ':' + String(off % 60).padStart(2, '0'); b.append(tm);
         ziel.append(b);
@@ -3503,10 +3527,13 @@
       const st = LV_STIMMUNG[c.sentiment];
       z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic hidden"></span><span class="lv-live hidden">● Live</span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
       const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1].slice(2); } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
-      z.querySelector('b').textContent = c.caller_number || 'Anrufer';
-      if (c.topic) { const tp = z.querySelector('.call-topic'); tp.textContent = c.topic; tp.classList.remove('hidden'); }
+      z.querySelector('b').innerHTML = markieren(fmtNr(c.caller_number));
+      if (c.topic) { const tp = z.querySelector('.call-topic'); tp.innerHTML = markieren(c.topic); tp.classList.remove('hidden'); }
       if (live) z.querySelector('.lv-live').classList.remove('hidden');
-      z.querySelector('.lv-text').textContent = c.summary || (live ? 'Gespräch läuft gerade …' : (x.turns.length ? x.turns[0].content : 'ohne Zusammenfassung'));
+      else if (lvGesehenAlt && new Date(c.started_at).getTime() > lvGesehenAlt) { const n = document.createElement('span'); n.className = 'lv-neu'; n.textContent = 'Neu'; n.dataset.tip = 'Seit deinem letzten Besuch eingegangen'; z.querySelector('.lv-mitte b').after(n); }
+      const text = c.summary || (live ? 'Gespräch läuft gerade …' : (x.turns.length ? x.turns[0].content : 'ohne Zusammenfassung'));
+      z.querySelector('.lv-text').innerHTML = markieren(text);
+      if (c.summary && c.summary.length > 70) z.querySelector('.lv-text').dataset.tip = c.summary;
       const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(c.started_at); r[1].textContent = live ? '' : (lvDauer(c) ? fmtDauer(lvDauer(c)) : '–');
       z.onclick = () => { lvAuswahl = c.id; renderLive(); };
       return z;
@@ -3519,9 +3546,12 @@
       $('liveSub').textContent = active.length ? (active.length === 1 ? 'Ein Gespräch läuft gerade.' : active.length + ' Gespräche laufen gerade.') : 'Kein aktiver Anruf. Sobald jemand anruft, erscheint das Gespräch hier in Echtzeit.';
       const la = $('liveActive'); la.innerHTML = ''; active.forEach((x) => la.append(liveBanner(x)));
       // Themen-Auswahl
-      const themen = [...new Set(alle.map((x) => x.call.topic).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+      const basisT = lvGefiltert('thema'); const themenN = {}; basisT.forEach((x) => { if (x.call.topic) themenN[x.call.topic] = (themenN[x.call.topic] || 0) + 1; });
+      const themen = [...new Set(alle.map((x) => x.call.topic).filter(Boolean))].sort((a, b) => (themenN[b] || 0) - (themenN[a] || 0) || a.localeCompare(b, 'de'));
       const sel = $('lvThema'); const cur = lvThema; sel.innerHTML = '<option value="">Alle Themen</option>';
-      themen.forEach((t) => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.append(o); }); sel.value = themen.includes(cur) ? cur : ''; lvThema = sel.value;
+      themen.forEach((t) => { const o = document.createElement('option'); o.value = t; o.textContent = t + ' (' + (themenN[t] || 0) + ')'; sel.append(o); }); sel.value = themen.includes(cur) ? cur : ''; lvThema = sel.value;
+      const basisS = lvGefiltert('stimmung'); const stN = { '': basisS.length, positiv: 0, neutral: 0, negativ: 0 }; basisS.forEach((x) => { if (stN[x.call.sentiment] !== undefined) stN[x.call.sentiment]++; });
+      document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => { const k = b.dataset.stimmung; let z = b.querySelector('small'); if (!z) { z = document.createElement('small'); b.append(z); } z.textContent = ' ' + (stN[k] ?? 0); });
       // Kennzahlen-Streifen
       const h0 = lvHeute0(); const heute = alle.filter((x) => new Date(x.call.started_at) >= h0); const dauern = alle.map((x) => lvDauer(x.call)).filter((d) => d > 0);
       $('lvStreifen').textContent = heute.length + ' heute · Ø ' + (dauern.length ? fmtDauer(dauern.reduce((a, b) => a + b, 0) / dauern.length) : '–') + ' · ' + alle.length + ' geladen';
@@ -3531,7 +3561,8 @@
       if (!lvAuswahl && liste.length && window.innerWidth > 900) lvAuswahl = liste[0].call.id;
       const ul = $('lvListe'); ul.innerHTML = '';
       if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Anrufe für diese Auswahl.' : 'Noch keine Anrufe. Ruf deine Nummer an, dann erscheint das Gespräch hier.') + '</p>';
-      liste.forEach((x) => ul.append(lvZeile(x)));
+      let tagKey = null;
+      liste.forEach((x) => { if (!callIsActive(x.call)) { const k = lvTagKey(x.call.started_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } } ul.append(lvZeile(x)); });
       $('lvMehr').classList.toggle('hidden', lvAlleGeladen);
       renderLiveDetail();
       renderLiveWidget();
@@ -3546,21 +3577,30 @@
         + '<div class="call-summary hidden" data-zusammenfassung></div>'
         + '<div data-aktionen></div>'
         + '<div class="db-panelkopf" style="margin-top:14px"><h3 style="font-size:14px;margin:0">Gesprächsverlauf</h3><span class="db-kopfrechts"><span class="muted" data-turns></span><button class="btn btn--ghost sm" type="button" data-kopieren>Kopieren</button></span></div>'
+        + '<div class="lv-zeitleiste hidden" data-zeitleiste></div>'
         + '<div class="transcript lv-transkript" data-transkript></div>';
-      d.querySelector('.lv-nr').textContent = c.caller_number || 'Anrufer';
+      d.querySelector('.lv-nr').textContent = fmtNr(c.caller_number);
       d.querySelector('.lv-zurueck').onclick = () => { lvAuswahl = null; renderLive(); };
-      const meta = d.querySelector('.lv-meta'); const chip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
+      const meta = d.querySelector('.lv-meta'); const chip = (t, tip, klick) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); return s; };
       if (live) { const s = document.createElement('span'); s.className = 'live-pill'; s.innerHTML = '● Live · <span data-seit></span>'; s.querySelector('[data-seit]').dataset.seit = c.started_at; s.querySelector('[data-seit]').textContent = fmtSeit(c.started_at); meta.append(s); }
       chip(new Date(c.started_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
       if (!live) chip(lvDauer(c) ? 'Dauer ' + fmtDauer(lvDauer(c)) : 'Dauer unbekannt');
-      if (st) chip(st[1], 'Stimmung des Anrufers, automatisch ausgewertet');
-      if (c.topic) chip(c.topic, 'Thema, automatisch erkannt');
+      if (st) chip(st[1], 'Stimmung, automatisch ausgewertet · Klick filtert die Liste', () => { lvStimmung = lvStimmung === c.sentiment ? '' : c.sentiment; document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => b.classList.toggle('aktiv', (b.dataset.stimmung || '') === lvStimmung)); renderLive(); });
+      if (c.topic) chip(c.topic, 'Thema, automatisch erkannt · Klick filtert die Liste', () => { lvThema = lvThema === c.topic ? '' : c.topic; renderLive(); });
       if (c.status && !live && c.status !== 'ended') chip(c.status);
-      if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.textContent = c.summary; z.classList.remove('hidden'); }
+      if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.innerHTML = markieren(c.summary); z.classList.remove('hidden'); }
       if (!live) d.querySelector('[data-aktionen]').append(callAktionen(x, d));
       d.querySelector('[data-turns]').textContent = x.turns.length ? x.turns.length + ' Beiträge' : '';
       d.querySelector('[data-kopieren]').onclick = async () => { const txt = x.turns.map((t) => (t.role === 'caller' ? 'Anrufer: ' : 'Assistent: ') + t.content).join('\n'); try { await navigator.clipboard.writeText(txt || (c.summary || '')); toast('Gesprächsverlauf kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } };
       transkriptZeichnen(x, d.querySelector('[data-transkript]'), live);
+      // Zeitleiste: wer hat wann gesprochen – Klick springt zum Beitrag
+      const zl = d.querySelector('[data-zeitleiste]');
+      if (x.turns.length >= 2) {
+        const t0 = new Date(c.started_at).getTime(); const ende = live ? Date.now() : Math.max(new Date(c.ended_at || x.turns[x.turns.length - 1].created_at).getTime(), new Date(x.turns[x.turns.length - 1].created_at).getTime() + 5000);
+        const gesamt = Math.max(1, ende - t0); zl.innerHTML = ''; zl.classList.remove('hidden');
+        x.turns.forEach((t, i) => { const von = Math.max(0, new Date(t.created_at).getTime() - t0); const bis = i + 1 < x.turns.length ? Math.max(von + 800, new Date(x.turns[i + 1].created_at).getTime() - t0) : gesamt; const seg = document.createElement('span'); seg.className = t.role === 'caller' ? 'caller' : 'assistant'; seg.style.left = (von / gesamt * 100) + '%'; seg.style.width = Math.max(0.8, (bis - von) / gesamt * 100) + '%'; seg.dataset.tip = (t.role === 'caller' ? 'Anrufer' : 'Assistent') + ' · ' + Math.floor(von / 60000) + ':' + String(Math.floor(von / 1000) % 60).padStart(2, '0') + ' · ' + t.content.slice(0, 90) + (t.content.length > 90 ? ' …' : ''); seg.onclick = () => { const bl = d.querySelector('.bubble[data-i="' + i + '"]'); if (bl) { bl.scrollIntoView({ behavior: 'smooth', block: 'center' }); bl.classList.add('blitz'); setTimeout(() => bl.classList.remove('blitz'), 1500); } }; zl.append(seg); });
+        const ll = document.createElement('i'); ll.textContent = '0:00'; const lr = document.createElement('i'); lr.className = 'r'; lr.textContent = Math.floor(gesamt / 60000) + ':' + String(Math.floor(gesamt / 1000) % 60).padStart(2, '0'); zl.append(ll, lr);
+      }
     }
     // Bedienung: Suche, Zeitraum, Stimmung, Thema, Nachladen, Tastatur, laufende Uhr
     (function liveWiring() {
@@ -3573,7 +3613,10 @@
       $('lvNeu').onclick = () => loadLive();
       $('lvAnrufKnopf').onclick = () => { const p = $('outboundCallPanel'); p.classList.toggle('hidden'); if (!p.classList.contains('hidden')) $('callTo')?.focus(); };
       document.addEventListener('keydown', (e) => {
-        if ($('sec-live').classList.contains('hidden') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if ($('sec-live').classList.contains('hidden')) return;
+        if (e.key === 'Escape') { if (e.target === s && s.value) { s.value = ''; lvSuche = ''; renderLive(); } else if (window.innerWidth <= 900 && lvAuswahl) { lvAuswahl = null; renderLive(); } return; }
+        if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key === '/') { e.preventDefault(); s.focus(); s.select(); return; }
         if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
         const liste = lvGefiltert(); if (!liste.length) return; e.preventDefault();
         const i = liste.findIndex((x) => x.call.id === lvAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
