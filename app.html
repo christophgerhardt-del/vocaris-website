@@ -347,6 +347,9 @@
     .statchart .bar.zero { background: var(--line); }
     .statchart .d { font-size: 10.5px; color: var(--ink-faint); }
     .statchart .c { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+    .statchart .l { min-height: 18px; line-height: 18px; }
+    .statchart.dicht { gap: 3px; } .statchart.dicht .l { font-size: 11px; color: var(--ink-faint); white-space: nowrap; } .statchart.dicht .bar { max-width: none; border-radius: 3px 3px 0 0; }
+    .statchart .col.aktiv .l { color: var(--ink); font-weight: 700; }
     /* Schwebendes Live-Anruf-Widget (unten rechts, über dem Assistenten-Launcher) */
     .livew { position: fixed; right: 22px; bottom: 84px; z-index: 70; width: 330px; max-width: calc(100vw - 44px);
       background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
@@ -4265,7 +4268,11 @@
       const max = Math.max(1, ...tage.map((t) => t.n)); const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
       q('dbChartSub').textContent = c.length + ' Anrufe in ' + dbTage + ' Tagen';
       const chart = q('statChart'); chart.innerHTML = '';
-      tage.forEach((t) => { const hh = t.n ? Math.max(3, Math.round(t.n / max * 66)) : 3; const lab = dbTage > 14 ? (t.d.getDate() % 5 === 0 || t.n ? t.d.getDate() + '.' : '') : wd[t.d.getDay()];
+      chart.classList.toggle('dicht', dbTage > 14);
+      let labMonat = -1;
+      tage.forEach((t, i) => { const hh = t.n ? Math.max(3, Math.round(t.n / max * 66)) : 3;
+        let lab = wd[t.d.getDay()];
+        if (dbTage > 14) { lab = ''; if (i % 5 === 0 || i === tage.length - 1) { const mitMonat = t.d.getMonth() !== labMonat; labMonat = t.d.getMonth(); lab = t.d.getDate() + '.' + (mitMonat ? (t.d.getMonth() + 1) + '.' : ''); } }
         const col = document.createElement('div'); col.className = 'col' + (dbFilter?.art === 'tag' && dbFilter.wert === t.d.getTime() ? ' aktiv' : ''); col.title = t.d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' }) + ': ' + t.n + (t.n === 1 ? ' Anruf' : ' Anrufe');
         col.innerHTML = '<div class="c">' + (t.n || '') + '</div><div class="bar' + (t.n ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div>';
         if (t.n) col.onclick = () => filterSetzen({ art: 'tag', wert: t.d.getTime(), label: t.d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) }); chart.append(col); });
