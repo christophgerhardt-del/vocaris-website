@@ -380,6 +380,8 @@
     .tpl-cat { display: inline-block; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 8px; }
     .kb-cat-head { color: var(--ink-faint); margin: 20px 0 8px; }
     .kb-cat-head:first-child { margin-top: 4px; }
+    .bubble.spricht::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: spricht 1s infinite; }
+    @keyframes spricht { 0%, 100% { opacity: .2 } 50% { opacity: 1 } }
     .call-auftrag { margin-top: 10px; padding: 12px 14px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
@@ -3312,11 +3314,12 @@
       }
       const tr = document.createElement('div'); tr.className = 'transcript';
       if (!x.turns.length) { const m = document.createElement('span'); m.className = 'muted'; m.textContent = 'Verbindung aufgebaut …'; tr.append(m); }
-      for (const t of x.turns) {
+      x.turns.forEach((t, i) => {
         const b = document.createElement('div');
         b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+        if (live && i === x.turns.length - 1 && t.role === 'caller') b.classList.add('spricht');
         b.textContent = t.content; tr.append(b);
-      }
+      });
       div.append(tr);
       if (!live) div.append(callAktionen(x, div));
       return div;
@@ -3465,10 +3468,13 @@
           const e = liveCalls.get(c.id) || { call: c, turns: [] };
           e.call = c; liveCalls.set(c.id, e); renderLive();
         })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'call_turns', filter: 'tenant_id=eq.' + tenantId }, (p) => {
-          const t = p.new; if (!t) return;
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'call_turns', filter: 'tenant_id=eq.' + tenantId }, (p) => {
+          const t = p.new; if (!t || !t.id) return;
           const e = liveCalls.get(t.call_id) || { call: { id: t.call_id, status: 'active', started_at: new Date().toISOString(), caller_number: null }, turns: [] };
-          e.turns.push(t); liveCalls.set(t.call_id, e); renderLive();
+          // Eine Zeile wächst, während der Anrufer spricht: UPDATE ersetzt den Text der bestehenden Blase.
+          const i = e.turns.findIndex((x) => x.id === t.id);
+          if (i >= 0) e.turns[i] = t; else e.turns.push(t);
+          liveCalls.set(t.call_id, e); renderLive();
         })
         .subscribe();
     }
