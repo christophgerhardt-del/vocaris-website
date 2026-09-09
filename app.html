@@ -539,6 +539,10 @@
     .as-nav a:hover { background: var(--paper-2); color: var(--ink); }
     #sec-assistant .db-aktionen .lv-neu { background: #fef3c7; color: #b45309; padding: 3px 9px; font-size: 11.5px; }
     @media (max-width: 1000px) { .as-split { grid-template-columns: 1fr; } .as-seite { position: static; } .as-nav { display: none; } }
+    .num-split { grid-template-columns: minmax(0, 6fr) minmax(300px, 5fr); }
+    .num-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .num-grid .panel { margin-bottom: 0; }
+    @media (max-width: 1000px) { .num-split { grid-template-columns: 1fr; } }
     @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
@@ -1286,11 +1290,17 @@
 
         <!-- Telefonnummer -->
         <section id="sec-number" class="section hidden">
-          <h1 class="pagehead">Telefonnummer</h1>
-          <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
-          <div id="numbers"></div>
-
-          <div class="panel" style="margin-top:18px" id="numAddPanel">
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Telefonnummer</h1>
+              <p class="pagesub" style="margin-bottom:0" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
+            </div>
+            <div class="db-aktionen">
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--primary sm" type="button" id="numAddKnopf">+ Neue Nummer</button>
+            </div>
+          </div>
+          <div class="panel hidden" id="numAddPanel">
             <h3>Neue Nummer hinzufügen</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Such dir eine freie Rufnummer und ordne sie einer Abteilung zu. Sie wird automatisch mit deinem Assistenten verbunden.</p>
             <div class="if-grid">
@@ -1311,17 +1321,24 @@
             <div id="numResults" style="margin-top:12px"></div>
             <p class="muted" style="text-align:left;padding:0;margin-top:10px;font-size:12px">Hinweis: Deutsche Rufnummern erfordern bei der Bestellung einen Adressnachweis (Regulatory-Prüfung). Die Nummer wird automatisch aktiv, sobald die Prüfung durch ist.</p>
           </div>
-          <!-- Sperrliste -->
-          <div class="panel" id="blockPanel">
-            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>Gesperrte Nummern</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Anrufe von diesen Nummern werden abgewiesen, bevor der Assistent abnimmt. Sie kosten keine Gesprächsminute. Erlaubt: eine Nummer (+49 …), ein Bereich mit Stern am Ende (+4930*) oder „anonym" für unterdrückte Rufnummern.</p>
-            <div class="grid2">
-              <div><label style="margin-top:0">Nummer</label><input id="blockNummer" placeholder="+49 … oder anonym" /></div>
-              <div><label style="margin-top:0">Grund (optional)</label><input id="blockGrund" placeholder="z. B. Werbeanrufe" /></div>
+          <div class="as-split num-split">
+            <div>
+              <div id="numbers" class="num-grid"></div>
             </div>
-            <div class="stack" style="margin-top:10px"><button id="blockAdd" class="btn" type="button">Nummer sperren</button></div>
-            <p class="muted" id="blockHint" style="margin-top:6px;font-size:12.5px"></p>
-            <div id="blockList" style="margin-top:8px"></div>
+            <div>
+              <div class="panel" id="blockPanel">
+                <div class="db-panelkopf"><h3 style="margin:0">Gesperrte Nummern</h3><span class="muted" id="blockStreifen"></span></div>
+                <p class="muted" style="text-align:left;padding:0;margin-bottom:12px;font-size:13px">Anrufe von diesen Nummern werden abgewiesen, bevor der Assistent abnimmt, und kosten keine Gesprächsminute. Erlaubt: eine Nummer (+49 …), ein Bereich mit Stern am Ende (+4930*) oder „anonym" für unterdrückte Rufnummern.</p>
+                <div class="grid2">
+                  <div><label style="margin-top:0">Nummer</label><input id="blockNummer" placeholder="+49 … oder anonym" /></div>
+                  <div><label style="margin-top:0">Grund (optional)</label><input id="blockGrund" placeholder="z. B. Werbeanrufe" /></div>
+                </div>
+                <div class="stack" style="margin-top:10px"><button id="blockAdd" class="btn btn--primary sm" type="button">Nummer sperren</button><button id="blockAnonym" class="btn btn--ghost sm" type="button" data-tip="Unterdrückte Rufnummern abweisen">Anonyme Anrufe sperren</button></div>
+                <p class="muted" id="blockHint" style="margin-top:6px;font-size:12.5px"></p>
+                <input id="blockSuche" class="lv-suche" type="search" placeholder="Sperrliste durchsuchen" autocomplete="off" style="width:100%;margin-top:12px" />
+                <div id="blockList" class="lv-liste" style="padding:4px;margin-top:8px;max-height:none"></div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1825,7 +1842,7 @@
         // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
         // gehört zum Betreiber, nicht in den kuratierten Restaurant-Bereich.
-        elementeAus: ['outboundCallPanel', 'lvAnrufKnopf', 'numAddPanel'],
+        elementeAus: ['outboundCallPanel', 'lvAnrufKnopf', 'numAddPanel', 'numAddKnopf'],
         elementeAn: ['menuPanel', 'kbImpMenuTab'], // Speisekarte hochladen (Reiter im Import)
         selektorenAus: ['[data-deptbar]', '.dept-hint'], // nur ein Bereich, kein Vertrieb/Support
         // Restaurants haben nur EINEN Bereich – der Hinweis auf Vertrieb und
@@ -1899,7 +1916,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -2075,7 +2092,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -2191,32 +2208,33 @@
     function renderNumbers(nums) {
       const wrap = $('numbers');
       if (!nums.length) {
-        wrap.innerHTML = '<div class="panel"><span class="muted">Deine Nummer wird gerade eingerichtet — wir melden uns, sobald sie aktiv ist.</span></div>';
+        wrap.innerHTML = '<div class="panel"><h3 style="margin-bottom:6px">Noch keine Rufnummer</h3><p class="muted" style="text-align:left;padding:0">Deine Nummer wird gerade eingerichtet – wir melden uns, sobald sie aktiv ist. Bis dahin kannst du Wissen und Assistent vorbereiten.</p><div class="stack" style="margin-top:10px"><button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen pflegen</button><button class="btn btn--ghost sm" type="button" data-geh="sec-assistant">Assistent einrichten</button></div></div>';
         return;
       }
-      // Sortierung: Allgemein → Vertrieb → Support
       const order = { general: 0, vertrieb: 1, support: 2 };
       const sorted = [...nums].sort((a, b) => (order[a.department || 'general'] ?? 9) - (order[b.department || 'general'] ?? 9));
       wrap.innerHTML = '';
       sorted.forEach((n) => {
-        const dep = (n.department || 'general');
-        const num = n.phone_number;
-        // Empfangsnummer: gehört formal einem anderen Mandanten, leitet Anrufe aber zu uns.
+        const dep = (n.department || 'general'); const num = n.phone_number;
         const inbound = n.inbound_tenant_id === tenant.id && n.tenant_id !== tenant.id;
-        const card = document.createElement('div'); card.className = 'numcard';
-        const labelHtml = inbound
-          ? '<span class="dept-badge support">Empfangsnummer</span>'
-          : (dep === 'general'
-            ? '<span class="dept-badge general">Allgemein</span>'
-            : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>');
-        card.innerHTML =
-          '<div class="numhead"><span class="bignum"><span>' + num + '</span></span>' + labelHtml + '</div>' +
-          (inbound ? '<p class="muted" style="font-size:13px;margin-top:6px">Unter dieser Nummer erreichen dich deine Anrufer.</p>' : '') +
-          '<button class="btn btn--ghost sm" type="button" style="margin-top:12px">Nummer kopieren</button>';
-        card.querySelector('button').onclick = () => { navigator.clipboard?.writeText(num); toast('Nummer kopiert.'); };
+        const card = document.createElement('div'); card.className = 'panel numcard';
+        const label = inbound ? '<span class="dept-badge support">Empfangsnummer</span>' : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>';
+        card.innerHTML = '<div class="numhead"><span class="bignum"><span></span></span>' + label + '</div>'
+          + '<p class="muted" style="font-size:13px;margin-top:6px;text-align:left;padding:0">' + (inbound ? 'Unter dieser Nummer erreichen dich deine Anrufer.' : 'Anrufe auf dieser Nummer nimmt der Assistent' + (dep === 'general' ? '' : ' im Bereich „' + (DEPT_LABEL[dep] || dep) + '"') + ' entgegen.') + '</p>'
+          + '<div class="stack" style="margin-top:12px"><a class="btn btn--primary sm" href="tel:' + num + '">Anrufen</a><button class="btn btn--ghost sm" type="button" data-kopie>Kopieren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Anrufe ansehen</button></div>';
+        card.querySelector('.bignum span').textContent = fmtNr(num);
+        card.querySelector('[data-kopie]').onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Nummer kopiert.'); } catch { toast(num); } };
         wrap.append(card);
       });
     }
+    (function nummerWiring() {
+      const k = $('numAddKnopf'); if (!k) return;
+      k.onclick = () => { $('numAddPanel').classList.toggle('hidden'); if (!$('numAddPanel').classList.contains('hidden')) $('numArea')?.focus(); };
+      $('sec-number').addEventListener('click', (e) => { const g = e.target.closest('[data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
+      $('blockAnonym').onclick = () => sperren('anonym', 'Unterdrückte Rufnummern');
+      $('blockSuche').oninput = () => renderBlockList();
+      $('blockNummer').onkeydown = (e) => { if (e.key === 'Enter') $('blockAdd').click(); };
+    })();
 
     // ---- Self-Service: neue Nummer suchen & buchen ----
     function numAuth() { return { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }; }
@@ -5606,14 +5624,21 @@
     async function renderBlockList() {
       const el = $('blockList'); if (!el || !tenant) return;
       const { data } = await sb.from('blocked_numbers').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
-      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Keine gesperrten Nummern.</p>'; return; }
+      const alle = data || []; const s = ($('blockSuche')?.value || '').trim().toLowerCase();
+      const treffer = alle.reduce((a, b) => a + (b.hits || 0), 0);
+      if ($('blockStreifen')) $('blockStreifen').textContent = alle.length ? alle.length + (alle.length === 1 ? ' Eintrag' : ' Einträge') + ' · ' + treffer + '× abgewiesen' : '';
+      if ($('blockAnonym')) $('blockAnonym').classList.toggle('hidden', alle.some((b) => b.phone === 'anonym'));
+      const liste = alle.filter((b) => !s || (b.phone + ' ' + (b.reason || '')).toLowerCase().includes(s));
+      if (!liste.length) { el.innerHTML = '<p class="lv-leer" style="padding:24px 12px">' + (alle.length ? 'Keine Treffer.' : 'Keine gesperrten Nummern.') + '</p>'; return; }
       el.innerHTML = '';
-      data.forEach((b) => {
-        const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
-        const txt = document.createElement('span'); txt.textContent = `${b.phone}${b.reason ? ' · ' + b.reason : ''} · ${b.hits ? b.hits + '× abgewiesen' : 'noch kein Anruf'}`;
-        const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Freigeben'; del.style.float = 'right';
-        del.onclick = async () => { await sb.from('blocked_numbers').delete().eq('id', b.id); toast('Freigegeben.'); renderBlockList(); };
-        row.append(del, txt); el.append(row);
+      liste.forEach((b) => {
+        const z = document.createElement('div'); z.className = 'lv-zeile'; z.style.cursor = 'default';
+        z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts"><button class="btn btn--ghost sm" type="button">Freigeben</button></div>';
+        const dot = z.querySelector('.lv-dot'); dot.style.background = b.hits ? '#dc2626' : 'var(--line)'; dot.dataset.tip = b.hits ? b.hits + '× abgewiesen, zuletzt ' + (b.last_hit ? lvWann(b.last_hit) : '–') : 'Noch kein Anruf abgewiesen';
+        z.querySelector('b').innerHTML = markierenMit(b.phone === 'anonym' ? 'Anonyme Anrufer' : (b.phone.endsWith('*') ? fmtNr(b.phone.slice(0, -1)) + ' …' : fmtNr(b.phone)), s) + (b.phone.endsWith('*') ? ' <span class="lv-neu">Bereich</span>' : '');
+        z.querySelector('.lv-text').innerHTML = markierenMit([b.reason, 'gesperrt ' + lvWann(b.created_at), b.hits ? b.hits + '× abgewiesen' : null].filter(Boolean).join(' · '), s);
+        z.querySelector('button').onclick = async () => { await sb.from('blocked_numbers').delete().eq('id', b.id); toast('Freigegeben.'); renderBlockList(); };
+        el.append(z);
       });
     }
     // ---- Termine ----
