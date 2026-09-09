@@ -469,6 +469,43 @@
     .call-card.blitz { outline: 2px solid var(--accent); outline-offset: 2px; transition: outline-color .6s; }
     @media (max-width: 760px) { .db-editleiste { flex-direction: column; } }
     @media (max-width: 480px) { #dbStand { display: none; } }
+    /* ---- Live ---- */
+    .lv-suche { width: auto; height: 32px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; font-size: 13px; min-width: 240px; background: var(--white); }
+    .lv-filter { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; font-size: 13px; }
+    .lv-chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+    .lv-chip { font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-soft); cursor: pointer; }
+    .lv-chip:hover { border-color: var(--accent); } .lv-chip.aktiv { border-color: var(--accent); color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 10%, var(--white)); }
+    .lv-select { width: auto; font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 28px 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); color: var(--ink-soft); }
+    .lv-split { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 14px; align-items: start; }
+    .lv-liste { padding: 6px; max-height: calc(100vh / var(--app-zoom, 1) - 250px); min-height: 200px; overflow-y: auto; margin-bottom: 0; }
+    .lv-zeile { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
+    .lv-zeile:hover { background: var(--paper-2); }
+    .lv-zeile.aktiv { background: color-mix(in srgb, var(--accent) 8%, var(--white)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+    .lv-zeile.live { background: color-mix(in srgb, #28c76f 8%, var(--white)); }
+    .lv-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; background: var(--line); }
+    .lv-mitte { min-width: 0; } .lv-mitte b { font-size: 13.5px; }
+    .lv-text { font-size: 12.5px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+    .lv-rechts { display: flex; flex-direction: column; align-items: flex-end; font-size: 12px; color: var(--ink-faint); white-space: nowrap; gap: 2px; }
+    .lv-live { font-size: 11px; font-weight: 700; color: #fff; background: #28c76f; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; }
+    .lv-detail { position: sticky; top: 14px; margin-bottom: 0; }
+    .lv-detailkopf { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 10px; }
+    .lv-detailkopf h2 { margin: 0; font-size: 20px; letter-spacing: -.01em; font-family: var(--serif); }
+    .lv-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+    .lv-meta span:not(.live-pill) { font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--ink-soft); }
+    .lv-transkript { max-height: calc(100vh / var(--app-zoom, 1) - 470px); min-height: 180px; }
+    .bubble time { display: block; font-size: 10.5px; color: var(--ink-faint); margin-top: 4px; }
+    .lv-banner { border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
+    .lv-banner .transcript { max-height: 260px; }
+    .lv-leer { color: var(--ink-faint); text-align: center; padding: 50px 20px; font-size: 14px; margin: 0; }
+    .lv-streifen { font-size: 12.5px; color: var(--ink-faint); }
+    .lv-zurueck { display: none; margin-bottom: 8px; }
+    #lvDetail .stack .btn { margin: 0; }
+    @media (max-width: 900px) {
+      .lv-split { grid-template-columns: 1fr; } .lv-detail { position: static; }
+      .lv-zeigt-detail .lv-split > div:first-child { display: none; } .lv-zurueck { display: inline-flex; }
+      .lv-liste { max-height: none; } .lv-transkript { max-height: 55vh; } .lv-suche { min-width: 0; flex: 1 1 100%; width: 100%; }
+      .lv-filter .lv-streifen { margin-left: 0 !important; width: 100%; }
+    }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
     .tk-leiste input[type=search] { flex: 1 1 220px; min-width: 160px; }
@@ -659,21 +696,42 @@
 
         <!-- Live -->
         <section id="sec-live" class="section hidden">
-          <h1 class="pagehead">Live</h1>
-          <p class="pagesub">Laufende Anrufe in Echtzeit. Der Gesprächsverlauf erscheint live, während telefoniert wird.</p>
-          <div class="panel" id="outboundCallPanel">
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Live</h1>
+              <p class="pagesub" style="margin-bottom:0" id="liveSub">Laufende und vergangene Anrufe.</p>
+            </div>
+            <div class="db-aktionen">
+              <input id="lvSuche" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
+              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
+              <button class="btn btn--primary sm" type="button" id="lvAnrufKnopf">Anruf starten</button>
+            </div>
+          </div>
+          <div class="panel hidden" id="outboundCallPanel">
             <h3>Anruf starten</h3>
-            <p class="muted" style="margin-bottom:10px">Lass deinen Assistenten jemanden anrufen, mit Auftrag: Er stellt sich vor, nennt den Grund und klärt, was du ihm mitgibst. Nummer im Format +49…</p>
+            <p class="muted" style="margin-bottom:10px;text-align:left;padding:0">Lass deinen Assistenten jemanden anrufen, mit Auftrag: Er stellt sich vor, nennt den Grund und klärt, was du ihm mitgibst. Nummer im Format +49…</p>
             <label>Auftrag (optional)</label><textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
             <div style="display:flex; gap:10px; flex-wrap:wrap">
               <input id="callTo" placeholder="+49 170 1234567" style="flex:1; min-width:200px" />
               <button id="callBtn" class="btn btn--primary">Anrufen</button>
             </div>
-            <p class="muted" id="callHint" style="margin-top:8px">Nummer im Format +49… eingeben — dein Assistent ruft sofort an.</p>
+            <p class="muted" id="callHint" style="margin-top:8px;text-align:left;padding:0">Nummer im Format +49… eingeben — dein Assistent ruft sofort an.</p>
           </div>
           <div id="liveActive"></div>
-          <h3 style="margin:26px 0 12px; font-size:15px;">Letzte Anrufe</h3>
-          <div id="liveRecent"></div>
+          <div class="lv-filter">
+            <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
+            <select id="lvThema" class="lv-select"><option value="">Alle Themen</option></select>
+            <span class="muted" id="lvAnzahl"></span>
+            <span class="lv-streifen" id="lvStreifen" style="margin-left:auto"></span>
+          </div>
+          <div class="lv-split">
+            <div>
+              <div class="panel lv-liste" id="lvListe"></div>
+              <button class="btn btn--ghost sm lv-mehr hidden" type="button" id="lvMehr" style="margin-top:10px">Ältere Anrufe laden</button>
+            </div>
+            <div class="panel lv-detail" id="lvDetail"></div>
+          </div>
         </section>
 
         <!-- Nachrichten -->
@@ -1662,7 +1720,7 @@
         // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
         // gehört zum Betreiber, nicht in den kuratierten Restaurant-Bereich.
-        elementeAus: ['outboundCallPanel', 'numAddPanel'],
+        elementeAus: ['outboundCallPanel', 'lvAnrufKnopf', 'numAddPanel'],
         elementeAn: ['menuPanel'],            // Speisekarte hochladen
         selektorenAus: ['[data-deptbar]', '.dept-hint'], // nur ein Bereich, kein Vertrieb/Support
         // Restaurants haben nur EINEN Bereich – der Hinweis auf Vertrieb und
@@ -1734,9 +1792,11 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', b.dataset.target === 'sec-overview');
+        document.querySelector('.main')?.classList.toggle('main--dashboard', b.dataset.target === 'sec-overview' || b.dataset.target === 'sec-live');
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
+        if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
+        if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
       };
     });
 
@@ -1907,7 +1967,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (document.querySelector('.nav-item.active')?.dataset.target === 'sec-overview') document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -3363,48 +3423,164 @@
     });
 
     // ---- Live-Anrufe (Echtzeit) ----
-    async function loadLive() {
-      liveCalls.clear();
-      const { data: calls } = await sb.from('calls').select('*')
-        .eq('tenant_id', tenant.id).order('started_at', { ascending: false }).limit(15);
-      for (const c of calls ?? []) liveCalls.set(c.id, { call: c, turns: [] });
-      const ids = (calls ?? []).map((c) => c.id);
-      if (ids.length) {
-        const { data: turns } = await sb.from('call_turns').select('*')
-          .in('call_id', ids).order('created_at');
-        for (const t of turns ?? []) liveCalls.get(t.call_id)?.turns.push(t);
-      }
+    // Liste links, Detail rechts. Anrufe werden seitenweise geladen (100), der
+    // Gesprächsverlauf erst beim Öffnen eines Anrufs (aktive Anrufe sofort).
+    let lvAuswahl = null, lvSuche = '', lvZeitraum = 7, lvStimmung = '', lvThema = '', lvGeladen = 0, lvAlleGeladen = false, lvTimer = null, lvSuchTimer = null;
+    const LV_SEITE = 100;
+    const lvHeute0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+    const fmtSeit = (iso) => { const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    const lvDauer = (c) => c.duration_seconds || (c.ended_at ? Math.round((new Date(c.ended_at) - new Date(c.started_at)) / 1000) : 0);
+    const lvWann = (iso) => { const d = new Date(iso); const h0 = lvHeute0(); const uhr = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); if (d >= h0) return 'Heute ' + uhr; if (d >= new Date(h0.getTime() - 864e5)) return 'Gestern ' + uhr; return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + uhr; };
+    const LV_STIMMUNG = { positiv: ['#16a34a', '🙂 positiv'], neutral: ['#94a3b8', '😐 neutral'], negativ: ['#dc2626', '🙁 negativ'] };
+
+    async function loadLive(mehr) {
+      if (!tenant) return;
+      if (!mehr) { lvGeladen = 0; lvAlleGeladen = false; }
+      const { data: calls } = await sb.from('calls').select('*').eq('tenant_id', tenant.id).order('started_at', { ascending: false }).range(lvGeladen, lvGeladen + LV_SEITE - 1);
+      if (!mehr) { liveCalls.clear(); for (const c of calls ?? []) liveCalls.set(c.id, { call: c, turns: [], geladen: false }); }
+      else for (const c of calls ?? []) if (!liveCalls.has(c.id)) liveCalls.set(c.id, { call: c, turns: [], geladen: false });
+      lvGeladen += (calls ?? []).length; if ((calls ?? []).length < LV_SEITE) lvAlleGeladen = true;
+      const aktive = (calls ?? []).filter(callIsActive).map((c) => c.id);
+      if (aktive.length) await turnsLaden(aktive);
+      if (lvAuswahl && liveCalls.get(lvAuswahl)?.geladen === false) await turnsLaden([lvAuswahl]);
       renderLive();
     }
-    function callCard(x, live) {
-      const div = document.createElement('div'); div.className = 'call-card'; div.dataset.callId = x.call.id;
-      const head = document.createElement('div'); head.className = 'call-head';
-      const who = document.createElement('span'); who.className = 'who';
-      who.textContent = x.call.caller_number || 'Anrufer';
-      const right = document.createElement('span');
-      if (live) { right.className = 'live-pill'; right.textContent = '● Live'; }
-      else { right.className = 'muted'; right.style.fontSize = '13px'; right.textContent = new Date(x.call.started_at).toLocaleString('de-DE'); }
-      head.append(who, right);
-      div.append(head);
-      if (x.call.summary) {
-        const sm = document.createElement('div'); sm.className = 'call-summary';
-        const sent = { positiv: '🙂', neutral: '😐', negativ: '🙁' }[x.call.sentiment] || '';
-        if (x.call.topic) { const tp = document.createElement('span'); tp.className = 'call-topic'; tp.textContent = x.call.topic; sm.append(tp); }
-        const txt = document.createElement('span'); txt.textContent = (sent ? sent + ' ' : '') + x.call.summary; sm.append(txt);
-        div.append(sm);
-      }
-      const tr = document.createElement('div'); tr.className = 'transcript';
-      if (!x.turns.length) { const m = document.createElement('span'); m.className = 'muted'; m.textContent = 'Verbindung aufgebaut …'; tr.append(m); }
-      x.turns.forEach((t, i) => {
-        const b = document.createElement('div');
-        b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
-        if (live && i === x.turns.length - 1 && t.role === 'caller') b.classList.add('spricht');
-        b.textContent = t.content; tr.append(b);
-      });
-      div.append(tr);
-      if (!live) div.append(callAktionen(x, div));
-      return div;
+    async function turnsLaden(ids) {
+      ids = ids.filter((id) => liveCalls.has(id));
+      if (!ids.length) return;
+      ids.forEach((id) => { liveCalls.get(id).laedt = true; });
+      const { data: turns } = await sb.from('call_turns').select('*').in('call_id', ids).order('created_at');
+      for (const id of ids) { const e = liveCalls.get(id); if (e) { e.turns = []; e.geladen = true; e.laedt = false; } }
+      for (const t of turns ?? []) liveCalls.get(t.call_id)?.turns.push(t);
     }
+    /** Anruf aus dem Dashboard heraus öffnen (lädt ihn nach, falls nicht in der Liste). */
+    async function liveOeffnen(id) {
+      if (!liveCalls.has(id)) { const { data } = await sb.from('calls').select('*').eq('id', id).maybeSingle(); if (data) liveCalls.set(id, { call: data, turns: [], geladen: false }); }
+      lvAuswahl = id;
+      if (!lvGefiltert().some((x) => x.call.id === id)) { lvZeitraum = 0; lvStimmung = ''; lvThema = ''; lvSuche = ''; if ($('lvSuche')) $('lvSuche').value = ''; document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.classList.toggle('active', b.dataset.tage === '0')); document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => b.classList.toggle('aktiv', !b.dataset.stimmung)); }
+      renderLive();
+      setTimeout(() => document.querySelector('.lv-zeile[data-call-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
+    }
+    function lvGefiltert() {
+      const jetzt = Date.now(); const s = lvSuche.trim().toLowerCase(); const h0 = lvHeute0();
+      return [...liveCalls.values()].filter((x) => {
+        const c = x.call;
+        if (!callIsActive(c)) {
+          if (lvZeitraum === 1 && new Date(c.started_at) < h0) return false;
+          if (lvZeitraum > 1 && jetzt - new Date(c.started_at) > lvZeitraum * 864e5) return false;
+        }
+        if (lvStimmung && c.sentiment !== lvStimmung) return false;
+        if (lvThema && c.topic !== lvThema) return false;
+        if (s && ![c.caller_number, c.topic, c.summary, ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        return true;
+      }).sort((a, b) => (callIsActive(b.call) - callIsActive(a.call)) || (new Date(b.call.started_at) - new Date(a.call.started_at)));
+    }
+    function transkriptZeichnen(x, ziel, live) {
+      ziel.innerHTML = '';
+      if (!x.turns.length) { const m = document.createElement('p'); m.className = 'muted'; m.style.cssText = 'font-size:13px;text-align:left;padding:0'; m.textContent = x.laedt ? 'Gesprächsverlauf wird geladen …' : (live ? 'Verbindung aufgebaut …' : 'Kein Gesprächsverlauf vorhanden.'); ziel.append(m); return; }
+      const start = new Date(x.call.started_at).getTime();
+      x.turns.forEach((t, i) => {
+        const b = document.createElement('div'); b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+        if (live && i === x.turns.length - 1 && t.role === 'caller') b.classList.add('spricht');
+        b.textContent = t.content;
+        const off = Math.max(0, Math.round((new Date(t.created_at).getTime() - start) / 1000));
+        const tm = document.createElement('time'); tm.textContent = (t.role === 'caller' ? 'Anrufer' : 'Assistent') + ' · ' + Math.floor(off / 60) + ':' + String(off % 60).padStart(2, '0'); b.append(tm);
+        ziel.append(b);
+      });
+      ziel.scrollTop = ziel.scrollHeight;
+    }
+    function liveBanner(x) {
+      const c = x.call; const p = document.createElement('div'); p.className = 'panel lv-banner'; p.dataset.callId = c.id;
+      p.innerHTML = '<div class="lv-detailkopf"><div><span class="live-pill">● Live</span> <b class="lv-nr"></b> <span class="muted" style="font-size:13px">· seit <span data-seit=""></span></span></div><button class="btn btn--ghost sm" type="button" data-details>Details</button></div><div class="transcript" data-transkript></div>';
+      p.querySelector('.lv-nr').textContent = c.caller_number || 'Anrufer'; p.querySelector('[data-seit]').dataset.seit = c.started_at; p.querySelector('[data-seit]').textContent = fmtSeit(c.started_at);
+      p.querySelector('[data-details]').onclick = () => { lvAuswahl = c.id; renderLive(); };
+      transkriptZeichnen(x, p.querySelector('[data-transkript]'), true);
+      return p;
+    }
+    function lvZeile(x) {
+      const c = x.call; const live = callIsActive(c);
+      const z = document.createElement('div'); z.className = 'lv-zeile' + (c.id === lvAuswahl ? ' aktiv' : '') + (live ? ' live' : ''); z.dataset.callId = c.id;
+      const st = LV_STIMMUNG[c.sentiment];
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic hidden"></span><span class="lv-live hidden">● Live</span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
+      const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1].slice(2); } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
+      z.querySelector('b').textContent = c.caller_number || 'Anrufer';
+      if (c.topic) { const tp = z.querySelector('.call-topic'); tp.textContent = c.topic; tp.classList.remove('hidden'); }
+      if (live) z.querySelector('.lv-live').classList.remove('hidden');
+      z.querySelector('.lv-text').textContent = c.summary || (live ? 'Gespräch läuft gerade …' : (x.turns.length ? x.turns[0].content : 'ohne Zusammenfassung'));
+      const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(c.started_at); r[1].textContent = live ? '' : (lvDauer(c) ? fmtDauer(lvDauer(c)) : '–');
+      z.onclick = () => { lvAuswahl = c.id; renderLive(); };
+      return z;
+    }
+    function renderLive() {
+      if (!$('lvListe')) return;
+      const alle = [...liveCalls.values()];
+      const active = alle.filter((x) => callIsActive(x.call)).sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
+      $('liveBadge').textContent = active.length; $('liveBadge').classList.toggle('hidden', active.length === 0);
+      $('liveSub').textContent = active.length ? (active.length === 1 ? 'Ein Gespräch läuft gerade.' : active.length + ' Gespräche laufen gerade.') : 'Kein aktiver Anruf. Sobald jemand anruft, erscheint das Gespräch hier in Echtzeit.';
+      const la = $('liveActive'); la.innerHTML = ''; active.forEach((x) => la.append(liveBanner(x)));
+      // Themen-Auswahl
+      const themen = [...new Set(alle.map((x) => x.call.topic).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+      const sel = $('lvThema'); const cur = lvThema; sel.innerHTML = '<option value="">Alle Themen</option>';
+      themen.forEach((t) => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.append(o); }); sel.value = themen.includes(cur) ? cur : ''; lvThema = sel.value;
+      // Kennzahlen-Streifen
+      const h0 = lvHeute0(); const heute = alle.filter((x) => new Date(x.call.started_at) >= h0); const dauern = alle.map((x) => lvDauer(x.call)).filter((d) => d > 0);
+      $('lvStreifen').textContent = heute.length + ' heute · Ø ' + (dauern.length ? fmtDauer(dauern.reduce((a, b) => a + b, 0) / dauern.length) : '–') + ' · ' + alle.length + ' geladen';
+      // Liste
+      const liste = lvGefiltert(); $('lvAnzahl').textContent = liste.length + (liste.length === 1 ? ' Anruf' : ' Anrufe');
+      if (lvAuswahl && !liveCalls.has(lvAuswahl)) lvAuswahl = null;
+      if (!lvAuswahl && liste.length && window.innerWidth > 900) lvAuswahl = liste[0].call.id;
+      const ul = $('lvListe'); ul.innerHTML = '';
+      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Anrufe für diese Auswahl.' : 'Noch keine Anrufe. Ruf deine Nummer an, dann erscheint das Gespräch hier.') + '</p>';
+      liste.forEach((x) => ul.append(lvZeile(x)));
+      $('lvMehr').classList.toggle('hidden', lvAlleGeladen);
+      renderLiveDetail();
+      renderLiveWidget();
+    }
+    function renderLiveDetail() {
+      const d = $('lvDetail'); const x = lvAuswahl ? liveCalls.get(lvAuswahl) : null;
+      $('sec-live').classList.toggle('lv-zeigt-detail', !!x);
+      if (!x) { d.innerHTML = '<p class="lv-leer">Wähle links einen Anruf, um Zusammenfassung und Gesprächsverlauf zu sehen.</p>'; return; }
+      if (!x.geladen && !x.laedt) { turnsLaden([x.call.id]).then(renderLive); }
+      const c = x.call; const live = callIsActive(c); const st = LV_STIMMUNG[c.sentiment];
+      d.innerHTML = '<div class="lv-detailkopf"><div><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr"></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopfaktionen></div></div>'
+        + '<div class="call-summary hidden" data-zusammenfassung></div>'
+        + '<div data-aktionen></div>'
+        + '<div class="db-panelkopf" style="margin-top:14px"><h3 style="font-size:14px;margin:0">Gesprächsverlauf</h3><span class="db-kopfrechts"><span class="muted" data-turns></span><button class="btn btn--ghost sm" type="button" data-kopieren>Kopieren</button></span></div>'
+        + '<div class="transcript lv-transkript" data-transkript></div>';
+      d.querySelector('.lv-nr').textContent = c.caller_number || 'Anrufer';
+      d.querySelector('.lv-zurueck').onclick = () => { lvAuswahl = null; renderLive(); };
+      const meta = d.querySelector('.lv-meta'); const chip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
+      if (live) { const s = document.createElement('span'); s.className = 'live-pill'; s.innerHTML = '● Live · <span data-seit></span>'; s.querySelector('[data-seit]').dataset.seit = c.started_at; s.querySelector('[data-seit]').textContent = fmtSeit(c.started_at); meta.append(s); }
+      chip(new Date(c.started_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
+      if (!live) chip(lvDauer(c) ? 'Dauer ' + fmtDauer(lvDauer(c)) : 'Dauer unbekannt');
+      if (st) chip(st[1], 'Stimmung des Anrufers, automatisch ausgewertet');
+      if (c.topic) chip(c.topic, 'Thema, automatisch erkannt');
+      if (c.status && !live && c.status !== 'ended') chip(c.status);
+      if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.textContent = c.summary; z.classList.remove('hidden'); }
+      if (!live) d.querySelector('[data-aktionen]').append(callAktionen(x, d));
+      d.querySelector('[data-turns]').textContent = x.turns.length ? x.turns.length + ' Beiträge' : '';
+      d.querySelector('[data-kopieren]').onclick = async () => { const txt = x.turns.map((t) => (t.role === 'caller' ? 'Anrufer: ' : 'Assistent: ') + t.content).join('\n'); try { await navigator.clipboard.writeText(txt || (c.summary || '')); toast('Gesprächsverlauf kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } };
+      transkriptZeichnen(x, d.querySelector('[data-transkript]'), live);
+    }
+    // Bedienung: Suche, Zeitraum, Stimmung, Thema, Nachladen, Tastatur, laufende Uhr
+    (function liveWiring() {
+      const s = $('lvSuche'); if (!s) return;
+      s.oninput = () => { clearTimeout(lvSuchTimer); lvSuchTimer = setTimeout(() => { lvSuche = s.value; renderLive(); }, 150); };
+      document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#lvZeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); lvZeitraum = Number(b.dataset.tage); renderLive(); });
+      document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#lvStimmung .lv-chip').forEach((x) => x.classList.toggle('aktiv', x === b)); lvStimmung = b.dataset.stimmung || ''; renderLive(); });
+      $('lvThema').onchange = () => { lvThema = $('lvThema').value; renderLive(); };
+      $('lvMehr').onclick = () => loadLive(true);
+      $('lvNeu').onclick = () => loadLive();
+      $('lvAnrufKnopf').onclick = () => { const p = $('outboundCallPanel'); p.classList.toggle('hidden'); if (!p.classList.contains('hidden')) $('callTo')?.focus(); };
+      document.addEventListener('keydown', (e) => {
+        if ($('sec-live').classList.contains('hidden') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        const liste = lvGefiltert(); if (!liste.length) return; e.preventDefault();
+        const i = liste.findIndex((x) => x.call.id === lvAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        lvAuswahl = liste[j].call.id; renderLive(); document.querySelector('.lv-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
+      });
+      lvTimer = setInterval(() => document.querySelectorAll('[data-seit]').forEach((el) => { el.textContent = fmtSeit(el.dataset.seit); }), 1000);
+    })();
     /** Handlungsleiste unter einem Anruf: zurückrufen (selbst oder Assistent mit Auftrag), Vorgang, sperren, löschen. */
     function callAktionen(x, karte) {
       const c = x.call; const nr = (c.caller_number || '').trim();
@@ -3427,7 +3603,7 @@
         await sb.from('call_turns').delete().eq('call_id', c.id);
         const { error } = await sb.from('calls').delete().eq('id', c.id);
         if (error) { toast('Fehler: ' + error.message, 'err'); return; }
-        liveCalls.delete(c.id); karte.remove(); toast('Anruf gelöscht.');
+        liveCalls.delete(c.id); if (lvAuswahl === c.id) lvAuswahl = null; renderLive(); toast('Anruf gelöscht.');
       });
       del.style.marginLeft = 'auto';
       // Auftrag für den Assistenten
@@ -3456,22 +3632,6 @@
     function callIsActive(c) {
       return c && c.status === 'active' && (Date.now() - new Date(c.started_at).getTime()) < 20 * 60000;
     }
-    function renderLive() {
-      const arr = [...liveCalls.values()].sort((a, b) => new Date(b.call.started_at) - new Date(a.call.started_at));
-      const active = arr.filter((x) => callIsActive(x.call));
-      const ended = arr.filter((x) => !callIsActive(x.call));
-      $('liveBadge').textContent = active.length;
-      $('liveBadge').classList.toggle('hidden', active.length === 0);
-      $('liveActive').innerHTML = '';
-      if (!active.length) $('liveActive').innerHTML = '<div class="panel muted">Gerade kein aktiver Anruf. Sobald jemand anruft, erscheint das Gespräch hier live.</div>';
-      active.forEach((x) => $('liveActive').append(callCard(x, true)));
-      $('liveRecent').innerHTML = '';
-      if (!ended.length) $('liveRecent').innerHTML = '<div class="panel muted">Noch keine vergangenen Anrufe.</div>';
-      ended.forEach((x) => $('liveRecent').append(callCard(x, false)));
-      document.querySelectorAll('#liveActive .transcript').forEach((el) => { el.scrollTop = el.scrollHeight; });
-      renderLiveWidget();
-    }
-
     // ---- Benachrichtigung bei eingehendem Anruf (Ton + Browser-Push) ----
     const notifiedCalls = new Set();
     let audioCtx = null;
@@ -3511,7 +3671,8 @@
       }
       const focus = active || (liveWidgetId ? liveCalls.get(liveWidgetId) : null);
       const w = $('liveWidget');
-      if (!focus || liveWidgetDismissed) { w.classList.add('hidden'); return; }
+      // Im Bereich „Live" ist das Gespräch ohnehin groß zu sehen – kein schwebendes Fenster daneben.
+      if (!focus || liveWidgetDismissed || !$('sec-live').classList.contains('hidden')) { w.classList.add('hidden'); return; }
       const isLive = callIsActive(focus.call);
       w.classList.remove('hidden');
       $('liveWidgetDot').className = 'livew__dot' + (isLive ? '' : ' ended');
@@ -4176,8 +4337,8 @@
       });
       // Einblendung beim Überfahren (Tagesbalken, Zeitskala)
       const tip = document.createElement('div'); tip.className = 'db-tip'; tip.hidden = true; document.body.append(tip);
-      const tipSetzen = (e) => { const el = e.target.closest?.('[data-tip]'); if (!el || !sec.contains(el)) { tip.hidden = true; return; } tip.textContent = el.dataset.tip; tip.hidden = false; const r = tip.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY - r.height - 10; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14; if (y < 8) y = e.clientY + 18; tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
-      sec.addEventListener('mousemove', tipSetzen); sec.addEventListener('mouseleave', () => { tip.hidden = true; }); sec.addEventListener('click', () => { tip.hidden = true; });
+      const tipSetzen = (e) => { const el = e.target.closest?.('[data-tip]'); if (!el) { tip.hidden = true; return; } tip.textContent = el.dataset.tip; tip.hidden = false; const r = tip.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY - r.height - 10; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14; if (y < 8) y = e.clientY + 18; tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
+      document.addEventListener('mousemove', tipSetzen); document.addEventListener('mouseleave', () => { tip.hidden = true; }); document.addEventListener('click', () => { tip.hidden = true; });
       sec.addEventListener('keydown', (e) => { const k = e.target.closest?.('.db-kpi[role=button]'); if (k && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); k.click(); } });
       sec.addEventListener('dragstart', (e) => { const w = e.target.closest?.('[data-widget]'); if (!w || !dbEdit) return; dbZieh = w.dataset.widget; w.classList.add('zieht'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dbZieh); } catch { /* egal */ } });
       sec.addEventListener('dragover', (e) => {
@@ -4309,7 +4470,7 @@
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
       liste.slice(0, dbFilter ? 8 : 5).forEach((x) => { const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
         const z = zeile((x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''), new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
-        z.title = 'In „Live" öffnen'; z.onclick = () => { geh('sec-live'); setTimeout(() => { const k = document.querySelector('.call-card[data-call-id="' + x.id + '"]'); if (k) { k.scrollIntoView({ behavior: 'smooth', block: 'center' }); k.classList.add('blitz'); setTimeout(() => k.classList.remove('blitz'), 2500); } }, 350); }; la.append(z); });
+        z.title = 'In „Live" öffnen'; z.onclick = () => { geh('sec-live'); liveOeffnen(x.id); }; la.append(z); });
       if (liste.length > (dbFilter ? 8 : 5)) { const m = document.createElement('a'); m.href = '#'; m.dataset.geh = 'sec-live'; m.className = 'db-mehr'; m.textContent = 'Alle ' + liste.length + ' in „Live" ansehen'; la.append(m); }
       // Offene Vorgänge
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
