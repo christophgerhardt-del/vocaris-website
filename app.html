@@ -14,6 +14,14 @@
   <style>
     body { background: var(--paper-2); }
     html { scrollbar-gutter: stable; }
+    /* Desktop-Darstellung kompakter (entspricht 80 % Browser-Zoom); Handy bleibt wie es ist */
+    @media (min-width: 1100px) {
+      :root { --app-zoom: .8; }
+      body .shell { zoom: var(--app-zoom); min-height: calc(100vh / var(--app-zoom)); }
+      body .side { height: calc(100vh / var(--app-zoom)); }
+      body .wa-launcher, body .livew, body .toast, body .wa-panel { zoom: var(--app-zoom); }
+      body .wa-panel { height: calc(100vh / var(--app-zoom)); }
+    }
     /* ---- Login (Split-Screen) ---- */
     .login { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
     .login__brand { position: relative; color: #fff; padding: 48px 52px; display: flex; flex-direction: column;
