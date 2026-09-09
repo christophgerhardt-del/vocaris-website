@@ -380,6 +380,7 @@
     .tpl-cat { display: inline-block; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 8px; }
     .kb-cat-head { color: var(--ink-faint); margin: 20px 0 8px; }
     .kb-cat-head:first-child { margin-top: 4px; }
+    .call-auftrag { margin-top: 10px; padding: 12px 14px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
     .tk-leiste input[type=search] { flex: 1 1 220px; min-width: 160px; }
@@ -577,7 +578,8 @@
           <p class="pagesub">Laufende Anrufe in Echtzeit. Der Gesprächsverlauf erscheint live, während telefoniert wird.</p>
           <div class="panel" id="outboundCallPanel">
             <h3>Anruf starten</h3>
-            <p class="muted" style="margin-bottom:10px">Lass deinen Assistenten jemanden anrufen — z.B. für einen Rückruf. Nummer im Format +49…</p>
+            <p class="muted" style="margin-bottom:10px">Lass deinen Assistenten jemanden anrufen, mit Auftrag: Er stellt sich vor, nennt den Grund und klärt, was du ihm mitgibst. Nummer im Format +49…</p>
+            <label>Auftrag (optional)</label><textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
             <div style="display:flex; gap:10px; flex-wrap:wrap">
               <input id="callTo" placeholder="+49 170 1234567" style="flex:1; min-width:200px" />
               <button id="callBtn" class="btn btn--primary">Anrufen</button>
@@ -3316,7 +3318,54 @@
         b.textContent = t.content; tr.append(b);
       }
       div.append(tr);
+      if (!live) div.append(callAktionen(x, div));
       return div;
+    }
+    /** Handlungsleiste unter einem Anruf: zurückrufen (selbst oder Assistent mit Auftrag), Vorgang, sperren, löschen. */
+    function callAktionen(x, karte) {
+      const c = x.call; const nr = (c.caller_number || '').trim();
+      const leiste = document.createElement('div'); leiste.className = 'stack'; leiste.style.marginTop = '10px';
+      const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; leiste.append(b); return b; };
+      if (nr) {
+        const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; leiste.append(tel);
+        knopf('Assistent ruft zurück …', 'btn--primary', () => auftragBox.classList.toggle('hidden'));
+        knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
+        knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
+      }
+      knopf('Vorgang anlegen', '', async () => {
+        const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? c.summary.slice(0, 90) : nr || 'Anrufer');
+        const { error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title: title.slice(0, 160), body: (c.summary || '') + (x.turns.length ? '\n\nGesprächsverlauf im Vorgang einsehbar.' : ''), source: 'call', caller_phone: nr || null, call_id: c.id, category: c.topic || null });
+        if (error) { toast('Fehler: ' + error.message, 'err'); return; }
+        toast('Vorgang angelegt.'); loadTickets();
+      });
+      const del = knopf('Löschen', '', async () => {
+        if (!confirm('Diesen Anruf samt Gesprächsverlauf endgültig löschen?')) return;
+        await sb.from('call_turns').delete().eq('call_id', c.id);
+        const { error } = await sb.from('calls').delete().eq('id', c.id);
+        if (error) { toast('Fehler: ' + error.message, 'err'); return; }
+        liveCalls.delete(c.id); karte.remove(); toast('Anruf gelöscht.');
+      });
+      del.style.marginLeft = 'auto';
+      // Auftrag für den Assistenten
+      const auftragBox = document.createElement('div'); auftragBox.className = 'hidden call-auftrag';
+      auftragBox.innerHTML = `<label>Was soll der Assistent klären?</label>
+        <textarea rows="2" data-auftrag placeholder="z. B. Termin am Freitag um 10 Uhr bestätigen und fragen, ob die Versichertenkarte mitgebracht wird."></textarea>
+        <div class="grid2" style="margin-top:6px"><div><label style="margin-top:0">Name des Angerufenen (optional)</label><input data-name placeholder="z. B. Frau Beispiel" /></div><div style="display:flex;align-items:flex-end"><button class="btn btn--primary" data-los type="button">Jetzt anrufen lassen</button></div></div>
+        <p class="muted" data-hint style="font-size:12.5px;margin-top:6px">Der Assistent stellt sich mit Ihrem Betrieb vor, nennt den Grund und erledigt den Auftrag. Das Gespräch erscheint oben unter „Live", die Zusammenfassung danach hier.</p>`;
+      auftragBox.querySelector('[data-los]').onclick = async () => {
+        const auftrag = auftragBox.querySelector('[data-auftrag]').value.trim(); const name = auftragBox.querySelector('[data-name]').value.trim();
+        if (auftrag.length < 5) { toast('Bitte kurz beschreiben, was geklärt werden soll.', 'err'); return; }
+        const b = auftragBox.querySelector('[data-los]'); b.disabled = true;
+        try {
+          const r = await fetch(API + '/api/call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: nr.replace(/\s+/g, ''), auftrag, name }) });
+          const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
+          toast('Anruf gestartet.'); auftragBox.classList.add('hidden');
+          await sb.from('tickets').insert({ tenant_id: tenant.id, title: ('Rückruf' + (name ? ' ' + name : '') + ': ' + auftrag).slice(0, 160), body: 'Auftrag an den Assistenten: ' + auftrag, status: 'in_progress', source: 'call', caller_name: name || null, caller_phone: nr || null, category: 'Rückruf' });
+          loadTickets();
+        } catch (e) { toast('Anruf: ' + e.message, 'err'); }
+        b.disabled = false;
+      };
+      const wrap = document.createElement('div'); wrap.append(leiste, auftragBox); return wrap;
     }
     // Ein Anruf gilt nur als „live", wenn er als aktiv markiert IST und nicht älter
     // als 20 Min ist — so bleibt kein verwaister Anruf (z.B. nach Server-Neustart) ewig „aktiv".
@@ -4029,11 +4078,11 @@
         const res = await fetch(API + '/api/call', {
           method: 'POST',
           headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
-          body: JSON.stringify({ to }),
+          body: JSON.stringify({ to, auftrag: ($('callAuftrag')?.value || '').trim() }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Fehler');
-        $('callHint').textContent = 'Anruf gestartet — er erscheint gleich oben unter „Live".';
+        $('callHint').textContent = 'Anruf gestartet — er erscheint gleich oben unter „Live".'; if ($('callAuftrag')) $('callAuftrag').value = '';
         $('callTo').value = '';
       } catch (e) { $('callHint').textContent = 'Fehler: ' + e.message; }
       $('callBtn').disabled = false;
