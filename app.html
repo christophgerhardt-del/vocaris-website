@@ -1716,7 +1716,7 @@
 
     // Google-Anmeldung erst zeigen, wenn der Google-OAuth-Client die Supabase-Rückruf-Adresse kennt
     // (https://nocsjyzmnskbyccrjayx.supabase.co/auth/v1/callback in der Google Cloud Console).
-    const SSO_GOOGLE_AKTIV = false;
+    const SSO_GOOGLE_AKTIV = true;
     if (!SSO_GOOGLE_AKTIV) { $('ssoGoogle').classList.add('hidden'); $('ssoGoogle').previousElementSibling.classList.add('hidden'); $('ssoGoogle').nextElementSibling.classList.add('hidden'); }
     $('ssoGoogle').onclick = async () => {
       $('authMsg').textContent = '';
