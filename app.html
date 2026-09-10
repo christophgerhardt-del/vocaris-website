@@ -494,6 +494,7 @@
     .lv-meta span:not(.live-pill) { font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--ink-soft); }
     .lv-transkript { max-height: calc(100vh / var(--app-zoom, 1) - 470px); min-height: 180px; }
     .bubble time { display: block; font-size: 10.5px; color: var(--ink-faint); margin-top: 4px; }
+    .bubble.assistant.mensch { background: color-mix(in srgb, #16a34a 12%, var(--white)); border-color: color-mix(in srgb, #16a34a 26%, var(--line)); }
     .lv-banner { border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
     .lv-banner .transcript { max-height: 260px; }
     .lv-leer { color: var(--ink-faint); text-align: center; padding: 50px 20px; font-size: 14px; margin: 0; }
@@ -1041,6 +1042,16 @@
                   <div><label>Wann</label><select id="fwdHours"><option value="true">Nur während der Öffnungszeiten</option><option value="false">Immer (rund um die Uhr)</option></select></div>
                 </div>
               </div>
+              <div class="panel" id="asSelbst">
+                <h3>Anrufe, die du selbst führst</h3>
+                <p class="muted" style="margin-top:0;text-align:left;padding:0">Mit „Über Vocaris anrufen" ruft Vocaris zuerst dich an und verbindet dich dann. Der Angerufene sieht eure Firmennummer, und das Gespräch wird mitgeschrieben wie ein Assistenten-Anruf.</p>
+                <label>Deine eigene Rufnummer <span class="muted">dort klingelt es</span></label>
+                <input id="asAgentNummer" placeholder="+49 170 1234567" inputmode="tel" />
+                <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeNotice" style="width:auto;margin:0"><span>Dem Angerufenen vorher ansagen, dass mitgeschrieben wird</span></label>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">In Deutschland darf ein Gespräch zwischen zwei Menschen nur mit Wissen beider Seiten mitgeschrieben werden. Ohne diese Ansage bist du selbst dafür verantwortlich, den Hinweis zu geben.</p>
+                <label>Text der Ansage <span class="muted">optional</span></label>
+                <input id="asBridgeText" placeholder="Dieses Gespräch wird für unsere Unterlagen mitgeschrieben." />
+              </div>
               <div class="panel" id="asRecht">
                 <h3>Hinweis zu Gesprächsbeginn</h3>
                 <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asDisclosure" style="width:auto;margin:0"><span>KI-/Aufzeichnungs-Hinweis zu Gesprächsbeginn ansagen</span></label>
@@ -1060,7 +1071,7 @@
               </div>
               <div class="panel as-nav" id="asNav">
                 <h3>Abschnitte</h3>
-                <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStimme">Stimme</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a>
+                <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStimme">Stimme</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asSelbst">Eigene Anrufe</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a>
               </div>
             </div>
           </div>
@@ -2238,6 +2249,12 @@
       $('fwdNumber').value = cfg?.forward_number ?? '';
       $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
       // KI-Hinweis ist org-weit → immer aus der general-Zeile.
+      if ($('asAgentNummer')) {
+        const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('agent_number, bridge_notice, bridge_notice_text').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
+        $('asAgentNummer').value = gen?.agent_number ?? '';
+        $('asBridgeNotice').checked = gen?.bridge_notice ?? false;
+        $('asBridgeText').value = gen?.bridge_notice_text ?? '';
+      }
       if ($('asDisclosure')) {
         if (currentDept === 'general') $('asDisclosure').checked = cfg?.ai_disclosure ?? false;
         else { const { data: gen } = await sb.from('assistant_config').select('ai_disclosure').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(); $('asDisclosure').checked = gen?.ai_disclosure ?? false; }
@@ -3692,11 +3709,11 @@
       if (!x.turns.length) { const m = document.createElement('p'); m.className = 'muted'; m.style.cssText = 'font-size:13px;text-align:left;padding:0'; m.textContent = x.laedt ? 'Gesprächsverlauf wird geladen …' : (live ? 'Verbindung aufgebaut …' : 'Kein Gesprächsverlauf vorhanden.'); ziel.append(m); return; }
       const start = new Date(x.call.started_at).getTime();
       x.turns.forEach((t, i) => {
-        const b = document.createElement('div'); b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+        const b = document.createElement('div'); b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant') + (t.role === 'agent' ? ' mensch' : '');
         if (live && i === x.turns.length - 1 && t.role === 'caller') b.classList.add('spricht');
         b.innerHTML = markieren(t.content); b.dataset.i = i;
         const off = Math.max(0, Math.round((new Date(t.created_at).getTime() - start) / 1000));
-        const tm = document.createElement('time'); tm.textContent = (t.role === 'caller' ? 'Anrufer' : 'Assistent') + ' · ' + Math.floor(off / 60) + ':' + String(off % 60).padStart(2, '0'); b.append(tm);
+        const tm = document.createElement('time'); tm.textContent = (t.role === 'caller' ? 'Anrufer' : t.role === 'agent' ? 'Mitarbeiter' : 'Assistent') + ' · ' + Math.floor(off / 60) + ':' + String(off % 60).padStart(2, '0'); b.append(tm);
         ziel.append(b);
       });
       ziel.scrollTop = ziel.scrollHeight;
@@ -3718,6 +3735,7 @@
       z.querySelector('b').innerHTML = markieren(fmtNr(c.caller_number));
       if (c.topic) { const tp = z.querySelector('.call-topic'); tp.innerHTML = markieren(c.topic); tp.classList.remove('hidden'); }
       if (live) z.querySelector('.lv-live').classList.remove('hidden');
+      else if (c.mode === 'bridge') { const m = document.createElement('span'); m.className = 'lv-neu'; m.textContent = 'Mitarbeiter'; m.dataset.tip = 'Gespräch, das ein Mensch über Vocaris geführt hat'; z.querySelector('.lv-mitte b').after(m); }
       else if (lvGesehenAlt && new Date(c.started_at).getTime() > lvGesehenAlt) { const n = document.createElement('span'); n.className = 'lv-neu'; n.textContent = 'Neu'; n.dataset.tip = 'Seit deinem letzten Besuch eingegangen'; z.querySelector('.lv-mitte b').after(n); }
       const text = c.summary || (live ? 'Gespräch läuft gerade …' : (x.turns.length ? x.turns[0].content : 'ohne Zusammenfassung'));
       z.querySelector('.lv-text').innerHTML = markieren(text);
@@ -3803,6 +3821,23 @@
       });
       lvTimer = setInterval(() => document.querySelectorAll('[data-seit]').forEach((el) => { el.textContent = fmtSeit(el.dataset.seit); }), 1000);
     })();
+    /** Anruf über Vocaris: das eigene Telefon klingelt, danach wird verbunden. */
+    async function ueberVocarisAnrufen(nr, knopf) {
+      const ziel = String(nr || '').replace(/\s+/g, '');
+      if (!/^\+\d{7,15}$/.test(ziel)) { toast('Nummer im Format +49 … nötig.', 'err'); return; }
+      if (knopf) { knopf.disabled = true; knopf.dataset.alt = knopf.textContent; knopf.textContent = 'Verbinde …'; }
+      try {
+        const r = await fetch(API + '/api/bridge-call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: ziel }) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Fehler');
+        toast('Dein Telefon klingelt gleich. Wenn du abhebst, wird verbunden.');
+        setTimeout(() => { if (typeof loadLive === 'function') loadLive(); }, 1500);
+      } catch (e) {
+        toast(e.message.includes('eigene Rufnummer') ? 'Hinterlege zuerst deine eigene Rufnummer unter „Assistent".' : 'Anruf: ' + e.message, 'err');
+      }
+      if (knopf) { knopf.disabled = false; knopf.textContent = knopf.dataset.alt || 'Über Vocaris anrufen'; }
+    }
+
     /** Kasten 'Assistent ruft zurück': Auftrag + Name, startet den Anruf und legt einen Vorgang 'in Arbeit' an. */
     function rueckrufBox(nr, nameVorschlag, auftragVorschlag, danach) {
       const auftragBox = document.createElement('div'); auftragBox.className = 'hidden call-auftrag';
@@ -3833,7 +3868,8 @@
       const leiste = document.createElement('div'); leiste.className = 'stack'; leiste.style.marginTop = '10px';
       const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; leiste.append(b); return b; };
       if (nr) {
-        const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; leiste.append(tel);
+        const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; tel.dataset.tip = 'Mit dem eigenen Telefon wählen, ohne Vocaris'; leiste.append(tel);
+        knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); }).dataset.tip = 'Vocaris ruft dich an und verbindet dich; das Gespräch wird mitgeschrieben';
         knopf('Assistent ruft zurück …', 'btn--primary', () => auftragBox.classList.toggle('hidden'));
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
@@ -3923,7 +3959,7 @@
       } else {
         for (const t of focus.turns) {
           const b = document.createElement('div');
-          b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant');
+          b.className = 'bubble ' + (t.role === 'caller' ? 'caller' : 'assistant') + (t.role === 'agent' ? ' mensch' : '');
           b.textContent = t.content; body.append(b);
         }
       }
@@ -3982,6 +4018,7 @@
         ['Sprache', $('language').value === 'en' ? 'Englisch' : 'Deutsch'],
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
         ['Stimme', stimme ? stimme.name : ($('voiceId').value || 'Standard')],
+        ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
         ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') : 'aus'],
       ];
       $('asFakten').innerHTML = fakten.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
@@ -4022,6 +4059,8 @@
       ]);
       // KI-/Aufzeichnungs-Hinweis ist org-weit → immer auf die general-Zeile schreiben.
       if ($('asDisclosure')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', ai_disclosure: $('asDisclosure').checked }, { onConflict: 'tenant_id,department' });
+      // Eigene Rufnummer und Ansage gelten für die ganze Firma.
+      if ($('asAgentNummer')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', agent_number: $('asAgentNummer').value.replace(/\s+/g, '') || null, bridge_notice: $('asBridgeNotice').checked, bridge_notice_text: $('asBridgeText').value.trim() || null }, { onConflict: 'tenant_id,department' });
       $('saveBtn').disabled = false;
       const err = r1.error || r2.error;
       if (err) return toast('Fehler: ' + err.message, 'err');
@@ -5043,6 +5082,7 @@
       const rb = d.querySelector('[data-rueckruf]');
       if (nr) {
         const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; akt.append(tel);
+        knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); });
         const box = rueckrufBox(nr, m.caller_name || '', m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '', () => { loadTickets(); if (!erledigt) mgAendern(m, { status: 'done', done_at: new Date().toISOString() }).then(renderNachrichten); });
         rb.append(box);
         knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
@@ -5576,6 +5616,7 @@
       const smsBox = d.querySelector('[data-smsbox]');
       if (nr) {
         const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + nr.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + fmtNr(nr); akt.append(a);
+        knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); });
         const box = rueckrufBox(nr, t.caller_name || '', 'Rückruf zu Vorgang #' + t.number + ': ' + t.title.slice(0, 120), () => { tkUpdate(t, { status: 'in_progress' }); });
         d.querySelector('[data-rueckruf]').append(box);
         knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
