@@ -1054,6 +1054,8 @@
                 <p class="muted" style="margin-top:0;text-align:left;padding:0">Mit „Über Vocaris anrufen" ruft Vocaris zuerst dich an und verbindet dich dann. Der Angerufene sieht eure Firmennummer, und das Gespräch wird mitgeschrieben wie ein Assistenten-Anruf.</p>
                 <label>Deine eigene Rufnummer <span class="muted">dort klingelt es</span></label>
                 <input id="asAgentNummer" placeholder="+49 170 1234567" inputmode="tel" />
+                <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeTranscript" style="width:auto;margin:0"><span>Diese Gespräche mitschreiben</span></label>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Aus bedeutet: Vocaris verbindet nur, es wird nichts gespiegelt und nichts gespeichert. Zum Vergleichen der Tonqualität einmal aus- und wieder einschalten.</p>
                 <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeNotice" style="width:auto;margin:0"><span>Dem Angerufenen vorher ansagen, dass mitgeschrieben wird</span></label>
                 <p class="muted" style="margin-top:4px;text-align:left;padding:0">In Deutschland darf ein Gespräch zwischen zwei Menschen nur mit Wissen beider Seiten mitgeschrieben werden. Ohne diese Ansage bist du selbst dafür verantwortlich, den Hinweis zu geben.</p>
                 <label>Text der Ansage <span class="muted">optional</span></label>
@@ -2259,8 +2261,9 @@
       $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
       // KI-Hinweis ist org-weit → immer aus der general-Zeile.
       if ($('asAgentNummer')) {
-        const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('agent_number, bridge_notice, bridge_notice_text').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
+        const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('agent_number, bridge_notice, bridge_notice_text, bridge_transcript').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
         $('asAgentNummer').value = gen?.agent_number ?? '';
+        $('asBridgeTranscript').checked = gen?.bridge_transcript !== false;
         $('asBridgeNotice').checked = gen?.bridge_notice ?? false;
         $('asBridgeText').value = gen?.bridge_notice_text ?? '';
       }
@@ -4027,7 +4030,7 @@
         ['Sprache', $('language').value === 'en' ? 'Englisch' : 'Deutsch'],
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
         ['Stimme', stimme ? stimme.name : ($('voiceId').value || 'Standard')],
-        ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
+        ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeTranscript')?.checked === false ? ' · ohne Mitschrift' : '') + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
         ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') : 'aus'],
       ];
       $('asFakten').innerHTML = fakten.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
@@ -4069,7 +4072,7 @@
       // KI-/Aufzeichnungs-Hinweis ist org-weit → immer auf die general-Zeile schreiben.
       if ($('asDisclosure')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', ai_disclosure: $('asDisclosure').checked }, { onConflict: 'tenant_id,department' });
       // Eigene Rufnummer und Ansage gelten für die ganze Firma.
-      if ($('asAgentNummer')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', agent_number: $('asAgentNummer').value.replace(/\s+/g, '') || null, bridge_notice: $('asBridgeNotice').checked, bridge_notice_text: $('asBridgeText').value.trim() || null }, { onConflict: 'tenant_id,department' });
+      if ($('asAgentNummer')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', agent_number: $('asAgentNummer').value.replace(/\s+/g, '') || null, bridge_notice: $('asBridgeNotice').checked, bridge_notice_text: $('asBridgeText').value.trim() || null, bridge_transcript: $('asBridgeTranscript').checked }, { onConflict: 'tenant_id,department' });
       $('saveBtn').disabled = false;
       const err = r1.error || r2.error;
       if (err) return toast('Fehler: ' + err.message, 'err');
