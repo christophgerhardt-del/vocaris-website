@@ -495,6 +495,17 @@
     .lv-transkript { max-height: calc(100vh / var(--app-zoom, 1) - 470px); min-height: 180px; }
     .bubble time { display: block; font-size: 10.5px; color: var(--ink-faint); margin-top: 4px; }
     .bubble.assistant.mensch { background: color-mix(in srgb, #16a34a 12%, var(--white)); border-color: color-mix(in srgb, #16a34a 26%, var(--line)); }
+    .tnbar { position: fixed; right: 22px; bottom: 22px; z-index: 80; display: flex; align-items: center; gap: 12px; background: var(--dark, #08122e); color: #fff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 18px 44px -14px rgba(8,18,46,.6); font-size: 13.5px; }
+    .tnbar.hidden { display: none !important; }
+    .tnbar__dot { width: 9px; height: 9px; border-radius: 50%; background: #28c76f; animation: spricht 1.4s infinite; }
+    .tnbar__t { display: flex; flex-direction: column; line-height: 1.25; }
+    .tnbar__t b { font-size: 14px; } .tnbar__t span { color: rgba(255,255,255,.7); font-size: 12px; }
+    .tnbar__zeit { font-variant-numeric: tabular-nums; color: rgba(255,255,255,.85); }
+    .tnbar button { font: inherit; font-size: 12.5px; font-weight: 600; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.12); color: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+    .tnbar button:hover { background: rgba(255,255,255,.2); }
+    .tnbar button.rot { background: #dc2626; border-color: #dc2626; } .tnbar button.rot:hover { background: #b91c1c; }
+    .tnbar button.an { background: #fff; color: var(--dark, #08122e); }
+    @media (max-width: 600px) { .tnbar { left: 12px; right: 12px; bottom: 12px; } }
     .lv-banner { border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
     .lv-banner .transcript { max-height: 260px; }
     .lv-leer { color: var(--ink-faint); text-align: center; padding: 50px 20px; font-size: 14px; margin: 0; }
@@ -766,6 +777,7 @@
               <button class="deptseg active" type="button" data-callwer="selbst">Ich spreche selbst</button>
               <button class="deptseg" type="button" data-callwer="assistent">Assistent übernimmt</button>
             </div>
+            <div class="lv-chips" id="callWie" style="margin-bottom:10px"><button class="lv-chip aktiv" type="button" data-callwie="telefon">Am Telefon</button><button class="lv-chip" type="button" data-callwie="browser">Im Browser sprechen</button></div>
             <p class="muted" id="callErklaerung" style="margin-bottom:10px;text-align:left;padding:0">Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
             <div id="callAuftragFeld" class="hidden">
               <label style="margin-top:0">Auftrag (optional)</label><textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
@@ -1736,6 +1748,16 @@
     </main>
 
     <!-- Schwebendes Live-Anruf-Widget -->
+    <!-- Softphone: Telnyx-SDK, Tonausgabe und die Leiste des laufenden Anrufs -->
+    <script src="https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.27.10/lib/bundle.min.js"></script>
+    <audio id="tnAudio" autoplay playsinline></audio>
+    <div id="tnBar" class="tnbar hidden">
+      <span class="tnbar__dot"></span>
+      <div class="tnbar__t"><b id="tnNummer">—</b><span id="tnStatus">Verbinde …</span></div>
+      <span class="tnbar__zeit" id="tnZeit">0:00</span>
+      <button id="tnStumm" type="button" title="Mikrofon stumm">Stumm</button>
+      <button id="tnAuflegen" type="button" class="rot" title="Auflegen">Auflegen</button>
+    </div>
     <div id="liveWidget" class="livew hidden">
       <div class="livew__head" id="liveWidgetHead">
         <span class="livew__dot" id="liveWidgetDot"></span>
@@ -3833,6 +3855,116 @@
       });
       lvTimer = setInterval(() => document.querySelectorAll('[data-seit]').forEach((el) => { el.textContent = fmtSeit(el.dataset.seit); }), 1000);
     })();
+    // ---- Softphone: telefonieren direkt im Browser ----
+    // Der Ton läuft über Telnyx (WebRTC), die Mitschrift über einen eigenen
+    // Kanal zu unserem Server: eine Spur die eigene Stimme, eine die Gegenseite.
+    let tnClient = null, tnCall = null, tnCtx = null, tnWs = null, tnUhr = null, tnStart = 0, tnStumm = false;
+
+    function tnLeiste(an, nummer, status) {
+      const bar = $('tnBar'); if (!bar) return;
+      bar.classList.toggle('hidden', !an);
+      if (nummer) $('tnNummer').textContent = fmtNr(nummer);
+      if (status) $('tnStatus').textContent = status;
+    }
+
+    /** Beide Tonspuren an die Mitschrift schicken (16 kHz, PCM). */
+    function tnMitschrift(call, callId, wsToken) {
+      if (!wsToken) return;
+      try {
+        tnWs = new WebSocket(API.replace(/^http/, 'ws') + '/media-browser?call_id=' + encodeURIComponent(callId) + '&token=' + encodeURIComponent(wsToken));
+        tnCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        const stumm = tnCtx.createGain(); stumm.gain.value = 0; stumm.connect(tnCtx.destination);
+        const anzapfen = (stream, spur) => {
+          if (!stream) return;
+          const quelle = tnCtx.createMediaStreamSource(stream);
+          const knoten = tnCtx.createScriptProcessor(4096, 1, 1);
+          knoten.onaudioprocess = (e) => {
+            if (!tnWs || tnWs.readyState !== 1) return;
+            const f = e.inputBuffer.getChannelData(0);
+            const pcm = new Int16Array(f.length);
+            for (let i = 0; i < f.length; i++) { const v = Math.max(-1, Math.min(1, f[i])); pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff; }
+            const bytes = new Uint8Array(pcm.buffer); let roh = '';
+            for (let i = 0; i < bytes.length; i++) roh += String.fromCharCode(bytes[i]);
+            tnWs.send(JSON.stringify({ event: 'media', media: { track: spur, payload: btoa(roh) } }));
+          };
+          quelle.connect(knoten); knoten.connect(stumm);
+        };
+        // inbound = eigene Stimme, outbound = Gegenseite (wie beim Telefon).
+        anzapfen(call.localStream, 'inbound');
+        anzapfen(call.remoteStream, 'outbound');
+      } catch (e) { console.warn('Mitschrift nicht gestartet:', e.message); }
+    }
+
+    function tnAufraeumen(status) {
+      if (tnUhr) { clearInterval(tnUhr); tnUhr = null; }
+      try { tnWs?.send(JSON.stringify({ event: 'stop' })); tnWs?.close(); } catch { /* egal */ }
+      try { tnCtx?.close(); } catch { /* egal */ }
+      tnWs = null; tnCtx = null; tnCall = null; tnStumm = false;
+      $('tnStumm').classList.remove('an'); $('tnStumm').textContent = 'Stumm';
+      try { tnClient?.disconnect(); } catch { /* egal */ }
+      tnClient = null;
+      tnLeiste(false);
+      if (status) toast(status);
+      setTimeout(() => { if (typeof loadLive === 'function') loadLive(); }, 1200);
+    }
+
+    /** Anruf im Browser starten. */
+    async function browserAnrufen(ziel) {
+      const nr = String(ziel || '').replace(/\s+/g, '');
+      if (!/^\+\d{7,15}$/.test(nr)) { toast('Nummer im Format +49 … nötig.', 'err'); return; }
+      if (!window.TelnyxWebRTC) { toast('Das Softphone konnte nicht geladen werden. Bitte Seite neu laden.', 'err'); return; }
+      if (tnCall) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
+      tnLeiste(true, nr, 'Mikrofon wird angefragt …');
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        tnLeiste(false); toast('Ohne Mikrofon geht es nicht. Bitte im Browser erlauben.', 'err'); return;
+      }
+      try {
+        tnLeiste(true, nr, 'Verbinde …');
+        const r1 = await fetch(API + '/api/browser-call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: nr }) });
+        const j1 = await r1.json(); if (!r1.ok) throw new Error(j1.error || 'Fehler');
+        const r2 = await fetch(API + '/api/webrtc-token', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken } });
+        const j2 = await r2.json(); if (!r2.ok) throw new Error(j2.error || 'Fehler');
+
+        tnClient = new window.TelnyxWebRTC.TelnyxRTC({ login_token: j2.login_token });
+        tnClient.remoteElement = 'tnAudio';
+        tnClient.on('telnyx.ready', () => {
+          tnCall = tnClient.newCall({ destinationNumber: nr, callerNumber: j2.caller_number, audio: true, video: false, remoteElement: 'tnAudio' });
+        });
+        tnClient.on('telnyx.error', (e) => { console.warn('[softphone]', e); tnAufraeumen('Verbindung fehlgeschlagen.'); });
+        tnClient.on('telnyx.notification', (n) => {
+          if (n.type !== 'callUpdate' || !n.call) return;
+          const z = n.call.state;
+          if (z === 'ringing' || z === 'trying' || z === 'requesting') tnLeiste(true, nr, 'Es klingelt …');
+          if (z === 'active') {
+            tnLeiste(true, nr, 'Verbunden' + (j1.mitschrift ? ' · wird mitgeschrieben' : ''));
+            tnStart = Date.now();
+            if (!tnUhr) tnUhr = setInterval(() => { const s = Math.round((Date.now() - tnStart) / 1000); $('tnZeit').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }, 1000);
+            tnMitschrift(n.call, j1.call_id, j1.ws_token);
+          }
+          if (z === 'hangup' || z === 'destroy') tnAufraeumen('Gespräch beendet.');
+        });
+        tnClient.connect();
+      } catch (e) {
+        tnAufraeumen(null);
+        toast('Anruf: ' + e.message, 'err');
+      }
+    }
+
+    (function softphoneWiring() {
+      if (!$('tnBar')) return;
+      $('tnAuflegen').onclick = () => { try { tnCall?.hangup(); } catch { /* egal */ } tnAufraeumen('Aufgelegt.'); };
+      $('tnStumm').onclick = () => {
+        if (!tnCall) return;
+        tnStumm = !tnStumm;
+        try { tnStumm ? tnCall.muteAudio() : tnCall.unmuteAudio(); } catch { /* egal */ }
+        $('tnStumm').classList.toggle('an', tnStumm);
+        $('tnStumm').textContent = tnStumm ? 'Stumm an' : 'Stumm';
+      };
+      window.addEventListener('beforeunload', () => { if (tnCall) { try { tnCall.hangup(); } catch { /* egal */ } } });
+    })();
+
     /** Anruf über Vocaris: das eigene Telefon klingelt, danach wird verbunden. */
     async function ueberVocarisAnrufen(nr, knopf) {
       const ziel = String(nr || '').replace(/\s+/g, '');
@@ -5138,13 +5270,23 @@
     })();
 
     // Wer spricht: ich selbst (Vocaris verbindet) oder der Assistent.
-    let callWer = 'selbst';
+    // Und wenn ich selbst spreche: am Telefon oder direkt im Browser.
+    let callWer = 'selbst', callWie = 'telefon';
+    document.querySelectorAll('#callWie [data-callwie]').forEach((b) => b.onclick = () => {
+      document.querySelectorAll('#callWie [data-callwie]').forEach((x) => x.classList.toggle('aktiv', x === b));
+      callWie = b.dataset.callwie;
+      $('callBtn').textContent = callWie === 'browser' ? 'Im Browser anrufen' : 'Anrufen und verbinden';
+      $('callErklaerung').textContent = callWie === 'browser'
+        ? 'Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.'
+        : 'Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.';
+    });
     document.querySelectorAll('#callWer [data-callwer]').forEach((b) => b.onclick = () => {
       document.querySelectorAll('#callWer [data-callwer]').forEach((x) => x.classList.toggle('active', x === b));
       callWer = b.dataset.callwer;
       const selbst = callWer === 'selbst';
       $('callAuftragFeld').classList.toggle('hidden', selbst);
-      $('callBtn').textContent = selbst ? 'Anrufen und verbinden' : 'Assistent anrufen lassen';
+      $('callWie').classList.toggle('hidden', !selbst);
+      $('callBtn').textContent = selbst ? (callWie === 'browser' ? 'Im Browser anrufen' : 'Anrufen und verbinden') : 'Assistent anrufen lassen';
       $('callErklaerung').textContent = selbst
         ? 'Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.'
         : 'Der Assistent ruft selbst an, stellt sich vor und erledigt den Auftrag. Du siehst danach Zusammenfassung und Gesprächsverlauf.';
@@ -5155,9 +5297,15 @@
       const to = $('callTo').value.trim();
       if (callWer === 'selbst') {
         if (!/^\+\d{7,15}$/.test(to.replace(/\s+/g, ''))) { $('callHint').textContent = 'Bitte Nummer im Format +49… eingeben.'; return; }
-        $('callHint').textContent = 'Dein Telefon klingelt gleich …';
-        await ueberVocarisAnrufen(to, $('callBtn'));
-        $('callHint').textContent = 'Wenn du abhebst, wird verbunden.';
+        if (callWie === 'browser') {
+          $('callHint').textContent = 'Mikrofon wird angefragt …';
+          await browserAnrufen(to);
+          $('callHint').textContent = 'Das Gespräch läuft unten rechts.';
+        } else {
+          $('callHint').textContent = 'Dein Telefon klingelt gleich …';
+          await ueberVocarisAnrufen(to, $('callBtn'));
+          $('callHint').textContent = 'Wenn du abhebst, wird verbunden.';
+        }
         $('callTo').value = '';
         return;
       }
