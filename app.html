@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-10T15:21" />
+  <meta name="vocaris-stand" content="2026-09-10T15:44" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -584,30 +584,38 @@
     .tnbar__gitter button { font-size: 15px; font-weight: 600; padding: 8px 0; }
 
     /* ---- Laufendes Gespräch, fest auf der Ausgehend-Seite ---- */
-    .gespraech { max-width: 680px; margin-bottom: 16px; padding: 18px 20px; border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
+    .gespraech { max-width: 420px; margin-bottom: 16px; padding: 18px 20px 20px; border-color: #16a34a; box-shadow: 0 0 0 4px rgba(22,163,74,.12); }
     .gespraech__kopf { display: flex; align-items: center; gap: 12px; }
-    .gespraech__dot { width: 10px; height: 10px; border-radius: 999px; background: #28c76f; flex: none; animation: lvpulse 1.6s infinite; }
+    .gespraech__dot { width: 10px; height: 10px; border-radius: 999px; background: #16a34a; flex: none; animation: lvpulse 1.6s infinite; }
     .gespraech__wer { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
     .gespraech__wer b { font-size: 20px; letter-spacing: .01em; }
-    .gespraech__wer span { font-size: 13px; color: var(--ink-faint); }
-    .gespraech__zeit { margin-left: auto; font-size: 20px; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
-    .gespraech__leiste { display: flex; gap: 8px; margin-top: 14px; }
-    .gespraech__leiste .btn { flex: 1; justify-content: center; }
+    .gespraech__wer span { font-size: 12.5px; color: var(--ink-faint); }
+    .gespraech__zeit { margin-left: auto; font-size: 19px; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+    .gespraech__pad { margin-top: 16px; }
+    .gespraech__hinweis { margin: 10px 0 0; font-size: 12px; color: var(--ink-faint); text-align: center; }
+    .gespraech__leiste { display: flex; gap: 8px; margin-top: 16px; }
+    .gespraech__leiste .btn { flex: 1; justify-content: center; height: 44px; }
     .gespraech__aus { background: #dc2626; border-color: #dc2626; color: #fff; }
     .gespraech__aus:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; }
-    .gespraech__feld { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
-    .gespraech__feld span { display: block; margin-top: 8px; font-size: 12px; color: var(--ink-faint); }
-    .gespraech__gitter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 260px; }
-    .gespraech__gitter button { font: inherit; font-size: 17px; font-weight: 600; padding: 10px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); cursor: pointer; }
-    .gespraech__gitter button:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+    /* ---- Tastenfeld: einmal gebaut, im Wählfeld und im Gespräch ---- */
+    .tastatur { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .tastatur button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+      font: inherit; cursor: pointer; border: 1px solid var(--line); border-radius: 14px; background: var(--white);
+      height: 52px; transition: background .1s, border-color .1s, transform .06s; -webkit-tap-highlight-color: transparent; }
+    .tastatur button i { font-style: normal; font-size: 20px; font-weight: 600; line-height: 1; color: var(--ink); }
+    .tastatur button u { text-decoration: none; font-size: 8.5px; font-weight: 700; letter-spacing: .12em; color: var(--ink-faint); }
+    .tastatur button:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--white)); }
+    .tastatur button:active { transform: scale(.95); background: color-mix(in srgb, var(--accent) 12%, var(--white)); }
+    .tastatur button.leer u { visibility: hidden; }
 
     /* ---- Wählfeld für ausgehende Anrufe ---- */
-    .waehl { max-width: 680px; margin-bottom: 16px; padding: 18px 20px; }
+    .waehl { max-width: 700px; margin-bottom: 16px; padding: 18px 20px 20px; }
     .waehl__kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
     .waehl__kopf h3 { margin: 0; font-size: 15px; }
     .waehl__absender { font-size: 12.5px; color: var(--ink-faint); }
     .waehl__zu { margin-left: auto; }
-    .waehl__label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 6px; }
+    .waehl__label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 6px; }
 
     /* Ein Weg statt zweier Fragen: wer spricht und womit, in einer Reihe. */
     .waehl__wege { display: flex; gap: 8px; }
@@ -621,28 +629,32 @@
     .waehl__weg.aktiv { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--white)); }
     .waehl__weg.aktiv b, .waehl__weg.aktiv .waehl__wegikon { color: var(--accent-ink); }
 
-    /* Nummer und Anrufknopf in einer Zeile – das ist der eigentliche Vorgang. */
-    .waehl__mitte { display: flex; gap: 10px; align-items: stretch; margin-top: 16px; }
-    .waehl__eingabe { flex: 1; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); padding: 0 10px 0 14px; transition: border-color .12s, box-shadow .12s; min-width: 0; }
+    /* Links das Wählfeld wie an einem Telefon, rechts der Kontext dazu. */
+    .waehl__koerper { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 22px; margin-top: 16px; align-items: start; }
+    .waehl__pad { display: grid; gap: 10px; }
+    .waehl__eingabe { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); padding: 0 6px 0 12px; transition: border-color .12s, box-shadow .12s; min-width: 0; }
     .waehl__eingabe:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
-    .waehl__flagge { font-size: 17px; font-weight: 600; color: var(--ink-faint); }
-    .waehl__eingabe input { flex: 1; min-width: 0; border: 0; background: none; padding: 0; height: 52px; font: inherit; font-size: 23px; font-weight: 600; letter-spacing: .02em; color: var(--ink); }
+    .waehl__flagge { font-size: 15px; font-weight: 600; color: var(--ink-faint); }
+    .waehl__eingabe input { flex: 1; min-width: 0; border: 0; background: none; padding: 0; height: 50px; font: inherit; font-size: 21px; font-weight: 600; letter-spacing: .01em; color: var(--ink); }
     .waehl__eingabe input:focus { outline: none; box-shadow: none; }
-    .waehl__loeschen { border: 0; background: none; font-size: 20px; line-height: 1; color: var(--ink-faint); cursor: pointer; padding: 4px 6px; border-radius: 8px; }
+    .waehl__loeschen { border: 0; background: none; font-size: 16px; line-height: 1; color: var(--ink-faint); cursor: pointer; padding: 6px 8px; border-radius: 8px; }
     .waehl__loeschen:hover { background: var(--bg-soft, #f1f5f9); color: var(--ink); }
-    .waehl__ruf { flex: none; gap: 8px; padding: 0 22px; height: 54px; font-size: 15px; border-radius: 12px; }
-    .waehl__zuletzt { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .waehl__zuletzt button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-soft); cursor: pointer; }
+    .waehl__ruf { justify-content: center; gap: 8px; height: 50px; font-size: 15px; border-radius: 14px;
+      background: #16a34a; border: 1px solid #16a34a; color: #fff; }
+    .waehl__ruf:hover { background: #15803d; border-color: #15803d; color: #fff; }
+    .waehl__ruf:disabled { opacity: .55; }
+
+    .waehl__seite { display: grid; gap: 12px; align-content: start; }
+    .waehl__zuletzt { display: flex; flex-wrap: wrap; gap: 6px; }
+    .waehl__zuletzt button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-soft); cursor: pointer; }
     .waehl__zuletzt button:hover { border-color: var(--accent); color: var(--accent-ink); }
     .waehl textarea { margin-top: 0; }
-
-    .waehl__fuss { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-    .waehl__erklaerung { margin: 0; flex: 1 1 240px; font-size: 12.5px; line-height: 1.5; color: var(--ink-faint); }
+    .waehl__erklaerung { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-faint); }
     .waehl__hinweis { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
     .waehl__hinweis.fehler { color: #dc2626; }
 
     /* Mikrofon: eine ruhige Zeile, Details erst auf Klick. */
-    .waehl__geraet { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .waehl__geraet { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line); }
     .waehl__geraetzeile { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; font-size: 12.5px; color: var(--ink-faint);
       background: none; border: 0; padding: 2px 0; cursor: pointer; text-align: left; }
     .waehl__geraetzeile:hover { color: var(--ink); }
@@ -651,7 +663,7 @@
     .waehl__geraetzeile[aria-expanded="true"] .waehl__geraetpfeil { transform: rotate(180deg); }
     .pegel { flex: 1; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; max-width: 140px; visibility: hidden; }
     .pegel.an { visibility: visible; }
-    .pegel span { display: block; height: 100%; width: 0; border-radius: 999px; background: #28c76f; transition: width .08s linear; }
+    .pegel span { display: block; height: 100%; width: 0; border-radius: 999px; background: #16a34a; transition: width .08s linear; }
     .waehl__geraetauf { display: grid; gap: 8px; margin-top: 10px; }
     .waehl__geraetfuss { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .waehl__geraethinweis { margin: 0; flex: 1 1 180px; font-size: 12px; line-height: 1.45; color: var(--ink-faint); }
@@ -660,9 +672,8 @@
 
     @media (max-width: 700px) {
       .waehl__wege { flex-direction: column; }
-      .waehl__mitte { flex-direction: column; }
-      .waehl__ruf { width: 100%; justify-content: center; }
-      .gespraech__leiste { flex-wrap: wrap; }
+      .waehl__koerper { grid-template-columns: 1fr; gap: 16px; }
+      .gespraech { max-width: none; }
     }
     .lv-art { font-size: 10.5px; font-weight: 700; color: var(--ink-faint); background: var(--bg-soft, #f1f5f9); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
     /* ---- Vorgänge ---- */
@@ -920,29 +931,28 @@
               </button>
             </div>
 
-            <div class="waehl__mitte">
-              <div class="waehl__eingabe">
-                <span class="waehl__flagge" id="obFlagge">+49</span>
-                <input id="callTo" placeholder="170 1234567" inputmode="tel" autocomplete="tel" aria-label="Zielnummer" />
-                <button class="waehl__loeschen hidden" type="button" id="obLeeren" title="Feld leeren" aria-label="Feld leeren">×</button>
+            <div class="waehl__koerper">
+              <div class="waehl__pad">
+                <div class="waehl__eingabe">
+                  <span class="waehl__flagge" id="obFlagge">+49</span>
+                  <input id="callTo" placeholder="170 1234567" inputmode="tel" autocomplete="tel" aria-label="Zielnummer" />
+                  <button class="waehl__loeschen hidden" type="button" id="obLeeren" title="Letzte Ziffer löschen" aria-label="Letzte Ziffer löschen">⌫</button>
+                </div>
+                <div class="tastatur" id="waehlTastatur"></div>
+                <button id="callBtn" class="btn waehl__ruf">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.9 2.2z"/></svg>
+                  <span id="callBtnText">Anrufen</span>
+                </button>
               </div>
-              <button id="callBtn" class="btn btn--primary waehl__ruf">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.9 2.2z"/></svg>
-                <span id="callBtnText">Anrufen</span>
-              </button>
-            </div>
-            <div class="waehl__zuletzt" id="obZuletzt"></div>
 
-            <div id="callAuftragFeld" class="hidden">
-              <label class="waehl__label" for="callAuftrag">Auftrag für den Assistenten</label>
-              <textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
-            </div>
-
-            <div class="waehl__fuss">
-              <p class="waehl__erklaerung" id="callErklaerung">Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
-              <span class="waehl__hinweis" id="callHint"></span>
-            </div>
-
+              <div class="waehl__seite">
+                <div class="waehl__zuletzt" id="obZuletzt"></div>
+                <div id="callAuftragFeld" class="hidden">
+                  <label class="waehl__label" for="callAuftrag">Auftrag für den Assistenten</label>
+                  <textarea id="callAuftrag" rows="4" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
+                </div>
+                <p class="waehl__erklaerung" id="callErklaerung">Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
+                <span class="waehl__hinweis" id="callHint"></span>
             <div id="callGeraet" class="waehl__geraet">
               <button class="waehl__geraetzeile" type="button" id="micAufklappen" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15" aria-hidden="true"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/></svg>
@@ -959,6 +969,9 @@
                 </div>
               </div>
             </div>
+              </div>
+            </div>
+
           </div>
 
           <div class="panel gespraech hidden" id="tnInline">
@@ -970,14 +983,13 @@
               </div>
               <span class="gespraech__zeit" id="tnInlineZeit">0:00</span>
             </div>
+            <div class="gespraech__pad">
+              <div class="tastatur" id="tnInlineGitter"></div>
+              <p class="gespraech__hinweis">Für Ansagen wie „für den Vertrieb die 1"</p>
+            </div>
             <div class="gespraech__leiste">
-              <button class="btn btn--ghost" type="button" id="tnInlineTasten">Tasten</button>
               <button class="btn btn--ghost" type="button" id="tnInlineStumm">Stumm</button>
               <button class="btn btn--danger gespraech__aus" type="button" id="tnInlineAuflegen">Auflegen</button>
-            </div>
-            <div class="gespraech__feld hidden" id="tnInlineFeld">
-              <div class="gespraech__gitter" id="tnInlineGitter"></div>
-              <span>Für Ansagen wie „für den Vertrieb die 1"</span>
             </div>
           </div>
 
@@ -4360,7 +4372,6 @@
         $('tnZeit').textContent = '0:00';
         if ($('tnInlineZeit')) $('tnInlineZeit').textContent = '0:00';
         $('tnFeld')?.classList.add('hidden');
-        $('tnInlineFeld')?.classList.add('hidden');
         tnPegelBalken(0);
       }
       tnSichtbarkeit();
@@ -4531,11 +4542,42 @@
       $('tnStumm').classList.toggle('an', tnStumm); $('tnStumm').textContent = text;
       if ($('tnInlineStumm')) $('tnInlineStumm').textContent = text;
     }
-    /** Wähltasten ein- und ausblenden (in beiden Anzeigen). */
+    /** Buchstaben wie am Telefon – hilft beim Vorlesen und beim Merken. */
+    const TASTEN = [['1', ''], ['2', 'ABC'], ['3', 'DEF'], ['4', 'GHI'], ['5', 'JKL'], ['6', 'MNO'], ['7', 'PQRS'], ['8', 'TUV'], ['9', 'WXYZ']];
+
+    /**
+     * Tastenfeld bauen. Dasselbe Gitter dient zwei Zwecken:
+     *   'waehlen'   – Ziffern wandern ins Nummernfeld, unten + und Löschen.
+     *   'gespraech' – Ziffern gehen als Tonwahl an die Gegenstelle, unten * und #.
+     */
+    function tastaturBauen(ziel, modus) {
+      if (!ziel) return;
+      ziel.innerHTML = '';
+      const gespraech = modus === 'gespraech';
+      const alle = [...TASTEN, [gespraech ? '*' : '+', ''], ['0', ''], [gespraech ? '#' : '⌫', '']];
+      alle.forEach(([zeichen, buchstaben]) => {
+        const k = document.createElement('button');
+        k.type = 'button';
+        if (!buchstaben) k.classList.add('leer');
+        const i = document.createElement('i'); i.textContent = zeichen;
+        const u = document.createElement('u'); u.textContent = buchstaben || '·';
+        k.append(i, u);
+        k.onclick = () => {
+          if (gespraech) { waehlton(zeichen); try { tnCall?.dtmf(zeichen); } catch { /* egal */ } return; }
+          const feld = $('callTo'); if (!feld) return;
+          if (zeichen === '⌫') feld.value = feld.value.slice(0, -1);
+          else if (zeichen === '+') { if (!feld.value.trim()) feld.value = '+'; }
+          else { feld.value += zeichen; waehlton(zeichen); }
+          obEingabe();
+          feld.focus();
+        };
+        ziel.append(k);
+      });
+    }
+
+    /** Wähltasten in der schwebenden Zeile ein- und ausblenden. */
     function tnTastenfeld() {
-      const aufSeite = !$('sec-outbound')?.classList.contains('hidden');
-      const feld = aufSeite ? $('tnInlineFeld') : $('tnFeld');
-      const gitter = aufSeite ? $('tnInlineGitter') : $('tnGitter');
+      const feld = $('tnFeld'), gitter = $('tnGitter');
       if (!feld || !gitter) return;
       feld.classList.toggle('hidden');
       if (feld.classList.contains('hidden') || gitter.childElementCount) return;
@@ -4553,7 +4595,8 @@
       $('tnTasten').onclick = tnTastenfeld;
       if ($('tnInlineAuflegen')) $('tnInlineAuflegen').onclick = tnAuflegen;
       if ($('tnInlineStumm')) $('tnInlineStumm').onclick = tnStummSchalten;
-      if ($('tnInlineTasten')) $('tnInlineTasten').onclick = tnTastenfeld;
+      tastaturBauen($('tnInlineGitter'), 'gespraech');
+      tastaturBauen($('waehlTastatur'), 'waehlen');
       if ($('micPruefen')) $('micPruefen').onclick = micPruefen;
       if ($('micAufklappen')) $('micAufklappen').onclick = () => {
         const auf = $('micDetails').classList.toggle('hidden');
@@ -5928,12 +5971,23 @@
       $('callTo').value = v.startsWith('+49') ? v.slice(3) : v;
       obEingabe(); $('callTo').focus();
     }
-    /** Nach jedem Tastendruck: Vorwahl-Hinweis, Löschknopf, Rückmeldung. */
+    /**
+     * Nach jedem Tastendruck: Nummer gliedern, Vorwahl-Hinweis, Rückmeldung.
+     * Gegliedert wird nur am Ende der Eingabe, damit niemandem beim Bearbeiten
+     * mitten im Feld der Schreibpunkt wegspringt.
+     */
     function obEingabe() {
       const feld = $('callTo'); if (!feld) return;
+      const international = /^(\+|00)/.test(feld.value.trim());
+      if (!international && feld.selectionStart === feld.value.length) {
+        let z = feld.value.replace(/\D/g, '');
+        if (z.startsWith('0')) z = z.slice(1);              // 0170… → 170…, die +49 steht ja davor
+        const schoen = z.length > 3 ? z.slice(0, 3) + ' ' + z.slice(3) : z;
+        if (schoen !== feld.value) { feld.value = schoen; feld.setSelectionRange(schoen.length, schoen.length); }
+      }
       const roh = feld.value.trim();
       $('obLeeren').classList.toggle('hidden', !roh);
-      if ($('obFlagge')) $('obFlagge').style.display = /^(\+|00)/.test(roh) ? 'none' : '';
+      if ($('obFlagge')) $('obFlagge').style.display = international ? 'none' : '';
       const h = $('callHint');
       if (!roh) { h.textContent = ''; h.classList.remove('fehler'); return; }
       const nr = obNummerLesen();
@@ -5957,7 +6011,7 @@
     });
     $('callTo')?.addEventListener('input', obEingabe);
     $('callTo')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('callBtn').click(); });
-    $('obLeeren') && ($('obLeeren').onclick = () => { $('callTo').value = ''; obEingabe(); $('callTo').focus(); });
+    $('obLeeren') && ($('obLeeren').onclick = () => { const f = $('callTo'); f.value = f.value.slice(0, -1); obEingabe(); f.focus(); });
     $('obWaehlZu') && ($('obWaehlZu').onclick = () => { $('obWaehl').classList.add('hidden'); });
     $('obAnrufKnopf') && ($('obAnrufKnopf').onclick = () => { $('obWaehl').classList.remove('hidden'); obWahlZeigen(); $('callTo')?.focus(); });
 
