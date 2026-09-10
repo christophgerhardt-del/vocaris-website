@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-10T12:19" />
+  <meta name="vocaris-stand" content="2026-09-10T15:00" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -573,6 +573,24 @@
       .lv-liste { max-height: none; } .lv-transkript { max-height: 55vh; } .lv-suche { min-width: 0; flex: 1 1 100%; width: 100%; }
       .lv-filter .lv-streifen { margin-left: 0 !important; width: 100%; }
     }
+    /* ---- Mikrofon-Auswahl und Pegel im Wählfeld ---- */
+    .waehl__geraet { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+    .waehl__geraetkopf { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .waehl__geraet select { width: 100%; }
+    .waehl__geraethinweis { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--ink-faint); }
+    .waehl__geraethinweis.gut { color: #16a34a; }
+    .waehl__geraethinweis.fehler { color: #dc2626; }
+    .pegel { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 8px; }
+    .pegel span { display: block; height: 100%; width: 0; border-radius: 999px; background: #28c76f; transition: width .08s linear; }
+    /* ---- Wähltasten und Pegel in der Anrufzeile ---- */
+    .tnbar { flex-wrap: wrap; max-width: min(520px, calc(100vw - 44px)); }
+    .tnbar__pegel { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; width: 26px; }
+    .tnbar__pegel i { display: block; flex: 1; height: 20%; background: rgba(255,255,255,.35); border-radius: 1px; transition: height .08s linear, background .08s linear; }
+    .tnbar__pegel.laut i { background: #28c76f; }
+    .tnbar__feld { flex: 1 1 100%; margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.18); }
+    .tnbar__feld span { display: block; margin-top: 8px; font-size: 11.5px; color: rgba(255,255,255,.7); }
+    .tnbar__gitter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .tnbar__gitter button { font-size: 15px; font-weight: 600; padding: 8px 0; }
     /* ---- Laufendes Browser-Gespräch, fest auf der Seite ---- */
     .tninline { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 14px; border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
     .tninline__dot { width: 9px; height: 9px; border-radius: 999px; background: #28c76f; flex: none; animation: lvpulse 1.6s infinite; }
@@ -879,17 +897,27 @@
                 <div id="callWieFeld">
                   <label class="waehl__label">Womit sprichst du?</label>
                   <div class="waehl__karten" id="callWie">
-                    <button class="waehl__karte aktiv" type="button" data-callwie="telefon"><b>Telefon</b><small>Vocaris ruft dich an</small></button>
-                    <button class="waehl__karte" type="button" data-callwie="browser"><b>Browser</b><small>Headset am Rechner</small></button>
+                    <button class="waehl__karte aktiv" type="button" data-callwie="browser"><b>Browser</b><small>Headset am Rechner</small></button>
+                    <button class="waehl__karte" type="button" data-callwie="telefon"><b>Telefon</b><small>Vocaris ruft dich an</small></button>
+                  </div>
+                  <div id="callGeraet" class="waehl__geraet">
+                    <div class="waehl__geraetkopf">
+                      <span class="waehl__label" style="margin:0">Mikrofon</span>
+                      <button class="btn btn--ghost sm" type="button" id="micPruefen">Prüfen</button>
+                    </div>
+                    <select id="micWahl" class="lv-select"><option value="">Standard-Mikrofon</option></select>
+                    <div class="pegel" id="pegel" aria-hidden="true"><span id="pegelBalken"></span></div>
+                    <p class="waehl__geraethinweis" id="micHinweis">Vor dem ersten Anruf einmal prüfen, ob das richtige Mikrofon anspringt.</p>
+                    <select id="lsWahl" class="lv-select hidden"><option value="">Standard-Wiedergabe</option></select>
                   </div>
                 </div>
               </div>
             </div>
             <div class="waehl__fuss">
-              <p class="waehl__erklaerung" id="callErklaerung">Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
+              <p class="waehl__erklaerung" id="callErklaerung">Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
               <div class="waehl__start">
                 <span class="waehl__hinweis" id="callHint"></span>
-                <button id="callBtn" class="btn btn--primary">Anrufen und verbinden</button>
+                <button id="callBtn" class="btn btn--primary">Im Browser anrufen</button>
               </div>
             </div>
           </div>
@@ -898,6 +926,7 @@
             <span class="tninline__dot"></span>
             <div class="tninline__t"><b id="tnInlineNr">—</b><span id="tnInlineStatus">Verbinde …</span></div>
             <span class="tninline__zeit" id="tnInlineZeit">0:00</span>
+            <button class="btn btn--ghost sm" type="button" id="tnInlineTasten">Tasten</button>
             <button class="btn btn--ghost sm" type="button" id="tnInlineStumm">Stumm</button>
             <button class="btn btn--danger sm" type="button" id="tnInlineAuflegen">Auflegen</button>
           </div>
@@ -1868,8 +1897,14 @@
       <span class="tnbar__dot"></span>
       <div class="tnbar__t"><b id="tnNummer">—</b><span id="tnStatus">Verbinde …</span></div>
       <span class="tnbar__zeit" id="tnZeit">0:00</span>
+      <span class="tnbar__pegel" id="tnPegel" title="Mikrofonpegel"><i></i></span>
+      <button id="tnTasten" type="button" title="Wähltasten für Ansagen">Tasten</button>
       <button id="tnStumm" type="button" title="Mikrofon stumm">Stumm</button>
       <button id="tnAuflegen" type="button" class="rot" title="Auflegen">Auflegen</button>
+      <div class="tnbar__feld hidden" id="tnFeld">
+        <div class="tnbar__gitter" id="tnGitter"></div>
+        <span>Für Ansagen wie „für Vertrieb die 1"</span>
+      </div>
     </div>
     <div id="liveWidget" class="livew hidden">
       <div class="livew__head" id="liveWidgetHead">
@@ -4088,6 +4123,165 @@
     // Laeuft gerade ein Gespraech? Verhindert, dass das Auflegen sich selbst
     // wieder ausloest: hangup() meldet seinerseits ein Auflegen zurueck.
     let tnLaeuft = false;
+    // Eigener Ton-Kontext für Freizeichen, Wähltöne und Pegelanzeige – getrennt
+    // von dem der Mitschrift, damit sich beides nicht ins Gehege kommt.
+    let tnTonCtx = null, tnPegelAus = null, tnFrei = null;
+
+    /** Kann dieser Browser überhaupt telefonieren? */
+    function browserKannTelefonieren() {
+      if (!window.isSecureContext) return 'Das geht nur über eine gesicherte Verbindung (https).';
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'Dieser Browser gibt kein Mikrofon frei.';
+      if (!window.RTCPeerConnection) return 'Dieser Browser kann keine Sprachverbindung aufbauen.';
+      if (!window.TelnyxWebRTC) return 'Das Softphone wurde nicht geladen. Bitte die Seite neu laden.';
+      return '';
+    }
+
+    const tonKontext = () => (tnTonCtx = tnTonCtx && tnTonCtx.state !== 'closed' ? tnTonCtx : new (window.AudioContext || window.webkitAudioContext)());
+    const geraetGemerkt = (art) => { try { return localStorage.getItem('vocaris.' + art) || ''; } catch { return ''; } };
+    const geraetMerken = (art, id) => { try { localStorage.setItem('vocaris.' + art, id || ''); } catch { /* egal */ } };
+
+    /**
+     * Freizeichen, solange es beim Angerufenen klingelt. Telnyx liefert für
+     * WebRTC-Anrufe keinen Rufton, ohne das hörte man nur Stille und wüsste
+     * nicht, ob überhaupt etwas passiert. Takt wie im deutschen Netz:
+     * 425 Hz, eine Sekunde Ton, vier Sekunden Pause.
+     */
+    function freizeichen(an) {
+      if (tnFrei) { clearInterval(tnFrei.takt); try { tnFrei.knoten.stop(); } catch { /* egal */ } tnFrei = null; }
+      if (!an) return;
+      try {
+        const ctx = tonKontext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const piep = () => {
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = 425;
+          o.connect(g); g.connect(ctx.destination);
+          const t = ctx.currentTime;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.08, t + 0.02);
+          g.gain.setValueAtTime(0.08, t + 0.95);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 1);
+          o.start(t); o.stop(t + 1.05);
+        };
+        piep();
+        tnFrei = { takt: setInterval(piep, 5000), knoten: { stop() {} } };
+      } catch { /* ohne Freizeichen geht es auch */ }
+    }
+
+    /** Kurzer Wählton beim Drücken einer Taste (nur lokal hörbar). */
+    function waehlton(taste) {
+      const PAARE = { '1':[697,1209],'2':[697,1336],'3':[697,1477],'4':[770,1209],'5':[770,1336],'6':[770,1477],
+                      '7':[852,1209],'8':[852,1336],'9':[852,1477],'*':[941,1209],'0':[941,1336],'#':[941,1477] };
+      const p = PAARE[taste]; if (!p) return;
+      try {
+        const ctx = tonKontext(); if (ctx.state === 'suspended') ctx.resume();
+        const g = ctx.createGain(); g.connect(ctx.destination);
+        const t = ctx.currentTime;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.06, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+        p.forEach((hz) => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = hz; o.connect(g); o.start(t); o.stop(t + 0.18); });
+      } catch { /* egal */ }
+    }
+
+    /**
+     * Pegelanzeige: zeigt, ob das Mikrofon wirklich etwas hört. Gibt eine
+     * Funktion zum Beenden zurück.
+     */
+    function pegelZeigen(stream, malen) {
+      try {
+        const ctx = tonKontext();
+        const quelle = ctx.createMediaStreamSource(stream);
+        const analyse = ctx.createAnalyser();
+        analyse.fftSize = 512;
+        quelle.connect(analyse);
+        const daten = new Uint8Array(analyse.frequencyBinCount);
+        let laeuft = true;
+        const takt = () => {
+          if (!laeuft) return;
+          analyse.getByteTimeDomainData(daten);
+          let summe = 0;
+          for (let i = 0; i < daten.length; i++) { const v = (daten[i] - 128) / 128; summe += v * v; }
+          malen(Math.min(1, Math.sqrt(summe / daten.length) * 4));
+          requestAnimationFrame(takt);
+        };
+        takt();
+        return () => { laeuft = false; try { quelle.disconnect(); } catch { /* egal */ } malen(0); };
+      } catch { return () => {}; }
+    }
+
+    /** Geräteliste füllen. Namen gibt es erst, wenn das Mikrofon einmal frei war. */
+    async function geraeteFuellen() {
+      if (!navigator.mediaDevices?.enumerateDevices) return;
+      let liste = [];
+      try { liste = await navigator.mediaDevices.enumerateDevices(); } catch { return; }
+      const setzen = (el, art, standardText, gemerkt) => {
+        if (!el) return;
+        const passend = liste.filter((g) => g.kind === art);
+        el.innerHTML = '';
+        const std = document.createElement('option'); std.value = ''; std.textContent = standardText; el.append(std);
+        passend.forEach((g, i) => {
+          const o = document.createElement('option');
+          o.value = g.deviceId;
+          o.textContent = g.label || (standardText.split('-')[0] + ' ' + (i + 1));
+          el.append(o);
+        });
+        if (gemerkt && passend.some((g) => g.deviceId === gemerkt)) el.value = gemerkt;
+        el.parentElement && el.classList.toggle('hidden', art === 'audiooutput' && passend.length < 2);
+      };
+      setzen($('micWahl'), 'audioinput', 'Standard-Mikrofon', geraetGemerkt('mic'));
+      // Wiedergabegerät lässt sich nur in Browsern wählen, die setSinkId können.
+      const audio = $('tnAudio');
+      if (audio && typeof audio.setSinkId === 'function') setzen($('lsWahl'), 'audiooutput', 'Standard-Wiedergabe', geraetGemerkt('ls'));
+      else $('lsWahl')?.classList.add('hidden');
+    }
+
+    /** „Prüfen": Mikrofon anfordern, Geräte benennen, ein paar Sekunden den Pegel zeigen. */
+    async function micPruefen() {
+      const hinweis = $('micHinweis'), knopf = $('micPruefen');
+      const problem = browserKannTelefonieren();
+      if (problem && !problem.startsWith('Das Softphone')) { hinweis.className = 'waehl__geraethinweis fehler'; hinweis.textContent = problem; return; }
+      knopf.disabled = true;
+      hinweis.className = 'waehl__geraethinweis';
+      hinweis.textContent = 'Mikrofon wird angefragt …';
+      let strom = null;
+      try {
+        strom = await navigator.mediaDevices.getUserMedia({ audio: mikrofonWunsch() });
+      } catch (e) {
+        hinweis.className = 'waehl__geraethinweis fehler';
+        hinweis.textContent = mikrofonFehler(e);
+        knopf.disabled = false;
+        return;
+      }
+      await geraeteFuellen();
+      hinweis.className = 'waehl__geraethinweis gut';
+      hinweis.textContent = 'Sag einmal etwas – der Balken muss ausschlagen.';
+      const balken = $('pegelBalken');
+      if (tnPegelAus) tnPegelAus();
+      tnPegelAus = pegelZeigen(strom, (p) => { balken.style.width = Math.round(p * 100) + '%'; });
+      setTimeout(() => {
+        if (tnPegelAus) { tnPegelAus(); tnPegelAus = null; }
+        strom.getTracks().forEach((t) => t.stop());
+        knopf.disabled = false;
+        hinweis.className = 'waehl__geraethinweis';
+        hinweis.textContent = 'Mikrofon bereit.';
+      }, 12000);
+    }
+
+    /** Gewünschtes Mikrofon als Vorgabe für getUserMedia. */
+    function mikrofonWunsch() {
+      const id = $('micWahl')?.value || geraetGemerkt('mic');
+      const grund = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      return id ? { ...grund, deviceId: { exact: id } } : grund;
+    }
+    /** Verständliche Meldung statt eines Browser-Fehlernamens. */
+    function mikrofonFehler(e) {
+      const n = e && e.name;
+      if (n === 'NotAllowedError' || n === 'SecurityError') return 'Das Mikrofon ist blockiert. In der Adressleiste auf das Schloss tippen und Mikrofon erlauben.';
+      if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'Kein Mikrofon gefunden. Headset anstecken und noch einmal prüfen.';
+      if (n === 'NotReadableError') return 'Das Mikrofon ist von einem anderen Programm belegt.';
+      return 'Mikrofon nicht verfügbar: ' + (e?.message || 'unbekannter Fehler');
+    }
 
     /**
      * Zeigt das laufende Gespräch an zwei Stellen: als schwebende Leiste unten
@@ -4100,7 +4294,19 @@
       $('tnInline')?.classList.toggle('hidden', !an);
       if (nummer) { $('tnNummer').textContent = fmtNr(nummer); if ($('tnInlineNr')) $('tnInlineNr').textContent = fmtNr(nummer); }
       if (status) { $('tnStatus').textContent = status; if ($('tnInlineStatus')) $('tnInlineStatus').textContent = status; }
-      if (!an) { $('tnZeit').textContent = '0:00'; if ($('tnInlineZeit')) $('tnInlineZeit').textContent = '0:00'; }
+      if (!an) {
+        $('tnZeit').textContent = '0:00';
+        if ($('tnInlineZeit')) $('tnInlineZeit').textContent = '0:00';
+        $('tnFeld')?.classList.add('hidden');
+        tnPegelBalken(0);
+      }
+    }
+
+    /** Mikrofonpegel in der Anrufzeile (drei Striche). */
+    function tnPegelBalken(p) {
+      const el = $('tnPegel'); if (!el) return;
+      el.classList.toggle('laut', p > 0.08);
+      [...el.querySelectorAll('i')].forEach((i, n) => { i.style.height = Math.max(20, Math.min(100, p * 130 - n * 12)) + '%'; });
     }
 
     /** Beide Tonspuren an die Mitschrift schicken (16 kHz, PCM). */
@@ -4142,6 +4348,8 @@
       if (!tnLaeuft) return;
       tnLaeuft = false;
       if (tnUhr) { clearInterval(tnUhr); tnUhr = null; }
+      freizeichen(false);
+      if (tnPegelAus) { tnPegelAus(); tnPegelAus = null; }
       // Erst auflegen – auch Gespräche, die wir nicht selbst in tnCall halten.
       try { tnCall?.hangup(); } catch { /* egal */ }
       try {
@@ -4174,14 +4382,16 @@
     async function browserAnrufen(ziel) {
       const nr = String(ziel || '').replace(/\s+/g, '');
       if (!/^\+\d{7,15}$/.test(nr)) { toast('Nummer im Format +49 … nötig.', 'err'); return; }
-      if (!window.TelnyxWebRTC) { toast('Das Softphone konnte nicht geladen werden. Bitte Seite neu laden.', 'err'); return; }
+      const problem = browserKannTelefonieren();
+      if (problem) { toast(problem, 'err'); return; }
       if (tnLaeuft) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
       tnLaeuft = true;
       tnLeiste(true, nr, 'Mikrofon wird angefragt …');
       try {
-        tnMikro = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        tnLaeuft = false; tnLeiste(false); toast('Ohne Mikrofon geht es nicht. Bitte im Browser erlauben.', 'err'); return;
+        tnMikro = await navigator.mediaDevices.getUserMedia({ audio: mikrofonWunsch() });
+        geraetMerken('mic', $('micWahl')?.value || '');
+      } catch (e) {
+        tnLaeuft = false; tnLeiste(false); toast(mikrofonFehler(e), 'err'); return;
       }
       try {
         tnLeiste(true, nr, 'Verbinde …');
@@ -4191,10 +4401,20 @@
         const r2 = await fetch(API + '/api/webrtc-token', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken } });
         const j2 = await r2.json(); if (!r2.ok) throw new Error(j2.error || 'Fehler');
 
+        // Wiedergabegerät, falls der Browser das kann und eines gewählt wurde.
+        const ls = $('lsWahl')?.value || geraetGemerkt('ls');
+        const audio = $('tnAudio');
+        if (ls && audio && typeof audio.setSinkId === 'function') { try { await audio.setSinkId(ls); geraetMerken('ls', ls); } catch { /* egal */ } }
+
         tnClient = new window.TelnyxWebRTC.TelnyxRTC({ login_token: j2.login_token });
         tnClient.remoteElement = 'tnAudio';
         tnClient.on('telnyx.ready', () => {
-          tnCall = tnClient.newCall({ destinationNumber: nr, callerNumber: j2.caller_number, audio: true, video: false, remoteElement: 'tnAudio' });
+          tnCall = tnClient.newCall({
+            destinationNumber: nr, callerNumber: j2.caller_number,
+            audio: true, video: false, remoteElement: 'tnAudio',
+            micId: $('micWahl')?.value || undefined,
+            speakerId: ls || undefined,
+          });
         });
         tnClient.on('telnyx.error', (e) => { console.warn('[softphone]', e); tnAufraeumen('Verbindung fehlgeschlagen.'); });
         tnClient.on('telnyx.notification', (n) => {
@@ -4204,11 +4424,14 @@
           // wirkt hangup() zuverlässig.
           tnCall = n.call;
           const z = n.call.state;
-          if (z === 'ringing' || z === 'trying' || z === 'requesting') tnLeiste(true, nr, 'Es klingelt …');
+          if (z === 'ringing' || z === 'trying' || z === 'requesting') { tnLeiste(true, nr, 'Es klingelt …'); freizeichen(true); }
           if (z === 'active') {
+            freizeichen(false);
             tnLeiste(true, nr, 'Verbunden' + (j1.mitschrift ? ' · wird mitgeschrieben' : ''));
             tnStart = Date.now();
             if (!tnUhr) tnUhr = setInterval(() => { const s = Math.round((Date.now() - tnStart) / 1000); const t = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); $('tnZeit').textContent = t; if ($('tnInlineZeit')) $('tnInlineZeit').textContent = t; }, 1000);
+            // Pegel der eigenen Stimme: man sieht sofort, wenn das Mikrofon schweigt.
+            if (n.call.localStream && !tnPegelAus) tnPegelAus = pegelZeigen(n.call.localStream, tnPegelBalken);
             tnMitschrift(n.call, j1.call_id, j1.ws_token);
           }
           if (z === 'hangup' || z === 'destroy') tnAufraeumen('Gespräch beendet.');
@@ -4231,15 +4454,42 @@
       $('tnStumm').classList.toggle('an', tnStumm); $('tnStumm').textContent = text;
       if ($('tnInlineStumm')) $('tnInlineStumm').textContent = text;
     }
+    /** Wähltasten ein- und ausblenden. */
+    function tnTastenfeld() {
+      const feld = $('tnFeld'); if (!feld) return;
+      feld.classList.toggle('hidden');
+      if (feld.classList.contains('hidden')) return;
+      const gitter = $('tnGitter');
+      if (gitter.childElementCount) return;
+      '123456789*0#'.split('').forEach((t) => {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+        b.onclick = () => { waehlton(t); try { tnCall?.dtmf(t); } catch { /* egal */ } };
+        gitter.append(b);
+      });
+    }
+
     (function softphoneWiring() {
       if (!$('tnBar')) return;
       $('tnAuflegen').onclick = tnAuflegen;
       $('tnStumm').onclick = tnStummSchalten;
+      $('tnTasten').onclick = tnTastenfeld;
       if ($('tnInlineAuflegen')) $('tnInlineAuflegen').onclick = tnAuflegen;
       if ($('tnInlineStumm')) $('tnInlineStumm').onclick = tnStummSchalten;
+      if ($('tnInlineTasten')) $('tnInlineTasten').onclick = tnTastenfeld;
+      if ($('micPruefen')) $('micPruefen').onclick = micPruefen;
+      if ($('micWahl')) $('micWahl').onchange = () => geraetMerken('mic', $('micWahl').value);
+      if ($('lsWahl')) $('lsWahl').onchange = () => geraetMerken('ls', $('lsWahl').value);
+      // Geräteliste ohne Erlaubnis vorbefüllen (noch ohne Namen) und bei
+      // An- oder Abstecken eines Headsets nachziehen.
+      geraeteFuellen();
+      navigator.mediaDevices?.addEventListener?.('devicechange', geraeteFuellen);
       // Escape legt auf, solange ein Gespräch läuft.
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tnCall && !$('tnBar').classList.contains('hidden')) tnAuflegen(); });
-      window.addEventListener('beforeunload', () => { if (tnCall) { try { tnCall.hangup(); } catch { /* egal */ } } });
+      window.addEventListener('beforeunload', (e) => {
+        if (!tnLaeuft) return;
+        try { tnCall?.hangup(); } catch { /* egal */ }
+        e.preventDefault(); e.returnValue = '';
+      });
     })();
 
     /** Anruf über Vocaris: das eigene Telefon klingelt, danach wird verbunden. */
@@ -5556,7 +5806,9 @@
     // ---- Wählfeld: wer spricht, womit, und an welche Nummer ----
     // Ich selbst (Vocaris verbindet mich) oder der Assistent (erledigt einen
     // Auftrag). Wenn ich selbst spreche: am Telefon oder direkt im Browser.
-    let callWer = 'selbst', callWie = 'telefon', firmenNummern = [];
+    // Voreinstellung: im Browser sprechen. Das geht ohne Umweg über das
+    // eigene Telefon und ist der Weg, den die meisten am Schreibtisch wollen.
+    let callWer = 'selbst', callWie = 'browser', firmenNummern = [];
 
     /** Zeigt im Kopf des Wählfelds, welche Nummer der Angerufene sieht. */
     function obAbsenderZeigen() {
@@ -5600,6 +5852,8 @@
       const selbst = callWer === 'selbst';
       $('callAuftragFeld').classList.toggle('hidden', selbst);
       $('callWieFeld').classList.toggle('hidden', !selbst);
+      // Mikrofon-Auswahl nur zeigen, wenn sie auch gebraucht wird.
+      $('callGeraet')?.classList.toggle('hidden', !(selbst && callWie === 'browser'));
       $('callBtn').textContent = selbst ? (callWie === 'browser' ? 'Im Browser anrufen' : 'Anrufen und verbinden') : 'Assistent anrufen lassen';
       $('callErklaerung').textContent = !selbst
         ? 'Der Assistent ruft selbst an, stellt sich vor und erledigt den Auftrag. Du siehst danach Zusammenfassung und Gesprächsverlauf.'
@@ -5620,7 +5874,7 @@
     $('callTo')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('callBtn').click(); });
     $('obLeeren') && ($('obLeeren').onclick = () => { $('callTo').value = ''; obEingabe(); $('callTo').focus(); });
     $('obWaehlZu') && ($('obWaehlZu').onclick = () => { $('obWaehl').classList.add('hidden'); });
-    $('obAnrufKnopf') && ($('obAnrufKnopf').onclick = () => { $('obWaehl').classList.remove('hidden'); $('callTo')?.focus(); });
+    $('obAnrufKnopf') && ($('obAnrufKnopf').onclick = () => { $('obWaehl').classList.remove('hidden'); obWahlZeigen(); $('callTo')?.focus(); });
 
     $('callBtn') && ($('callBtn').onclick = async () => {
       const to = obNummerLesen();
