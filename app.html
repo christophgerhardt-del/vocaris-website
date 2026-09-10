@@ -569,6 +569,13 @@
       .lv-liste { max-height: none; } .lv-transkript { max-height: 55vh; } .lv-suche { min-width: 0; flex: 1 1 100%; width: 100%; }
       .lv-filter .lv-streifen { margin-left: 0 !important; width: 100%; }
     }
+    /* ---- Laufendes Browser-Gespräch, fest auf der Seite ---- */
+    .tninline { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 14px; border-color: #28c76f; box-shadow: 0 0 0 4px rgba(40,199,111,.14); }
+    .tninline__dot { width: 9px; height: 9px; border-radius: 999px; background: #28c76f; flex: none; animation: lvpulse 1.6s infinite; }
+    .tninline__t { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+    .tninline__t b { font-size: 14px; }
+    .tninline__t span { font-size: 12.5px; color: var(--ink-faint); }
+    .tninline__zeit { margin-left: auto; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
     /* ---- Wählfeld für ausgehende Anrufe ---- */
     .waehl { margin-bottom: 14px; padding: 16px 18px; }
     .waehl__kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -883,6 +890,13 @@
             </div>
           </div>
 
+          <div class="panel tninline hidden" id="tnInline">
+            <span class="tninline__dot"></span>
+            <div class="tninline__t"><b id="tnInlineNr">—</b><span id="tnInlineStatus">Verbinde …</span></div>
+            <span class="tninline__zeit" id="tnInlineZeit">0:00</span>
+            <button class="btn btn--ghost sm" type="button" id="tnInlineStumm">Stumm</button>
+            <button class="btn btn--danger sm" type="button" id="tnInlineAuflegen">Auflegen</button>
+          </div>
           <div id="obActive"></div>
           <div class="lv-filter">
             <div class="lv-chips" id="obArt"><button class="lv-chip aktiv" type="button" data-art="">Alle Arten</button><button class="lv-chip" type="button" data-art="bridge">Am Telefon</button><button class="lv-chip" type="button" data-art="browser">Im Browser</button><button class="lv-chip" type="button" data-art="assistant">Assistent</button></div>
@@ -4030,12 +4044,22 @@
     // Der Ton läuft über Telnyx (WebRTC), die Mitschrift über einen eigenen
     // Kanal zu unserem Server: eine Spur die eigene Stimme, eine die Gegenseite.
     let tnClient = null, tnCall = null, tnCtx = null, tnWs = null, tnUhr = null, tnStart = 0, tnStumm = false;
+    // Anruf-ID beim Server und der Mikrofon-Strom der Erlaubnis-Abfrage: beides
+    // muss beim Auflegen mit weg, sonst bleibt der Anruf offen bzw. das Mikrofon an.
+    let tnCallId = null, tnMikro = null;
 
+    /**
+     * Zeigt das laufende Gespräch an zwei Stellen: als schwebende Leiste unten
+     * rechts und fest oben auf der Ausgehend-Seite. Die feste Zeile gibt es,
+     * damit der Auflegen-Knopf nicht zu übersehen ist.
+     */
     function tnLeiste(an, nummer, status) {
       const bar = $('tnBar'); if (!bar) return;
       bar.classList.toggle('hidden', !an);
-      if (nummer) $('tnNummer').textContent = fmtNr(nummer);
-      if (status) $('tnStatus').textContent = status;
+      $('tnInline')?.classList.toggle('hidden', !an);
+      if (nummer) { $('tnNummer').textContent = fmtNr(nummer); if ($('tnInlineNr')) $('tnInlineNr').textContent = fmtNr(nummer); }
+      if (status) { $('tnStatus').textContent = status; if ($('tnInlineStatus')) $('tnInlineStatus').textContent = status; }
+      if (!an) { $('tnZeit').textContent = '0:00'; if ($('tnInlineZeit')) $('tnInlineZeit').textContent = '0:00'; }
     }
 
     /** Beide Tonspuren an die Mitschrift schicken (16 kHz, PCM). */
@@ -4066,17 +4090,41 @@
       } catch (e) { console.warn('Mitschrift nicht gestartet:', e.message); }
     }
 
+    /**
+     * Gespräch beenden und alles abräumen: jedes dem SDK bekannte Gespräch
+     * auflegen, Verbindung trennen, Mitschrift schließen, Mikrofon freigeben
+     * und dem Server sagen, dass der Anruf vorbei ist. Der letzte Punkt ist
+     * wichtig: ohne Mitschrift gibt es keinen Media-Stream, dessen Ende den
+     * Anruf sonst abschließt – er stünde ewig auf „läuft".
+     */
     function tnAufraeumen(status) {
       if (tnUhr) { clearInterval(tnUhr); tnUhr = null; }
+      // Erst auflegen – auch Gespräche, die wir nicht selbst in tnCall halten.
+      try { tnCall?.hangup(); } catch { /* egal */ }
+      try {
+        const bekannte = tnClient && tnClient.calls ? Object.values(tnClient.calls) : [];
+        bekannte.forEach((c) => { if (c && c !== tnCall) { try { c.hangup(); } catch { /* egal */ } } });
+      } catch { /* egal */ }
       try { tnWs?.send(JSON.stringify({ event: 'stop' })); tnWs?.close(); } catch { /* egal */ }
       try { tnCtx?.close(); } catch { /* egal */ }
-      tnWs = null; tnCtx = null; tnCall = null; tnStumm = false;
+      try { tnMikro?.getTracks().forEach((t) => t.stop()); } catch { /* egal */ }
+      try { const a = $('tnAudio'); if (a) { a.pause(); a.srcObject = null; } } catch { /* egal */ }
+      tnWs = null; tnCtx = null; tnCall = null; tnMikro = null; tnStumm = false;
       $('tnStumm').classList.remove('an'); $('tnStumm').textContent = 'Stumm';
+      if ($('tnInlineStumm')) $('tnInlineStumm').textContent = 'Stumm';
       try { tnClient?.disconnect(); } catch { /* egal */ }
       tnClient = null;
       tnLeiste(false);
+      // Anruf serverseitig abschließen, damit er nicht als „läuft" hängen bleibt.
+      const id = tnCallId; tnCallId = null;
+      if (id && accessToken) {
+        fetch(API + '/api/browser-call/end', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ call_id: id }) })
+          .catch(() => { /* der Server räumt verwaiste Anrufe ohnehin auf */ })
+          .finally(() => { if (typeof loadLive === 'function') loadLive(); });
+      } else {
+        setTimeout(() => { if (typeof loadLive === 'function') loadLive(); }, 1200);
+      }
       if (status) toast(status);
-      setTimeout(() => { if (typeof loadLive === 'function') loadLive(); }, 1200);
     }
 
     /** Anruf im Browser starten. */
@@ -4087,7 +4135,7 @@
       if (tnCall) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
       tnLeiste(true, nr, 'Mikrofon wird angefragt …');
       try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        tnMikro = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch {
         tnLeiste(false); toast('Ohne Mikrofon geht es nicht. Bitte im Browser erlauben.', 'err'); return;
       }
@@ -4095,6 +4143,7 @@
         tnLeiste(true, nr, 'Verbinde …');
         const r1 = await fetch(API + '/api/browser-call', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ to: nr }) });
         const j1 = await r1.json(); if (!r1.ok) throw new Error(j1.error || 'Fehler');
+        tnCallId = j1.call_id || null;
         const r2 = await fetch(API + '/api/webrtc-token', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken } });
         const j2 = await r2.json(); if (!r2.ok) throw new Error(j2.error || 'Fehler');
 
@@ -4106,12 +4155,15 @@
         tnClient.on('telnyx.error', (e) => { console.warn('[softphone]', e); tnAufraeumen('Verbindung fehlgeschlagen.'); });
         tnClient.on('telnyx.notification', (n) => {
           if (n.type !== 'callUpdate' || !n.call) return;
+          // Immer das Objekt halten, das das SDK gerade meldet – nur darauf
+          // wirkt hangup() zuverlässig.
+          tnCall = n.call;
           const z = n.call.state;
           if (z === 'ringing' || z === 'trying' || z === 'requesting') tnLeiste(true, nr, 'Es klingelt …');
           if (z === 'active') {
             tnLeiste(true, nr, 'Verbunden' + (j1.mitschrift ? ' · wird mitgeschrieben' : ''));
             tnStart = Date.now();
-            if (!tnUhr) tnUhr = setInterval(() => { const s = Math.round((Date.now() - tnStart) / 1000); $('tnZeit').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }, 1000);
+            if (!tnUhr) tnUhr = setInterval(() => { const s = Math.round((Date.now() - tnStart) / 1000); const t = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); $('tnZeit').textContent = t; if ($('tnInlineZeit')) $('tnInlineZeit').textContent = t; }, 1000);
             tnMitschrift(n.call, j1.call_id, j1.ws_token);
           }
           if (z === 'hangup' || z === 'destroy') tnAufraeumen('Gespräch beendet.');
@@ -4123,16 +4175,25 @@
       }
     }
 
+    /** Auflegen – egal von welchem der beiden Knöpfe. */
+    function tnAuflegen() { tnAufraeumen('Aufgelegt.'); }
+    /** Mikrofon stumm schalten und beide Knöpfe beschriften. */
+    function tnStummSchalten() {
+      if (!tnCall) return;
+      tnStumm = !tnStumm;
+      try { tnStumm ? tnCall.muteAudio() : tnCall.unmuteAudio(); } catch { /* egal */ }
+      const text = tnStumm ? 'Stumm an' : 'Stumm';
+      $('tnStumm').classList.toggle('an', tnStumm); $('tnStumm').textContent = text;
+      if ($('tnInlineStumm')) $('tnInlineStumm').textContent = text;
+    }
     (function softphoneWiring() {
       if (!$('tnBar')) return;
-      $('tnAuflegen').onclick = () => { try { tnCall?.hangup(); } catch { /* egal */ } tnAufraeumen('Aufgelegt.'); };
-      $('tnStumm').onclick = () => {
-        if (!tnCall) return;
-        tnStumm = !tnStumm;
-        try { tnStumm ? tnCall.muteAudio() : tnCall.unmuteAudio(); } catch { /* egal */ }
-        $('tnStumm').classList.toggle('an', tnStumm);
-        $('tnStumm').textContent = tnStumm ? 'Stumm an' : 'Stumm';
-      };
+      $('tnAuflegen').onclick = tnAuflegen;
+      $('tnStumm').onclick = tnStummSchalten;
+      if ($('tnInlineAuflegen')) $('tnInlineAuflegen').onclick = tnAuflegen;
+      if ($('tnInlineStumm')) $('tnInlineStumm').onclick = tnStummSchalten;
+      // Escape legt auf, solange ein Gespräch läuft.
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tnCall && !$('tnBar').classList.contains('hidden')) tnAuflegen(); });
       window.addEventListener('beforeunload', () => { if (tnCall) { try { tnCall.hangup(); } catch { /* egal */ } } });
     })();
 
