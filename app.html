@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
+       gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
+       einer alten, zwischengespeicherten Seite arbeitet. -->
+  <meta name="vocaris-stand" content="2026-09-10T12:19" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -1979,9 +1983,13 @@
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
       'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
 
-    function toast(msg, kind = '') {
+    let toastUhr = null;
+    /** Kurze Rueckmeldung unten. Gibt das Element zurueck, damit man etwas anhaengen kann. */
+    function toast(msg, kind = '', dauer = 2600) {
       const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + kind;
-      setTimeout(() => (t.className = 'toast'), 2600);
+      if (toastUhr) clearTimeout(toastUhr);
+      toastUhr = setTimeout(() => (t.className = 'toast'), dauer);
+      return t;
     }
 
     // ---- Sichtbarkeit der Bereiche ----
@@ -2120,6 +2128,36 @@
         if (b.dataset.target === 'sec-outbound' && typeof renderLive === 'function' && tenant) { renderLive(); $('callTo')?.focus(); }
       };
     });
+
+    // ---- Neue Fassung erkennen ----
+    // GitHub Pages lässt Seiten zehn Minuten zwischenspeichern, und ein lange
+    // offener Tab merkt eine neue Fassung gar nicht. Deshalb vergleichen wir den
+    // Stand der geladenen Seite mit dem auf dem Server und bieten das Neuladen an.
+    (function standPruefen() {
+      const meiner = document.querySelector('meta[name="vocaris-stand"]')?.content || '';
+      if (!meiner) return;
+      let gemeldet = false;
+      const pruefen = async () => {
+        if (gemeldet || document.hidden) return;
+        try {
+          const r = await fetch('app.html?stand=' + Date.now(), { cache: 'no-store' });
+          if (!r.ok) return;
+          const txt = (await r.text()).slice(0, 4000);
+          const treffer = txt.match(/name="vocaris-stand" content="([^"]+)"/);
+          if (!treffer || treffer[1] === meiner) return;
+          gemeldet = true;
+          const t = toast('Es gibt eine neuere Fassung. Zum Übernehmen neu laden.', '', 20000);
+          const b = document.createElement('button');
+          b.className = 'btn btn--primary sm'; b.type = 'button'; b.textContent = 'Neu laden';
+          b.style.marginLeft = '10px';
+          b.onclick = () => location.reload();
+          t?.append(b);
+        } catch { /* offline – dann eben beim nächsten Mal */ }
+      };
+      setTimeout(pruefen, 4000);
+      setInterval(pruefen, 10 * 60000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) pruefen(); });
+    })();
 
     // ---- Abteilungs-Umschalter (Allgemein / Vertrieb / Support) ----
     document.querySelectorAll('[data-deptbar] .deptseg').forEach((b) => {
@@ -4047,6 +4085,9 @@
     // Anruf-ID beim Server und der Mikrofon-Strom der Erlaubnis-Abfrage: beides
     // muss beim Auflegen mit weg, sonst bleibt der Anruf offen bzw. das Mikrofon an.
     let tnCallId = null, tnMikro = null;
+    // Laeuft gerade ein Gespraech? Verhindert, dass das Auflegen sich selbst
+    // wieder ausloest: hangup() meldet seinerseits ein Auflegen zurueck.
+    let tnLaeuft = false;
 
     /**
      * Zeigt das laufende Gespräch an zwei Stellen: als schwebende Leiste unten
@@ -4098,6 +4139,8 @@
      * Anruf sonst abschließt – er stünde ewig auf „läuft".
      */
     function tnAufraeumen(status) {
+      if (!tnLaeuft) return;
+      tnLaeuft = false;
       if (tnUhr) { clearInterval(tnUhr); tnUhr = null; }
       // Erst auflegen – auch Gespräche, die wir nicht selbst in tnCall halten.
       try { tnCall?.hangup(); } catch { /* egal */ }
@@ -4132,12 +4175,13 @@
       const nr = String(ziel || '').replace(/\s+/g, '');
       if (!/^\+\d{7,15}$/.test(nr)) { toast('Nummer im Format +49 … nötig.', 'err'); return; }
       if (!window.TelnyxWebRTC) { toast('Das Softphone konnte nicht geladen werden. Bitte Seite neu laden.', 'err'); return; }
-      if (tnCall) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
+      if (tnLaeuft) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
+      tnLaeuft = true;
       tnLeiste(true, nr, 'Mikrofon wird angefragt …');
       try {
         tnMikro = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch {
-        tnLeiste(false); toast('Ohne Mikrofon geht es nicht. Bitte im Browser erlauben.', 'err'); return;
+        tnLaeuft = false; tnLeiste(false); toast('Ohne Mikrofon geht es nicht. Bitte im Browser erlauben.', 'err'); return;
       }
       try {
         tnLeiste(true, nr, 'Verbinde …');
@@ -4155,6 +4199,7 @@
         tnClient.on('telnyx.error', (e) => { console.warn('[softphone]', e); tnAufraeumen('Verbindung fehlgeschlagen.'); });
         tnClient.on('telnyx.notification', (n) => {
           if (n.type !== 'callUpdate' || !n.call) return;
+          if (!tnLaeuft) return;
           // Immer das Objekt halten, das das SDK gerade meldet – nur darauf
           // wirkt hangup() zuverlässig.
           tnCall = n.call;
