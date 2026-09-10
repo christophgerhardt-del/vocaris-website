@@ -762,13 +762,20 @@
           </div>
           <div class="panel hidden" id="outboundCallPanel">
             <h3>Anruf starten</h3>
-            <p class="muted" style="margin-bottom:10px;text-align:left;padding:0">Lass deinen Assistenten jemanden anrufen, mit Auftrag: Er stellt sich vor, nennt den Grund und klärt, was du ihm mitgibst. Nummer im Format +49…</p>
-            <label>Auftrag (optional)</label><textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
-            <div style="display:flex; gap:10px; flex-wrap:wrap">
-              <input id="callTo" placeholder="+49 170 1234567" style="flex:1; min-width:200px" />
-              <button id="callBtn" class="btn btn--primary">Anrufen</button>
+            <div class="deptbar" id="callWer" style="margin-bottom:12px">
+              <button class="deptseg active" type="button" data-callwer="selbst">Ich spreche selbst</button>
+              <button class="deptseg" type="button" data-callwer="assistent">Assistent übernimmt</button>
             </div>
-            <p class="muted" id="callHint" style="margin-top:8px;text-align:left;padding:0">Nummer im Format +49… eingeben — dein Assistent ruft sofort an.</p>
+            <p class="muted" id="callErklaerung" style="margin-bottom:10px;text-align:left;padding:0">Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
+            <div id="callAuftragFeld" class="hidden">
+              <label style="margin-top:0">Auftrag (optional)</label><textarea id="callAuftrag" rows="2" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
+            </div>
+            <label style="margin-top:0">Zielnummer</label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <input id="callTo" placeholder="+49 170 1234567" inputmode="tel" style="flex:1; min-width:200px" />
+              <button id="callBtn" class="btn btn--primary">Anrufen und verbinden</button>
+            </div>
+            <p class="muted" id="callHint" style="margin-top:8px;text-align:left;padding:0">Nummer im Format +49… eingeben.</p>
           </div>
           <div id="liveActive"></div>
           <div class="lv-filter">
@@ -1895,9 +1902,11 @@
         // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
         // gehört zum Betreiber, nicht in den kuratierten Restaurant-Bereich.
-        elementeAus: ['outboundCallPanel', 'lvAnrufKnopf', 'numAddPanel', 'numAddKnopf'],
+        // Das Wählfeld bleibt: ein Restaurant ruft Gäste zurück. Nur der
+        // Assistenten-Modus fällt weg, dort spricht immer ein Mensch.
+        elementeAus: ['numAddPanel', 'numAddKnopf'],
         elementeAn: ['menuPanel', 'kbImpMenuTab'], // Speisekarte hochladen (Reiter im Import)
-        selektorenAus: ['[data-deptbar]', '.dept-hint'], // nur ein Bereich, kein Vertrieb/Support
+        selektorenAus: ['[data-deptbar]', '.dept-hint', '#callWer'], // nur ein Bereich; Anrufe führt ein Mensch
         // Restaurants haben nur EINEN Bereich – der Hinweis auf Vertrieb und
         // Support wäre dort schlicht verwirrend.
         texte: {
@@ -5125,8 +5134,30 @@
       });
     })();
 
+    // Wer spricht: ich selbst (Vocaris verbindet) oder der Assistent.
+    let callWer = 'selbst';
+    document.querySelectorAll('#callWer [data-callwer]').forEach((b) => b.onclick = () => {
+      document.querySelectorAll('#callWer [data-callwer]').forEach((x) => x.classList.toggle('active', x === b));
+      callWer = b.dataset.callwer;
+      const selbst = callWer === 'selbst';
+      $('callAuftragFeld').classList.toggle('hidden', selbst);
+      $('callBtn').textContent = selbst ? 'Anrufen und verbinden' : 'Assistent anrufen lassen';
+      $('callErklaerung').textContent = selbst
+        ? 'Vocaris ruft zuerst dich an. Sobald du abhebst, wird zum Ziel verbunden. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.'
+        : 'Der Assistent ruft selbst an, stellt sich vor und erledigt den Auftrag. Du siehst danach Zusammenfassung und Gesprächsverlauf.';
+      $('callHint').textContent = 'Nummer im Format +49… eingeben.';
+    });
+
     $('callBtn').onclick = async () => {
       const to = $('callTo').value.trim();
+      if (callWer === 'selbst') {
+        if (!/^\+\d{7,15}$/.test(to.replace(/\s+/g, ''))) { $('callHint').textContent = 'Bitte Nummer im Format +49… eingeben.'; return; }
+        $('callHint').textContent = 'Dein Telefon klingelt gleich …';
+        await ueberVocarisAnrufen(to, $('callBtn'));
+        $('callHint').textContent = 'Wenn du abhebst, wird verbunden.';
+        $('callTo').value = '';
+        return;
+      }
       if (!/^\+\d{7,15}$/.test(to)) { $('callHint').textContent = 'Bitte Nummer im Format +49… eingeben.'; return; }
       $('callBtn').disabled = true; $('callHint').textContent = 'Verbinde …';
       try {
