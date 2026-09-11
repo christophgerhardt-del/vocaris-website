@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Vocaris · GPT-Live anhören</title>
+<style>
+  :root { --line: #e2e8f0; --ink: #0f172a; --faint: #64748b; --akzent: #2563eb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 20px; font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+         color: var(--ink); background: #f8fafc; }
+  .karte { max-width: 640px; margin: 0 auto 16px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; }
+  h1 { font-size: 21px; margin: 0 0 4px; }
+  .unter { color: var(--faint); font-size: 13.5px; margin: 0 0 20px; }
+  label { display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); margin: 16px 0 6px; }
+  input, select { width: 100%; height: 40px; padding: 0 12px; font: inherit; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  button { font: inherit; font-weight: 600; border-radius: 12px; border: 1px solid var(--line); background: #fff; padding: 12px 20px; cursor: pointer; }
+  button.los { background: #16a34a; border-color: #16a34a; color: #fff; }
+  button.aus { background: #dc2626; border-color: #dc2626; color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  .reihe { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+  .zustand { font-size: 13.5px; color: var(--faint); }
+  .zustand.an { color: #16a34a; font-weight: 600; }
+  .zustand.fehler { color: #dc2626; font-weight: 600; }
+  .pegel { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 14px; }
+  .pegel i { display: block; height: 100%; width: 0; background: #16a34a; transition: width .08s linear; }
+  .hinweis { font-size: 12.5px; color: var(--faint); margin: 14px 0 0; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+  .log { max-width: 640px; margin: 0 auto; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--faint);
+         white-space: pre-wrap; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-height: 260px; overflow: auto; }
+</style>
+</head>
+<body>
+
+<div class="karte">
+  <h1>GPT-Live anhören</h1>
+  <p class="unter">Spricht mit dem echten Assistenten-Prompt und der Wissensdatenbank eurer Firma. Die Telefonstrecke ist nicht beteiligt.</p>
+
+  <label for="mail">Vocaris-Konto</label>
+  <input id="mail" type="email" placeholder="name@firma.de" autocomplete="username" />
+  <label for="pw">Passwort</label>
+  <input id="pw" type="password" autocomplete="current-password" />
+
+  <label for="stimme">Stimme</label>
+  <select id="stimme">
+    <option value="">Standard (Gleam)</option>
+    <option value="marin">Marin</option>
+    <option value="cedar">Cedar</option>
+    <option value="alloy">Alloy</option>
+  </select>
+
+  <label for="mikro">Mikrofon</label>
+  <select id="mikro"><option value="">Standard-Mikrofon</option></select>
+
+  <div class="reihe">
+    <button id="los" class="los">Gespräch starten</button>
+    <button id="stop" class="aus" disabled>Beenden</button>
+    <span id="zustand" class="zustand">bereit</span>
+  </div>
+  <div class="pegel"><i id="pegel"></i></div>
+  <p class="hinweis">Zum Vergleich: dieselbe Firma am Telefon anrufen und auf Unterbrechungen achten. Live soll Einwürfe und Pausen besser vertragen.</p>
+</div>
+
+<div class="log" id="log">Noch nichts passiert.</div>
+<audio id="ton" autoplay></audio>
+
+<script type="module">
+const API = 'https://ki-anruf.onrender.com';
+const SB = 'https://nocsjyzmnskbyccrjayx.supabase.co';
+// Öffentlicher anon-Schlüssel, derselbe wie in der App auf vocaris.eu.
+// Der ist für den Browser gedacht und schützt nichts – die Rechte hängen am Login.
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4';
+
+const $ = (id) => document.getElementById(id);
+const schreib = (t) => { $('log').textContent = new Date().toLocaleTimeString('de-DE') + '  ' + t + '\n' + $('log').textContent; };
+const zustand = (t, art = '') => { $('zustand').textContent = t; $('zustand').className = 'zustand ' + art; };
+
+try { $('mail').value = localStorage.getItem('vocaris.mail') || ''; } catch {}
+
+let pc = null, strom = null, pegelAus = null;
+
+async function geraete() {
+  try {
+    const liste = await navigator.mediaDevices.enumerateDevices();
+    const sel = $('mikro');
+    sel.innerHTML = '<option value="">Standard-Mikrofon</option>';
+    liste.filter((g) => g.kind === 'audioinput').forEach((g, i) => {
+      const o = document.createElement('option'); o.value = g.deviceId; o.textContent = g.label || ('Mikrofon ' + (i + 1)); sel.append(o);
+    });
+  } catch {}
+}
+geraete();
+
+function pegelZeigen(s) {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const q = ctx.createMediaStreamSource(s), a = ctx.createAnalyser();
+  a.fftSize = 512; q.connect(a);
+  const daten = new Uint8Array(a.frequencyBinCount);
+  let laeuft = true;
+  const takt = () => {
+    if (!laeuft) return;
+    a.getByteTimeDomainData(daten);
+    let summe = 0;
+    for (let i = 0; i < daten.length; i++) { const v = (daten[i] - 128) / 128; summe += v * v; }
+    $('pegel').style.width = Math.min(100, Math.sqrt(summe / daten.length) * 400) + '%';
+    requestAnimationFrame(takt);
+  };
+  takt();
+  return () => { laeuft = false; $('pegel').style.width = '0'; try { ctx.close(); } catch {} };
+}
+
+/** Kann dieser Browser hier überhaupt ein Mikrofon freigeben? */
+function browserPruefen() {
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    return 'Dieser Browser gibt hier kein Mikrofon frei. Safari verlangt dafür https, auch auf dem eigenen Rechner. '
+         + 'Öffne die Seite in Chrome, dort genügt 127.0.0.1.';
+  }
+  if (!window.RTCPeerConnection) return 'Dieser Browser kann keine Sprachverbindung aufbauen.';
+  return '';
+}
+
+/**
+ * Mikrofon holen. Erst das gewählte Gerät, sonst irgendeins – manche Browser
+ * lehnen eine feste Gerätewahl ab („Invalid constraint"), können aber trotzdem.
+ */
+async function mikrofonHolen() {
+  const id = $('mikro').value;
+  const versuche = id ? [{ deviceId: { exact: id } }, true] : [true];
+  let letzter = null;
+  for (const wunsch of versuche) {
+    try { return await navigator.mediaDevices.getUserMedia({ audio: wunsch }); }
+    catch (e) { letzter = e; }
+  }
+  const n = letzter?.name;
+  if (n === 'NotAllowedError' || n === 'SecurityError') throw new Error('Das Mikrofon ist blockiert. Im Browser für diese Seite erlauben.');
+  if (n === 'NotFoundError') throw new Error('Kein Mikrofon gefunden.');
+  if (n === 'NotReadableError') throw new Error('Das Mikrofon ist von einem anderen Programm belegt.');
+  if (n === 'OverconstrainedError') throw new Error('Dieses Mikrofon lässt sich hier nicht öffnen. Wähle oben ein anderes oder nimm Chrome.');
+  throw new Error('Mikrofon nicht verfügbar: ' + (letzter?.message || n || 'unbekannt'));
+}
+
+async function anmelden() {
+  if (!ANON) throw new Error('Anon-Schlüssel fehlt. Seite mit ?anon=… aufrufen.');
+  const r = await fetch(SB + '/auth/v1/token?grant_type=password', {
+    method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: $('mail').value.trim(), password: $('pw').value }),
+  });
+  const j = await r.json();
+  if (!r.ok) {
+    const roh = j.error_description || j.msg || '';
+    if (/invalid login/i.test(roh)) throw new Error('E-Mail oder Passwort stimmt nicht. Dasselbe Konto wie in der Vocaris-App.');
+    throw new Error('Anmeldung fehlgeschlagen: ' + (roh || r.status));
+  }
+  try { localStorage.setItem('vocaris.mail', $('mail').value.trim()); localStorage.setItem('vocaris.anon', ANON); } catch {}
+  return j.access_token;
+}
+
+$('los').onclick = async () => {
+  $('los').disabled = true;
+  try {
+    const problem = browserPruefen();
+    if (problem) throw new Error(problem);
+    zustand('melde an …');
+    const token = await anmelden();
+
+    zustand('Mikrofon …');
+    strom = await mikrofonHolen();
+    await geraete();
+    pegelAus = pegelZeigen(strom);
+
+    zustand('baue Verbindung …');
+    pc = new RTCPeerConnection();
+    strom.getTracks().forEach((t) => pc.addTrack(t, strom));
+    pc.ontrack = (e) => { $('ton').srcObject = e.streams[0]; };
+    const kanal = pc.createDataChannel('oai-events');
+    kanal.onmessage = (e) => {
+      try { const d = JSON.parse(e.data); if (d.type && !d.type.includes('delta')) schreib('← ' + d.type); }
+      catch { /* egal */ }
+    };
+    pc.onconnectionstatechange = () => {
+      schreib('Verbindung: ' + pc.connectionState);
+      if (pc.connectionState === 'connected') zustand('verbunden – sprich einfach', 'an');
+      if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) beenden();
+    };
+
+    await pc.setLocalDescription(await pc.createOffer());
+    await new Promise((r) => { if (pc.iceGatheringState === 'complete') return r();
+      pc.onicegatheringstatechange = () => pc.iceGatheringState === 'complete' && r(); setTimeout(r, 3000); });
+
+    const res = await fetch(API + '/api/live-session', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ sdp: pc.localDescription.sdp, voice: $('stimme').value || undefined }),
+    });
+    const daten = await res.json();
+    if (!res.ok) throw new Error(daten.error || 'Sitzung abgelehnt');
+    schreib('Sitzung ' + daten.session_id + ' für ' + daten.firma);
+
+    await pc.setRemoteDescription({ type: 'answer', sdp: daten.sdp });
+    $('stop').disabled = false;
+  } catch (e) {
+    zustand(e.message, 'fehler');
+    schreib('Fehler: ' + e.message);
+    beenden();
+  }
+};
+
+function beenden() {
+  try { pc?.close(); } catch {}
+  try { strom?.getTracks().forEach((t) => t.stop()); } catch {}
+  if (pegelAus) { pegelAus(); pegelAus = null; }
+  pc = null; strom = null;
+  $('los').disabled = false; $('stop').disabled = true;
+  if (!$('zustand').classList.contains('fehler')) zustand('beendet');
+}
+$('stop').onclick = beenden;
+window.addEventListener('beforeunload', beenden);
+</script>
+</body>
+</html>
