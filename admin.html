@@ -351,6 +351,7 @@
               <option value="grok"${t.voiceProvider === 'grok' ? ' selected' : ''}>xAI Grok Voice</option>
               <option value="gemini"${t.voiceProvider === 'gemini' ? ' selected' : ''}>Google Gemini Live</option>
               <option value="mistral"${t.voiceProvider === 'mistral' ? ' selected' : ''}>Mistral (EU/DSGVO)</option>
+              <option value="live"${t.voiceProvider === 'live' ? ' selected' : ''}>OpenAI GPT-Live (EU, Vollduplex)</option>
             </select>
           </label>
           <label class="prov-wrap" title="Stimme (passend zum Modell)" style="margin-left:0">
@@ -366,6 +367,7 @@
       openai: [['marin','Marin'],['cedar','Cedar'],['alloy','Alloy'],['ash','Ash'],['ballad','Ballad'],['coral','Coral'],['sage','Sage'],['shimmer','Shimmer'],['verse','Verse'],['echo','Echo']],
       grok:   [['eve','Eve'],['ara','Ara'],['rex','Rex'],['sal','Sal'],['leo','Leo']],
       gemini: [['Aoede','Aoede'],['Puck','Puck'],['Charon','Charon'],['Kore','Kore'],['Fenrir','Fenrir'],['Leda','Leda'],['Orus','Orus'],['Zephyr','Zephyr']],
+      live:   [['gleam','Gleam'],['marin','Marin'],['cedar','Cedar'],['alloy','Alloy'],['sage','Sage'],['verse','Verse']],
       mistral:[['en_paul_neutral','Paul – neutral'],['en_paul_cheerful','Paul – freundlich'],['en_paul_confident','Paul – souverän'],['en_paul_happy','Paul – fröhlich'],['gb_oliver_neutral','Oliver – britisch'],['gb_jane_sarcasm','Jane – weiblich']],
     };
     function voiceOptions(provider, current) {
