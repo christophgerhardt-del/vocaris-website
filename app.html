@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-10T15:44" />
+  <meta name="vocaris-stand" content="2026-09-11T14:42" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -4037,10 +4037,20 @@
     }
     function liveBanner(x) {
       const c = x.call; const p = document.createElement('div'); p.className = 'panel lv-banner'; p.dataset.callId = c.id;
-      p.innerHTML = '<div class="lv-detailkopf"><div><span class="live-pill">● Live</span> <b class="lv-nr"></b> <span class="muted" style="font-size:13px">· seit <span data-seit=""></span></span></div><button class="btn btn--ghost sm" type="button" data-details>Details</button></div><div class="transcript" data-transkript></div>';
+      p.innerHTML = '<div class="lv-detailkopf"><div><span class="live-pill">● Live</span> <b class="lv-nr"></b> <span class="muted" style="font-size:13px">· seit <span data-seit=""></span></span></div>'
+        + '<div class="stack" style="margin:0">'
+        + '<button class="btn btn--ghost sm" type="button" data-mithoeren>Mithören</button>'
+        + '<button class="btn btn--danger sm" type="button" data-auflegen>Auflegen</button>'
+        + '<button class="btn btn--ghost sm" type="button" data-details>Details</button>'
+        + '</div></div><div class="transcript" data-transkript></div>';
       p.querySelector('.lv-nr').textContent = fmtNr(c.caller_number) || 'Anrufer'; p.querySelector('[data-seit]').dataset.seit = c.started_at; p.querySelector('[data-seit]').textContent = fmtSeit(c.started_at);
       const A = lvAnsichtVon(c);
       p.querySelector('[data-details]').onclick = () => { A.auswahl = c.id; renderLive(); };
+      const mit = p.querySelector('[data-mithoeren]');
+      mit.textContent = mhLaeuft === c.id ? 'Mithören beenden' : 'Mithören';
+      mit.classList.toggle('btn--primary', mhLaeuft === c.id);
+      mit.onclick = () => (mhLaeuft === c.id ? mithoerenBeenden() : mithoerenStarten(c.id));
+      p.querySelector('[data-auflegen]').onclick = function () { anrufAuflegen(c.id, this); };
       transkriptZeichnen(x, p.querySelector('[data-transkript]'), true);
       return p;
     }
@@ -4177,6 +4187,81 @@
       });
       lvTimer = setInterval(() => document.querySelectorAll('[data-seit]').forEach((el) => { el.textContent = fmtSeit(el.dataset.seit); }), 1000);
     })();
+    // ---- Mithören und Auflegen bei laufenden Gesprächen ----
+    // Der Server schickt beide Richtungen als μ-law, so wie sie über die
+    // Leitung gehen. Wir rechnen sie hier um und spielen sie ab. Es geht nichts
+    // zurück: wer mithört, ist nicht in der Leitung und kann nichts stören.
+    let mhLaeuft = null, mhWs = null, mhCtx = null, mhZeit = 0;
+
+    /** Umrechnungstabelle μ-law → PCM, einmal aufgebaut. */
+    const MULAW = (() => {
+      const t = new Float32Array(256);
+      for (let i = 0; i < 256; i++) {
+        const u = ~i & 0xff;
+        const vorzeichen = u & 0x80, kennlinie = (u >> 4) & 0x07, rest = u & 0x0f;
+        let wert = ((rest << 3) + 0x84) << kennlinie;
+        wert -= 0x84;
+        t[i] = (vorzeichen ? -wert : wert) / 32768;
+      }
+      return t;
+    })();
+
+    function mithoerenStarten(callId) {
+      if (mhLaeuft) mithoerenBeenden();
+      try {
+        mhCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 8000 });
+        if (mhCtx.state === 'suspended') mhCtx.resume();
+      } catch { toast('Ton lässt sich hier nicht abspielen.', 'err'); return; }
+      mhZeit = 0;
+      mhWs = new WebSocket(API.replace(/^http/, 'ws') + '/media-mithoeren?call_id=' + encodeURIComponent(callId) + '&token=' + encodeURIComponent(accessToken));
+      mhWs.onmessage = (e) => {
+        let d; try { d = JSON.parse(e.data); } catch { return; }
+        if (d.event === 'fehler') { toast(d.grund || 'Mithören nicht möglich.', 'err'); mithoerenBeenden(); return; }
+        if (d.event !== 'media' || !d.payload || !mhCtx) return;
+        const roh = atob(d.payload);
+        const puffer = mhCtx.createBuffer(1, roh.length, 8000);
+        const kanal = puffer.getChannelData(0);
+        for (let i = 0; i < roh.length; i++) kanal[i] = MULAW[roh.charCodeAt(i)];
+        const q = mhCtx.createBufferSource(); q.buffer = puffer; q.connect(mhCtx.destination);
+        // Stücke hintereinanderlegen, sonst überlappen sie und es knackt.
+        mhZeit = Math.max(mhZeit, mhCtx.currentTime + 0.08);
+        q.start(mhZeit);
+        mhZeit += puffer.duration;
+      };
+      mhWs.onclose = () => { if (mhLaeuft) { mhLaeuft = null; renderLive(); } };
+      mhWs.onerror = () => toast('Mithören abgebrochen.', 'err');
+      mhLaeuft = callId;
+      toast('Du hörst mit. Die Gegenseite merkt davon nichts.');
+      renderLive();
+    }
+
+    function mithoerenBeenden() {
+      try { mhWs?.close(); } catch { /* egal */ }
+      try { mhCtx?.close(); } catch { /* egal */ }
+      mhWs = null; mhCtx = null; mhLaeuft = null;
+      renderLive();
+    }
+
+    /** Laufendes Gespräch beenden – bei Telnyx, nicht nur in unserer Anzeige. */
+    async function anrufAuflegen(callId, knopf) {
+      if (knopf) { knopf.disabled = true; knopf.textContent = 'Lege auf …'; }
+      try {
+        const r = await fetch(API + '/api/call/hangup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ call_id: callId }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Fehler');
+        if (mhLaeuft === callId) mithoerenBeenden();
+        toast(j.schon ? 'Das Gespräch war schon beendet.' : 'Aufgelegt.');
+        setTimeout(() => loadLive(), 1200);
+      } catch (e) {
+        toast('Auflegen: ' + e.message, 'err');
+        if (knopf) { knopf.disabled = false; knopf.textContent = 'Auflegen'; }
+      }
+    }
+
     // ---- Softphone: telefonieren direkt im Browser ----
     // Der Ton läuft über Telnyx (WebRTC), die Mitschrift über einen eigenen
     // Kanal zu unserem Server: eine Spur die eigene Stimme, eine die Gegenseite.
