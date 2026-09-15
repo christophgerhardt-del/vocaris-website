@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-15T07:26" />
+  <meta name="vocaris-stand" content="2026-09-15T14:44" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -1464,7 +1464,7 @@
 
           <div class="panel">
             <h3>Kalender verbinden</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein.</p>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein. Apple-Kalender gehen über den Link „Öffentlicher Kalender" aus der Kalender-App (nur lesen).</p>
             <div id="bkCal"><span class="muted">Lade …</span></div>
           </div>
 
@@ -7285,7 +7285,7 @@
     function renderCalendar(s) {
       const el = $('bkCal'); el.innerHTML = '';
       if (s && s.connected) {
-        const name = s.provider === 'google' ? 'Google Calendar' : 'Outlook / Microsoft 365';
+        const name = s.provider === 'google' ? 'Google Calendar' : s.provider === 'apple' ? 'Apple-Kalender (iCloud-Link)' : 'Outlook / Microsoft 365';
         const row = document.createElement('div'); row.className = 'stack'; row.style.alignItems = 'center';
         const txt = document.createElement('span');
         txt.innerHTML = '<span class="statusdot"></span><b>' + name + '</b> verbunden';
@@ -7306,6 +7306,19 @@
           row.append(b);
         });
         el.append(row);
+        // Apple: kein Anmelden, nur ein Link. Kalender-App → Kalender rechtsklicken →
+        // Freigabeeinstellungen → „Öffentlicher Kalender" → Link kopieren.
+        const ap = document.createElement('div'); ap.className = 'grid2'; ap.style.marginTop = '10px';
+        ap.innerHTML = '<div style="flex:4"><input id="bkApple" placeholder="webcal://p…-caldav.icloud.com/published/…" autocomplete="off" /></div><div><button class="btn" id="bkAppleBtn" style="width:100%">Apple-Link verbinden</button></div>';
+        el.append(ap);
+        $('bkAppleBtn').onclick = async () => {
+          const url = $('bkApple').value.trim();
+          if (!url) { toast('Bitte den Link aus der Kalender-App einfügen.', 'err'); return; }
+          $('bkAppleBtn').disabled = true;
+          const r = await calApi('apple', { url });
+          if (r.ok) { toast('Apple-Kalender verbunden, ' + (r.termine ?? 0) + ' Termine in den nächsten Wochen gefunden.'); loadCalendarStatus(); }
+          else { toast(r.error || 'Verbinden fehlgeschlagen.', 'err'); $('bkAppleBtn').disabled = false; }
+        };
       }
     }
 
