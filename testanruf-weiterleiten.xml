@@ -2,7 +2,7 @@
 <!-- Testanruf Weiterleiten: der Anrufer verlangt einen Menschen. -->
 <Response>
   <Pause length="10"/>
-  <Say language="de-DE" voice="Polly.Vicki-Neural">Guten Tag. Ich möchte bitte mit einem Mitarbeiter sprechen, nicht mit dem Assistenten. Verbinden Sie mich bitte weiter.</Say>
+  <Say language="de-DE" voice="Polly.Vicki-Neural">Guten Tag. Ich möchte keinen Rückruf und keine Nachricht hinterlassen. Bitte verbinden Sie mich jetzt sofort mit einem Mitarbeiter.</Say>
   <Pause length="20"/>
   <Say language="de-DE" voice="Polly.Vicki-Neural">Vielen Dank, auf Wiederhören.</Say>
   <Pause length="3"/>
