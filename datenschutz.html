@@ -52,7 +52,7 @@
 
   <main class="legal" id="main">
     <h1>Datenschutzerklärung</h1>
-    <p class="updated">Stand: 08. September 2026</p>
+    <p class="updated">Stand: 15. September 2026</p>
 
     <h2>1. Verantwortlicher</h2>
     <p>Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
@@ -149,8 +149,9 @@
       <tr><td>Supabase</td><td>Anmeldung &amp; Datenbank (Wissensbasis, Nachrichten, Gesprächsverläufe)</td><td>EU (Frankfurt)</td></tr>
       <tr><td>Render</td><td>Server-Hosting des Dienstes</td><td>EU (Frankfurt)</td></tr>
       <tr><td>Telnyx</td><td>Telefonie / Sprachverbindung</td><td>EU / USA</td></tr>
-      <tr><td>OpenAI</td><td>KI-Sprachdialog in Echtzeit (Verstehen, Antworten, Stimme)</td><td>USA</td></tr>
+      <tr><td>OpenAI</td><td>KI-Sprachdialog in Echtzeit (Verstehen, Antworten, Stimme); bei der Variante „GPT-Live“ direkte Übergabe des Gesprächsaudios (siehe unten)</td><td>USA</td></tr>
       <tr><td>xAI (Grok)</td><td>KI-Sprachdialog in Echtzeit (Verstehen, Antworten, Stimme)</td><td>USA</td></tr>
+      <tr><td>Google (Gemini)</td><td>KI-Sprachdialog in Echtzeit (Verstehen, Antworten, Stimme)</td><td>USA</td></tr>
       <tr><td>Mistral AI</td><td>Europäische KI-Option (Verstehen, Antworten, Stimme)</td><td>EU (Frankreich)</td></tr>
     </table>
     <p>Welcher KI-Anbieter zum Einsatz kommt, richtet sich nach der Konfiguration des jeweiligen Geschäftskunden.
@@ -158,11 +159,34 @@
        innerhalb der EU stattfindet. Das Angebot an KI-Anbietern kann sich weiterentwickeln; diese Erklärung wird
        entsprechend angepasst.</p>
 
+    <h3>Sprachverarbeitung über US-Anbieter</h3>
+    <p>Bei den Anbietern OpenAI (Realtime), xAI (Grok) und Google (Gemini) nimmt unser Server in Frankfurt das
+       Gesprächsaudio entgegen und übermittelt es zur Verarbeitung an den jeweiligen Anbieter in den USA. Die
+       Datenhaltung (Wissensdatenbank, Transkripte, Nachrichten) verbleibt dabei bei Supabase und Render in der
+       EU-Region Frankfurt.</p>
+
+    <h3>Sprach-Anbieter „GPT-Live“ (OpenAI)</h3>
+    <p>Seit September 2026 steht zusätzlich der Sprach-Anbieter „GPT-Live“ von OpenAI zur Verfügung. Wählt ein
+       Geschäftskunde diesen Anbieter für eine seiner Rufnummern, wird der Anruf von unserem Telefonie-Dienstleister
+       Telnyx über eine verschlüsselte Verbindung (SIP über TLS, Audio per SRTP) direkt an OpenAI, Inc. (USA)
+       übergeben; das Gesprächsaudio läuft in diesem Fall nicht über unseren Server, sondern wird bei OpenAI in
+       Echtzeit verarbeitet. OpenAI erhält dabei außerdem die Anweisung des Assistenten, die vom Geschäftskunden
+       selbst hinterlegte Wissensdatenbank (Texte) sowie die Rufnummer des Anrufers und, soweit sie im Telefonbuch
+       des Geschäftskunden hinterlegt ist, dessen Namen. Wir erhalten über einen Kontrollkanal die Mitschrift und
+       den Verbrauch zurück und speichern die Mitschrift in der EU-Region Frankfurt.</p>
+    <p>Die Übermittlung in die USA stützt sich auf die EU-Standardvertragsklauseln sowie auf das EU-US Data Privacy
+       Framework, unter dem OpenAI nach unserem Kenntnisstand zertifiziert ist. OpenAI nutzt über die Schnittstelle
+       übermittelte Daten nach eigenen Angaben nicht zum Training seiner Modelle. Die Wahl des Anbieters trifft der
+       Geschäftskunde je Rufnummer; die Voreinstellung bleibt der europäische Weg über Mistral AI, bei dem die
+       Sprachverarbeitung innerhalb der EU stattfindet.</p>
+
     <h2>8. Übermittlung in Drittländer</h2>
     <p>Einige der genannten Dienste verarbeiten Daten in den USA oder anderen Drittländern. Soweit dort kein
        Angemessenheitsbeschluss besteht, erfolgt die Übermittlung auf Grundlage geeigneter Garantien gemäß
        Art. 46 DSGVO (insbesondere EU-Standardvertragsklauseln) bzw. – soweit zertifiziert – auf Grundlage des
-       EU-US Data Privacy Framework.</p>
+       EU-US Data Privacy Framework. Das gilt insbesondere für die Sprachverarbeitung über die in Ziffer 7
+       genannten US-Anbieter, einschließlich der direkten Übergabe des Gesprächsaudios an OpenAI bei Wahl des
+       Sprach-Anbieters „GPT-Live“.</p>
 
     <h2>9. Speicherdauer</h2>
     <p>Wir speichern personenbezogene Daten nur so lange, wie es für die jeweiligen Zwecke erforderlich ist oder
