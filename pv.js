@@ -1,6 +1,7 @@
 // Anonymer Seitenaufruf-Zähler → Supabase-Tabelle page_views.
 // Erfasst pro Aufruf nur: Seite, Herkunft (?src=…), Referrer, Zeitpunkt —
 // dazu grob Gerätetyp, Browser, System und Sprache (Kategorien, kein User-Agent-String).
+// Zusätzlich: geklickte Links und Knöpfe (Ziel + sichtbare Beschriftung) in der Tabelle klicks.
 // Keine Cookies, keine IDs, keine personenbezogenen Daten (DSGVO-unkritisch).
 // Der anon-Key ist öffentlich; RLS erlaubt ihm ausschließlich INSERT.
 (function () {
@@ -28,4 +29,47 @@
       body: JSON.stringify({ page: page, src: src, referrer: document.referrer || null, geraet: geraet, browser: browser, system: system, sprache: sprache })
     }).catch(function () {});
   } catch (e) { /* Zähler darf die Seite nie stören */ }
+
+  // ── Klicks auf Links und Knöpfe ──────────────────────────────────────────
+  // Gespeichert wird nur, was ohnehin sichtbar auf der Seite steht: Linkziel
+  // und Beschriftung. Keine Eingaben, keine Formularinhalte, keine Kennungen.
+  function senden(tabelle, daten) {
+    try {
+      fetch(SB + '/rest/v1/' + tabelle, {
+        method: 'POST', keepalive: true,
+        headers: { apikey: KEY, authorization: 'Bearer ' + KEY, 'content-type': 'application/json', prefer: 'return=minimal' },
+        body: JSON.stringify(daten)
+      }).catch(function () {});
+    } catch (e) { /* darf die Seite nie stören */ }
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('a[href], button') : null;
+    if (!el) return;
+    var href = el.getAttribute('href') || '';
+    var art, ziel;
+    if (el.tagName === 'BUTTON') {
+      art = 'knopf';
+      ziel = el.getAttribute('id') || el.getAttribute('name') || el.getAttribute('aria-label') || '';
+    } else if (/^mailto:/i.test(href)) {
+      art = 'mail'; ziel = href.split('?')[0];
+    } else if (/^tel:/i.test(href)) {
+      art = 'telefon'; ziel = href;
+    } else if (href.charAt(0) === '#') {
+      art = 'anker'; ziel = href;
+    } else {
+      try {
+        var u = new URL(href, location.href);
+        art = u.hostname === location.hostname ? 'intern' : 'extern';
+        ziel = art === 'intern'
+          ? (u.pathname.replace(/^\/+/, '').replace(/\.html$/, '').replace(/\/$/, '') || 'home')
+          : u.origin + u.pathname;
+      } catch (err) { return; }
+    }
+    var text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    senden('klicks', {
+      page: page, ziel: String(ziel).slice(0, 200), beschriftung: text || null, art: art,
+      geraet: geraet, browser: browser, system: system, sprache: sprache
+    });
+  }, true);
 })();
