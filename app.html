@@ -2314,7 +2314,7 @@
         if (b.dataset.target === 'sec-kontakte' && typeof ladeKontakte === 'function' && tenant) ladeKontakte();
         if (b.dataset.target === 'sec-team' && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
         // Einmal beim ersten Bereichswechsel: die eigene Stufe holen, damit Mitarbeiter die Einstellungen gar nicht erst sehen.
-        else if (tmMeineStufe === null && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
+        else if (tmMeineStufe == null && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
         if (typeof tnSichtbarkeit === 'function') tnSichtbarkeit();
       };
     });
@@ -6385,7 +6385,8 @@
     // nur gezeigt und gepflegt. Die Pflege läuft über den Server, weil Logins
     // nur mit dem Service-Schlüssel angelegt werden können.
     const TM_STUFEN = { owner: 'Inhaber', admin: 'Admin', member: 'Mitarbeiter' };
-    let tmMeineStufe = null;
+    // var, nicht let: der erste Bereichswechsel läuft beim Start, bevor das Skript hier angekommen ist.
+    var tmMeineStufe = null;
 
     /** Bereiche, die Mitarbeiter nicht bearbeiten dürfen, aus der Navigation nehmen. */
     function tmNavigationAnpassen(stufe) {
