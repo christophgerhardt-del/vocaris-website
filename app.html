@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-15T06:32" />
+  <meta name="vocaris-stand" content="2026-09-15T06:55" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -828,6 +828,7 @@
         <button class="nav-item" data-target="sec-assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Assistent</button>
         <div class="nav-group">Funktionen</div>
         <button class="nav-item" data-target="sec-number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Telefonnummer</button>
+        <button class="nav-item" data-target="sec-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 19a4.5 4.5 0 0 1 5-4.3"/></svg>Zugänge</button>
         <button class="nav-item hidden" data-target="sec-booking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
         <button class="nav-item hidden" data-target="sec-restaurant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7a3 3 0 0 0 6 0V2"/><line x1="6" y1="9" x2="6" y2="22"/><path d="M16 2a4 4 0 0 0-4 4v6h4"/><line x1="16" y1="12" x2="16" y2="22"/></svg>Reservierungen</button>
         <button class="nav-item hidden" data-target="sec-floorplan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Tischplan</button>
@@ -1675,6 +1676,39 @@
         </section>
 
         <!-- Tischplan (große Vollansicht) -->
+        <!-- Zugänge -->
+        <section id="sec-team" class="section hidden">
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead" style="margin-bottom:2px">Zugänge</h1>
+              <p class="pagesub" style="margin-bottom:0" id="tmSub">Wer mit diesem Konto arbeitet.</p>
+            </div>
+            <div class="db-aktionen">
+              <button class="btn btn--primary sm" type="button" id="tmNeu" hidden>Zugang anlegen</button>
+            </div>
+          </div>
+
+          <div class="panel kt-form hidden" id="tmForm">
+            <div class="kt-felder">
+              <div><label class="waehl__label" for="tmMail">E-Mail</label><input id="tmMail" type="email" placeholder="name@firma.de" autocomplete="off" /></div>
+              <div><label class="waehl__label" for="tmPw">Passwort, nur für einen neuen Login</label><input id="tmPw" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password" /></div>
+              <div><label class="waehl__label" for="tmStufe">Stufe</label>
+                <select id="tmStufe">
+                  <option value="member">Mitarbeiter: Anrufe, Nachrichten, Vorgänge, Termine</option>
+                  <option value="admin">Admin: zusätzlich Einstellungen und Zugänge</option>
+                </select></div>
+            </div>
+            <p class="muted" style="margin:10px 0 0;font-size:13px">Gibt es die E-Mail schon als Vocaris-Login, wird dieser Login hinzugefügt und das Passwort bleibt unverändert.</p>
+            <div class="stack" style="margin-top:12px">
+              <button class="btn btn--primary" type="button" id="tmSpeichern">Anlegen</button>
+              <button class="btn btn--ghost" type="button" id="tmAbbrechen">Abbrechen</button>
+              <span class="waehl__hinweis" id="tmHinweis"></span>
+            </div>
+          </div>
+
+          <div class="panel lv-liste" id="tmListe"></div>
+        </section>
+
         <section id="sec-floorplan" class="section hidden">
           <h1 class="pagehead">Tischplan</h1>
           <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
@@ -2270,7 +2304,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
@@ -2278,6 +2312,9 @@
         if (b.dataset.target === 'sec-live' && typeof liveBesucht === 'function' && tenant) { liveBesucht(); renderLive(); }
         if (b.dataset.target === 'sec-outbound' && typeof renderLive === 'function' && tenant) { renderLive(); $('callTo')?.focus(); }
         if (b.dataset.target === 'sec-kontakte' && typeof ladeKontakte === 'function' && tenant) ladeKontakte();
+        if (b.dataset.target === 'sec-team' && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
+        // Einmal beim ersten Bereichswechsel: die eigene Stufe holen, damit Mitarbeiter die Einstellungen gar nicht erst sehen.
+        else if (tmMeineStufe === null && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
         if (typeof tnSichtbarkeit === 'function') tnSichtbarkeit();
       };
     });
@@ -2479,7 +2516,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -6341,6 +6378,91 @@
     };
     /** Name zu einer Nummer, falls im Telefonbuch. */
     const ktName = (nr) => ktItems.find((k) => k.phone === ktNormal(nr))?.name || '';
+
+    // ── Zugänge: wer mit diesem Konto arbeitet ───────────────────────────
+    // Zwei Stufen neben dem Inhaber: Admin (wie der Inhaber) und Mitarbeiter
+    // (Tagesgeschäft). Was jemand darf, setzt die Datenbank durch; hier wird
+    // nur gezeigt und gepflegt. Die Pflege läuft über den Server, weil Logins
+    // nur mit dem Service-Schlüssel angelegt werden können.
+    const TM_STUFEN = { owner: 'Inhaber', admin: 'Admin', member: 'Mitarbeiter' };
+    let tmMeineStufe = null;
+
+    /** Bereiche, die Mitarbeiter nicht bearbeiten dürfen, aus der Navigation nehmen. */
+    function tmNavigationAnpassen(stufe) {
+      const nurVerwaltung = ['sec-assistant', 'sec-number', 'sec-webhooks'];
+      const mitarbeiter = stufe === 'member';
+      nurVerwaltung.forEach((id) => { const b = document.querySelector('.nav-item[data-target="' + id + '"]'); if (b) b.hidden = mitarbeiter; });
+    }
+
+    async function ladeZugaenge() {
+      const liste = $('tmListe'); if (!liste || !tenant) return;
+      liste.innerHTML = '<p class="lv-leer">Lade …</p>';
+      try {
+        const r = await apiFetch('/api/mitglieder?tenant_id=' + encodeURIComponent(tenant.id), { headers: numAuth() });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Zugänge konnten nicht geladen werden.');
+        tmMeineStufe = j.stufe;
+        tmNavigationAnpassen(tmMeineStufe);
+        const darf = tmMeineStufe === 'owner' || tmMeineStufe === 'admin';
+        $('tmNeu').hidden = !darf;
+        $('tmSub').textContent = darf
+          ? 'Admins ändern Einstellungen und Zugänge, Mitarbeiter arbeiten mit Anrufen, Nachrichten und Vorgängen.'
+          : 'Zugänge verwaltet der Inhaber oder ein Admin.';
+        const { data: ich } = await sb.auth.getUser();
+        const meineId = ich?.user?.id;
+        liste.innerHTML = '';
+        j.mitglieder.forEach((m) => {
+          const z = document.createElement('div'); z.className = 'kt-zeile';
+          z.innerHTML = '<span class="kt-avatar"></span><div class="kt-mitte"><b></b><span></span></div><div class="stack"></div>';
+          z.querySelector('.kt-avatar').textContent = (m.email || '?').trim().charAt(0).toUpperCase();
+          z.querySelector('b').textContent = m.email || '(ohne E-Mail)';
+          z.querySelector('.kt-mitte span').textContent = TM_STUFEN[m.stufe] + (m.seit ? ' · seit ' + new Date(m.seit).toLocaleDateString('de-DE') : '') + (m.userId === meineId ? ' · das bist du' : '');
+          const st = z.querySelector('.stack');
+          if (darf && m.stufe !== 'owner' && m.userId !== meineId) {
+            const sel = document.createElement('select'); sel.className = 'sm';
+            sel.innerHTML = '<option value="member">Mitarbeiter</option><option value="admin">Admin</option>';
+            sel.value = m.stufe;
+            sel.setAttribute('aria-label', 'Stufe von ' + m.email);
+            sel.onchange = async () => {
+              const r2 = await apiFetch('/api/mitglieder/' + m.userId, { method: 'PATCH', headers: numAuth(), body: JSON.stringify({ tenant_id: tenant.id, stufe: sel.value }) });
+              const j2 = await r2.json().catch(() => ({}));
+              if (!r2.ok) { toast(j2.error || 'Änderung fehlgeschlagen.', 'err'); sel.value = m.stufe; return; }
+              toast('Stufe geändert.'); ladeZugaenge();
+            };
+            st.append(sel);
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm btn--ghost'; b.textContent = 'Entfernen';
+            b.onclick = async () => {
+              if (!confirm(m.email + ' den Zugang zu dieser Firma nehmen?')) return;
+              const r2 = await apiFetch('/api/mitglieder/' + m.userId, { method: 'DELETE', headers: numAuth(), body: JSON.stringify({ tenant_id: tenant.id }) });
+              const j2 = await r2.json().catch(() => ({}));
+              if (!r2.ok) { toast(j2.error || 'Entfernen fehlgeschlagen.', 'err'); return; }
+              toast('Zugang entfernt.'); ladeZugaenge();
+            };
+            st.append(b);
+          }
+          liste.append(z);
+        });
+      } catch (e) {
+        liste.innerHTML = '<p class="lv-leer">' + (e.message || 'Fehler') + '</p>';
+      }
+    }
+
+    $('tmNeu')?.addEventListener('click', () => { $('tmForm').classList.remove('hidden'); $('tmHinweis').textContent = ''; $('tmMail').focus(); });
+    $('tmAbbrechen')?.addEventListener('click', () => { $('tmForm').classList.add('hidden'); $('tmMail').value = ''; $('tmPw').value = ''; });
+    $('tmSpeichern')?.addEventListener('click', async () => {
+      const email = $('tmMail').value.trim(), password = $('tmPw').value, stufe = $('tmStufe').value;
+      if (!email) { $('tmHinweis').textContent = 'Eine E-Mail-Adresse fehlt.'; return; }
+      $('tmSpeichern').disabled = true; $('tmHinweis').textContent = 'Lege an …';
+      try {
+        const r = await apiFetch('/api/mitglieder', { method: 'POST', headers: numAuth(), body: JSON.stringify({ tenant_id: tenant.id, email, password: password || undefined, stufe }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Anlegen fehlgeschlagen.');
+        toast(j.message || 'Zugang angelegt.');
+        $('tmForm').classList.add('hidden'); $('tmMail').value = ''; $('tmPw').value = ''; $('tmHinweis').textContent = '';
+        ladeZugaenge();
+      } catch (e) { $('tmHinweis').textContent = e.message; }
+      finally { $('tmSpeichern').disabled = false; }
+    });
 
     async function ladeKontakte() {
       if (!tenant) return;
