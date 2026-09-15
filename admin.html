@@ -115,6 +115,17 @@
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
     .toast.err { background:var(--accent-3); }
     .empty { text-align:center; padding:60px 20px; color:var(--ink-faint); }
+
+    /* Margen-Tabelle: Zahlen rechtsbündig, Gesamtzeile fett, negative Marge rot –
+       der Betreiber soll auf einen Blick sehen, welche Firma Geld kostet. */
+    .margen { padding:6px 20px 10px; margin-top:14px; overflow-x:auto; }
+    .margen table { width:100%; border-collapse:collapse; font-size:14px; }
+    .margen th, .margen td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+    .margen th { font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+    .margen th:first-child, .margen td:first-child, .margen th:nth-child(2), .margen td:nth-child(2) { text-align:left; }
+    .margen tfoot td { font-weight:700; border-bottom:none; border-top:2px solid var(--ink); }
+    .margen .neg { color:var(--accent-3); font-weight:700; }
+    .margen .pos { color:#1c6b45; font-weight:700; }
   </style>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -154,6 +165,16 @@
         <button class="btn btn--primary" id="newBtn">+ Neue Firma</button>
       </div>
       <div id="tenantList"></div>
+
+      <!-- Margen: was jede Firma im Monat bringt (Abo) gegen das, was ihre Anrufe kosten -->
+      <div class="between" style="margin:36px 0 12px">
+        <div>
+          <h2 class="title">Margen (30 Tage)</h2>
+          <div class="muted" id="margenInfo">…</div>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="margenReload">Neu laden</button>
+      </div>
+      <div class="card margen" id="margen"></div>
     </div>
   </div>
 
@@ -255,6 +276,7 @@
       $('login').classList.add('hidden');
       $('app').classList.remove('hidden');
       loadTenants();
+      loadMargen();
     }
     function showLogin() { $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
 
@@ -484,6 +506,46 @@
         numDlg.close(); toast('Nummer zugewiesen'); loadTenants();
       } catch (err) { $('numErr').textContent = err.message; }
     });
+
+    // ---- Margen (30 Tage) ----
+    // Umsatz ist der Monatspreis laut Abo (nur zahlende Abos), Kosten sind die
+    // Summe aus calls.cost_total der letzten 30 Tage. Ein Monatspreis gegen 30
+    // Tage Kosten ist eine Näherung, aber für den Blick auf die Marge genau genug.
+    const eur = (n) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const zahl = (n, nk = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: nk, maximumFractionDigits: nk });
+    const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
+    const margeZelle = (m) => '<td class="' + (m < 0 ? 'neg' : m > 0 ? 'pos' : '') + '">' + eur(m) + '</td>';
+
+    async function loadMargen() {
+      const box = $('margen');
+      box.innerHTML = '<div class="empty">Lade Margen…</div>';
+      try {
+        // Eigener Aufruf statt api(): die Margen-Route ist ein GET ohne Body.
+        const res = await fetch(API + '/api/admin/margen', { headers: auth() });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Fehler');
+        const seit = new Date(d.seit).toLocaleDateString('de-DE');
+        $('margenInfo').textContent = 'Seit ' + seit + ' · Umsatz = Monatspreis laut Abo, Kosten = Telnyx + KI je Anruf';
+        if (!d.zeilen.length) { box.innerHTML = '<div class="empty">Noch keine Firmen.</div>'; return; }
+        box.innerHTML = margenTabelle(d);
+      } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+    }
+
+    function margenTabelle(d) {
+      const zeile = (z) => {
+        const tarif = z.tarif ? (TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? '' : ' <span class="muted">(kein Umsatz)</span>') : '<span class="muted">–</span>';
+        return '<tr><td>' + esc(z.name) + '</td><td>' + tarif + '</td><td>' + zahl(z.anrufe) + '</td><td>' + zahl(z.minuten, 1)
+          + '</td><td title="Telnyx ' + eur(z.kosten.telnyx) + ' · KI ' + eur(z.kosten.ai) + '">' + eur(z.kosten.total)
+          + '</td><td>' + eur(z.umsatz) + '</td>' + margeZelle(z.marge) + '</tr>';
+      };
+      const g = d.gesamt;
+      return '<table><thead><tr><th>Mandant</th><th>Tarif</th><th>Anrufe</th><th>Minuten</th><th>Kosten</th><th>Umsatz</th><th>Marge</th></tr></thead>'
+        + '<tbody>' + d.zeilen.map(zeile).join('') + '</tbody>'
+        + '<tfoot><tr><td>Gesamt</td><td>' + zahl(d.zeilen.length) + ' Firmen</td><td>' + zahl(g.anrufe) + '</td><td>' + zahl(g.minuten, 1)
+        + '</td><td title="Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai) + '">' + eur(g.kosten.total)
+        + '</td><td>' + eur(g.umsatz) + '</td>' + margeZelle(g.marge) + '</tr></tfoot></table>';
+    }
+    $('margenReload').onclick = loadMargen;
 
     // ---- Start ----
     sb.auth.getSession().then(({ data }) => { data.session ? enter(data.session) : showLogin(); });
