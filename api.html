@@ -40,7 +40,7 @@
           <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg></span><span><b>Anrufannahme</b><span>Rund um die Uhr, natürliche Stimme, unterbrechbar</span></span></a>
           <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><span><b>Termine &amp; Reservierungen</b><span>Direkt im Gespräch gebucht, per SMS bestätigt</span></span></a>
           <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg></span><span><b>Rückrufe &amp; Nachrichten</b><span>Wartelisten, Notfälle erkennen, durchstellen</span></span></a>
-          <a href="ki-modelle.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg></span><span><b>KI-Modelle &amp; Sprachen</b><span>Vier Anbieter, eine rein europäische Option</span></span></a>
+          <a href="ki-modelle.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg></span><span><b>KI-Modelle &amp; Sprachen</b><span>Fünf Anbieter, eine rein europäische Option</span></span></a>
           <a href="sicherheit.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span><b>Sicherheit &amp; DSGVO</b><span>Verarbeitung in der EU, AV-Vertrag inklusive</span></span></a>
           <a href="schnittstellen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><span><b>Schnittstellen &amp; API</b><span>Ticketsystem, CRM, Kalender, Webhooks</span></span></a>
           <a href="preise.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><span><b>Preise</b><span>Ab 49 € im Monat, mit Rechner</span></span></a>
@@ -74,7 +74,7 @@
   <div class="wrap hero-inhalt">
     <div class="eyebrow">API</div>
     <h1>Vocaris in Ihrer Software.</h1>
-    <p class="hero-sub">Eine kleine, klare API mit Schlüssel je Firma. Lesen, was am Telefon passiert ist, Wissen ergänzen, Anrufe auslösen. Dazu signierte Webhooks für Make, n8n und Zapier.</p>
+    <p class="hero-sub">Eine kleine, klare API mit Schlüssel je Firma. Lesen, was am Telefon passiert ist, Wissen ergänzen, Anrufe auslösen und beenden. Dazu signierte Webhooks für Make, n8n und Zapier.</p>
   </div>
 </div>
 <section class="block" id="start">
@@ -133,7 +133,18 @@
   </div>
 </section>
 
-<section class="block" id="webhooks">
+<section class="block" id="steuern">
+  <div class="wrap doku">
+    <div class="reveal"><div class="eyebrow">Gespräche steuern</div><h2>Laufende Anrufe beenden und mithören</h2>
+    <p class="intro">Diese Endpunkte gehören zum Kundenbereich und werden mit dem <b>Login-Token</b> Ihrer Sitzung aufgerufen, nicht mit dem <code>vk_live_</code>-Schlüssel. Sie sind gedacht für eigene Oberflächen, die den Kundenbereich ergänzen, etwa eine Anzeige am Empfang. Gleiche Basis-Adresse, gleiche Fehlerform.</p></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/call/hangup</code></div><p>Ein laufendes Gespräch des Assistenten beenden. Feld: <code>call_id</code> (die Anruf-ID aus dem Kundenbereich oder aus <code>GET /api/v1/calls</code>). Aufgelegt wird in der Leitung, nicht nur in der Anzeige. Ist der Anruf nicht mehr aktiv, wird der Eintrag geschlossen und die Antwort trägt <code>schon: true</code>. Fehler: 400 ohne <code>call_id</code>, 401 ohne Token, 403 ohne zugeordnete Firma, 404 wenn der Anruf nicht zu Ihrer Firma gehört, 409 solange noch keine Leitung bekannt ist, 502 wenn der Netzbetreiber nicht auflegen konnte.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/call/hangup \
+  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;call_id&quot;: &quot;ANRUF_ID&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
+    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode">WS</span><code class="ep-pfad">/media-mithoeren</code></div><p>WebSocket zum Mithören eines laufenden Gesprächs. Parameter in der Adresse: <code>token</code> (Login-Token) und <code>call_id</code>. Nach <code>{ &quot;event&quot;: &quot;start&quot; }</code> kommen beide Gesprächsspuren als Nachrichten <code>{ &quot;event&quot;: &quot;media&quot;, &quot;spur&quot;: &quot;…&quot;, &quot;payload&quot;: &quot;…&quot; }</code>, der Ton als μ-law 8 kHz, Base64-kodiert. Es geht nichts zurück in die Leitung, der Anrufer kann nicht gestört werden. Ohne Zugriff oder bei beendetem Gespräch antwortet der Server mit <code>{ &quot;event&quot;: &quot;fehler&quot; }</code> und schließt die Verbindung.</p><pre class="code"><code>wss://ki-anruf.onrender.com/media-mithoeren?token=LOGIN_TOKEN&amp;call_id=ANRUF_ID</code></pre></div>
+  </div>
+</section>
+
+<section class="block soft" id="webhooks">
   <div class="wrap doku">
     <div class="reveal"><div class="eyebrow">Webhooks</div><h2>Ereignisse, die zu Ihnen kommen</h2>
     <p class="intro">Unter <b>Schnittstellen → Automatisierung</b> tragen Sie eine Adresse und ein Geheimnis ein. Vocaris sendet dann pro Ereignis eine POST-Anfrage mit JSON. Fünf Ereignisse: <code>message.captured</code>, <code>appointment.booked</code>, <code>gap.created</code>, <code>call.ended</code>, <code>ticket.created</code> (neuer Vorgang mit Nummer, Priorität und Frist). Bei <code>call.ended</code> holen Sie Zusammenfassung und Transkript über <code>GET /api/v1/calls/:id</code>, die Zusammenfassung entsteht wenige Sekunden nach dem Auflegen.</p></div>
@@ -165,7 +176,7 @@ const gueltig = timingSafeEqual(Buffer.from(erwartet), Buffer.from(req.headers[&
   </div>
 </section>
 
-<section class="block soft" id="fehler">
+<section class="block" id="fehler">
   <div class="wrap doku">
     <div class="reveal"><div class="eyebrow">Fehler und Grenzen</div><h2>Was Sie zurückbekommen</h2></div>
     <div class="karten">
