@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-15T06:55" />
+  <meta name="vocaris-stand" content="2026-09-15T07:26" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -695,6 +695,10 @@
     .kt-mitte span { font-size: 12.5px; color: var(--ink-faint); }
     .kt-nr { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
     .kt-zeile .stack { margin: 0; }
+    /* Mitarbeiter: Bereich sichtbar, aber nichts anfassbar. Suche und Filter bleiben frei. */
+    .nur-lesen-hinweis { display: none; margin: 0 0 6px; padding: 6px 10px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 10%, var(--white)); color: var(--ink); font-size: 13px; }
+    .nur-lesen .nur-lesen-hinweis { display: inline-block; }
+    .nur-lesen button:not(.nav-item):not([data-deptbar] button), .nur-lesen input:not([type=search]), .nur-lesen textarea, .nur-lesen select { pointer-events: none; opacity: .55; }
     @media (max-width: 700px) { .kt-felder { grid-template-columns: 1fr; } .kt-nr { display: none; } }
     /* ---- Vorgänge ---- */
     .tk-leiste { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
@@ -1149,6 +1153,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead" style="margin-bottom:2px">Wissensdatenbank</h1>
+              <p class="nur-lesen-hinweis">Nur Lesen: Einträge ändert der Inhaber oder ein Admin.</p>
               <p class="pagesub" style="margin-bottom:0" id="kbSub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
             </div>
             <div class="db-aktionen">
@@ -1362,6 +1367,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead" style="margin-bottom:2px">Termine</h1>
+              <p class="nur-lesen-hinweis">Nur Lesen: Terminregeln ändert der Inhaber oder ein Admin.</p>
               <p class="pagesub" style="margin-bottom:0">Dein Assistent vergibt am Telefon Termine auf Basis deiner Öffnungszeiten. Gebuchte Termine erscheinen hier und im verbundenen Kalender.</p>
             </div>
             <div class="db-aktionen">
@@ -1691,14 +1697,14 @@
           <div class="panel kt-form hidden" id="tmForm">
             <div class="kt-felder">
               <div><label class="waehl__label" for="tmMail">E-Mail</label><input id="tmMail" type="email" placeholder="name@firma.de" autocomplete="off" /></div>
-              <div><label class="waehl__label" for="tmPw">Passwort, nur für einen neuen Login</label><input id="tmPw" type="password" placeholder="mindestens 8 Zeichen" autocomplete="new-password" /></div>
+              <div><label class="waehl__label" for="tmPw">Passwort (leer lassen: Einladung per E-Mail)</label><input id="tmPw" type="password" placeholder="leer = Einladungslink" autocomplete="new-password" /></div>
               <div><label class="waehl__label" for="tmStufe">Stufe</label>
                 <select id="tmStufe">
                   <option value="member">Mitarbeiter: Anrufe, Nachrichten, Vorgänge, Termine</option>
                   <option value="admin">Admin: zusätzlich Einstellungen und Zugänge</option>
                 </select></div>
             </div>
-            <p class="muted" style="margin:10px 0 0;font-size:13px">Gibt es die E-Mail schon als Vocaris-Login, wird dieser Login hinzugefügt und das Passwort bleibt unverändert.</p>
+            <p class="muted" style="margin:10px 0 0;font-size:13px">Ohne Passwort bekommt die Person eine Einladung per E-Mail und setzt ihr Passwort selbst. Gibt es die E-Mail schon als Vocaris-Login, wird dieser Login hinzugefügt.</p>
             <div class="stack" style="margin-top:12px">
               <button class="btn btn--primary" type="button" id="tmSpeichern">Anlegen</button>
               <button class="btn btn--ghost" type="button" id="tmAbbrechen">Abbrechen</button>
@@ -2128,6 +2134,9 @@
     // (kein ?imp=) nutzen unverändert den Standard-Storage.
     const IMP_HASH = new URLSearchParams(location.search).get('imp');
     const IMP_NAME = new URLSearchParams(location.search).get('impname') || '';
+    // Kommt jemand über einen Einladungslink, steht das im Hash – nur bis Supabase ihn gleich verbraucht.
+    const EINGELADEN = location.hash.indexOf('type=invite') >= 0;
+    let eingeladenBehandelt = false;
     const sb = createClient(
       'https://nocsjyzmnskbyccrjayx.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
@@ -2434,6 +2443,7 @@
     };
     sb.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') { showApp(session); openPwModal(true); return; }
+      if (event === 'SIGNED_IN' && EINGELADEN && session && !eingeladenBehandelt) { eingeladenBehandelt = true; showApp(session); openPwModal(true); return; }
       session ? showApp(session) : showAuth();
     });
     function showAuth() { $('authView').classList.remove('hidden'); $('shell').classList.add('hidden'); }
@@ -4586,11 +4596,28 @@
       [...el.querySelectorAll('i')].forEach((i, n) => { i.style.height = Math.max(20, Math.min(100, p * 130 - n * 12)) + '%'; });
     }
 
+    /**
+     * Verbindung zur Mitschrift öffnen und nach einem Abriss neu öffnen.
+     * Der Server hält die Aufzeichnung 15 Sekunden offen; die Anzapfer senden
+     * an die Variable tnWs, deshalb genügt es, den Socket zu ersetzen.
+     */
+    let tnWsVersuche = 0;
+    function tnWsOeffnen(callId, wsToken) {
+      const ws = new WebSocket(API.replace(/^http/, 'ws') + '/media-browser?call_id=' + encodeURIComponent(callId) + '&token=' + encodeURIComponent(wsToken));
+      ws.onopen = () => { tnWsVersuche = 0; };
+      ws.onclose = () => {
+        if (tnWs !== ws || !tnCall || tnWsVersuche >= 3) return;
+        const warte = 1000 * Math.pow(2, tnWsVersuche++);
+        setTimeout(() => { if (tnCall && tnWs === ws) tnWsOeffnen(callId, wsToken); }, warte);
+      };
+      tnWs = ws;
+    }
+
     /** Beide Tonspuren an die Mitschrift schicken (16 kHz, PCM). */
     function tnMitschrift(call, callId, wsToken) {
       if (!wsToken) return;
       try {
-        tnWs = new WebSocket(API.replace(/^http/, 'ws') + '/media-browser?call_id=' + encodeURIComponent(callId) + '&token=' + encodeURIComponent(wsToken));
+        tnWsOeffnen(callId, wsToken);
         tnCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
         const stumm = tnCtx.createGain(); stumm.gain.value = 0; stumm.connect(tnCtx.destination);
         const anzapfen = (stream, spur) => {
@@ -6393,6 +6420,8 @@
       const nurVerwaltung = ['sec-assistant', 'sec-number', 'sec-webhooks'];
       const mitarbeiter = stufe === 'member';
       nurVerwaltung.forEach((id) => { const b = document.querySelector('.nav-item[data-target="' + id + '"]'); if (b) b.hidden = mitarbeiter; });
+      // Wissen und Terminregeln dürfen Mitarbeiter lesen, aber nicht ändern – das sagt der Bereich dann auch.
+      ['sec-kb', 'sec-booking'].forEach((id) => document.getElementById(id)?.classList.toggle('nur-lesen', mitarbeiter));
     }
 
     async function ladeZugaenge() {
