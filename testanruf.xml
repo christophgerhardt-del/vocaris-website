@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Täglicher Testanruf: dieser Text wird dem Assistenten vorgespielt. -->
 <Response>
-  <Pause length="4"/>
+  <!-- Erst warten: OpenAI braucht ein paar Sekunden, bis der Assistent abnimmt und begruesst. -->
+  <Pause length="10"/>
   <Say language="de-DE">Guten Tag, ich habe eine Frage. Wann haben Sie geöffnet?</Say>
-  <Pause length="12"/>
+  <Pause length="14"/>
   <Say language="de-DE">Vielen Dank, auf Wiederhören.</Say>
   <Pause length="4"/>
   <Hangup/>
