@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-11T14:46" />
+  <meta name="vocaris-stand" content="2026-09-15T06:32" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -597,6 +597,12 @@
     .gespraech__leiste .btn { flex: 1; justify-content: center; height: 44px; }
     .gespraech__aus { background: #dc2626; border-color: #dc2626; color: #fff; }
     .gespraech__aus:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+    /* Verbindung wackelt oder ist weg: Punkt und Statuszeile färben sich, damit man es auch ohne Ton merkt. */
+    .gespraech--gestoert .gespraech__dot { background: #d97706; }
+    .gespraech--gestoert .gespraech__wer span { color: #b45309; font-weight: 600; }
+    .gespraech--verloren .gespraech__dot { background: #dc2626; animation: none; }
+    .gespraech--verloren .gespraech__wer span { color: #b91c1c; font-weight: 600; }
+    .gespraech--verloren .gespraech__pad { display: none; }
 
     /* ---- Tastenfeld: einmal gebaut, im Wählfeld und im Gespräch ---- */
     .tastatur { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -919,7 +925,7 @@
             <div class="db-aktionen">
               <input id="obSuche" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
               <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
-              <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden">↻</button>
+              <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--primary sm" type="button" id="obAnrufKnopf">Neuer Anruf</button>
             </div>
           </div>
@@ -953,7 +959,7 @@
                   <input id="callTo" placeholder="170 1234567" inputmode="tel" autocomplete="tel" aria-label="Zielnummer" />
                   <button class="waehl__loeschen hidden" type="button" id="obLeeren" title="Letzte Ziffer löschen" aria-label="Letzte Ziffer löschen">⌫</button>
                 </div>
-                <div class="tastatur" id="waehlTastatur"></div>
+                <div class="tastatur" id="waehlTastatur" role="group" aria-label="Wähltastatur"></div>
                 <button id="callBtn" class="btn waehl__ruf">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.9 2.2z"/></svg>
                   <span id="callBtnText">Anrufen</span>
@@ -967,7 +973,7 @@
                   <textarea id="callAuftrag" rows="4" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
                 </div>
                 <p class="waehl__erklaerung" id="callErklaerung">Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
-                <span class="waehl__hinweis" id="callHint"></span>
+                <span class="waehl__hinweis" id="callHint" aria-live="polite"></span>
             <div id="callGeraet" class="waehl__geraet">
               <button class="waehl__geraetzeile" type="button" id="micAufklappen" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15" aria-hidden="true"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/></svg>
@@ -994,12 +1000,12 @@
               <span class="gespraech__dot"></span>
               <div class="gespraech__wer">
                 <b id="tnInlineNr">—</b>
-                <span id="tnInlineStatus">Verbinde …</span>
+                <span id="tnInlineStatus" aria-live="polite">Verbinde …</span>
               </div>
               <span class="gespraech__zeit" id="tnInlineZeit">0:00</span>
             </div>
             <div class="gespraech__pad">
-              <div class="tastatur" id="tnInlineGitter"></div>
+              <div class="tastatur" id="tnInlineGitter" role="group" aria-label="Wähltastatur"></div>
               <p class="gespraech__hinweis">Für Ansagen wie „für den Vertrieb die 1"</p>
             </div>
             <div class="gespraech__leiste">
@@ -2005,14 +2011,14 @@
     <audio id="tnAudio" autoplay playsinline></audio>
     <div id="tnBar" class="tnbar hidden">
       <span class="tnbar__dot"></span>
-      <div class="tnbar__t"><b id="tnNummer">—</b><span id="tnStatus">Verbinde …</span></div>
+      <div class="tnbar__t"><b id="tnNummer">—</b><span id="tnStatus" aria-live="polite">Verbinde …</span></div>
       <span class="tnbar__zeit" id="tnZeit">0:00</span>
       <span class="tnbar__pegel" id="tnPegel" title="Mikrofonpegel"><i></i></span>
       <button id="tnTasten" type="button" title="Wähltasten für Ansagen">Tasten</button>
       <button id="tnStumm" type="button" title="Mikrofon stumm">Stumm</button>
       <button id="tnAuflegen" type="button" class="rot" title="Auflegen">Auflegen</button>
       <div class="tnbar__feld hidden" id="tnFeld">
-        <div class="tnbar__gitter" id="tnGitter"></div>
+        <div class="tnbar__gitter" id="tnGitter" role="group" aria-label="Wähltastatur"></div>
         <span>Für Ansagen wie „für Vertrieb die 1"</span>
       </div>
     </div>
@@ -2020,8 +2026,8 @@
       <div class="livew__head" id="liveWidgetHead">
         <span class="livew__dot" id="liveWidgetDot"></span>
         <div class="livew__t"><b id="liveWidgetWho">Anruf</b><span id="liveWidgetStatus">Live</span></div>
-        <button id="liveWidgetMin" title="Ein-/ausklappen" type="button">–</button>
-        <button id="liveWidgetClose" title="Schließen" type="button">✕</button>
+        <button id="liveWidgetMin" title="Ein-/ausklappen" aria-label="Ein- oder ausklappen" type="button">–</button>
+        <button id="liveWidgetClose" title="Schließen" aria-label="Schließen" type="button">✕</button>
       </div>
       <div class="livew__body" id="liveWidgetBody"></div>
     </div>
@@ -4328,6 +4334,12 @@
     // Eigener Ton-Kontext für Freizeichen, Wähltöne und Pegelanzeige – getrennt
     // von dem der Mitschrift, damit sich beides nicht ins Gehege kommt.
     let tnTonCtx = null, tnPegelAus = null, tnFrei = null;
+    // Verbindungsabbruch: neu verbinden kann nur das SDK selbst (Anmeldung und
+    // Wiederanbindung des laufenden Gesprächs). Wir begrenzen seine Versuche,
+    // zeigen den Zustand an und ziehen nach einer Frist die Notbremse – sonst
+    // hinge das Kärtchen ewig auf „verbinde neu".
+    const TN_NEU_VERSUCHE = 3, TN_NEU_FRIST = 25000;
+    let tnGestoert = 0, tnGestoertGen = null, tnGestoertUhr = null, tnVerloren = false;
 
     /** Kann dieser Browser überhaupt telefonieren? */
     function browserKannTelefonieren() {
@@ -4522,10 +4534,12 @@
      */
     function tnSichtbarkeit() {
       const aufSeite = !$('sec-outbound')?.classList.contains('hidden');
-      $('tnBar')?.classList.toggle('hidden', !tnLaeuft || aufSeite);
-      $('tnInline')?.classList.toggle('hidden', !tnLaeuft);
+      // Nach einem Abbruch bleibt das Kärtchen stehen, bis es weggeklickt wird.
+      const zeigen = tnLaeuft || tnVerloren;
+      $('tnBar')?.classList.toggle('hidden', !zeigen || aufSeite);
+      $('tnInline')?.classList.toggle('hidden', !zeigen);
       // Solange telefoniert wird, lädt niemand zu einem zweiten Anruf ein.
-      $('obWaehl')?.classList.toggle('hidden', tnLaeuft);
+      $('obWaehl')?.classList.toggle('hidden', zeigen);
     }
 
     /** Mikrofonpegel in der Anrufzeile (drei Striche). */
@@ -4574,6 +4588,9 @@
       if (!tnLaeuft) return;
       tnLaeuft = false;
       if (tnUhr) { clearInterval(tnUhr); tnUhr = null; }
+      if (tnGestoertUhr) { clearTimeout(tnGestoertUhr); tnGestoertUhr = null; }
+      tnGestoert = 0; tnGestoertGen = null;
+      $('tnInline')?.classList.remove('gespraech--gestoert');
       freizeichen(false);
       if (tnPegelAus) { tnPegelAus(); tnPegelAus = null; }
       // Erst auflegen – auch Gespräche, die wir nicht selbst in tnCall halten.
@@ -4604,6 +4621,57 @@
       if (status) toast(status);
     }
 
+    /**
+     * Socket weg (Netz, Tab im Hintergrund): Zähler hoch, Hinweis zeigen, Frist
+     * für die Notbremse setzen. Das SDK meldet dasselbe Ende gern doppelt
+     * (close und error), deshalb zählt jede Socket-Generation nur einmal.
+     */
+    function tnUnterbrochen(ev) {
+      if (!tnLaeuft || tnVerloren) return;
+      const gen = ev && ev.socketGeneration;
+      if (gen != null && gen === tnGestoertGen) return;
+      tnGestoertGen = gen;
+      tnGestoert += 1;
+      if (tnGestoert > TN_NEU_VERSUCHE) { tnVerbindungVerloren(); return; }
+      freizeichen(false);
+      $('tnInline')?.classList.add('gespraech--gestoert');
+      tnLeiste(true, null, 'Verbindung unterbrochen, verbinde neu … (' + tnGestoert + ' von ' + TN_NEU_VERSUCHE + ')');
+      if (!tnGestoertUhr) tnGestoertUhr = setTimeout(tnVerbindungVerloren, TN_NEU_FRIST);
+    }
+
+    /** Wieder da: Hinweis weg, Zähler auf null, Status wie vor dem Abbruch. */
+    function tnWiederVerbunden(status) {
+      if (tnGestoertUhr) { clearTimeout(tnGestoertUhr); tnGestoertUhr = null; }
+      if (!tnGestoert) return;
+      tnGestoert = 0;
+      $('tnInline')?.classList.remove('gespraech--gestoert');
+      tnLeiste(true, null, status);
+    }
+
+    /**
+     * Alle Versuche vergebens: Gespräch abräumen wie beim Auflegen, aber das
+     * Kärtchen bleibt mit „Verbindung verloren" stehen, bis es jemand schließt.
+     */
+    function tnVerbindungVerloren() {
+      if (!tnLaeuft || tnVerloren) return;
+      tnVerloren = true;
+      tnAufraeumen(null);
+      tnLeiste(false, null, 'Verbindung verloren');
+      $('tnInline')?.classList.add('gespraech--verloren');
+      if ($('tnInlineAuflegen')) $('tnInlineAuflegen').textContent = 'Schließen';
+      $('tnAuflegen').textContent = 'Schließen';
+      toast('Verbindung verloren, das Gespräch wurde beendet.', 'err');
+    }
+
+    /** Kärtchen nach „Verbindung verloren" wegklicken. */
+    function tnVerlorenSchliessen() {
+      tnVerloren = false;
+      $('tnInline')?.classList.remove('gespraech--verloren');
+      if ($('tnInlineAuflegen')) $('tnInlineAuflegen').textContent = 'Auflegen';
+      $('tnAuflegen').textContent = 'Auflegen';
+      tnLeiste(false, null, 'Verbinde …');
+    }
+
     /** Anruf im Browser starten. */
     async function browserAnrufen(ziel) {
       const nr = String(ziel || '').replace(/\s+/g, '');
@@ -4611,6 +4679,7 @@
       const problem = browserKannTelefonieren();
       if (problem) { toast(problem, 'err'); return; }
       if (tnLaeuft) { toast('Es läuft bereits ein Gespräch.', 'err'); return; }
+      if (tnVerloren) tnVerlorenSchliessen();
       tnLaeuft = true;
       tnLeiste(true, nr, 'Mikrofon wird angefragt …');
       try {
@@ -4632,9 +4701,12 @@
         const audio = $('tnAudio');
         if (ls && audio && typeof audio.setSinkId === 'function') { try { await audio.setSinkId(ls); geraetMerken('ls', ls); } catch { /* egal */ } }
 
-        tnClient = new window.TelnyxWebRTC.TelnyxRTC({ login_token: j2.login_token });
+        tnClient = new window.TelnyxWebRTC.TelnyxRTC({ login_token: j2.login_token, maxReconnectAttempts: TN_NEU_VERSUCHE });
         tnClient.remoteElement = 'tnAudio';
         tnClient.on('telnyx.ready', () => {
+          // Kommt nach jeder Neuanmeldung wieder: dann läuft das Gespräch
+          // weiter, ein zweiter Anruf darf nicht entstehen.
+          if (tnCall) { tnWiederVerbunden(tnCall.state === 'active' ? 'Verbunden' + (j1.mitschrift ? ' · wird mitgeschrieben' : '') : 'Es klingelt …'); return; }
           tnCall = tnClient.newCall({
             destinationNumber: nr, callerNumber: j2.caller_number,
             audio: true, video: false, remoteElement: 'tnAudio',
@@ -4642,7 +4714,13 @@
             speakerId: ls || undefined,
           });
         });
-        tnClient.on('telnyx.error', (e) => { console.warn('[softphone]', e); tnAufraeumen('Verbindung fehlgeschlagen.'); });
+        tnClient.on('telnyx.error', (e) => {
+          console.warn('[softphone]', e);
+          // Mitten im Neuverbinden heißt ein Fehler: die Versuche sind erschöpft.
+          if (tnGestoert) tnVerbindungVerloren(); else tnAufraeumen('Verbindung fehlgeschlagen.');
+        });
+        tnClient.on('telnyx.socket.close', tnUnterbrochen);
+        tnClient.on('telnyx.socket.error', tnUnterbrochen);
         tnClient.on('telnyx.notification', (n) => {
           if (n.type !== 'callUpdate' || !n.call) return;
           if (!tnLaeuft) return;
@@ -4660,7 +4738,7 @@
             if (n.call.localStream && !tnPegelAus) tnPegelAus = pegelZeigen(n.call.localStream, tnPegelBalken);
             tnMitschrift(n.call, j1.call_id, j1.ws_token);
           }
-          if (z === 'hangup' || z === 'destroy') tnAufraeumen('Gespräch beendet.');
+          if (z === 'hangup' || z === 'destroy') { if (tnGestoert) tnVerbindungVerloren(); else tnAufraeumen('Gespräch beendet.'); }
         });
         tnClient.connect();
       } catch (e) {
@@ -4670,7 +4748,7 @@
     }
 
     /** Auflegen – egal von welchem der beiden Knöpfe. */
-    function tnAuflegen() { tnAufraeumen('Aufgelegt.'); }
+    function tnAuflegen() { if (tnVerloren) { tnVerlorenSchliessen(); return; } tnAufraeumen('Aufgelegt.'); }
     /** Mikrofon stumm schalten und beide Knöpfe beschriften. */
     function tnStummSchalten() {
       if (!tnCall) return;
@@ -4682,6 +4760,9 @@
     }
     /** Buchstaben wie am Telefon – hilft beim Vorlesen und beim Merken. */
     const TASTEN = [['1', ''], ['2', 'ABC'], ['3', 'DEF'], ['4', 'GHI'], ['5', 'JKL'], ['6', 'MNO'], ['7', 'PQRS'], ['8', 'TUV'], ['9', 'WXYZ']];
+    /** Was der Screenreader zu einer Taste sagt; Buchstaben einzeln, sonst wird „ABC" zum Wort. */
+    const TASTEN_NAMEN = { '*': 'Stern', '#': 'Raute', '+': 'Plus', '⌫': 'Letzte Ziffer löschen' };
+    const tasteBenennen = (zeichen, buchstaben) => TASTEN_NAMEN[zeichen] || ('Taste ' + zeichen + (buchstaben ? ' ' + buchstaben.split('').join(' ') : ''));
 
     /**
      * Tastenfeld bauen. Dasselbe Gitter dient zwei Zwecken:
@@ -4696,6 +4777,7 @@
       alle.forEach(([zeichen, buchstaben]) => {
         const k = document.createElement('button');
         k.type = 'button';
+        k.setAttribute('aria-label', tasteBenennen(zeichen, buchstaben));
         if (!buchstaben) k.classList.add('leer');
         const i = document.createElement('i'); i.textContent = zeichen;
         const u = document.createElement('u'); u.textContent = buchstaben || '·';
@@ -4721,6 +4803,7 @@
       if (feld.classList.contains('hidden') || gitter.childElementCount) return;
       '123456789*0#'.split('').forEach((t) => {
         const b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+        b.setAttribute('aria-label', tasteBenennen(t, ''));
         b.onclick = () => { waehlton(t); try { tnCall?.dtmf(t); } catch { /* egal */ } };
         gitter.append(b);
       });
@@ -4748,6 +4831,31 @@
       navigator.mediaDevices?.addEventListener?.('devicechange', geraeteFuellen);
       // Escape legt auf, solange ein Gespräch läuft.
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tnCall && !$('tnBar').classList.contains('hidden')) tnAuflegen(); });
+      // Physische Tastatur: Ziffern, + und Backspace wandern ins Wählfeld, Enter
+      // wählt – aber nur, wenn der Fokus im Wählfeld (Tasten, Wege) oder frei
+      // liegt; ein Eingabefeld tippt für sich selbst, auch die Nummernzeile.
+      // Im Gespräch gehen Ziffern, * und # als Tonwahl an die Gegenstelle.
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const ziel = document.activeElement, tag = ziel?.tagName || '';
+        if (ziel && (ziel.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(tag))) return;
+        const frei = !ziel || tag === 'BODY';
+        if (tnLaeuft && !tnVerloren) {
+          if (!frei && !$('tnInline')?.contains(ziel) && !$('tnBar')?.contains(ziel)) return;
+          if (!/^[0-9*#]$/.test(e.key)) return;
+          e.preventDefault(); waehlton(e.key); try { tnCall?.dtmf(e.key); } catch { /* egal */ }
+          return;
+        }
+        const w = $('obWaehl');
+        if (!w || w.classList.contains('hidden') || $('sec-outbound')?.classList.contains('hidden')) return;
+        if (!frei && !w.contains(ziel)) return;
+        const feld = $('callTo'); if (!feld) return;
+        // Auf einem Knopf löst Enter den Knopf selbst aus, nicht den Anruf.
+        if (e.key === 'Enter') { if (tag === 'BUTTON' || tag === 'A') return; e.preventDefault(); $('callBtn')?.click(); return; }
+        if (e.key === 'Backspace') { e.preventDefault(); feld.value = feld.value.slice(0, -1); obEingabe(); return; }
+        if (/^[0-9]$/.test(e.key)) { e.preventDefault(); feld.value += e.key; waehlton(e.key); obEingabe(); return; }
+        if (e.key === '+' && !feld.value.trim()) { e.preventDefault(); feld.value = '+'; obEingabe(); }
+      });
       window.addEventListener('beforeunload', (e) => {
         if (!tnLaeuft) return;
         try { tnCall?.hangup(); } catch { /* egal */ }
@@ -4808,9 +4916,9 @@
           // Schon geführter Anruf: Nummer ins Wählfeld legen statt sofort zu wählen.
           knopf('Nochmal anrufen', 'btn--primary', () => { obNummerSetzen(nr); $('obWaehl')?.classList.remove('hidden'); $('obWaehl')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }).dataset.tip = 'Nummer ins Wählfeld übernehmen';
         } else {
-          knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); }).dataset.tip = 'Vocaris ruft dich an und verbindet dich; das Gespräch wird mitgeschrieben';
+          knopf('Zurückrufen', 'btn--primary', () => obAnrufen(nr, c.summary ? 'Rückruf zu: ' + c.summary.slice(0, 140) : '')).dataset.tip = 'So, wie es im Wählfeld eingestellt ist: im Browser, am Telefon oder durch den Assistenten';
         }
-        knopf('Assistent ruft zurück …', raus ? '' : 'btn--primary', () => auftragBox.classList.toggle('hidden'));
+        knopf('Assistent ruft zurück …', '', () => auftragBox.classList.toggle('hidden'));
         if (!raus) knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
       }
@@ -6023,7 +6131,7 @@
       const rb = d.querySelector('[data-rueckruf]');
       if (nr) {
         const tel = document.createElement('a'); tel.className = 'btn btn--ghost sm'; tel.href = 'tel:' + nr.replace(/\s+/g, ''); tel.textContent = 'Selbst anrufen'; akt.append(tel);
-        knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); });
+        knopf('Zurückrufen', 'btn--primary', () => obAnrufen(nr, m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '')).dataset.tip = 'So, wie es im Wählfeld eingestellt ist: im Browser, am Telefon oder durch den Assistenten';
         const box = rueckrufBox(nr, m.caller_name || '', m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '', () => { loadTickets(); if (!erledigt) mgAendern(m, { status: 'done', done_at: new Date().toISOString() }).then(renderNachrichten); });
         rb.append(box);
         knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
@@ -6069,7 +6177,9 @@
     // ---- Wählfeld: ein Weg, eine Nummer ----
     // Frueher zwei Fragen (wer spricht? womit?). Das war eine Frage zu viel:
     // es gibt genau drei sinnvolle Wege, und die stehen jetzt nebeneinander.
-    let callWeg = 'browser', firmenNummern = [];
+    // Der Weg bleibt über die Sitzung hinaus gemerkt; Browser ist die Vorgabe.
+    const wegGemerkt = () => { try { const w = localStorage.getItem('vocaris.weg'); return ['browser', 'telefon', 'assistent'].includes(w) ? w : 'browser'; } catch { return 'browser'; } };
+    let callWeg = wegGemerkt(), firmenNummern = [];
 
     const WEGE = {
       browser: {
@@ -6146,7 +6256,32 @@
     document.querySelectorAll('#callWeg [data-weg]').forEach((b) => b.onclick = () => {
       document.querySelectorAll('#callWeg [data-weg]').forEach((x) => x.classList.toggle('aktiv', x === b));
       callWeg = b.dataset.weg; obWahlZeigen();
+      try { localStorage.setItem('vocaris.weg', callWeg); } catch { /* dann eben nur für diese Sitzung */ }
     });
+    if ($('callWeg')) {
+      document.querySelectorAll('#callWeg [data-weg]').forEach((x) => x.classList.toggle('aktiv', x.dataset.weg === callWeg));
+      obWahlZeigen();
+    }
+
+    /**
+     * Rückruf aus Live, Nachrichten oder Vorgängen: Nummer ins Wählfeld, in den
+     * Bereich Ausgehend wechseln und dort über den gewählten Weg starten. Soll
+     * der Assistent anrufen, braucht er erst einen Auftrag – dann wird nur
+     * vorbereitet und der Vorschlag eingetragen, gestartet wird per Knopf.
+     */
+    function obAnrufen(nr, auftragVorschlag) {
+      geh('sec-outbound');
+      $('obWaehl')?.classList.remove('hidden'); obWahlZeigen();
+      obNummerSetzen(nr);
+      $('obWaehl')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (callWeg === 'assistent') {
+        const a = $('callAuftrag');
+        if (a && !a.value.trim() && auftragVorschlag) a.value = auftragVorschlag;
+        a?.focus();
+        return;
+      }
+      $('callBtn')?.click();
+    }
     $('callTo')?.addEventListener('input', obEingabe);
     $('callTo')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('callBtn').click(); });
     $('obLeeren') && ($('obLeeren').onclick = () => { const f = $('callTo'); f.value = f.value.slice(0, -1); obEingabe(); f.focus(); });
@@ -6771,7 +6906,7 @@
       const smsBox = d.querySelector('[data-smsbox]');
       if (nr) {
         const a = document.createElement('a'); a.className = 'btn btn--ghost sm'; a.href = 'tel:' + nr.replace(/\s+/g, ''); a.textContent = 'Anrufen ' + fmtNr(nr); akt.append(a);
-        knopf('Über Vocaris anrufen', '', function () { ueberVocarisAnrufen(nr, this); });
+        knopf('Zurückrufen', 'btn--primary', () => obAnrufen(nr, 'Rückruf zu Vorgang #' + t.number + ': ' + t.title.slice(0, 120))).dataset.tip = 'So, wie es im Wählfeld eingestellt ist: im Browser, am Telefon oder durch den Assistenten';
         const box = rueckrufBox(nr, t.caller_name || '', 'Rückruf zu Vorgang #' + t.number + ': ' + t.title.slice(0, 120), () => { tkUpdate(t, { status: 'in_progress' }); });
         d.querySelector('[data-rueckruf]').append(box);
         knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
