@@ -17,14 +17,13 @@
 <meta property="og:url" content="https://vocaris.eu/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/bricolagegrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/schibstedgrotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/schriften.css">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/vocaris.css">
 <link rel="stylesheet" href="assets/presio.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://vocaris.eu/#org", "name": "Vocaris", "url": "https://vocaris.eu/", "logo": "https://vocaris.eu/assets/favicon.svg", "email": "christoph.gerhardt@gmail.com", "areaServed": "DE"}, {"@type": "SoftwareApplication", "name": "Vocaris", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "https://vocaris.eu/", "description": "KI-Telefonassistent für Unternehmen: nimmt Anrufe rund um die Uhr mit natürlicher Stimme entgegen, bucht Termine und Reservierungen, beantwortet Fragen und ruft auf Wunsch zurück. DSGVO-konform, Einrichtung in etwa 15 Minuten, monatlich kündbar.", "publisher": {"@id": "https://vocaris.eu/#org"}, "offers": [{"@type": "Offer", "name": "Klein", "price": "49.00", "priceCurrency": "EUR", "description": "49 € pro Monat, 250 Gesprächsminuten inklusive."}, {"@type": "Offer", "name": "Standard", "price": "99.00", "priceCurrency": "EUR", "description": "99 € pro Monat für mittleres Anrufaufkommen."}, {"@type": "Offer", "name": "Groß", "price": "249.00", "priceCurrency": "EUR", "description": "249 € pro Monat für hohes Anrufaufkommen."}]}]}</script>
-<style>.logo-mark .lg-i{fill:#0a2540} nav.top.fest .logo-mark .lg-i,footer .logo-mark .lg-i{fill:#5c5aee} nav.top.fest .logo-mark svg path,footer .logo-mark svg path{fill:#fff} .logo-mark svg path{fill:#fff}</style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Klingt Vocaris wirklich wie ein echter Mensch?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. Vocaris spricht in Echtzeit mit natürlicher Stimme, reagiert auf Zwischenfragen und lässt sich jederzeit unterbrechen — ohne Tastenmenü. Am ehrlichsten überzeugt ein Testanruf: Sie hören in wenigen Sekunden selbst, wie es klingt."}}, {"@type": "Question", "name": "Bleibt meine bestehende Rufnummer erhalten?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. Vocaris lässt sich vor Ihre bestehende Nummer schalten oder nur dann aktivieren, wenn niemand abnimmt. Auf Wunsch stellen wir alternativ eine neue Rufnummer bereit."}}, {"@type": "Question", "name": "Wie schnell bin ich startklar?", "acceptedAnswer": {"@type": "Answer", "text": "Meist in etwa 15 Minuten und komplett im Browser — kein IT-Projekt, keine Installation. Wissen einlesen, Stimme wählen, Nummer verbinden, fertig."}}, {"@type": "Question", "name": "Was passiert bei Fragen, die Vocaris nicht kennt?", "acceptedAnswer": {"@type": "Answer", "text": "Er merkt sich die Frage und nimmt bei Bedarf einen Rückruf auf. Sie beantworten die Frage einmal im Dashboard — danach kennt Vocaris die Antwort. So wird er mit jedem Anruf besser."}}]}</script>
 </head>
 <body>
@@ -164,8 +163,8 @@
       <p class="intro">So sieht die Verwaltung aus, mit der Sie Ihren Assistenten einrichten und jeden Anruf nachlesen. Echte Ansichten, kein Entwurf.</p>
     </div>
     <div class="produkt-grid reveal">
-      <figure class="produkt-bild browser"><div class="kopf"><span></span><span></span><span></span><span class="kopf-titel">Verwaltung · Assistent</span></div><img src="assets/produkt/assistent.png" width="1280" height="800" alt="Verwaltung von Vocaris: Einstellungen des Assistenten mit Branchenvorlage, Begrüßung, Rolle und Öffnungszeiten" loading="lazy"></figure>
-      <figure class="produkt-handy"><img src="assets/produkt/handy.png" width="390" height="780" alt="Vocaris-Verwaltung auf dem Handy: Übersicht mit Kennzahlen" loading="lazy"></figure>
+      <figure class="produkt-bild browser"><div class="kopf"><span></span><span></span><span></span><span class="kopf-titel">Verwaltung · Assistent</span></div><picture><source srcset="assets/produkt/assistent.webp" type="image/webp"><img src="assets/produkt/assistent.png" width="1280" height="800" alt="Verwaltung von Vocaris: Einstellungen des Assistenten mit Branchenvorlage, Begrüßung, Rolle und Öffnungszeiten" loading="lazy" decoding="async"></picture></figure>
+      <figure class="produkt-handy"><picture><source srcset="assets/produkt/handy.webp" type="image/webp"><img src="assets/produkt/handy.png" width="390" height="780" alt="Vocaris-Verwaltung auf dem Handy: Übersicht mit Kennzahlen" loading="lazy" decoding="async"></picture></figure>
     </div>
     <div class="punkte reveal produkt-punkte">
       <div><span class="hk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Live mithören</b><p>Laufende Gespräche erscheinen in Echtzeit, jedes beendete mit Zusammenfassung und Transkript.</p></div></div>
@@ -308,7 +307,7 @@
 </footer>
 
 <script src="/pv.js" defer></script>
-<script src="assets/site.js"></script>
+<script src="assets/site.js" defer></script>
 <script src="assets/vocaris.js" defer></script>
 <script src="assets/magie.js" defer></script>
 <script src="assets/assistent.js" defer></script>

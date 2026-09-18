@@ -8,9 +8,6 @@
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/vocaris.css">
@@ -27,7 +24,9 @@
   @media (max-width:640px){.legal{padding-top:104px}}
 </style>
 <script src="/pv.js" defer></script>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/bricolagegrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/schibstedgrotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/schriften.css">
 <link rel="canonical" href="https://vocaris.eu/impressum.html">
 <meta property="og:title" content="Impressum | Vocaris">
 <meta property="og:description" content="Impressum und Anbieterkennzeichnung von Vocaris, dem KI-Telefonassistenten von Actuvo.">
@@ -102,7 +101,7 @@
   <div class="fl"><a href="funktionen.html">Produkt</a><a href="branchen.html">Branchen</a><a href="preise.html">Preise</a><a href="ki-modelle.html">KI-Modelle</a><a href="sicherheit.html">Sicherheit</a></div>
   <div class="fr"><a href="https://actuvo.de/" rel="noopener" title="Actuvo — KI-Agenten und -Lösungen">Ein Produkt von Actuvo</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span>© 2026 Vocaris</span></div>
 </footer>
-<script src="assets/site.js"></script>
+<script src="assets/site.js" defer></script>
 <script src="assets/vocaris.js" defer></script>
 <script src="assets/assistent.js" defer></script>
 </body>
