@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-18T16:49" />
+  <meta name="vocaris-stand" content="2026-09-18T17:13" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -47,7 +47,7 @@
     :root[data-theme="dark"] .skelett__zeile { background: linear-gradient(90deg, var(--paper-2) 25%, var(--flaeche-1) 50%, var(--paper-2) 75%); background-size: 200% 100%; }
     :root[data-theme="dark"] .dept-badge.vertrieb { background: #1c2a4d; color: #9dbcff; }
     :root[data-theme="dark"] .dept-badge.support { background: #14312a; color: #6fe0b3; }
-    :root[data-theme="dark"] #sec-assistant .db-aktionen .lv-neu { background: #3a2c0c; color: #fbbf24; }
+    :root[data-theme="dark"] #sec-assistant .db-aktionen .lv-neu, :root[data-theme="dark"] .kb-vorlage { background: #3a2c0c; color: #fbbf24; border-color: #5a4a1a; }
     :root[data-theme="dark"] mark { background: #4a3b00; color: var(--ink); }
     :root[data-theme="dark"] .login__main { background: var(--paper); }
     /* ---- Suche über alles (⌘K) ---- */
@@ -1003,6 +1003,19 @@
     .as-hinweisstatus[data-art="bald"] { background: #dbeafe; color: #1e40af; }
     .as-hinweisstatus[data-art="vorbei"] { background: #ffedd5; color: #9a3412; }
     @media (max-width: 700px) { .as-feldzeile--erfassung, .as-feldzeile--ziel { grid-template-columns: minmax(0, 1fr) auto; } .as-feldzeile--erfassung > div, .as-feldzeile--erfassung > input, .as-feldzeile--ziel > input { grid-column: 1; } .as-feldzeile .as-feldweg { grid-column: 2; grid-row: 1; } }
+    /* Tastenmenü (Runde 5): Taste · Bezeichnung · Nummer · Entfernen. Die Taste ist ein Select, damit nur 0–9, * und # möglich sind. */
+    .as-feldzeile--taste { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.1fr) auto; }
+    .as-feldzeile--taste select { margin: 0; width: 76px; min-height: 40px; font-variant-numeric: tabular-nums; }
+    .as-tasten-kopf { display: grid; grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1.1fr) 40px; gap: 8px; padding: 0 10px 4px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-faint); }
+    .as-tasten-kopf:has(+ .as-felder:empty) { display: none; }
+    @media (max-width: 700px) { .as-feldzeile--taste { grid-template-columns: auto minmax(0, 1fr) auto; } .as-feldzeile--taste > input[data-number] { grid-column: 1 / 3; } .as-feldzeile--taste .as-feldweg { grid-column: 3; grid-row: 1; } .as-tasten-kopf { display: none; } }
+    /* Wissensdatenbank: Chip „Vorlage", solange der Platzhalter „Bitte anpassen" noch im Text steht (Dunkel: siehe oben bei .lv-neu). */
+    .kb-vorlage { display: inline-block; font-size: 12px; font-weight: 700; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+    .lv-rechts .kb-vorlage { margin-bottom: 4px; }
+    /* Telefonbuch: Vorschau des CSV-Imports */
+    .kt-import__zeilen { margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-soft); display: grid; gap: 4px; }
+    .kt-import__zeilen li { display: flex; gap: 10px; flex-wrap: wrap; } .kt-import__zeilen b { color: var(--ink); font-weight: 600; }
+    .kt-import__zeilen .kt-nr { display: inline; }
     /* Runde 2: Tags und Notiz am Anruf */
     .lv-etiketten { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
     .lv-etikett { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, var(--white)); color: var(--accent-ink); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); cursor: pointer; }
@@ -1116,6 +1129,9 @@
       .tab-item .gap-badge { position: absolute; top: 4px; left: calc(50% + 4px); margin: 0; font-size: 10.5px; padding: 0 5px; min-height: 0; }
       .main { padding: 16px 14px calc(76px + env(safe-area-inset-bottom)); }
       .wa-launcher { bottom: calc(68px + env(safe-area-inset-bottom)); }
+      /* Der schwebende Assistent-Knopf (rechts, 48 px breit + 22 px Rand) darf die „Öffnen →"-Links der Checkliste
+         nicht verdecken: die Zeilen lassen rechts so viel frei, dass der Link immer links vom Knopf endet. */
+      .check__schritt { padding-right: 62px; }
       .livew { bottom: calc(126px + env(safe-area-inset-bottom)); }
       .toast { bottom: calc(72px + env(safe-area-inset-bottom)); }
       .tnbar { bottom: calc(66px + env(safe-area-inset-bottom)); }
@@ -1498,6 +1514,23 @@
             <div class="db-aktionen">
               <input id="ktSuche" aria-label="Telefonbuch durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Firma suchen" autocomplete="off" />
               <button class="btn btn--primary sm" type="button" id="ktNeu">Eintrag anlegen</button>
+              <!-- Runde 5: Import aus CSV (Name;Nummer;Firma;E-Mail), Export als CSV und vCard -->
+              <button class="btn btn--ghost sm" type="button" id="ktImportAuf" data-tip="CSV mit Name;Nummer;Firma;E-Mail – Kopfzeile und Trennzeichen werden erkannt">CSV importieren</button>
+              <input type="file" id="ktImportDatei" accept=".csv,.txt,text/csv,text/plain" hidden aria-label="CSV-Datei für den Import wählen" />
+              <button class="btn btn--ghost sm" type="button" id="ktExportCsv" data-tip="Alle Einträge als CSV (Semikolon, für Excel)">CSV exportieren</button>
+              <button class="btn btn--ghost sm" type="button" id="ktExportVcf" data-tip="Alle Einträge als vCard (.vcf) fürs Handy oder Outlook">vCard exportieren</button>
+            </div>
+          </div>
+
+          <!-- Vorschau des CSV-Imports: erst zeigen, was erkannt wurde, dann übernehmen -->
+          <div class="panel kt-form hidden" id="ktImport" aria-live="polite">
+            <h3 style="margin-top:0">CSV-Import</h3>
+            <p class="muted" id="ktImportText" style="text-align:left;padding:0;margin:0"></p>
+            <ul class="kt-import__zeilen" id="ktImportZeilen"></ul>
+            <div class="stack" style="margin-top:12px">
+              <button class="btn btn--primary" type="button" id="ktImportLos">Übernehmen</button>
+              <button class="btn btn--ghost" type="button" id="ktImportAbbrechen">Abbrechen</button>
+              <span class="waehl__hinweis" id="ktImportHinweis"></span>
             </div>
           </div>
 
@@ -1689,7 +1722,7 @@
             <div id="ingestResults" style="margin-top:12px"></div>
           </div>
           <div id="kbImpDoc" class="hidden">
-            <p class="muted" style="margin-bottom:12px;text-align:left;padding:0">Lade ein oder mehrere Dokumente hoch (PDF, Word, Excel) — Vocaris liest sie, holt sich die wichtigsten Infos und legt sie automatisch als Einträge in der oben gewählten Abteilung an.</p>
+            <p class="muted" style="margin-bottom:12px;text-align:left;padding:0">Hier passen PDF, Word, Excel, Textdateien und Speisekarten hinein – Vocaris liest die Dateien, zieht die wichtigsten Angaben heraus und legt sie als Einträge in der oben gewählten Abteilung an; du prüfst sie danach in der Liste.</p>
             <div id="docDrop" class="doc-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:22px;height:22px;vertical-align:-5px;margin-right:8px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Dateien hierher ziehen oder <b>auswählen</b> · mehrere möglich</div>
             <input type="file" id="docFiles" multiple accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.rtf,application/pdf" hidden />
             <p class="muted" id="docHint" style="margin-top:10px"></p>
@@ -1861,6 +1894,14 @@
                 <p class="muted" style="margin:0 0 8px;text-align:left;padding:0">Mehrere Ansprechpartner? Der Assistent wählt anhand des Themas, wen er verbindet. Passt kein Thema, nimmt er die Nummer oben.</p>
                 <div class="as-felder" id="asZiele"></div>
                 <div class="stack" style="margin-top:10px"><button class="btn btn--ghost sm" type="button" id="asZielNeu">+ Ziel hinzufügen</button></div>
+                <h4 class="as-unter">Tastenmenü <span class="muted">optional</span></h4>
+                <p class="muted" style="margin:0 0 8px;text-align:left;padding:0">Drückt der Anrufer die Taste, wird er sofort durchgestellt. Der Assistent nennt das Menü, wenn jemand einen Menschen sprechen möchte.</p>
+                <div class="as-tasten-kopf" aria-hidden="true"><span>Taste</span><span>Bezeichnung</span><span>Nummer</span><span></span></div>
+                <div class="as-felder" id="asTasten"></div>
+                <div class="stack" style="margin-top:10px">
+                  <button class="btn btn--ghost sm" type="button" id="asTasteNeu">+ Taste hinzufügen</button>
+                  <button class="btn btn--ghost sm" type="button" id="asTastenAusZielen" data-tip="Legt für jedes Weiterleitungsziel mit Nummer eine freie Taste an">Ziele aus den Weiterleitungszielen übernehmen</button>
+                </div>
               </div>
               <div class="panel" id="asSelbst" data-astab="erreichbar">
                 <h3>Anrufe, die du selbst führst</h3>
@@ -2704,6 +2745,20 @@
     <div class="pwmodal__card" style="width:min(580px,94vw)"><div id="wizBody"></div></div>
   </div>
 
+  <!-- Ungespeicherte Änderungen im Assistenten (Runde 5): eigener Dialog statt confirm(), damit es
+       drei Wege gibt – Speichern, Verwerfen, Abbrechen – und der Dialog zum Rest der App passt. -->
+  <div id="asDialog" class="pwmodal hidden" role="dialog" aria-modal="true" aria-labelledby="asDialogTitel" aria-describedby="asDialogText">
+    <div class="pwmodal__card" style="width:min(440px,94vw)">
+      <h3 id="asDialogTitel">Ungespeicherte Änderungen</h3>
+      <p class="muted" id="asDialogText" style="margin-bottom:16px;text-align:left;padding:0">Im Assistenten gibt es Änderungen, die noch nicht gespeichert sind. Was soll damit passieren?</p>
+      <div class="stack">
+        <button class="btn btn--primary" type="button" id="asDialogSpeichern">Speichern</button>
+        <button class="btn btn--ghost" type="button" id="asDialogVerwerfen">Verwerfen</button>
+        <button class="btn btn--ghost" type="button" id="asDialogAbbrechen">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Passwort ändern / setzen -->
   <div id="pwModal" class="pwmodal hidden">
     <div class="pwmodal__card">
@@ -2901,10 +2956,31 @@
     }
 
     // ---- Navigation ----
+    // Ungespeicherte Änderungen im Assistenten: eigener Dialog (Speichern · Verwerfen · Abbrechen) statt confirm().
+    // Löst mit dem gewählten Weg auf; Escape und Klick auf den Hintergrund zählen als Abbrechen.
+    function asUngespeichertFragen() {
+      const d = $('asDialog'); if (!d) return Promise.resolve(confirm('Im Assistenten gibt es ungespeicherte Änderungen. Ohne Speichern weiter?') ? 'verwerfen' : 'abbrechen');
+      return new Promise((fertig) => {
+        const vorher = document.activeElement;
+        const zu = (wahl) => { d.classList.add('hidden'); d.onclick = null; document.removeEventListener('keydown', taste, true); vorher?.focus?.(); fertig(wahl); };
+        const taste = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); zu('abbrechen'); } };
+        $('asDialogSpeichern').onclick = () => zu('speichern');
+        $('asDialogVerwerfen').onclick = () => zu('verwerfen');
+        $('asDialogAbbrechen').onclick = () => zu('abbrechen');
+        d.onclick = (e) => { if (!e.target.closest('.pwmodal__card')) zu('abbrechen'); };
+        document.addEventListener('keydown', taste, true);
+        d.classList.remove('hidden'); $('asDialogSpeichern').focus();
+      });
+    }
     document.querySelectorAll('.nav-item').forEach((b) => {
-      b.onclick = () => {
-        if (typeof asDirty !== 'undefined' && asDirty && b.dataset.target !== 'sec-assistant' && !confirm('Im Assistenten gibt es ungespeicherte Änderungen. Ohne Speichern weiter?')) return;
-        if (typeof asDirty !== 'undefined' && asDirty && b.dataset.target !== 'sec-assistant') { asSetzeDirty(false); if (tenant) loadDept(); }
+      b.onclick = async () => {
+        if (typeof asDirty !== 'undefined' && asDirty && b.dataset.target !== 'sec-assistant') {
+          const wahl = await asUngespeichertFragen();
+          if (wahl === 'abbrechen') return;
+          // Speichern: erst wenn es geklappt hat (asDirty ist dann aus), geht es weiter – sonst bleibt der Nutzer im Assistenten.
+          if (wahl === 'speichern') { await $('saveBtn').onclick(); if (asDirty) return; }
+          else { asSetzeDirty(false); if (tenant) loadDept(); }
+        }
         document.querySelectorAll('.section').forEach((s) => s.classList.toggle('hidden', s.id !== b.dataset.target));
         document.querySelectorAll('.nav-item').forEach((n) => n.classList.toggle('active', n === b));
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
@@ -3226,7 +3302,8 @@
       const nowIso = new Date().toISOString();
       const [{ data: nums }, { count: kbCount }, { data: msgs }, { data: gaps }, { data: wh }, { data: bk }, { data: appts }, { data: genCfg }] = await Promise.all([
         sb.from('phone_numbers').select('phone_number, department, tenant_id, inbound_tenant_id').or('tenant_id.eq.' + tenant.id + ',inbound_tenant_id.eq.' + tenant.id),
-        sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id),
+        // Checkliste: Einträge, die noch den Vorlagen-Platzhalter „Bitte anpassen" tragen, zählen nicht (siehe kbIstVorlage).
+        sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).not('content', 'ilike', '%Bitte anpassen%'),
         sb.from('messages').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(200),
         sb.from('knowledge_gaps').select('*').eq('tenant_id', tenant.id).eq('status', 'open').order('created_at', { ascending: false }),
         sb.from('webhook_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
@@ -5947,6 +6024,8 @@
         fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade' }[art] || 'keiner']);
         const nF = $('asFelder')?.querySelectorAll('.as-feldzeile').length || 0;
         if (nF) fakten.push(['Erfassung', nF + (nF === 1 ? ' Zusatzfeld' : ' Zusatzfelder')]);
+        const nT = typeof asTastenLesen === 'function' ? asTastenLesen().length : 0;
+        if (nT) fakten.push(['Tastenmenü', nT + (nT === 1 ? ' Taste' : ' Tasten')]);
       }
       $('asFakten').innerHTML = fakten.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
     }
@@ -6007,6 +6086,46 @@
       z.querySelector('.as-feldweg').onclick = () => { z.remove(); asSetzeDirty(true); asVorschau(); };
       return z;
     }
+    // ---- Tastenmenü (Runde 5): assistant_config.dtmf_menu = [{ digit, label, number }] ----
+    // Der Anrufer drückt eine Taste und wird sofort durchgestellt; der Assistent nennt das Menü,
+    // wenn jemand einen Menschen sprechen möchte. Liegt wie die Ziele in der general-Zeile.
+    const AS_TASTEN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '*', '#'];
+    /** Eine Zeile des Tastenmenüs: Taste (Select), Bezeichnung, Nummer, Entfernen. */
+    function asTasteZeile(t) {
+      const z = document.createElement('div'); z.className = 'as-feldzeile as-feldzeile--taste';
+      z.innerHTML = '<select data-digit aria-label="Taste">' + AS_TASTEN.map((d) => '<option value="' + d + '">' + d + '</option>').join('') + '</select>'
+        + '<input data-label placeholder="Bezeichnung, z. B. Werkstatt" aria-label="Bezeichnung, die der Assistent ansagt" />'
+        + '<input data-number placeholder="+49 89 12345678" inputmode="tel" aria-label="Telefonnummer, zu der durchgestellt wird" />'
+        + '<button class="btn btn--ghost sm as-feldweg" type="button" aria-label="Taste entfernen" data-tip="Entfernen">×</button>';
+      z.querySelector('[data-digit]').value = AS_TASTEN.includes(String(t?.digit)) ? String(t.digit) : asFreieTaste();
+      z.querySelector('[data-label]').value = t?.label || '';
+      z.querySelector('[data-number]').value = t?.number || '';
+      z.querySelector('.as-feldweg').onclick = () => { z.remove(); asSetzeDirty(true); asVorschau(); };
+      return z;
+    }
+    /** Die erste Taste, die noch nicht belegt ist (1–9, 0, *, #); sind alle belegt, wieder 1. */
+    function asFreieTaste() {
+      const belegt = new Set([...($('asTasten')?.querySelectorAll('[data-digit]') || [])].map((s) => s.value));
+      return AS_TASTEN.find((d) => !belegt.has(d)) || '1';
+    }
+    /** Das Menü aus den Zeilen lesen: nur vollständige Zeilen, je Taste die erste. */
+    function asTastenLesen() {
+      const gesehen = new Set();
+      return [...($('asTasten')?.querySelectorAll('.as-feldzeile') || [])].map((z) => ({
+        digit: z.querySelector('[data-digit]').value, label: z.querySelector('[data-label]').value.trim(), number: z.querySelector('[data-number]').value.replace(/\s+/g, ''),
+      })).filter((t) => t.number && !gesehen.has(t.digit) && gesehen.add(t.digit));
+    }
+    /** Weiterleitungsziele (und die Hauptnummer) als Tasten übernehmen – ohne Nummern doppelt anzulegen. */
+    function asTastenAusZielen() {
+      const vorhanden = new Set(asTastenLesen().map((t) => t.number));
+      const ziele = [...$('asZiele').querySelectorAll('.as-feldzeile')].map((z) => ({ label: z.querySelector('[data-name]').value.trim() || z.querySelector('[data-topic]').value.trim(), number: z.querySelector('[data-number]').value.replace(/\s+/g, '') }));
+      const haupt = $('fwdNumber').value.replace(/\s+/g, '');
+      if (haupt && !ziele.some((t) => t.number === haupt)) ziele.unshift({ label: 'Zentrale', number: haupt });
+      let neu = 0;
+      ziele.forEach((t) => { if (!t.number || vorhanden.has(t.number)) return; vorhanden.add(t.number); $('asTasten').append(asTasteZeile({ digit: asFreieTaste(), label: t.label, number: t.number })); neu++; });
+      if (!neu) { toast(ziele.length ? 'Alle Ziele stehen schon im Tastenmenü.' : 'Erst oben Weiterleitungsziele mit Nummer anlegen.'); return; }
+      asSetzeDirty(true); asVorschau(); toast(neu + (neu === 1 ? ' Taste' : ' Tasten') + ' übernommen – noch speichern.');
+    }
     function asStilSetzen(v) {
       const stil = AS_STIL_TEXT[v] ? v : 'normal';
       if ($('asStilWert')) $('asStilWert').value = stil;
@@ -6038,6 +6157,7 @@
       (Array.isArray(gen?.capture_fields) ? gen.capture_fields : []).forEach((f) => felder.append(asFeldZeile(f)));
       const ziele = $('asZiele'); ziele.innerHTML = '';
       (Array.isArray(gen?.forward_targets) ? gen.forward_targets : []).forEach((t) => ziele.append(asZielZeile(t)));
+      const tasten = $('asTasten'); if (tasten) { tasten.innerHTML = ''; (Array.isArray(gen?.dtmf_menu) ? gen.dtmf_menu : []).forEach((t) => tasten.append(asTasteZeile(t))); }
       $('asRetention').value = String([0, 30, 90, 180, 365].includes(Number(gen?.retention_days)) ? Number(gen.retention_days) : 0);
       $('asWeekly').checked = gen?.weekly_report !== false;
       asHinweisStatus();
@@ -6058,6 +6178,7 @@
         glossary: $('asGlossarText').value.trim() || null,
         creativity: $('asStilWert').value || 'normal',
         capture_fields, forward_targets,
+        dtmf_menu: asTastenLesen(),
         retention_days: Number($('asRetention').value) || 0,
         weekly_report: $('asWeekly').checked,
       };
@@ -6067,6 +6188,10 @@
       document.querySelectorAll('#asStilWahl [data-stil]').forEach((b) => b.onclick = () => { asStilSetzen(b.dataset.stil); asSetzeDirty(true); asVorschau(); });
       $('asFeldNeu').onclick = () => { const z = asFeldZeile(null); $('asFelder').append(z); z.querySelector('[data-label]').focus(); asSetzeDirty(true); };
       $('asZielNeu').onclick = () => { const z = asZielZeile(null); $('asZiele').append(z); z.querySelector('[data-name]').focus(); asSetzeDirty(true); };
+      if ($('asTasteNeu')) {
+        $('asTasteNeu').onclick = () => { const z = asTasteZeile(null); $('asTasten').append(z); z.querySelector('[data-label]').focus(); asSetzeDirty(true); asVorschau(); };
+        $('asTastenAusZielen').onclick = asTastenAusZielen;
+      }
       ['asNoticeText', 'asNoticeFrom', 'asNoticeUntil'].forEach((id) => $(id).addEventListener('input', asHinweisStatus));
       asStilSetzen('normal'); asHinweisStatus();
     })();
@@ -6165,13 +6290,17 @@
       liste.forEach((it) => { const k = kbKatName(it); if (k !== grp) { grp = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = k; ul.append(h); } ul.append(kbZeile(it)); });
       renderWissenDetail();
     }
+    // Vorlagen-Einträge tragen „Bitte anpassen" (mit oder ohne Klammern) im Text. Solange das drinsteht, ist der
+    // Eintrag als „Vorlage" markiert und zählt in der Checkliste nicht; beim Speichern fliegt der Platzhalter raus.
+    const KB_PLATZHALTER = /\s*\(?\s*Bitte anpassen\.?\s*\)?\.?/gi;
+    const kbIstVorlage = (it) => /Bitte anpassen/i.test(it?.content || '');
     function kbZeile(it) {
       const z = document.createElement('div'); z.className = 'lv-zeile kb-zeile' + (it.id === kbAuswahl ? ' aktiv' : ''); z.dataset.kbId = it.id;
-      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts"><span></span></div>';
+      z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><div class="lv-text"></div></div><div class="lv-rechts">' + (kbIstVorlage(it) ? '<span class="kb-vorlage" data-tip="Aus einer Vorlage – steht noch „Bitte anpassen" im Text, zählt der Eintrag nicht als fertig">Vorlage</span>' : '') + '<span></span></div>';
       const kurz = (it.content || '').length < 40; const dot = z.querySelector('.lv-dot'); dot.style.background = kurz ? '#f59e0b' : 'var(--accent)'; dot.dataset.tip = kurz ? 'Sehr kurzer Eintrag – mehr Details helfen dem Assistenten' : 'Eintrag mit ' + (it.content || '').length + ' Zeichen';
       z.querySelector('b').innerHTML = markierenMit(it.title, kbSuche);
       z.querySelector('.lv-text').innerHTML = markierenMit((it.content || '').replace(/\s+/g, ' ').slice(0, 140), kbSuche);
-      z.querySelector('.lv-rechts span').textContent = new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      z.querySelector('.lv-rechts span:last-child').textContent = new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
       z.onclick = () => { kbAuswahl = it.id; renderWissen(); };
       return z;
     }
@@ -6194,13 +6323,15 @@
       d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = it.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== it.title) { await kbUpdate(it, { title: v.slice(0, 200) }, 'Titel geändert.'); renderWissen(); } else renderWissenDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = it.title; inp.blur(); } }; };
       const meta = d.querySelector('.lv-meta'); const mchip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
       mchip(kbKatName(it)); if (deptSichtbar) mchip(DEPT_LABEL[it.department] || it.department); mchip('angelegt ' + new Date(it.created_at).toLocaleDateString('de-DE')); mchip((it.content || '').length + ' Zeichen', 'Länge des Inhalts');
+      if (kbIstVorlage(it)) { const v = document.createElement('span'); v.className = 'kb-vorlage'; v.textContent = 'Vorlage'; v.dataset.tip = 'Noch nicht angepasst – ersetze die eckigen Klammern mit euren Angaben und speichere, dann fällt der Platzhalter weg'; meta.append(v); }
       const kopf = d.querySelector('[data-kopf]'); const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'btn btn--primary sm'; sp.textContent = 'Speichern'; sp.dataset.tip = 'Strg+Enter im Text'; kopf.append(sp);
       const fCat = d.querySelector('[data-f=category]'); fCat.value = it.category || '';
       fCat.onchange = async () => { const v = fCat.value.trim() || null; if (v !== (it.category || null) && await kbUpdate(it, { category: v }, 'Kategorie gespeichert.')) renderWissen(); };
       const fDep = d.querySelector('[data-f=department]'); if (fDep) { fDep.value = it.department || 'general'; fDep.onchange = async () => { const v = fDep.value; if (v !== it.department && await kbUpdate(it, { department: v }, 'Verschoben nach „' + DEPT_LABEL[v] + '".')) { kbItems = kbItems.filter((x) => x.id !== it.id); kbAuswahl = null; renderWissen(); } }; }
       const ta = d.querySelector('[data-f=content]'); ta.value = it.content || '';
       const hinweis = d.querySelector('[data-hinweis]'); const pruefe = () => { const n = ta.value.trim().length; hinweis.textContent = n < 40 ? 'Sehr kurz. Ein, zwei ganze Sätze mit den wichtigsten Angaben helfen dem Assistenten beim Antworten.' : (n > 1500 ? 'Sehr lang. Teile den Eintrag lieber in mehrere Themen, dann findet der Assistent das Passende schneller.' : ''); }; pruefe(); ta.oninput = pruefe;
-      const speichern = async () => { const v = ta.value.trim(); if (!v) { toast('Der Inhalt darf nicht leer sein.', 'err'); return; } if (v === it.content) { toast('Keine Änderung.'); return; } if (await kbUpdate(it, { content: v }, 'Gespeichert. Der Assistent weiß es beim nächsten Anruf.')) renderWissen(); };
+      // Beim Speichern fliegt der Vorlagen-Platzhalter „Bitte anpassen" raus – der Eintrag gilt dann als eigener.
+      const speichern = async () => { const v = ta.value.replace(KB_PLATZHALTER, '').replace(/[ \t]+$/gm, '').trim(); if (!v) { toast('Der Inhalt darf nicht leer sein.', 'err'); return; } if (v === it.content) { toast('Keine Änderung.'); return; } if (await kbUpdate(it, { content: v }, 'Gespeichert. Der Assistent weiß es beim nächsten Anruf.')) renderWissen(); };
       sp.onclick = speichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') speichern(); };
       ta.onblur = () => { if (ta.value.trim() && ta.value.trim() !== it.content) speichern(); };
       const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; akt.append(b); return b; };
@@ -6879,7 +7010,7 @@
       const heute0 = new Date(jetzt); heute0.setHours(0, 0, 0, 0);
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
       const in7 = new Date(jetzt.getTime() + 7 * 864e5);
-      const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }, { data: msgs }, { data: block }] = await Promise.all([
+      const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }, { data: msgs }, { data: block }, { count: kbEchtN }] = await Promise.all([
         sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(3000),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
         sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).limit(5000),
@@ -6895,8 +7026,10 @@
         sb.from('knowledge_gaps').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
         sb.from('messages').select('id, caller_name, caller_number, callback_number, summary, category, urgency, created_at').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
         sb.from('blocked_numbers').select('hits').eq('tenant_id', tenant.id),
+        // Für die Checkliste zählen nur Einträge ohne den Vorlagen-Platzhalter „Bitte anpassen" (siehe kbIstVorlage).
+        sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).not('content', 'ilike', '%Bitte anpassen%'),
       ]);
-      dbDaten = { c: calls || [], davorN: davorN ?? null, monat: monat || [], msgN: msgN ?? 0, kz: kz || {}, offene: offene || [], gaps: gaps || [], appts: appts || [], nums: nums || [], cfg, sub, kbN: kbN ?? 0, gapsN: gapsN ?? 0, msgs: msgs || [], blockHits: (block || []).reduce((a, b) => a + (b.hits || 0), 0), blockN: (block || []).length, jetzt, heute0 };
+      dbDaten = { kbEchtN: kbEchtN ?? null, c: calls || [], davorN: davorN ?? null, monat: monat || [], msgN: msgN ?? 0, kz: kz || {}, offene: offene || [], gaps: gaps || [], appts: appts || [], nums: nums || [], cfg, sub, kbN: kbN ?? 0, gapsN: gapsN ?? 0, msgs: msgs || [], blockHits: (block || []).reduce((a, b) => a + (b.hits || 0), 0), blockN: (block || []).length, jetzt, heute0 };
       zeichneDashboard();
       q('dbStand').textContent = 'Stand ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
       q('dbStand').title = 'Zuletzt aktualisiert um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
@@ -7016,7 +7149,7 @@
       msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => { geh('sec-messages'); nachrichtOeffnen(m.id); }; ln.append(z); });
       // Einstiegshilfe nur, solange nichts läuft
       // Checkliste mit frischen Zahlen; das Start-Panel weicht ihr, solange sie sichtbar ist
-      chk.nummer = nums.length > 0; chk.wissen = kbN ?? chk.wissen; if (c.length) chk.testanruf = true;
+      chk.nummer = nums.length > 0; chk.wissen = dbDaten.kbEchtN ?? chk.wissen; if (c.length) chk.testanruf = true;
       checklisteZeichnen();
       q('dbStart').classList.toggle('hidden', (c.length > 0 && nums.length > 0) || !q('dbCheckliste').classList.contains('hidden'));
     }
@@ -7738,6 +7871,111 @@
       toast('Eintrag gespeichert.');
       ladeKontakte();
     });
+
+    // ---- Telefonbuch: CSV-Import, CSV- und vCard-Export (Runde 5) ----
+    // Import: Name;Nummer;Firma;E-Mail – Trennzeichen (; oder ,) und Kopfzeile werden erkannt, doppelte
+    // Nummern zusammengeführt, dann per upsert auf (tenant_id, phone) in Häppchen zu 100 geschrieben.
+    let ktImportSaetze = [];
+    /** CSV in Zeilen aus Feldern zerlegen; Anführungszeichen nach RFC 4180 (auch mit Zeilenumbruch im Feld). */
+    function ktCsvLesen(text, trenner) {
+      const zeilen = []; let feld = '', zeile = [], inAnf = false;
+      const s = text.replace(/^\uFEFF/, '');
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (inAnf) { if (c === '"') { if (s[i + 1] === '"') { feld += '"'; i++; } else inAnf = false; } else feld += c; continue; }
+        if (c === '"') inAnf = true;
+        else if (c === trenner) { zeile.push(feld); feld = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && s[i + 1] === '\n') i++; zeile.push(feld); feld = ''; if (zeile.some((f) => f.trim())) zeilen.push(zeile); zeile = []; }
+        else feld += c;
+      }
+      zeile.push(feld); if (zeile.some((f) => f.trim())) zeilen.push(zeile);
+      return zeilen.map((z) => z.map((f) => f.trim()));
+    }
+    /** Spalten zuordnen: über die Kopfzeile (Name, Nummer/Telefon, Firma, E-Mail, Notiz) oder in der festen Reihenfolge. */
+    function ktSpalten(kopf) {
+      const k = kopf.map((h) => h.toLowerCase().replace(/[^a-zäöü]/g, ''));
+      const finde = (...namen) => k.findIndex((h) => namen.some((n) => h === n || h.startsWith(n)));
+      const idx = { name: finde('name', 'kontakt', 'ansprechpartner'), phone: finde('nummer', 'telefon', 'phone', 'tel', 'mobil', 'handy', 'rufnummer'), company: finde('firma', 'unternehmen', 'company', 'organisation', 'betrieb'), email: finde('email', 'mail'), notes: finde('notiz', 'notes', 'bemerkung', 'kommentar') };
+      const mitKopf = idx.name >= 0 || idx.phone >= 0;
+      return mitKopf ? { mitKopf, idx } : { mitKopf, idx: { name: 0, phone: 1, company: 2, email: 3, notes: 4 } };
+    }
+    /** Datei auswerten und die Vorschau zeigen; geschrieben wird erst bei „Übernehmen". */
+    async function ktImportVorbereiten(datei) {
+      const text = await datei.text();
+      const erste = text.replace(/^\uFEFF/, '').split(/\r?\n/).find((z) => z.trim()) || '';
+      const trenner = (erste.split(';').length >= erste.split(',').length) ? ';' : (erste.split('\t').length > erste.split(',').length ? '\t' : ',');
+      const zeilen = ktCsvLesen(text, trenner);
+      if (!zeilen.length) { toast('Die Datei ist leer.', 'err'); return; }
+      const { mitKopf, idx } = ktSpalten(zeilen[0]);
+      const daten = mitKopf ? zeilen.slice(1) : zeilen;
+      const nachNummer = new Map(); let ohneNummer = 0, doppelt = 0;
+      const wert = (z, i) => (i >= 0 && z[i] != null ? String(z[i]).trim() : '');
+      daten.forEach((z) => {
+        const phone = ktNormal(wert(z, idx.phone));
+        if (!/^\+\d{7,15}$/.test(phone)) { ohneNummer++; return; }
+        const satz = { phone, name: wert(z, idx.name), company: wert(z, idx.company) || null, email: wert(z, idx.email) || null, notes: wert(z, idx.notes) || null };
+        const alt = nachNummer.get(phone);
+        // Doppelte Nummern: der erste Satz bleibt, Lücken werden aus den weiteren gefüllt.
+        if (alt) { doppelt++; ['name', 'company', 'email', 'notes'].forEach((f) => { if (!alt[f] && satz[f]) alt[f] = satz[f]; }); return; }
+        nachNummer.set(phone, satz);
+      });
+      ktImportSaetze = [...nachNummer.values()].map((s) => ({ ...s, name: s.name || s.company || fmtNr(s.phone), tenant_id: tenant.id, updated_at: new Date().toISOString() }));
+      const bekannt = ktImportSaetze.filter((s) => ktItems.some((k) => k.phone === s.phone)).length;
+      const n = ktImportSaetze.length;
+      const teile = [n + (n === 1 ? ' Eintrag' : ' Einträge') + ' erkannt (Trennzeichen „' + (trenner === '\t' ? 'Tab' : trenner) + '", ' + (mitKopf ? 'mit' : 'ohne') + ' Kopfzeile)'];
+      if (bekannt) teile.push(bekannt + ' davon schon im Telefonbuch – werden aktualisiert');
+      if (doppelt) teile.push(doppelt + (doppelt === 1 ? ' doppelte Nummer' : ' doppelte Nummern') + ' zusammengeführt');
+      if (ohneNummer) teile.push(ohneNummer + (ohneNummer === 1 ? ' Zeile' : ' Zeilen') + ' ohne gültige Nummer übersprungen');
+      $('ktImportText').textContent = teile.join(' · ') + '.';
+      const ul = $('ktImportZeilen'); ul.innerHTML = '';
+      ktImportSaetze.slice(0, 5).forEach((s) => { const li = document.createElement('li'); li.innerHTML = '<b></b><span class="kt-nr"></span><span></span>'; li.querySelector('b').textContent = s.name; li.querySelector('.kt-nr').textContent = fmtNr(s.phone); li.querySelector('span:last-child').textContent = [s.company, s.email].filter(Boolean).join(' · '); ul.append(li); });
+      if (n > 5) { const li = document.createElement('li'); li.textContent = '… und ' + (n - 5) + ' weitere'; ul.append(li); }
+      $('ktImportHinweis').textContent = ''; $('ktImportHinweis').classList.remove('fehler');
+      $('ktImportLos').disabled = n === 0;
+      $('ktForm').classList.add('hidden'); $('ktImport').classList.remove('hidden'); $('ktImportLos').focus();
+    }
+    async function ktImportSchreiben() {
+      const hinweis = $('ktImportHinweis'); if (!ktImportSaetze.length) return;
+      let fertig = 0;
+      for (let i = 0; i < ktImportSaetze.length; i += 100) {
+        hinweis.textContent = 'Schreibe … ' + Math.min(i + 100, ktImportSaetze.length) + ' von ' + ktImportSaetze.length;
+        const { error } = await sb.from('contacts').upsert(ktImportSaetze.slice(i, i + 100), { onConflict: 'tenant_id,phone' });
+        if (error) { hinweis.classList.add('fehler'); hinweis.textContent = 'Fehler nach ' + fertig + ' Einträgen: ' + error.message; return; }
+        fertig += Math.min(100, ktImportSaetze.length - i);
+      }
+      $('ktImport').classList.add('hidden'); ktImportSaetze = [];
+      toast(fertig + (fertig === 1 ? ' Eintrag' : ' Einträge') + ' importiert.'); ladeKontakte();
+    }
+    /** Datei zum Speichern anbieten – Blob-Link, danach wieder aufräumen. */
+    function ktHerunterladen(name, inhalt, typ) {
+      const url = URL.createObjectURL(new Blob([inhalt], { type: typ }));
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+    const ktDateiName = (endung) => 'telefonbuch-' + new Date().toISOString().slice(0, 10) + endung;
+    function ktCsvExport() {
+      if (!ktItems.length) { toast('Das Telefonbuch ist leer.'); return; }
+      const f = (v) => { const s = String(v ?? ''); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+      const zeilen = [['Name', 'Nummer', 'Firma', 'E-Mail', 'Notiz'], ...ktItems.map((k) => [k.name, k.phone, k.company, k.email, k.notes])];
+      // BOM, damit Excel die Umlaute richtig liest; Semikolon, weil das die deutsche Excel-Einstellung ist.
+      ktHerunterladen(ktDateiName('.csv'), '\uFEFF' + zeilen.map((z) => z.map(f).join(';')).join('\r\n') + '\r\n', 'text/csv;charset=utf-8');
+      toast(ktItems.length + ' Einträge als CSV exportiert.');
+    }
+    function ktVcfExport() {
+      if (!ktItems.length) { toast('Das Telefonbuch ist leer.'); return; }
+      const esc = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, (m) => '\\' + m);
+      const karten = ktItems.map((k) => ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + esc(k.name) + ';;;;', 'FN:' + esc(k.name), k.company ? 'ORG:' + esc(k.company) : '', 'TEL;TYPE=VOICE:' + k.phone, k.email ? 'EMAIL;TYPE=INTERNET:' + esc(k.email) : '', k.notes ? 'NOTE:' + esc(k.notes) : '', 'END:VCARD'].filter(Boolean).join('\r\n'));
+      ktHerunterladen(ktDateiName('.vcf'), karten.join('\r\n') + '\r\n', 'text/vcard;charset=utf-8');
+      toast(ktItems.length + ' Einträge als vCard exportiert.');
+    }
+    if ($('ktImportAuf')) {
+      $('ktImportAuf').onclick = () => { $('ktImportDatei').value = ''; $('ktImportDatei').click(); };
+      $('ktImportDatei').onchange = () => { const f = $('ktImportDatei').files?.[0]; if (f && tenant) ktImportVorbereiten(f).catch((e) => toast('Datei nicht lesbar: ' + e.message, 'err')); };
+      $('ktImportLos').onclick = ktImportSchreiben;
+      $('ktImportAbbrechen').onclick = () => { $('ktImport').classList.add('hidden'); ktImportSaetze = []; };
+      $('ktExportCsv').onclick = ktCsvExport;
+      $('ktExportVcf').onclick = ktVcfExport;
+    }
 
     // ---- Wissensbasis aus Website importieren ----
     $('ingestBtn').onclick = async () => {
@@ -9044,7 +9282,7 @@
       if (!$('sucheOverlay').classList.contains('hidden')) return; // die Suche hat eigene Tasten
       if (e.key === 'Escape') { kurzHilfeZeigen(false); hilfeSchliessen(); return; }
       if (e.key === '?') { e.preventDefault(); kurzHilfeZeigen($('kurzHilfe').classList.contains('hidden')); return; }
-      if (!$('kurzHilfe').classList.contains('hidden') || !$('pwModal').classList.contains('hidden') || !$('wizModal').classList.contains('hidden')) return;
+      if (!$('kurzHilfe').classList.contains('hidden') || !$('pwModal').classList.contains('hidden') || !$('wizModal').classList.contains('hidden') || !$('asDialog')?.classList.contains('hidden')) return;
       const k = e.key.length === 1 ? e.key.toLowerCase() : '';
       if (kurzG && Date.now() - kurzG < 1500) {
         kurzG = 0;
@@ -9189,7 +9427,7 @@
         finally { b.removeAttribute('aria-busy'); b.disabled = false; }
       };
     }
-    ['authBtn', 'pwSave', 'saveBtn', 'addKbBtn', 'callBtn', 'ktSpeichern', 'ingestBtn', 'ingestTextBtn', 'whSave', 'whTest', 'crmAdd', 'tkAdd', 'tkTest', 'akCreate', 'tkNeuBtn', 'blockAdd', 'bkSave', 'bkAdd', 'bbAdd', 'rbAdd', 'guestSave', 'dbAktualisieren'].forEach(knopfSchuetzen);
+    ['authBtn', 'pwSave', 'saveBtn', 'addKbBtn', 'callBtn', 'ktSpeichern', 'ktImportLos', 'ingestBtn', 'ingestTextBtn', 'whSave', 'whTest', 'crmAdd', 'tkAdd', 'tkTest', 'akCreate', 'tkNeuBtn', 'blockAdd', 'bkSave', 'bkAdd', 'bbAdd', 'rbAdd', 'guestSave', 'dbAktualisieren'].forEach(knopfSchuetzen);
 
 
     boot();
