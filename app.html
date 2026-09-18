@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-15T14:44" />
+  <meta name="vocaris-stand" content="2026-09-18T14:10" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -474,7 +474,7 @@
     @media (max-width: 760px) { .db-editleiste { flex-direction: column; } }
     @media (max-width: 480px) { #dbStand { display: none; } }
     /* ---- Live ---- */
-    .lv-suche { width: auto; height: 32px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; font-size: 13px; min-width: 240px; background: var(--white); }
+    .lv-suche { width: auto; height: 32px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; font-size: 13px; min-width: 270px; background: var(--white); }
     .lv-filter { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; font-size: 13px; }
     .lv-chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
     .lv-chip { font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-soft); cursor: pointer; }
@@ -757,6 +757,176 @@
       .nav-group { display: none; }
       .main { padding: 18px 14px 60px; }
     }
+
+    /* =====================================================================
+       Runde 1: Grundgerüst – Navigation, Klickziele, Leerzustände, Einheit
+       ===================================================================== */
+    /* Hinweistext dunkler: #697386 kam auf hellen Flächen nur auf 4,25:1,
+       #5f6b7d schafft überall mindestens 4,8:1. */
+    .shell { --ink-faint: #5f6b7d; }
+    .gap-badge { background: #c8362d; } /* weiß auf #e25950 lag bei 3,6:1 */
+    /* Sichtbarer Fokusring für Tastaturbedienung – nur bei :focus-visible,
+       damit Mausklicks keinen Ring hinterlassen. */
+    .shell :focus-visible, .pwmodal :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: none; }
+    .shell input:focus-visible, .shell textarea:focus-visible, .shell select:focus-visible { outline-offset: 0; border-color: transparent; }
+    /* 8-px-Raster: Kopf, Panels und Raster laufen auf 16/24, Radien auf einem Wert. */
+    .db-kopf { margin-bottom: 16px; align-items: center; }
+    .db-kopf .pagehead { margin-bottom: 2px; }
+    .db-kopf .pagesub { margin-bottom: 0; }
+    .db-kopf .nur-lesen-hinweis { margin: 4px 0 6px; }
+    .panel { margin-bottom: 16px; }
+    .db-kpis, .db-grid, .lv-split, .as-split, .num-grid, .tk-board { gap: 16px; }
+    .db-kpis { margin-bottom: 16px; } .db-grid { margin-bottom: 16px; }
+    .lv-filter { margin-bottom: 16px; gap: 8px; }
+    .stats { gap: 16px; margin-bottom: 16px; }
+    .db-zeile, .item, .call-summary, .as-vorschau, .tk-karte, .tk-transkript, .call-auftrag, .numcard, .lv-zeile, .lv-liste .kt-zeile { border-radius: var(--r); }
+    .lv-suche, .wa-input textarea, .db-notizen, .voicecard, .waehl__weg, .waehl__eingabe, .tastatur button { border-radius: var(--r); }
+    .livew, .tnbar, .pwmodal__card, .hero-card { border-radius: var(--r-lg); }
+    .db-aktionen { gap: 8px; }
+    /* Klickziele: Desktop läuft mit zoom .8, deshalb 40 px im Stylesheet
+       (= 32 px auf dem Bildschirm); ab 1100 px abwärts ohne Zoom 36 px,
+       auf dem Handy 44 px. Tastenfeld und Umschalter haben eigene Maße. */
+    .shell button:not(.nav-item):not(.tastatur button):not(.db-werk button):not(.pw__toggle):not([type=checkbox]),
+    .shell .btn, .shell .btn.sm, .shell select, .shell input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),
+    .shell .lv-chip, .shell .deptseg, .shell .lv-select, .shell .lv-suche, .shell .branch-chip, .shell .chip {
+      min-height: 40px; box-sizing: border-box; }
+    .shell .db-aktionen .deptbar, .shell .db-aktionen .btn.sm { height: auto; }
+    .shell .deptbar { padding: 3px; }
+    .shell .deptseg { padding-top: 0; padding-bottom: 0; min-height: 34px; }
+    .shell .db-aktionen .deptseg { min-height: 34px; }
+    .shell .hrow input[type=time] { min-height: 36px; }
+    .shell .db-werk button { min-height: 32px; min-width: 32px; }
+    .shell .livew__head button, .shell .wa-head-actions button { width: 36px; height: 36px; min-height: 36px; }
+    .shell .lv-chip, .shell .lv-select { display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
+    .shell .lv-select { padding-right: 30px; }
+    .shell .lv-chip small { margin-left: 5px; }
+    .shell .cal-nav button, .shell .bignum button, .shell .tk-fristkurz button, .shell .db-hinzu button, .shell .waehl__zuletzt button { min-height: 36px; }
+    /* Textlinks („Alle", „ändern") bekommen Klickfläche über Innenabstand
+       mit negativem Rand, damit der Umbruch unverändert bleibt. */
+    .shell .db-panelkopf a, .shell .db-mehr, .shell .db-fakten a, .shell #kbStreifen a, .shell .if-details summary {
+      display: inline-flex; align-items: center; min-height: 32px; padding: 0 6px; margin: -6px -6px; box-sizing: border-box; }
+    .shell .db-fakten a { margin-left: 0; }
+    .shell .db-panelkopf a, .shell .db-mehr, .shell #kbStreifen a, .shell .as-nav a { min-height: 40px; margin-top: -10px; margin-bottom: -10px; }
+    .shell .as-nav a { margin: 0; display: flex; align-items: center; }
+    .shell .db-fakten a { min-height: 40px; margin: -10px 0; }
+    .shell .db-panelkopf a, .shell .db-fakten a { min-width: 40px; justify-content: center; }
+    /* Chat-Widget und Live-Widget liegen im .shell und bekamen den Zoom doppelt (0,64) – einmal reicht */
+    @media (min-width: 1100px) { body .shell .wa-launcher, body .shell .livew, body .shell .wa-panel { zoom: 1; } }
+    /* Symbolknöpfe (↻, ‹, ›, ▶) brauchen auch in der Breite 40 px */
+    .shell .btn.sm, .shell .voicecard .play, .shell .cal-nav button, .shell .tk-fristkurz button, .shell .wa-head-actions button { min-width: 40px; }
+    .shell .voicecard .play { width: 40px; height: 40px; }
+    .shell .wa-head-actions button { width: 40px; height: 40px; min-height: 40px; }
+    .shell .wa-launcher, .shell .wa-starter { min-height: 40px; }
+    .shell .tk-fristkurz button, .shell .db-hinzu button { min-height: 40px; }
+    /* Kleinstschriften: nichts unter 12 px, sonst leidet die Lesbarkeit auf dem Handy */
+    .lv-tag, .lv-neu, .lv-art, .lv-live, .live-pill, .tk-chip, .statchart .d, .statchart .c, .bubble time, .call-topic, .db-hinzu button small, .tpl-cat, .kb-cat-head, .wa-sug .cat, .gap-badge, .db-kpi .d { font-size: 12px; }
+    .db-stunden div span { font-size: 10px; }
+    @media (max-width: 1099px) {
+      .shell button:not(.nav-item):not(.tastatur button):not(.db-werk button):not(.pw__toggle), .shell .btn, .shell select,
+      .shell input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]), .shell .lv-chip, .shell .deptseg, .shell .lv-select { min-height: 36px; }
+      .shell .deptseg, .shell .db-aktionen .deptseg { min-height: 32px; }
+    }
+    @media (max-width: 760px) {
+      .shell button:not(.nav-item):not(.tastatur button):not(.db-werk button):not(.pw__toggle), .shell .btn, .shell select,
+      .shell input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]), .shell .lv-chip, .shell .deptseg, .shell .lv-select,
+      .shell .lv-suche, .shell .branch-chip, .shell .chip, .shell .livew__head button, .shell .wa-head-actions button, .shell .db-werk button { min-height: 44px; }
+      .shell .deptseg, .shell .db-aktionen .deptseg { min-height: 38px; }
+      .shell .db-panelkopf a, .shell .db-mehr, .shell .db-fakten a, .shell #kbStreifen a { min-height: 44px; }
+      .shell .lv-suche { height: 44px; }
+    }
+    /* Kontrollkästchen als Schalter: das Eingabefeld selbst ist 44 px groß
+       (Klickfläche), die Bahn wird mit ::before gezeichnet, der Knopf mit ::after. */
+    /* !important, weil einige Kästchen im Markup style="width:auto" tragen und sonst auf 0 px schrumpfen */
+    .shell input[type=checkbox] { appearance: none; -webkit-appearance: none; position: relative; width: 48px !important; height: 44px !important; min-height: 44px; flex: none;
+      margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; vertical-align: middle; }
+    .shell input[type=checkbox]::before { content: ''; position: absolute; left: 4px; top: 50%; width: 40px; height: 22px; margin-top: -11px; border-radius: 999px;
+      background: var(--linie-stark, #cdd6e0); transition: background .15s; }
+    .shell input[type=checkbox]::after { content: ''; position: absolute; left: 6px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 3px rgba(10,37,64,.35); transition: transform .15s; }
+    .shell input[type=checkbox]:checked::before { background: var(--accent); }
+    .shell input[type=checkbox]:checked::after { transform: translateX(18px); }
+    .shell input[type=checkbox]:disabled { opacity: .5; cursor: default; }
+    .shell input[type=checkbox]:focus-visible { outline: none; } .shell input[type=checkbox]:focus-visible::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+    .shell label:has(> input[type=checkbox]), .shell .chk { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 2px 0; cursor: pointer; color: var(--ink); font-weight: 500; }
+    .shell .chk input { width: 48px; }
+    /* Skelett-Platzhalter statt „Lade …" */
+    .skelett { display: flex; flex-direction: column; gap: 8px; padding: 6px; }
+    .skelett__zeile { height: 52px; border-radius: var(--r); background: linear-gradient(90deg, var(--paper-2) 25%, #f7f9fc 50%, var(--paper-2) 75%); background-size: 200% 100%; animation: skelett 1.2s linear infinite; }
+    .skelett__zeile.kurz { height: 36px; width: 60%; }
+    @keyframes skelett { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .skelett__zeile { animation: none; } }
+    /* Leerer Zustand: Erklärung plus ein Knopf, der weiterführt */
+    .leer { text-align: center; padding: 40px 20px; color: var(--ink-soft); }
+    .leer svg { width: 34px; height: 34px; color: var(--accent); margin-bottom: 10px; }
+    .leer p { margin: 0 auto 14px; font-size: 14px; max-width: 40ch; line-height: 1.5; }
+    .leer .btn { margin: 0 auto; }
+    /* Konto-Menü unten in der Seitenleiste: Avatar + E-Mail öffnen Passwort ändern / Abmelden */
+    .konto { position: relative; }
+    .konto__knopf { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 6px 8px; border: 0; background: none;
+      border-radius: var(--r); cursor: pointer; font: inherit; text-align: left; color: var(--ink); }
+    .konto__knopf:hover, .konto__knopf[aria-expanded="true"] { background: var(--paper-2); }
+    .konto__knopf .side__email { color: var(--ink-soft); }
+    .konto__pfeil { flex: none; width: 16px; height: 16px; color: var(--ink-faint); transition: transform .15s; }
+    .konto__knopf[aria-expanded="true"] .konto__pfeil { transform: rotate(180deg); }
+    .konto__liste { position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); z-index: 35; padding: 6px; background: var(--white);
+      border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+    .konto__liste button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 0 10px; border: 0; background: none;
+      font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); border-radius: var(--r-sm); cursor: pointer; text-align: left; }
+    .konto__liste button:hover { background: var(--paper-2); }
+    .konto__liste svg { width: 17px; height: 17px; color: var(--ink-faint); }
+    .konto__mail { padding: 8px 10px 6px; font-size: 12.5px; color: var(--ink-faint); border-bottom: 1px solid var(--line); margin-bottom: 4px; overflow-wrap: anywhere; }
+    /* Tab-Leiste und „Mehr"-Blatt gibt es nur auf dem Handy */
+    .tabbar, .mehr { display: none; }
+    .side__avatarknopf { display: none; }
+    /* Detail (Anruf, Nachricht, Vorgang …) auf schmalen Bildschirmen als
+       Schiebe-Panel von rechts statt unter der Liste gestapelt. */
+    @media (max-width: 900px) {
+      .lv-zeigt-detail .lv-split > div:first-child { display: block; }
+      /* z-index über dem Assistenten-Launcher (60), damit der Knopf nicht im Gesprächsverlauf schwebt */
+      .lv-detail { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 61; margin: 0; border-radius: 0; border: 0; overflow-y: auto;
+        padding: 16px 16px 40px; transform: translateX(100%); visibility: hidden; transition: transform .25s cubic-bezier(.4,0,.2,1), visibility 0s .25s; }
+      .lv-zeigt-detail .lv-detail { transform: none; visibility: visible; transition: transform .25s cubic-bezier(.4,0,.2,1), visibility 0s; }
+      .lv-zeigt-detail .lv-detail .lv-transkript { max-height: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .lv-detail, .mehr__blatt { transition: none !important; } }
+    @media (max-width: 760px) {
+      /* Kopfzeile oben: nur noch Marke und Avatar; Navigation wandert nach unten. */
+      .side { grid-template-columns: 1fr auto; padding: 6px 12px; min-height: 52px; }
+      .side nav, .side .foot { display: none; }
+      .side__avatarknopf { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; border-radius: 50%; grid-column: 2; grid-row: 1; }
+      .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr);
+        padding-bottom: env(safe-area-inset-bottom); background: var(--white); border-top: 1px solid var(--line); }
+      .tab-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px;
+        border: 0; background: none; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink-faint); cursor: pointer; padding: 6px 2px; -webkit-tap-highlight-color: transparent; }
+      .tab-item svg { width: 22px; height: 22px; }
+      .tab-item.active { color: var(--accent-ink); }
+      .tab-item .gap-badge { position: absolute; top: 4px; left: calc(50% + 4px); margin: 0; font-size: 10.5px; padding: 0 5px; min-height: 0; }
+      .main { padding: 16px 14px calc(76px + env(safe-area-inset-bottom)); }
+      .wa-launcher { bottom: calc(68px + env(safe-area-inset-bottom)); }
+      .livew { bottom: calc(126px + env(safe-area-inset-bottom)); }
+      .toast { bottom: calc(72px + env(safe-area-inset-bottom)); }
+      .tnbar { bottom: calc(66px + env(safe-area-inset-bottom)); }
+      .mehr { display: block; position: fixed; inset: 0; z-index: 45; visibility: hidden; }
+      .mehr.offen { visibility: visible; }
+      .mehr__hintergrund { position: absolute; inset: 0; background: rgba(8,18,46,.4); opacity: 0; transition: opacity .2s; }
+      .mehr.offen .mehr__hintergrund { opacity: 1; }
+      .mehr__blatt { position: absolute; left: 0; right: 0; bottom: 0; max-height: calc(100vh - 48px); overflow-y: auto; background: var(--white);
+        border-radius: var(--r-xl) var(--r-xl) 0 0; padding: 8px 12px calc(16px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1); }
+      .mehr.offen .mehr__blatt { transform: none; }
+      .mehr__griff { width: 36px; height: 4px; border-radius: 2px; background: var(--linie-stark, #cdd6e0); margin: 4px auto 6px; }
+      .mehr__gruppe { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); padding: 14px 10px 4px; }
+      .mehr__eintrag { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 10px; border: 0; background: none;
+        font: inherit; font-size: 15px; font-weight: 500; color: var(--ink); border-radius: var(--r); cursor: pointer; text-align: left; }
+      .mehr__eintrag svg { width: 20px; height: 20px; flex: none; color: var(--ink-soft); }
+      .mehr__eintrag.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-ink); }
+      .mehr__eintrag.active svg { color: var(--accent-ink); }
+      .mehr__eintrag .gap-badge { margin-left: auto; }
+      .mehr__mail { font-size: 13px; color: var(--ink-soft); padding: 4px 10px 6px; overflow-wrap: anywhere; }
+      .lv-detail { padding-bottom: 24px; }
+      .db-kopf { gap: 10px; }
+      .db-aktionen { width: 100%; }
+      .db-aktionen .lv-suche { flex: 1 1 100%; }
+    }
   </style>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -839,15 +1009,40 @@
         <button class="nav-item hidden" data-target="sec-guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Gäste</button>
         <button class="nav-item" data-target="sec-webhooks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Schnittstellen</button>
       </nav>
+      <!-- Handy: der Avatar oben rechts öffnet das „Mehr"-Blatt mit dem Konto -->
+      <button class="side__avatarknopf" id="kontoAvatarHandy" type="button" aria-label="Menü: weitere Bereiche und Konto"><span class="side__avatar" id="userAvatarHandy">·</span></button>
       <div class="foot">
-        <div class="side__user">
-          <span class="side__avatar" id="userAvatar">·</span>
-          <span class="side__email" id="userEmail"></span>
+        <!-- Konto-Menü: Avatar und E-Mail sind der Knopf, darin Passwort ändern und Abmelden -->
+        <div class="konto" id="kontoMenue">
+          <button class="konto__knopf" id="kontoKnopf" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="kontoListe">
+            <span class="side__avatar" id="userAvatar">·</span>
+            <span class="side__email" id="userEmail"></span>
+            <svg class="konto__pfeil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+          </button>
+          <div class="konto__liste" id="kontoListe" role="menu" hidden>
+            <div class="konto__mail" id="kontoMail" aria-hidden="true"></div>
+            <button id="changePwBtn" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Passwort ändern</button>
+            <button id="logoutBtn" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Abmelden</button>
+          </div>
         </div>
-        <button id="changePwBtn" class="btn btn--ghost sm" style="width:100%; justify-content:center; margin-bottom:6px">Passwort ändern</button>
-        <button id="logoutBtn" class="btn btn--ghost sm" style="width:100%; justify-content:center">Abmelden</button>
       </div>
     </aside>
+
+    <!-- Handy: feste Tab-Leiste unten mit den fünf wichtigsten Bereichen.
+         Die Knöpfe lösen den passenden .nav-item der Seitenleiste aus, damit
+         es nur eine Navigationslogik gibt. -->
+    <nav class="tabbar" id="tabbar" aria-label="Hauptbereiche">
+      <button class="tab-item active" type="button" data-tab="sec-overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
+      <button class="tab-item" type="button" data-tab="sec-live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M9 3H3v6"/><path d="M3 3l7 7"/></svg>Eingehend<span class="gap-badge hidden" data-tabbadge="liveBadge"></span></button>
+      <button class="tab-item" type="button" data-tab="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nachrichten<span class="gap-badge hidden" data-tabbadge="msgBadge"></span></button>
+      <button class="tab-item" type="button" data-tab="sec-tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge<span class="gap-badge hidden" data-tabbadge="tkBadge"></span></button>
+      <button class="tab-item" type="button" data-tab="mehr" id="tabMehr" aria-haspopup="dialog" aria-expanded="false" aria-label="Menü: weitere Bereiche und Konto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mehr</button>
+    </nav>
+    <!-- „Mehr"-Blatt: alle übrigen Bereiche in den Gruppen der Seitenleiste plus Konto; wird beim Öffnen aus der Seitenleiste gebaut -->
+    <div class="mehr" id="mehrBlatt" role="dialog" aria-modal="true" aria-label="Weitere Bereiche und Konto">
+      <div class="mehr__hintergrund" id="mehrZu"></div>
+      <div class="mehr__blatt"><div class="mehr__griff" aria-hidden="true"></div><div id="mehrInhalt"></div></div>
+    </div>
 
     <main class="main">
       <div id="noTenant" class="panel hidden">
@@ -860,12 +1055,12 @@
         <section id="sec-overview" class="section">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Dashboard</h1>
-              <p class="pagesub" style="margin-bottom:0"><span id="ovSub">—</span> · <span id="ovStatus" class="db-status">—</span></p>
+              <h1 class="pagehead">Dashboard</h1>
+              <p class="pagesub"><span id="ovSub">—</span> · <span id="ovStatus" class="db-status">—</span></p>
             </div>
             <div class="db-aktionen">
               <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
-              <span class="muted" id="dbStand" style="font-size:12.5px"></span>
+              <span class="muted" id="dbStand" style="font-size:12.5px" title="Zuletzt aktualisiert" data-tip="Zuletzt aktualisiert – Zahlen werden beim Öffnen und mit ↻ neu geladen"></span>
               <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" title="Neu laden">↻</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
@@ -895,11 +1090,11 @@
         <section id="sec-live" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Eingehende Anrufe</h1>
-              <p class="pagesub" style="margin-bottom:0" id="liveSub">Anrufe, die bei euch eingehen.</p>
+              <h1 class="pagehead">Eingehende Anrufe</h1>
+              <p class="pagesub" id="liveSub">Anrufe, die bei euch eingehen.</p>
             </div>
             <div class="db-aktionen">
-              <input id="lvSuche" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
+              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
               <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
             </div>
@@ -907,13 +1102,13 @@
           <div id="lvActive"></div>
           <div class="lv-filter">
             <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
-            <select id="lvThema" class="lv-select"><option value="">Alle Themen</option></select>
+            <select id="lvThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="muted" id="lvAnzahl"></span>
             <span class="lv-streifen" id="lvStreifen" style="margin-left:auto"></span>
           </div>
           <div class="lv-split">
             <div>
-              <div class="panel lv-liste" id="lvListe"></div>
+              <div class="panel lv-liste" id="lvListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
               <button class="btn btn--ghost sm lv-mehr hidden" type="button" id="lvMehr" style="margin-top:10px">Ältere Anrufe laden</button>
             </div>
             <div class="panel lv-detail" id="lvDetail"></div>
@@ -924,11 +1119,11 @@
         <section id="sec-outbound" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Ausgehende Anrufe</h1>
-              <p class="pagesub" style="margin-bottom:0" id="obSub">Anrufe, die ihr über Vocaris führt.</p>
+              <h1 class="pagehead">Ausgehende Anrufe</h1>
+              <p class="pagesub" id="obSub">Anrufe, die ihr über Vocaris führt.</p>
             </div>
             <div class="db-aktionen">
-              <input id="obSuche" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
+              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
               <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--primary sm" type="button" id="obAnrufKnopf">Neuer Anruf</button>
@@ -1023,13 +1218,13 @@
           <div class="lv-filter">
             <div class="lv-chips" id="obArt"><button class="lv-chip aktiv" type="button" data-art="">Alle Arten</button><button class="lv-chip" type="button" data-art="bridge">Am Telefon</button><button class="lv-chip" type="button" data-art="browser">Im Browser</button><button class="lv-chip" type="button" data-art="assistant">Assistent</button></div>
             <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
-            <select id="obThema" class="lv-select"><option value="">Alle Themen</option></select>
+            <select id="obThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="muted" id="obAnzahl"></span>
             <span class="lv-streifen" id="obStreifen" style="margin-left:auto"></span>
           </div>
           <div class="lv-split">
             <div>
-              <div class="panel lv-liste" id="obListe"></div>
+              <div class="panel lv-liste" id="obListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
               <button class="btn btn--ghost sm lv-mehr hidden" type="button" id="obMehr" style="margin-top:10px">Ältere Anrufe laden</button>
             </div>
             <div class="panel lv-detail" id="obDetail"></div>
@@ -1040,11 +1235,11 @@
         <section id="sec-kontakte" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Telefonbuch</h1>
-              <p class="pagesub" style="margin-bottom:0" id="ktSub">Namen zu euren Nummern.</p>
+              <h1 class="pagehead">Telefonbuch</h1>
+              <p class="pagesub" id="ktSub">Namen zu euren Nummern.</p>
             </div>
             <div class="db-aktionen">
-              <input id="ktSuche" class="lv-suche" type="search" placeholder="Name, Nummer oder Firma suchen" autocomplete="off" />
+              <input id="ktSuche" aria-label="Telefonbuch durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Firma suchen" autocomplete="off" />
               <button class="btn btn--primary sm" type="button" id="ktNeu">Eintrag anlegen</button>
             </div>
           </div>
@@ -1065,30 +1260,30 @@
             </div>
           </div>
 
-          <div class="panel lv-liste" id="ktListe"></div>
+          <div class="panel lv-liste" id="ktListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
         </section>
 
         <!-- Nachrichten -->
         <section id="sec-messages" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Nachrichten</h1>
-              <p class="pagesub" style="margin-bottom:0" id="mgSub">Rückrufe und Anliegen, die dein Assistent aufgenommen hat.</p>
+              <h1 class="pagehead">Nachrichten</h1>
+              <p class="pagesub" id="mgSub">Rückrufe und Anliegen, die dein Assistent aufgenommen hat.</p>
             </div>
             <div class="db-aktionen">
-              <input id="mgSuche" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
+              <input id="mgSuche" aria-label="Nachrichten durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
               <div class="deptbar" id="mgStatus"><button class="deptseg active" data-status="new" type="button">Offen</button><button class="deptseg" data-status="done" type="button">Erledigt</button><button class="deptseg" data-status="" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="mgNeu" title="Neu laden">↻</button>
             </div>
           </div>
           <div class="lv-filter">
             <div class="lv-chips" id="mgDringend"><button class="lv-chip aktiv" type="button" data-dringend="">Alle</button><button class="lv-chip" type="button" data-dringend="hoch">🔴 dringend</button><button class="lv-chip" type="button" data-dringend="mittel">🟠 mittel</button><button class="lv-chip" type="button" data-dringend="niedrig">⚪ niedrig</button></div>
-            <select id="mgKategorie" class="lv-select"><option value="">Alle Kategorien</option></select>
+            <select id="mgKategorie" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <span class="muted" id="mgAnzahl"></span>
           </div>
           <div class="lv-split">
             <div>
-              <div class="panel lv-liste" id="mgListe"></div>
+              <div class="panel lv-liste" id="mgListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
               <button class="btn btn--ghost sm hidden" type="button" id="mgMehr" style="margin-top:10px">Ältere Nachrichten laden</button>
             </div>
             <div class="panel lv-detail" id="mgDetail"></div>
@@ -1099,11 +1294,11 @@
         <section id="sec-tickets" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Vorgänge</h1>
-              <p class="pagesub" style="margin-bottom:0" id="tkSub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
+              <h1 class="pagehead">Vorgänge</h1>
+              <p class="pagesub" id="tkSub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
             </div>
             <div class="db-aktionen">
-              <input id="tkSuche" class="lv-suche" type="search" placeholder="Betreff, Name, Nummer, #12 …" autocomplete="off" />
+              <input id="tkSuche" aria-label="Vorgänge durchsuchen" class="lv-suche" type="search" placeholder="Betreff, Name, Nummer, #12 …" autocomplete="off" />
               <div class="deptbar" id="tkStatusBar"><button class="deptseg active" data-tkfilter="open" type="button">Offen</button><button class="deptseg" data-tkfilter="in_progress" type="button">In Arbeit</button><button class="deptseg" data-tkfilter="done" type="button">Erledigt</button><button class="deptseg" data-tkfilter="alle" type="button">Alle</button></div>
               <div class="deptbar"><button class="deptseg active" data-tkansicht="liste" type="button">Liste</button><button class="deptseg" data-tkansicht="board" type="button">Board</button></div>
               <button class="btn btn--ghost sm" type="button" id="tkNeu2" title="Neu laden">↻</button>
@@ -1119,30 +1314,30 @@
           </div>
           <div class="lv-filter">
             <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">🔴 hoch</button><button class="lv-chip" type="button" data-tkprio="normal">🔵 normal</button><button class="lv-chip" type="button" data-tkprio="low">⚪ niedrig</button></div>
-            <select id="tkWer" class="lv-select"><option value="">Alle Zuständigen</option></select>
-            <select id="tkKat" class="lv-select"><option value="">Alle Kategorien</option></select>
+            <select id="tkWer" aria-label="Zuständigkeit filtern" class="lv-select"><option value="">Alle Zuständigen</option></select>
+            <select id="tkKat" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <span class="muted" id="tkAnzahl"></span>
           </div>
           <div class="panel hidden" id="tkNeuPanel">
             <h3>Neuer Vorgang</h3>
             <div class="grid2">
-              <div><label style="margin-top:0">Betreff</label><input id="tkNeuTitel" placeholder="z. B. Rückruf Frau Beispiel wegen Angebot" /></div>
-              <div><label style="margin-top:0">Priorität</label><select id="tkNeuPrio"><option value="normal">Normal</option><option value="high">Hoch</option><option value="low">Niedrig</option></select></div>
+              <div><label for="tkNeuTitel" style="margin-top:0">Betreff</label><input id="tkNeuTitel" placeholder="z. B. Rückruf Frau Beispiel wegen Angebot" /></div>
+              <div><label for="tkNeuPrio" style="margin-top:0">Priorität</label><select id="tkNeuPrio"><option value="normal">Normal</option><option value="high">Hoch</option><option value="low">Niedrig</option></select></div>
             </div>
             <div class="grid2">
-              <div><label>Name (optional)</label><input id="tkNeuName" /></div>
-              <div><label>Telefon (optional)</label><input id="tkNeuTel" placeholder="+49 …" /></div>
+              <div><label for="tkNeuName">Name (optional)</label><input id="tkNeuName" /></div>
+              <div><label for="tkNeuTel">Telefon (optional)</label><input id="tkNeuTel" placeholder="+49 …" /></div>
             </div>
             <div class="grid2">
-              <div><label>Zuständig (optional)</label><input id="tkNeuWer" list="tkWerListe" placeholder="Name" /></div>
-              <div><label>Frist (optional)</label><input id="tkNeuFrist" type="datetime-local" /></div>
+              <div><label for="tkNeuWer">Zuständig (optional)</label><input id="tkNeuWer" list="tkWerListe" placeholder="Name" /></div>
+              <div><label for="tkNeuFrist">Frist (optional)</label><input id="tkNeuFrist" type="datetime-local" /></div>
             </div>
-            <label>Notiz</label><textarea id="tkNeuText" rows="2" placeholder="Worum geht es?"></textarea>
+            <label for="tkNeuText">Notiz</label><textarea id="tkNeuText" rows="2" placeholder="Worum geht es?"></textarea>
             <div class="stack" style="margin-top:10px"><button id="tkNeuBtn" class="btn btn--primary">Vorgang anlegen</button><button id="tkNeuZu" class="btn btn--ghost">Abbrechen</button></div>
           </div>
           <datalist id="tkWerListe"></datalist><datalist id="tkKatListe"></datalist>
           <div class="lv-split" id="tkSplit">
-            <div><div class="panel lv-liste" id="tkListe"></div></div>
+            <div><div class="panel lv-liste" id="tkListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div></div>
             <div class="panel lv-detail" id="tkDetail"></div>
           </div>
           <div id="tkBoard" class="tk-board hidden"></div>
@@ -1152,12 +1347,12 @@
         <section id="sec-kb" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Wissensdatenbank</h1>
+              <h1 class="pagehead">Wissensdatenbank</h1>
               <p class="nur-lesen-hinweis">Nur Lesen: Einträge ändert der Inhaber oder ein Admin.</p>
-              <p class="pagesub" style="margin-bottom:0" id="kbSub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
+              <p class="pagesub" id="kbSub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
             </div>
             <div class="db-aktionen">
-              <input id="kbSuche" class="lv-suche" type="search" placeholder="Titel oder Inhalt suchen" autocomplete="off" />
+              <input id="kbSuche" aria-label="Wissensdatenbank durchsuchen" class="lv-suche" type="search" placeholder="Titel oder Inhalt suchen" autocomplete="off" />
               <div class="deptbar" data-deptbar>
                 <button class="deptseg active" data-dept="general">Allgemein</button>
                 <button class="deptseg" data-dept="vertrieb">Vertrieb</button>
@@ -1178,7 +1373,7 @@
           <div class="panel hidden" id="kbNeuPanel">
             <h3>Neuer Eintrag</h3>
             <div class="grid2">
-              <div><label>Kategorie</label>
+              <div><label for="kbCat">Kategorie</label>
                 <input id="kbCat" list="kbCats" placeholder="z.B. Öffnungszeiten" />
                 <datalist id="kbCats">
                   <option>Öffnungszeiten</option><option>Leistungen</option><option>Termine &amp; Buchung</option>
@@ -1186,11 +1381,11 @@
                   <option>Kontakt &amp; Rückruf</option><option>Ablauf</option><option>Storno &amp; Änderung</option><option>FAQ</option>
                 </datalist>
               </div>
-              <div style="flex:2"><label>Titel</label>
+              <div style="flex:2"><label for="kbTitle">Titel</label>
                 <input id="kbTitle" placeholder="z.B. Geschäftszeiten" />
               </div>
             </div>
-            <label>Inhalt</label>
+            <label for="kbContent">Inhalt</label>
             <textarea id="kbContent" placeholder="z.B. Montag bis Freitag von 8 bis 17 Uhr ..."></textarea>
             <div class="stack"><button id="addKbBtn" class="btn btn--primary">Eintrag hinzufügen</button><button class="btn btn--ghost" type="button" onclick="document.getElementById('kbNeuPanel').classList.add('hidden')">Abbrechen</button></div>
           </div>
@@ -1230,7 +1425,7 @@
             <div class="tpl-grid" id="tplGrid"></div>
           </div>
           <div class="lv-split">
-            <div><div id="kbDrop" class="kb-drop"><div class="panel lv-liste" id="kbListe"></div></div></div>
+            <div><div id="kbDrop" class="kb-drop"><div class="panel lv-liste" id="kbListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div></div></div>
             <div class="panel lv-detail" id="kbDetail"></div>
           </div>
         </section>
@@ -1239,18 +1434,18 @@
         <section id="sec-gaps" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Offene Fragen</h1>
-              <p class="pagesub" style="margin-bottom:0" id="gapSub">Fragen, die dein Assistent nicht beantworten konnte.</p>
+              <h1 class="pagehead">Offene Fragen</h1>
+              <p class="pagesub" id="gapSub">Fragen, die dein Assistent nicht beantworten konnte.</p>
             </div>
             <div class="db-aktionen">
-              <input id="gapSuche" class="lv-suche" type="search" placeholder="Frage oder Antwort suchen" autocomplete="off" />
+              <input id="gapSuche" aria-label="Offene Fragen durchsuchen" class="lv-suche" type="search" placeholder="Frage oder Antwort suchen" autocomplete="off" />
               <div class="deptbar" id="gapStatusBar"><button class="deptseg active" data-gapstatus="open" type="button">Offen</button><button class="deptseg" data-gapstatus="answered" type="button">Beantwortet</button></div>
               <button class="btn btn--ghost sm" type="button" id="gapNeu" title="Neu laden">↻</button>
               <span class="muted" id="gapAnzahl" style="font-size:12.5px"></span>
             </div>
           </div>
           <div class="lv-split">
-            <div><div class="panel lv-liste" id="gapListe"></div></div>
+            <div><div class="panel lv-liste" id="gapListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div></div>
             <div class="panel lv-detail" id="gapDetail"></div>
           </div>
         </section>
@@ -1259,8 +1454,8 @@
         <section id="sec-assistant" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Assistent</h1>
-              <p class="pagesub" style="margin-bottom:0" id="asSub">Name, Begrüßung, Verhalten, Öffnungszeiten, Sprache und Stimme.</p>
+              <h1 class="pagehead">Assistent</h1>
+              <p class="pagesub" id="asSub">Name, Begrüßung, Verhalten, Öffnungszeiten, Sprache und Stimme.</p>
             </div>
             <div class="db-aktionen">
               <div class="deptbar" data-deptbar>
@@ -1281,32 +1476,32 @@
                 <label style="margin-top:0">Branchen-Vorlage <span class="muted">füllt die Felder vor, danach anpassbar</span></label>
                 <div class="branch-chips" id="personaPresets"></div>
                 <div class="grid2">
-                  <div style="flex:2"><label>Name deines Unternehmens</label><input id="bizName" placeholder="z.B. Mustermann Sanitär GmbH" /></div>
-                  <div><label>Sprache</label><select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select></div>
+                  <div style="flex:2"><label for="bizName">Name deines Unternehmens</label><input id="bizName" placeholder="z.B. Mustermann Sanitär GmbH" /></div>
+                  <div><label for="language">Sprache</label><select id="language"><option value="de">Deutsch</option><option value="en">Englisch</option></select></div>
                 </div>
                 <div class="grid2">
-                  <div style="flex:2"><label>Rolle des Assistenten</label><input id="roleDesc" placeholder="z.B. die telefonische Rezeption der Praxis" /></div>
-                  <div><label>Tonalität</label><select id="tone"><option value="sie_formell">Sie – förmlich</option><option value="sie_freundlich">Sie – freundlich</option><option value="du_locker">Du – locker</option></select></div>
+                  <div style="flex:2"><label for="roleDesc">Rolle des Assistenten</label><input id="roleDesc" placeholder="z.B. die telefonische Rezeption der Praxis" /></div>
+                  <div><label for="tone">Tonalität</label><select id="tone"><option value="sie_formell">Sie – förmlich</option><option value="sie_freundlich">Sie – freundlich</option><option value="du_locker">Du – locker</option></select></div>
                 </div>
-                <label>Begrüßung <span class="muted">wird beim Abnehmen gesagt</span></label>
+                <label for="greeting">Begrüßung <span class="muted">wird beim Abnehmen gesagt</span></label>
                 <textarea id="greeting" rows="2"></textarea>
-                <label>Verabschiedung <span class="muted">optional</span></label>
+                <label for="closing">Verabschiedung <span class="muted">optional</span></label>
                 <input id="closing" placeholder="z.B. Vielen Dank für Ihren Anruf, einen schönen Tag!" />
               </div>
               <div class="panel" id="asZeiten">
                 <h3>Öffnungszeiten</h3>
                 <div id="hoursGrid" class="hours"></div>
                 <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z.B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
-                <label>Standort / Anfahrt <span class="muted">optional</span></label>
+                <label for="location">Standort / Anfahrt <span class="muted">optional</span></label>
                 <input id="location" placeholder="z.B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
               </div>
               <div class="panel" id="asVerhalten">
                 <h3>Verhalten</h3>
-                <label style="margin-top:0">Verhalten</label>
+                <label for="behaviorRules" style="margin-top:0">Verhalten</label>
                 <textarea id="behaviorRules" placeholder="z.B. Bei Terminwunsch keine Zusage machen, sondern einen Rückruf mit Name, Nummer und Anliegen aufnehmen."></textarea>
-                <label>Grenzen / Tabus <span class="muted">Standard-Sicherheitsregeln gelten zusätzlich automatisch</span></label>
+                <label for="guardrails">Grenzen / Tabus <span class="muted">Standard-Sicherheitsregeln gelten zusätzlich automatisch</span></label>
                 <textarea id="guardrails" placeholder="z.B. Keine medizinische Beratung oder Diagnosen am Telefon."></textarea>
-                <label>Zusätzliche Hinweise <span class="muted">frei, optional</span></label>
+                <label for="persona">Zusätzliche Hinweise <span class="muted">frei, optional</span></label>
                 <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
               </div>
               <div class="panel" id="asStimme">
@@ -1321,20 +1516,20 @@
                 <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="fwdEnabled" style="width:auto;margin:0"><span>Rufumleitung an einen Menschen aktivieren</span></label>
                 <p class="muted" style="margin-top:4px;text-align:left;padding:0">Wenn der Anrufer eine Person sprechen möchte (oder der Assistent nicht weiterhelfen kann), verbindet er direkt zur hinterlegten Nummer. <b>Auch für Bestellungen zum Abholen/Liefern:</b> der Assistent leitet solche Anrufe an diese Mitarbeiter-Nummer weiter.</p>
                 <div class="grid2" style="margin-top:8px">
-                  <div style="flex:2"><label>Weiterleiten an (Telefonnummer)</label><input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" /></div>
-                  <div><label>Wann</label><select id="fwdHours"><option value="true">Nur während der Öffnungszeiten</option><option value="false">Immer (rund um die Uhr)</option></select></div>
+                  <div style="flex:2"><label for="fwdNumber">Weiterleiten an (Telefonnummer)</label><input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" /></div>
+                  <div><label for="fwdHours">Wann</label><select id="fwdHours"><option value="true">Nur während der Öffnungszeiten</option><option value="false">Immer (rund um die Uhr)</option></select></div>
                 </div>
               </div>
               <div class="panel" id="asSelbst">
                 <h3>Anrufe, die du selbst führst</h3>
                 <p class="muted" style="margin-top:0;text-align:left;padding:0">Mit „Über Vocaris anrufen" ruft Vocaris zuerst dich an und verbindet dich dann. Der Angerufene sieht eure Firmennummer, und das Gespräch wird mitgeschrieben wie ein Assistenten-Anruf.</p>
-                <label>Deine eigene Rufnummer <span class="muted">dort klingelt es</span></label>
+                <label for="asAgentNummer">Deine eigene Rufnummer <span class="muted">dort klingelt es</span></label>
                 <input id="asAgentNummer" placeholder="+49 170 1234567" inputmode="tel" />
                 <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeTranscript" style="width:auto;margin:0"><span>Diese Gespräche mitschreiben</span></label>
                 <p class="muted" style="margin-top:4px;text-align:left;padding:0">Aus bedeutet: Vocaris verbindet nur, es wird nichts gespiegelt und nichts gespeichert. Zum Vergleichen der Tonqualität einmal aus- und wieder einschalten.</p>
                 <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeNotice" style="width:auto;margin:0"><span>Dem Angerufenen vorher ansagen, dass mitgeschrieben wird</span></label>
                 <p class="muted" style="margin-top:4px;text-align:left;padding:0">In Deutschland darf ein Gespräch zwischen zwei Menschen nur mit Wissen beider Seiten mitgeschrieben werden. Ohne diese Ansage bist du selbst dafür verantwortlich, den Hinweis zu geben.</p>
-                <label>Text der Ansage <span class="muted">optional</span></label>
+                <label for="asBridgeText">Text der Ansage <span class="muted">optional</span></label>
                 <input id="asBridgeText" placeholder="Dieses Gespräch wird für unsere Unterlagen mitgeschrieben." />
               </div>
               <div class="panel" id="asRecht">
@@ -1366,9 +1561,9 @@
         <section id="sec-booking" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Termine</h1>
+              <h1 class="pagehead">Termine</h1>
               <p class="nur-lesen-hinweis">Nur Lesen: Terminregeln ändert der Inhaber oder ein Admin.</p>
-              <p class="pagesub" style="margin-bottom:0">Dein Assistent vergibt am Telefon Termine auf Basis deiner Öffnungszeiten. Gebuchte Termine erscheinen hier und im verbundenen Kalender.</p>
+              <p class="pagesub">Dein Assistent vergibt am Telefon Termine auf Basis deiner Öffnungszeiten. Gebuchte Termine erscheinen hier und im verbundenen Kalender.</p>
             </div>
             <div class="db-aktionen">
               <button class="btn btn--ghost sm" type="button" id="bbAuf" data-tip="Urlaub, Pausen oder wöchentliche Zeiten ohne Termine">Zeiten sperren</button>
@@ -1380,12 +1575,12 @@
           <div class="panel hidden" id="bkNeuPanel">
             <h3>Termin von Hand eintragen</h3>
             <div class="grid2">
-              <div><label>Datum</label><input id="bkNewDate" type="date" /></div>
-              <div><label>Uhrzeit</label><input id="bkNewTime" type="time" /></div>
+              <div><label for="bkNewDate">Datum</label><input id="bkNewDate" type="date" /></div>
+              <div><label for="bkNewTime">Uhrzeit</label><input id="bkNewTime" type="time" /></div>
             </div>
             <div class="grid2">
-              <div style="flex:2"><label>Name</label><input id="bkNewName" placeholder="Name des Kunden" /></div>
-              <div style="flex:2"><label>Notiz (optional)</label><input id="bkNewNote" placeholder="z.B. Beratung" /></div>
+              <div style="flex:2"><label for="bkNewName">Name</label><input id="bkNewName" placeholder="Name des Kunden" /></div>
+              <div style="flex:2"><label for="bkNewNote">Notiz (optional)</label><input id="bkNewNote" placeholder="z.B. Beratung" /></div>
             </div>
             <div class="stack" style="margin-top:12px"><button id="bkAdd" class="btn">Termin eintragen</button></div>
           </div>
@@ -1400,15 +1595,15 @@
 
             <div id="bbOnce">
               <div class="grid2">
-                <div><label style="margin-top:0">Von Datum</label><input id="bbDate" type="date" /></div>
-                <div><label style="margin-top:0">Bis Datum <span class="muted">(optional)</span></label><input id="bbDateEnd" type="date" /></div>
+                <div><label for="bbDate" style="margin-top:0">Von Datum</label><input id="bbDate" type="date" /></div>
+                <div><label for="bbDateEnd" style="margin-top:0">Bis Datum <span class="muted">(optional)</span></label><input id="bbDateEnd" type="date" /></div>
               </div>
               <label class="chk" style="margin-top:12px"><input type="checkbox" id="bbAllDay" /> Ganztägig (ganze Tage sperren)</label>
               <div class="grid2" id="bbTimes">
-                <div><label>Von</label><input id="bbFrom" type="time" /></div>
-                <div><label>Bis</label><input id="bbTo" type="time" /></div>
+                <div><label for="bbFrom">Von</label><input id="bbFrom" type="time" /></div>
+                <div><label for="bbTo">Bis</label><input id="bbTo" type="time" /></div>
               </div>
-              <label>Notiz (optional)</label><input id="bbNote" placeholder="z.B. Urlaub, Fortbildung" />
+              <label for="bbNote">Notiz (optional)</label><input id="bbNote" placeholder="z.B. Urlaub, Fortbildung" />
               <div class="stack" style="margin-top:12px"><button id="bbAdd" class="btn btn--primary">Zeit sperren</button></div>
             </div>
 
@@ -1417,10 +1612,10 @@
               <div class="branch-chips" id="bbDays"></div>
               <label class="chk" style="margin-top:6px"><input type="checkbox" id="rbAllDay" /> Ganztägig (ganzer Tag)</label>
               <div class="grid2" id="rbTimes">
-                <div><label>Von</label><input id="rbFrom" type="time" /></div>
-                <div><label>Bis</label><input id="rbTo" type="time" /></div>
+                <div><label for="rbFrom">Von</label><input id="rbFrom" type="time" /></div>
+                <div><label for="rbTo">Bis</label><input id="rbTo" type="time" /></div>
               </div>
-              <label>Notiz (optional)</label><input id="rbNote" placeholder="z.B. Mittagspause, Teammeeting" />
+              <label for="rbNote">Notiz (optional)</label><input id="rbNote" placeholder="z.B. Mittagspause, Teammeeting" />
               <div class="stack" style="margin-top:12px"><button id="rbAdd" class="btn btn--primary">Wöchentlich sperren</button></div>
             </div>
 
@@ -1451,12 +1646,12 @@
             <h3>Terminbuchung</h3>
             <label class="chk" style="margin-top:0"><input type="checkbox" id="bkEnabled" /> <b>Terminbuchung aktiv</b> <span class="muted">– der Assistent darf Termine vergeben</span></label>
             <div class="grid2" style="margin-top:8px">
-              <div><label>Termindauer (Min.)</label><input id="bkSlot" type="number" min="5" step="5" /></div>
-              <div><label>Puffer dazwischen (Min.)</label><input id="bkBuffer" type="number" min="0" step="5" /></div>
+              <div><label for="bkSlot">Termindauer (Min.)</label><input id="bkSlot" type="number" min="5" step="5" /></div>
+              <div><label for="bkBuffer">Puffer dazwischen (Min.)</label><input id="bkBuffer" type="number" min="0" step="5" /></div>
             </div>
             <div class="grid2">
-              <div><label>Frühestens ab (Std. im Voraus)</label><input id="bkLead" type="number" min="0" /></div>
-              <div><label>Buchbar bis (Tage im Voraus)</label><input id="bkHorizon" type="number" min="1" /></div>
+              <div><label for="bkLead">Frühestens ab (Std. im Voraus)</label><input id="bkLead" type="number" min="0" /></div>
+              <div><label for="bkHorizon">Buchbar bis (Tage im Voraus)</label><input id="bkHorizon" type="number" min="1" /></div>
             </div>
             <div class="stack" style="margin-top:12px"><button id="bkSave" class="btn btn--primary">Speichern</button></div>
             <p class="muted" id="bkHint" style="margin-top:8px"></p>
@@ -1465,14 +1660,14 @@
           <div class="panel">
             <h3>Kalender verbinden</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein. Apple-Kalender gehen über den Link „Öffentlicher Kalender" aus der Kalender-App (nur lesen).</p>
-            <div id="bkCal"><span class="muted">Lade …</span></div>
+            <div id="bkCal"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
           </div>
 
           <div class="panel">
             <h3>Kalender-Abo (ohne Anmeldung)</h3>
             <p class="muted" style="margin-bottom:10px">Diesen Link in Google/Apple/Outlook als „Kalender abonnieren" hinzufügen — neue Termine erscheinen automatisch. Link geheim halten.</p>
             <div class="grid2">
-              <div style="flex:4"><input id="bkIcal" readonly /></div>
+              <div style="flex:4"><input id="bkIcal" readonly aria-label="Kalender-Adresse (iCal)" /></div>
               <div><button id="bkIcalCopy" class="btn" style="width:100%">Kopieren</button></div>
             </div>
           </div>
@@ -1485,8 +1680,8 @@
         <section id="sec-webhooks" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Schnittstellen</h1>
-              <p class="pagesub" style="margin-bottom:0">Leite Anliegen, Termine und offene Fragen dorthin, wo dein Team arbeitet: Benachrichtigungen, CRM, Ticketsystem, Automatisierung oder eigene Software.</p>
+              <h1 class="pagehead">Schnittstellen</h1>
+              <p class="pagesub">Leite Anliegen, Termine und offene Fragen dorthin, wo dein Team arbeitet: Benachrichtigungen, CRM, Ticketsystem, Automatisierung oder eigene Software.</p>
             </div>
             <div class="db-aktionen">
               <a class="btn btn--ghost sm" href="https://vocaris.eu/api.html" target="_blank" rel="noopener">API-Doku</a>
@@ -1515,11 +1710,11 @@
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Team-Benachrichtigungen</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Sofort-Hinweis, sobald etwas reinkommt. Trag nur ein, was du nutzt — leere Felder werden ignoriert.</p>
-            <label style="margin-top:0">E-Mail</label>
+            <label for="whEmail" style="margin-top:0">E-Mail</label>
             <input id="whEmail" placeholder="name@firma.de" />
-            <label>Slack <span class="muted">(eingehender Webhook)</span></label>
+            <label for="whSlack">Slack <span class="muted">(eingehender Webhook)</span></label>
             <input id="whSlack" placeholder="https://hooks.slack.com/services/…" />
-            <label>Microsoft Teams <span class="muted">(eingehender Webhook)</span></label>
+            <label for="whTeams">Microsoft Teams <span class="muted">(eingehender Webhook)</span></label>
             <input id="whTeams" placeholder="https://….webhook.office.com/…" />
             <label>Telegram <span class="muted">(Bot-Token von @BotFather + Chat-ID)</span></label>
             <div class="grid2">
@@ -1535,7 +1730,7 @@
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>CRM-Anbindung <span class="muted" style="font-weight:400;font-size:13px">(legt automatisch Leads an)</span></h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Bei jeder Nachricht / jedem Termin wird ein Lead/Kontakt im CRM angelegt. CRM wählen, Zugangsdaten eintragen, „CRM verbinden". Mehrere möglich.</p>
             <div class="grid2">
-              <div><label style="margin-top:0">CRM</label><select id="crmProvider"></select></div>
+              <div><label for="crmProvider" style="margin-top:0">CRM</label><select id="crmProvider"></select></div>
               <div></div>
             </div>
             <div id="crmFields" class="grid2"></div>
@@ -1551,7 +1746,7 @@
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>Ticketsystem</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Jede Nachricht (und auf Wunsch jede offene Frage und jeder Anruf) wird ein Ticket in deinem Helpdesk – mit Anliegen, Rückrufnummer und Dringlichkeit. Ohne passendes System nimm „Helpdesk-Postfach": Das funktioniert mit allem, was Tickets aus E-Mails macht (OTRS/Znuny, Jira, Zammad, Freshdesk …).</p>
             <div class="grid2">
-              <div><label style="margin-top:0">Ticketsystem</label><select id="tkProvider"></select></div>
+              <div><label for="tkProvider" style="margin-top:0">Ticketsystem</label><select id="tkProvider"></select></div>
               <div></div>
             </div>
             <div id="tkFields" class="grid2"></div>
@@ -1572,7 +1767,7 @@
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L19 3.6m-2 2 2 2"/></svg>API-Schlüssel</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Für Make, n8n, Zapier oder eigene Software: Anrufe, Nachrichten, offene Fragen und Termine abrufen, Wissen ergänzen, Anrufe auslösen. Anleitung und Beispiele: <a href="https://vocaris.eu/api.html" target="_blank" rel="noopener">vocaris.eu/api.html</a>. Der Schlüssel wird nur einmal angezeigt.</p>
             <div class="grid2">
-              <div><label style="margin-top:0">Bezeichnung</label><input id="akName" placeholder="z. B. n8n Produktiv" /></div>
+              <div><label for="akName" style="margin-top:0">Bezeichnung</label><input id="akName" placeholder="z. B. n8n Produktiv" /></div>
               <div style="display:flex;align-items:flex-end"><button id="akCreate" class="btn" style="width:100%">Schlüssel erstellen</button></div>
             </div>
             <div id="akNeu" class="hidden" style="margin-top:10px">
@@ -1589,7 +1784,7 @@
           <div class="panel">
             <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Automatisierung & eigener Webhook</h3>
             <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Über <b>Zapier / Make / n8n</b> erreichst du jedes Tool (auch CRMs, die oben nicht gelistet sind) — oder gib einen eigenen Endpunkt an.</p>
-            <label style="margin-top:0">Zapier / Make / n8n / eigener Webhook (URL)</label>
+            <label for="whUrl" style="margin-top:0">Zapier / Make / n8n / eigener Webhook (URL)</label>
             <input id="whUrl" placeholder="https://hooks.zapier.com/… (Catch-Hook-URL einfügen)" />
             <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">In Zapier/Make „Webhook → Catch Hook" anlegen, URL hier einfügen. JSON-POST, Echtheit per Header <code>X-Vocaris-Signature: sha256=HMAC(Body)</code>.</p>
             <label>Signatur-Schlüssel</label>
@@ -1631,8 +1826,8 @@
         <section id="sec-number" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Telefonnummer</h1>
-              <p class="pagesub" style="margin-bottom:0" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
+              <h1 class="pagehead">Telefonnummer</h1>
+              <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z.B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
             </div>
             <div class="db-aktionen">
               <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
@@ -1669,8 +1864,8 @@
                 <div class="db-panelkopf"><h3 style="margin:0">Gesperrte Nummern</h3><span class="muted" id="blockStreifen"></span></div>
                 <p class="muted" style="text-align:left;padding:0;margin-bottom:12px;font-size:13px">Anrufe von diesen Nummern werden abgewiesen, bevor der Assistent abnimmt, und kosten keine Gesprächsminute. Erlaubt: eine Nummer (+49 …), ein Bereich mit Stern am Ende (+4930*) oder „anonym" für unterdrückte Rufnummern.</p>
                 <div class="grid2">
-                  <div><label style="margin-top:0">Nummer</label><input id="blockNummer" placeholder="+49 … oder anonym" /></div>
-                  <div><label style="margin-top:0">Grund (optional)</label><input id="blockGrund" placeholder="z. B. Werbeanrufe" /></div>
+                  <div><label for="blockNummer" style="margin-top:0">Nummer</label><input id="blockNummer" placeholder="+49 … oder anonym" /></div>
+                  <div><label for="blockGrund" style="margin-top:0">Grund (optional)</label><input id="blockGrund" placeholder="z. B. Werbeanrufe" /></div>
                 </div>
                 <div class="stack" style="margin-top:10px"><button id="blockAdd" class="btn btn--primary sm" type="button">Nummer sperren</button><button id="blockAnonym" class="btn btn--ghost sm" type="button" data-tip="Unterdrückte Rufnummern abweisen">Anonyme Anrufe sperren</button></div>
                 <p class="muted" id="blockHint" style="margin-top:6px;font-size:12.5px"></p>
@@ -1686,8 +1881,8 @@
         <section id="sec-team" class="section hidden">
           <div class="db-kopf">
             <div>
-              <h1 class="pagehead" style="margin-bottom:2px">Zugänge</h1>
-              <p class="pagesub" style="margin-bottom:0" id="tmSub">Wer mit diesem Konto arbeitet.</p>
+              <h1 class="pagehead">Zugänge</h1>
+              <p class="pagesub" id="tmSub">Wer mit diesem Konto arbeitet.</p>
             </div>
             <div class="db-aktionen">
               <button class="btn btn--primary sm" type="button" id="tmNeu" hidden>Zugang anlegen</button>
@@ -1712,15 +1907,21 @@
             </div>
           </div>
 
-          <div class="panel lv-liste" id="tmListe"></div>
+          <div class="panel lv-liste" id="tmListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
         </section>
 
         <section id="sec-floorplan" class="section hidden">
-          <h1 class="pagehead">Tischplan</h1>
-          <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead">Tischplan</h1>
+              <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
+            </div>
+            <div class="db-aktionen">
+              <button id="rsEditToggle" class="btn btn--ghost sm" type="button"><i data-lucide="pencil" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px"></i>Plan bearbeiten</button>
+            </div>
+          </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
             <div id="rsAreaTabs" class="branch-chips" style="margin:0"></div>
-            <button id="rsEditToggle" class="btn btn--ghost sm" type="button" style="margin-left:auto"><i data-lucide="pencil" style="width:15px;height:15px;vertical-align:-2px;margin-right:5px"></i>Plan bearbeiten</button>
           </div>
           <div id="rsAreaManage" class="panel hidden" style="margin:0 0 10px">
             <h4 style="margin:0 0 8px">Bereiche verwalten</h4>
@@ -1734,7 +1935,7 @@
             <label style="width:150px">Belegung am<input id="rsPlanDate" type="date" style="width:100%"></label>
             <div style="flex:1;min-width:240px">
               <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted,#7a756c)"><span>Uhrzeit ziehen</span><b id="rsPlanTimeLabel">—</b></div>
-              <input id="rsPlanSlider" type="range" min="660" max="1380" step="15" value="1140" style="width:100%">
+              <input id="rsPlanSlider" aria-label="Uhrzeit für die Tischbelegung" type="range" min="660" max="1380" step="15" value="1140" style="width:100%">
             </div>
             <div id="rsLegend" style="display:flex;gap:14px;font-size:12px;align-items:center;flex-wrap:wrap">
               <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:#fff;border:2px solid #3f7d63"></i>frei</span>
@@ -1816,15 +2017,25 @@
 
         <!-- Reservierungen (Restaurant-Modus) -->
         <section id="sec-restaurant" class="section hidden">
-          <h1 class="pagehead">Reservierungen</h1>
-          <p class="pagesub">Dein Tages-Cockpit: Reservierungen als Liste oder Timeline, direkt anlegen, Status pflegen. Einstellungen unten.</p>
+          <!-- Kopfzeile im gleichen Muster wie alle Bereiche: Titel, Untertitel, rechts die Aktionen -->
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead">Reservierungen</h1>
+              <p class="pagesub">Dein Tages-Cockpit: Reservierungen als Liste oder Timeline, direkt anlegen, Status pflegen. Einstellungen unten.</p>
+            </div>
+            <div class="db-aktionen">
+              <button id="rsGotoPlan" class="btn btn--ghost sm" type="button">Tischplan</button>
+              <button id="rsWalkOpen" class="btn btn--ghost sm" type="button">Walk-in</button>
+              <button id="rsNewBtn" class="btn btn--primary sm" type="button">+ Reservierung</button>
+            </div>
+          </div>
 
-          <!-- Cockpit-Kopf: Tag + Ansicht + Aktionen -->
+          <!-- Cockpit-Kopf: Tag + Ansicht -->
           <div class="panel">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <button id="rsDayPrev" class="btn btn--ghost sm" type="button" title="Vortag">‹</button>
-              <input id="rsDayDate" type="date" style="width:160px">
-              <button id="rsDayNext" class="btn btn--ghost sm" type="button" title="Folgetag">›</button>
+              <button id="rsDayPrev" class="btn btn--ghost sm" type="button" title="Vortag" aria-label="Vortag">‹</button>
+              <input id="rsDayDate" aria-label="Tag wählen" type="date" style="width:160px">
+              <button id="rsDayNext" class="btn btn--ghost sm" type="button" title="Folgetag" aria-label="Folgetag">›</button>
               <button id="rsDayToday" class="btn btn--ghost sm" type="button">Heute</button>
               <span id="rsDaySummary" class="muted" style="font-weight:600;margin-left:6px"></span>
               <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -1834,9 +2045,6 @@
                   <button id="rsViewWaitlist" class="deptseg" type="button">Warteliste <span id="rsWlBadge" class="gap-badge hidden"></span></button>
                   <button id="rsViewAnalytics" class="deptseg" type="button">Auswertung</button>
                 </div>
-                <button id="rsNewBtn" class="btn btn--primary sm" type="button">+ Reservierung</button>
-                <button id="rsWalkOpen" class="btn sm" type="button">Walk-in</button>
-                <button id="rsGotoPlan" class="btn btn--ghost sm" type="button">Tischplan</button>
               </div>
             </div>
             <input id="rsDaySearch" placeholder="Nach Gast-Name suchen…" style="width:100%;max-width:340px;margin-top:10px">
@@ -1870,7 +2078,7 @@
               <label>Telefon (für SMS)<input id="rsResPhone" placeholder="+49…"></label>
               <label>E-Mail (für Bestätigung)<input id="rsResEmail" placeholder="gast@beispiel.de"></label>
             </div>
-            <label style="margin-top:8px">Anliegen (optional)</label>
+            <label for="rsResNotes" style="margin-top:8px">Anliegen (optional)</label>
             <input id="rsResNotes" placeholder="z.B. Fensterplatz, Geburtstag">
             <div class="stack" style="margin-top:12px"><button id="rsReserveBtn" class="btn btn--primary" type="button">Reservieren</button></div>
             <p class="muted" id="rsResHint" style="text-align:left;padding:0;margin-top:8px"></p>
@@ -1897,8 +2105,8 @@
               </label>
               <p class="muted" style="text-align:left;padding:0;margin-top:4px">Wenn aktiv, kann der Assistent Tische reservieren (statt Termine). Die Öffnungszeiten stellst du unter <b>Assistent</b> ein.</p>
               <div class="grid2" style="margin-top:10px">
-                <div><label>Sitzdauer je Tisch (Minuten)</label><input id="rsSeating" type="number" min="30" step="15" value="120"></div>
-                <div><label>Erinnerungen vorher (Stunden)</label><input id="rsReminderHours" placeholder="z.B. 24, 2"></div>
+                <div><label for="rsSeating">Sitzdauer je Tisch (Minuten)</label><input id="rsSeating" type="number" min="30" step="15" value="120"></div>
+                <div><label for="rsReminderHours">Erinnerungen vorher (Stunden)</label><input id="rsReminderHours" placeholder="z.B. 24, 2"></div>
               </div>
               <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="rsRemEmail" style="width:auto;margin:0"><span>Erinnerung per E-Mail</span></label>
@@ -1907,15 +2115,15 @@
               </div>
               <p class="muted" style="text-align:left;padding:0;margin-top:4px;font-size:12px">SMS läuft über Telnyx (kostenpflichtig, Nummer muss SMS-fähig sein). E-Mail ist kostenlos über Resend.</p>
               <div class="grid2" style="margin-top:12px">
-                <div><label>Max. gleichzeitige Gäste (Pacing)</label><input id="rsMaxCovers" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Begrenzt, wie viele Gäste zur selben Zeit reserviert sein dürfen.</p></div>
-                <div><label>Daten löschen nach (Tagen)</label><input id="rsRetention" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">DSGVO: 0 = aus. Vergangene Reservierungen werden danach automatisch gelöscht.</p></div>
+                <div><label for="rsMaxCovers">Max. gleichzeitige Gäste (Pacing)</label><input id="rsMaxCovers" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Begrenzt, wie viele Gäste zur selben Zeit reserviert sein dürfen.</p></div>
+                <div><label for="rsRetention">Daten löschen nach (Tagen)</label><input id="rsRetention" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">DSGVO: 0 = aus. Vergangene Reservierungen werden danach automatisch gelöscht.</p></div>
               </div>
-              <label style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
+              <label for="rsClosedDates" style="margin-top:10px">Sonderschließungen (Datum, kommagetrennt)</label>
               <input id="rsClosedDates" placeholder="z.B. 2026-12-24, 2026-12-25">
               <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">An diesen Tagen sind keine Reservierungen möglich (Feiertage, Betriebsferien). Der wöchentliche Ruhetag kommt aus den Öffnungszeiten.</p>
 
               <!-- Sonderöffnungszeiten (abweichende Zeiten an einzelnen Tagen) -->
-              <label style="margin-top:16px">Sonderöffnungszeiten (abweichende Zeiten je Tag)</label>
+              <label for="rsSpecialHours" style="margin-top:16px">Sonderöffnungszeiten (abweichende Zeiten je Tag)</label>
               <textarea id="rsSpecialHours" rows="3" placeholder="2026-12-24: 11:00-15:00&#10;2026-12-31: 17:00-01:00&#10;2026-11-01: geschlossen" style="font-family:ui-monospace,monospace;font-size:13px"></textarea>
               <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Eine Zeile je Tag: <code>Datum: HH:MM-HH:MM</code> (mehrere Zeiträume mit Komma) oder <code>Datum: geschlossen</code>. Überschreibt an dem Tag die regulären Öffnungszeiten – der Assistent beachtet das automatisch.</p>
 
@@ -1923,15 +2131,15 @@
               <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
                 <div style="font-weight:700;font-size:14px;margin-bottom:8px">Buchungsregeln &amp; Pacing</div>
                 <div class="grid2">
-                  <div><label>Mindest-Vorlauf (Minuten)</label><input id="rsMinLead" type="number" min="0" value="30"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">So kurzfristig darf frühestens reserviert werden (alle Kanäle).</p></div>
-                  <div><label>Max. Reservierungen je 15-Min-Fenster</label><input id="rsMaxPerSlot" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. Verhindert, dass zu viele Gäste gleichzeitig eintreffen (Küche).</p></div>
+                  <div><label for="rsMinLead">Mindest-Vorlauf (Minuten)</label><input id="rsMinLead" type="number" min="0" value="30"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">So kurzfristig darf frühestens reserviert werden (alle Kanäle).</p></div>
+                  <div><label for="rsMaxPerSlot">Max. Reservierungen je 15-Min-Fenster</label><input id="rsMaxPerSlot" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. Verhindert, dass zu viele Gäste gleichzeitig eintreffen (Küche).</p></div>
                 </div>
                 <div class="grid2" style="margin-top:10px">
-                  <div><label>Online: Buchungsstopp (Std. vorher)</label><input id="rsCutoffHours" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. So kurzfristig sind online keine Buchungen mehr möglich (telefonisch schon).</p></div>
-                  <div><label>Online: max. Tage im Voraus</label><input id="rsMaxAdvance" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt.</p></div>
+                  <div><label for="rsCutoffHours">Online: Buchungsstopp (Std. vorher)</label><input id="rsCutoffHours" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = aus. So kurzfristig sind online keine Buchungen mehr möglich (telefonisch schon).</p></div>
+                  <div><label for="rsMaxAdvance">Online: max. Tage im Voraus</label><input id="rsMaxAdvance" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt.</p></div>
                 </div>
                 <div class="grid2" style="margin-top:10px">
-                  <div><label>Online: max. Personen pro Buchung</label><input id="rsMaxPartyOnline" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Größere Gruppen werden gebeten, anzurufen.</p></div>
+                  <div><label for="rsMaxPartyOnline">Online: max. Personen pro Buchung</label><input id="rsMaxPartyOnline" type="number" min="0" value="0"><p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">0 = unbegrenzt. Größere Gruppen werden gebeten, anzurufen.</p></div>
                 </div>
               </div>
 
@@ -1939,13 +2147,13 @@
               <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
                 <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsFeedbackEnabled" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Feedback &amp; Google-Bewertung nach dem Besuch senden</span></label>
                 <div id="rsFeedbackWrap" class="hidden" style="margin-top:10px">
-                  <label>Google-Bewertungslink</label>
+                  <label for="rsFeedbackUrl">Google-Bewertungslink</label>
                   <input id="rsFeedbackUrl" placeholder="https://g.page/r/…/review">
                   <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Aus dem Google-Unternehmensprofil: „Rezension schreiben" → Link teilen. Wird als Button in die Mail gesetzt.</p>
                   <div class="grid2" style="margin-top:10px">
-                    <div><label>Senden nach (Std. nach Besuchsende)</label><input id="rsFeedbackDelay" type="number" min="0" value="3"></div>
+                    <div><label for="rsFeedbackDelay">Senden nach (Std. nach Besuchsende)</label><input id="rsFeedbackDelay" type="number" min="0" value="3"></div>
                   </div>
-                  <label style="margin-top:10px">Nachricht (optional)</label>
+                  <label for="rsFeedbackMsg" style="margin-top:10px">Nachricht (optional)</label>
                   <textarea id="rsFeedbackMsg" rows="2" placeholder="wir hoffen, es hat Ihnen geschmeckt! Über eine kurze Bewertung freuen wir uns sehr."></textarea>
                   <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Nur an Gäste mit hinterlegter E-Mail; jede Reservierung genau einmal.</p>
                 </div>
@@ -1955,7 +2163,7 @@
               <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
                 <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsBirthdayEnabled" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Geburtstags-Gruß automatisch senden</span></label>
                 <div id="rsBirthdayWrap" class="hidden" style="margin-top:10px">
-                  <label>Nachricht (optional)</label>
+                  <label for="rsBirthdayMsg">Nachricht (optional)</label>
                   <textarea id="rsBirthdayMsg" rows="2" placeholder="alles Gute zum Geburtstag! Kommen Sie doch auf ein Glas Sekt aufs Haus vorbei."></textarea>
                   <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Wird am Geburtstag an Gäste mit hinterlegtem Geburtsdatum + E-Mail gesendet (einmal je Jahr). Geburtsdatum pflegst du in der Gäste-Kartei.</p>
                 </div>
@@ -1965,7 +2173,7 @@
               <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
                 <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsStaffNotify" style="width:auto;margin:0"><span style="font-weight:700;font-size:14px">Team bei neuer/geänderter/stornierter Reservierung benachrichtigen</span></label>
                 <div id="rsStaffWrap" class="hidden" style="margin-top:10px">
-                  <label>Benachrichtigungs-E-Mail(s)</label>
+                  <label for="rsStaffEmail">Benachrichtigungs-E-Mail(s)</label>
                   <input id="rsStaffEmail" placeholder="team@restaurant.de, chef@restaurant.de">
                   <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Mehrere Adressen mit Komma trennen. Nur automatische Reservierungen (Telefon/Online) lösen eine Benachrichtigung aus.</p>
                 </div>
@@ -1992,9 +2200,9 @@
               <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="rsKioskEnabled" style="width:auto;margin:0"><span>Kiosk-Modus fürs Personal aktivieren (iPad)</span></label>
               <div id="rsKioskWrap" class="hidden" style="margin-top:8px">
                 <label style="font-size:13px;font-weight:600">Kiosk-Zugang (Link fürs iPad)</label>
-                <div style="display:flex;gap:8px;align-items:center"><input id="rsKioskLink" readonly style="flex:1;background:var(--paper-2)"><button id="rsCopyKiosk" class="btn btn--ghost sm" type="button">Kopieren</button></div>
+                <div style="display:flex;gap:8px;align-items:center"><input id="rsKioskLink" readonly aria-label="Kiosk-Link" style="flex:1;background:var(--paper-2)"><button id="rsCopyKiosk" class="btn btn--ghost sm" type="button">Kopieren</button></div>
                 <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Diesen Link auf dem iPad öffnen (am besten zum Home-Bildschirm hinzufügen). Das Personal sieht nur Reservierungen &amp; Tischplan und kann arbeiten — keine Einstellungen, kein Admin-Zugang. Erst „Speichern", dann ist der Zugang aktiv.</p>
-                <label style="font-size:13px;font-weight:600;margin-top:12px">Kiosk-Passwort (PIN)</label>
+                <label for="rsKioskPin" style="font-size:13px;font-weight:600;margin-top:12px">Kiosk-Passwort (PIN)</label>
                 <input id="rsKioskPin" inputmode="numeric" autocomplete="off" placeholder="z. B. 4-stellige PIN — leer = kein Passwort" style="max-width:320px">
                 <p class="muted" style="text-align:left;padding:0;margin-top:3px;font-size:12px">Wird beim Öffnen des Kiosk auf dem iPad abgefragt. Leer lassen = ohne Passwort. Am besten eine kurze Zahlen-PIN, die nur das Personal kennt.</p>
                 <div class="stack" style="margin-top:10px"><button id="rsKioskRegen" class="btn btn--ghost sm" type="button">Zugang neu erzeugen (alte Geräte abmelden)</button></div>
@@ -2007,8 +2215,12 @@
 
         <!-- Gäste / CRM (Restaurant-Modus) -->
         <section id="sec-guests" class="section hidden">
-          <h1 class="pagehead">Gäste</h1>
-          <p class="pagesub">Deine Kundenkartei – automatisch aus Reservierungen. Öffne einen Gast für Stammdaten, Kennzeichnungen, Anmerkungen &amp; Newsletter. Der Assistent kennt diese Angaben beim nächsten Anruf.</p>
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead">Gäste</h1>
+              <p class="pagesub">Deine Kundenkartei – automatisch aus Reservierungen. Öffne einen Gast für Stammdaten, Kennzeichnungen, Anmerkungen &amp; Newsletter. Der Assistent kennt diese Angaben beim nächsten Anruf.</p>
+            </div>
+          </div>
           <!-- Listenansicht -->
           <div id="guestListWrap">
             <!-- Newsletter / Aktion senden -->
@@ -2019,9 +2231,9 @@
                 <button id="nlToggle" class="btn btn--ghost sm" type="button" style="margin-left:auto">Verfassen</button>
               </div>
               <div id="nlCompose" class="hidden" style="margin-top:12px">
-                <label>Betreff</label>
+                <label for="nlSubject">Betreff</label>
                 <input id="nlSubject" placeholder="z. B. Unser neues Sommermenü ist da 🌞">
-                <label style="margin-top:10px">Nachricht</label>
+                <label for="nlMessage" style="margin-top:10px">Nachricht</label>
                 <textarea id="nlMessage" rows="5" placeholder="Liebe Gäste,&#10;ab sofort gibt es bei uns…"></textarea>
                 <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
                   <button id="nlSend" class="btn btn--primary sm" type="button">An alle Abonnenten senden</button>
@@ -2113,9 +2325,9 @@
     <div class="pwmodal__card">
       <h3 id="pwModalTitle">Passwort ändern</h3>
       <p class="muted" id="pwModalSub" style="margin-bottom:14px">Wähle ein neues Passwort (mindestens 8 Zeichen).</p>
-      <label>Neues Passwort</label>
+      <label for="pwNew">Neues Passwort</label>
       <input id="pwNew" type="password" autocomplete="new-password" placeholder="••••••••" />
-      <label>Wiederholen</label>
+      <label for="pwNew2">Wiederholen</label>
       <input id="pwNew2" type="password" autocomplete="new-password" placeholder="••••••••" />
       <p id="pwMsg" class="login__err"></p>
       <div class="stack" style="margin-top:14px">
@@ -2318,6 +2530,7 @@
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
         if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
+        if (typeof syncTabbar === 'function') syncTabbar(b.dataset.target);
         if (b.dataset.target === 'sec-live' && typeof liveBesucht === 'function' && tenant) { liveBesucht(); renderLive(); }
         if (b.dataset.target === 'sec-outbound' && typeof renderLive === 'function' && tenant) { renderLive(); $('callTo')?.focus(); }
         if (b.dataset.target === 'sec-kontakte' && typeof ladeKontakte === 'function' && tenant) ladeKontakte();
@@ -2399,6 +2612,99 @@
     };
     $('logoutBtn').onclick = () => sb.auth.signOut();
 
+    // ---- Runde 1: Konto-Menü, Handy-Navigation, Leerzustände, Stimmen-Namen ----
+    // Konto-Menü unten in der Seitenleiste: auf- und zuklappen, Klick daneben oder Escape schließt.
+    (function kontoMenue() {
+      const knopf = $('kontoKnopf'), liste = $('kontoListe'); if (!knopf || !liste) return;
+      const zeigen = (an) => { liste.hidden = !an; knopf.setAttribute('aria-expanded', String(an)); };
+      knopf.onclick = () => zeigen(liste.hidden);
+      liste.addEventListener('click', () => zeigen(false));
+      document.addEventListener('click', (e) => { if (!e.target.closest('#kontoMenue')) zeigen(false); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { zeigen(false); mehrZeigen(false); } });
+    })();
+
+    // Handy-Tab-Leiste: jeder Knopf löst den passenden .nav-item der Seitenleiste aus.
+    // So gibt es nur eine Navigationslogik, und was dort ausgeblendet ist (Branche,
+    // Mitarbeiter-Stufe), fehlt automatisch auch unten und im „Mehr"-Blatt.
+    const navItem = (ziel) => document.querySelector('.nav-item[data-target="' + ziel + '"]');
+    const navSichtbar = (b) => !!b && !b.hidden && !b.classList.contains('hidden');
+    const navText = (b) => [...b.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
+    function syncTabbar(ziel) {
+      ziel = ziel || document.querySelector('.nav-item.active')?.dataset.target;
+      const tabs = [...document.querySelectorAll('.tab-item')];
+      const direkt = tabs.some((t) => t.dataset.tab === ziel && navSichtbar(navItem(ziel)));
+      const offen = $('mehrBlatt')?.classList.contains('offen');
+      tabs.forEach((t) => {
+        if (t.dataset.tab === 'mehr') { t.classList.toggle('active', offen || !direkt); return; }
+        t.hidden = !navSichtbar(navItem(t.dataset.tab));
+        t.classList.toggle('active', !offen && t.dataset.tab === ziel);
+      });
+      document.querySelectorAll('[data-tabbadge]').forEach((s) => {
+        const q = $(s.dataset.tabbadge); if (!q) return;
+        s.textContent = q.textContent; s.classList.toggle('hidden', q.classList.contains('hidden') || !q.textContent.trim());
+      });
+    }
+    // Badges und Sichtbarkeit ändern sich an vielen Stellen – ein Beobachter auf der Seitenleiste reicht.
+    new MutationObserver(() => syncTabbar()).observe(document.querySelector('.side nav'), { attributes: true, attributeFilter: ['class', 'hidden'], subtree: true, childList: true, characterData: true });
+    function mehrBauen() {
+      const wrap = $('mehrInhalt'); if (!wrap) return; wrap.innerHTML = '';
+      const aktiv = document.querySelector('.nav-item.active')?.dataset.target;
+      const inTabs = new Set([...document.querySelectorAll('.tab-item')].map((t) => t.dataset.tab));
+      const eintrag = (text, svg, aktivIst, onclick) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'mehr__eintrag' + (aktivIst ? ' active' : '');
+        b.innerHTML = svg || ''; b.append(document.createTextNode(text)); b.onclick = onclick; return b;
+      };
+      let gruppe = null;
+      for (const el of document.querySelectorAll('.side nav > *')) {
+        if (el.classList.contains('nav-group')) { gruppe = document.createElement('div'); gruppe.className = 'mehr__gruppe'; gruppe.textContent = el.textContent; gruppe.hidden = true; wrap.append(gruppe); continue; }
+        if (!el.classList.contains('nav-item') || !navSichtbar(el) || inTabs.has(el.dataset.target)) continue;
+        if (gruppe) gruppe.hidden = false; // Gruppe nur zeigen, wenn sie Einträge hat
+        const b = eintrag(navText(el), el.querySelector('svg')?.outerHTML, el.dataset.target === aktiv, () => { mehrZeigen(false); el.click(); window.scrollTo({ top: 0 }); });
+        const badge = el.querySelector('.gap-badge');
+        if (badge && !badge.classList.contains('hidden') && badge.textContent.trim()) { const s = document.createElement('span'); s.className = 'gap-badge'; s.textContent = badge.textContent; b.append(s); }
+        wrap.append(b);
+      }
+      const konto = document.createElement('div'); konto.className = 'mehr__gruppe'; konto.textContent = 'Konto'; wrap.append(konto);
+      const mail = document.createElement('div'); mail.className = 'mehr__mail'; mail.textContent = $('userEmail').textContent || '–'; wrap.append(mail);
+      wrap.append(eintrag('Passwort ändern', $('changePwBtn').querySelector('svg')?.outerHTML, false, () => { mehrZeigen(false); $('changePwBtn').click(); }));
+      wrap.append(eintrag('Abmelden', $('logoutBtn').querySelector('svg')?.outerHTML, false, () => { mehrZeigen(false); $('logoutBtn').click(); }));
+    }
+    function mehrZeigen(an) {
+      const m = $('mehrBlatt'); if (!m) return;
+      if (an) mehrBauen();
+      m.classList.toggle('offen', an);
+      $('tabMehr')?.setAttribute('aria-expanded', String(an));
+      syncTabbar();
+    }
+    document.querySelectorAll('.tab-item').forEach((t) => {
+      t.onclick = () => {
+        if (t.dataset.tab === 'mehr') { mehrZeigen(!$('mehrBlatt').classList.contains('offen')); return; }
+        mehrZeigen(false); navItem(t.dataset.tab)?.click(); window.scrollTo({ top: 0 });
+      };
+    });
+    $('mehrZu').onclick = () => mehrZeigen(false);
+    $('kontoAvatarHandy').onclick = () => mehrZeigen(true);
+
+    // Leerer Zustand mit Handlung: data-leer="geh:sec-kb" wechselt den Bereich, "klick:tkNeuAuf" drückt einen Knopf.
+    const ICON_LEER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M12 8v4l2.5 2.5"/></svg>';
+    function leerZustand(text, knopf, aktion) {
+      return '<div class="leer">' + ICON_LEER + '<p>' + text + '</p>' + (knopf ? '<button class="btn btn--primary sm" type="button" data-leer="' + aktion + '">' + knopf + '</button>' : '') + '</div>';
+    }
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-leer]'); if (!b) return;
+      const [art, ziel] = b.dataset.leer.split(':');
+      if (art === 'geh') geh(ziel); else if (art === 'klick') $(ziel)?.click();
+    });
+    // Skelett-Platzhalter statt „Lade …", solange eine Liste noch nicht da ist.
+    const skelettHtml = (n = 4) => '<div class="skelett" aria-hidden="true">' + '<div class="skelett__zeile"></div>'.repeat(n) + '</div>';
+
+    // Anzeigenamen der Stimmen aller Anbieter (gleiche Liste wie in admin.html).
+    // Unbekannte oder rohe Kennungen heißen „Standard", statt als Zeichensalat aufzutauchen.
+    const STIMMEN_NAMEN = { marin: 'Marin', cedar: 'Cedar', alloy: 'Alloy', ash: 'Ash', ballad: 'Ballad', coral: 'Coral', sage: 'Sage', shimmer: 'Shimmer', verse: 'Verse', echo: 'Echo',
+      eve: 'Eve', ara: 'Ara', rex: 'Rex', sal: 'Sal', leo: 'Leo', gleam: 'Gleam', aoede: 'Aoede', puck: 'Puck', charon: 'Charon', kore: 'Kore', fenrir: 'Fenrir', leda: 'Leda', orus: 'Orus', zephyr: 'Zephyr',
+      en_paul_neutral: 'Paul – neutral', en_paul_cheerful: 'Paul – freundlich', en_paul_confident: 'Paul – souverän', en_paul_happy: 'Paul – fröhlich', gb_oliver_neutral: 'Oliver – britisch', gb_jane_sarcasm: 'Jane – weiblich' };
+    const stimmenName = (id) => STIMMEN_NAMEN[String(id || '').toLowerCase()] || 'Standard';
+
     // ---- Passwort ändern (eingeloggt) / zurücksetzen (vergessen) ----
     let pwRecovery = false;
     function openPwModal(recovery = false) {
@@ -2452,6 +2758,7 @@
       const mail = session?.user?.email ?? '';
       $('userEmail').textContent = mail;
       $('userAvatar').textContent = (mail.trim().charAt(0) || '?').toUpperCase();
+      $('userAvatarHandy').textContent = $('userAvatar').textContent; $('kontoMail').textContent = mail;
       accessToken = session?.access_token ?? null;
       // Benachrichtigungs-Erlaubnis (für Anruf-Hinweise) einmalig anfragen.
       if ('Notification' in window && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (_) {} }
@@ -4216,7 +4523,9 @@
       if (LV.auswahl && !liveCalls.has(LV.auswahl)) LV.auswahl = null;
       if (!LV.auswahl && liste.length && window.innerWidth > 900) LV.auswahl = liste[0].call.id;
       const ul = lvEl('Liste'); ul.innerHTML = '';
-      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Anrufe für diese Auswahl.' : (raus ? 'Noch kein ausgehender Anruf. Wähle oben eine Nummer, dann erscheint das Gespräch hier.' : 'Noch keine Anrufe. Ruf deine Nummer an, dann erscheint das Gespräch hier.')) + '</p>';
+      if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Anrufe für diese Auswahl.</p>'
+        : (raus ? leerZustand('Noch kein ausgehender Anruf. Wähle eine Nummer, dann erscheint das Gespräch hier mit Mitschrift.', 'Neuer Anruf', 'klick:obAnrufKnopf')
+          : leerZustand('Noch keine Anrufe. Ruf deine Vocaris-Nummer an, dann erscheint das Gespräch hier mit Zusammenfassung und Verlauf.', 'Testanruf starten', 'geh:sec-number'));
       let tagKey = null;
       liste.forEach((x) => { if (!callIsActive(x.call)) { const k = lvTagKey(x.call.started_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } } ul.append(lvZeile(x)); });
       lvEl('Mehr').classList.toggle('hidden', lvAlleGeladen);
@@ -5130,7 +5439,7 @@
         ['Ton', TON_LABEL[$('tone').value] || $('tone').value],
         ['Sprache', $('language').value === 'en' ? 'Englisch' : 'Deutsch'],
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
-        ['Stimme', stimme ? stimme.name : ($('voiceId').value || 'Standard')],
+        ['Stimme', stimme ? stimme.name : stimmenName($('voiceId').value)],
         ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeTranscript')?.checked === false ? ' · ohne Mitschrift' : '') + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
         ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') : 'aus'],
       ];
@@ -5216,7 +5525,8 @@
       if (kbAuswahl && !alle.some((x) => x.id === kbAuswahl)) kbAuswahl = null;
       if (!kbAuswahl && liste.length && window.innerWidth > 900) kbAuswahl = liste[0].id;
       const ul = $('kbListe'); ul.innerHTML = '';
-      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Einträge für diese Auswahl.' : 'Noch keine Einträge. Zieh eine Vorlage hierher, importiere deine Website oder lege einen Eintrag an.') + '</p>';
+      if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Einträge für diese Auswahl.</p>'
+        : leerZustand('Noch keine Einträge. Zieh eine Vorlage hierher, importiere deine Website oder lege einen Eintrag an – nur darauf antwortet dein Assistent.', '+ Eintrag', 'klick:kbNeuAuf');
       let grp = null;
       liste.forEach((it) => { const k = kbKatName(it); if (k !== grp) { grp = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = k; ul.append(h); } ul.append(kbZeile(it)); });
       renderWissenDetail();
@@ -5242,8 +5552,8 @@
       if (!it) { d.innerHTML = '<p class="lv-leer">Wähle links einen Eintrag, um ihn zu lesen und zu bearbeiten.</p>'; return; }
       const deptSichtbar = !document.querySelector('#sec-kb [data-deptbar]')?.classList.contains('hidden');
       d.innerHTML = '<div class="lv-detailkopf"><div style="min-width:0;flex:1"><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr tk-titel-edit" data-tip="Klicken zum Umbenennen"><span data-titel></span></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopf></div></div>'
-        + '<div class="tk-felder kb-felder"><div><label>Kategorie</label><input data-f="category" list="kbCats" placeholder="z. B. Öffnungszeiten" /></div>' + (deptSichtbar ? '<div><label>Bereich</label><select data-f="department"><option value="general">Allgemein</option><option value="vertrieb">Vertrieb</option><option value="support">Support</option></select></div>' : '') + '</div>'
-        + '<label>Inhalt</label><textarea class="kb-inhalt" data-f="content"></textarea><p class="kb-hinweis" data-hinweis></p>'
+        + '<div class="tk-felder kb-felder"><div><label>Kategorie</label><input data-f="category" aria-label="Kategorie" list="kbCats" placeholder="z. B. Öffnungszeiten" /></div>' + (deptSichtbar ? '<div><label>Bereich</label><select data-f="department" aria-label="Bereich"><option value="general">Allgemein</option><option value="vertrieb">Vertrieb</option><option value="support">Support</option></select></div>' : '') + '</div>'
+        + '<label>Inhalt</label><textarea class="kb-inhalt" data-f="content" aria-label="Inhalt"></textarea><p class="kb-hinweis" data-hinweis></p>'
         + '<div class="stack" style="margin-top:8px" data-aktionen></div>';
       d.querySelector('.lv-zurueck').onclick = () => { kbAuswahl = null; renderWissen(); };
       const tt = d.querySelector('[data-titel]'); tt.textContent = it.title;
@@ -5306,16 +5616,16 @@
     // ---- Persona: Öffnungszeiten-Raster ----
     const H_DAYS = [['mon','Mo'],['tue','Di'],['wed','Mi'],['thu','Do'],['fri','Fr'],['sat','Sa'],['sun','So']];
     const H_WD = (a, b) => ({ mon:[[a,b]], tue:[[a,b]], wed:[[a,b]], thu:[[a,b]], fri:[[a,b]], sat:[], sun:[] });
-    const tInput = (cls, val) => `<input type="time" class="${cls}" value="${val || ''}">`;
+    const tInput = (cls, val, beschriftung) => `<input type="time" class="${cls}" value="${val || ''}" aria-label="${beschriftung || ''}">`;
     function renderHours(data) {
       const g = $('hoursGrid'); if (!g) return; g.innerHTML = '';
       H_DAYS.forEach(([k, lbl]) => {
         const iv = (data && data[k]) || [];
         const r = document.createElement('div'); r.className = 'hrow'; r.dataset.day = k;
         r.innerHTML = `<span class="hday">${lbl}</span>`
-          + tInput('hfrom', iv[0] && iv[0][0]) + `<span class="hsep">–</span>` + tInput('hto', iv[0] && iv[0][1])
+          + tInput('hfrom', iv[0] && iv[0][0], lbl + ' von') + `<span class="hsep">–</span>` + tInput('hto', iv[0] && iv[0][1], lbl + ' bis')
           + `<span class="hsep">·</span>`
-          + tInput('hfrom', iv[1] && iv[1][0]) + `<span class="hsep">–</span>` + tInput('hto', iv[1] && iv[1][1]);
+          + tInput('hfrom', iv[1] && iv[1][0], lbl + ' zweiter Block von') + `<span class="hsep">–</span>` + tInput('hto', iv[1] && iv[1][1], lbl + ' zweiter Block bis');
         g.append(r);
       });
     }
@@ -5679,7 +5989,7 @@
       if (gapAuswahl && !quelle.some((g) => g.id === gapAuswahl)) gapAuswahl = null;
       if (!gapAuswahl && liste.length && window.innerWidth > 900) gapAuswahl = liste[0].id;
       const ul = $('gapListe'); ul.innerHTML = '';
-      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (gapStatus === 'open' ? (gapItems.length ? 'Keine Treffer.' : 'Alles beantwortet. Neue Fragen erscheinen hier sofort nach dem Anruf.') : (gapBeantwortet === null ? 'Wird geladen …' : 'Noch nichts beantwortet.')) + '</p>';
+      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (gapStatus === 'open' ? (gapItems.length ? 'Keine Treffer.' : 'Alles beantwortet. Weiß dein Assistent am Telefon etwas nicht, landet die Frage hier – deine Antwort wandert direkt in die Wissensdatenbank.') : (gapBeantwortet === null ? 'Wird geladen …' : 'Noch nichts beantwortet.')) + '</p>';
       let tagKey = null;
       liste.forEach((g) => { const iso = gapStatus === 'open' ? g.created_at : (g.answered_at || g.created_at); const k = lvTagKey(iso); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } ul.append(gapZeile(g)); });
       renderFrageDetail();
@@ -5708,7 +6018,7 @@
       const dep = g.department || 'general';
       d.innerHTML = '<div class="lv-detailkopf"><div style="min-width:0;flex:1"><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr" data-frage></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopf></div></div>'
         + (g.status === 'open'
-          ? '<label>Antwort</label><textarea class="kb-inhalt" data-antwort placeholder="Antwort eingeben – sie wird als Eintrag in die Wissensdatenbank übernommen (Strg+Enter speichert)."></textarea><p class="kb-hinweis" data-hinweis></p><div class="stack" style="margin-top:8px" data-aktionen></div><div data-aehnlich></div>'
+          ? '<label>Antwort</label><textarea class="kb-inhalt" data-antwort aria-label="Antwort" placeholder="Antwort eingeben – sie wird als Eintrag in die Wissensdatenbank übernommen (Strg+Enter speichert)."></textarea><p class="kb-hinweis" data-hinweis></p><div class="stack" style="margin-top:8px" data-aktionen></div><div data-aehnlich></div>'
           : '<div class="call-summary" data-antwortText></div><div class="stack" style="margin-top:8px" data-aktionen></div>');
       d.querySelector('.lv-zurueck').onclick = () => { gapAuswahl = null; renderFragen(); };
       d.querySelector('[data-frage]').textContent = g.question;
@@ -5955,6 +6265,7 @@
       dbDaten = { c: calls || [], davorN: davorN ?? null, monat: monat || [], msgN: msgN ?? 0, kz: kz || {}, offene: offene || [], gaps: gaps || [], appts: appts || [], nums: nums || [], cfg, sub, kbN: kbN ?? 0, gapsN: gapsN ?? 0, msgs: msgs || [], blockHits: (block || []).reduce((a, b) => a + (b.hits || 0), 0), blockN: (block || []).length, jetzt, heute0 };
       zeichneDashboard();
       q('dbStand').textContent = 'Stand ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      q('dbStand').title = 'Zuletzt aktualisiert um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
       try { const r = await fetch(API + '/api/status', { cache: 'no-store' }); const j = await r.json(); q('dbSystem').innerHTML = j.ok ? '<span class="statusdot"></span> Alle Systeme laufen' : 'Eingeschränkter Betrieb'; } catch { q('dbSystem').textContent = ''; }
     }
 
@@ -6018,8 +6329,7 @@
       [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'wochentag' && dbFilter.wert === i ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'][i]; if (wtage[i]) d.onclick = () => filterSetzen({ art: 'wochentag', wert: i, label: ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'][i] }); wt.append(d); });
       // Fakten zum Assistenten
       const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
-      const stimmeRoh = cfg?.voice_id && !/^[A-Za-z0-9]{15,}$/.test(cfg.voice_id) ? cfg.voice_id.replace(/^en_/, '').replace(/_/g, ' ') : '';
-      const stimme = stimmeRoh ? ' · ' + stimmeRoh.charAt(0).toUpperCase() + stimmeRoh.slice(1) : '';
+      const stimme = ' · ' + stimmenName(cfg?.voice_id); // Anzeigename statt roher Kennung
       const nummern = nums.map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
       q('dbFakten').innerHTML = [
         ['Status', nums.length ? '<span class="statusdot"></span> Aktiv' : '<span class="statusdot" style="background:var(--accent-3)"></span> Einrichtung'],
@@ -6148,7 +6458,8 @@
       if (mgAuswahl && !mgItems.has(mgAuswahl)) mgAuswahl = null;
       if (!mgAuswahl && liste.length && window.innerWidth > 900) mgAuswahl = liste[0].id;
       const ul = $('mgListe'); ul.innerHTML = '';
-      if (!liste.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Nachrichten für diese Auswahl.' : 'Noch keine Nachrichten. Sobald dein Assistent einen Rückruf aufnimmt, erscheint er hier.') + '</p>';
+      if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Nachrichten für diese Auswahl.</p>'
+        : leerZustand('Noch keine Nachrichten. Sobald dein Assistent einen Rückruf oder ein Anliegen aufnimmt, erscheint es hier.', 'So nimmt der Assistent Nachrichten auf', 'geh:sec-kb');
       let tagKey = null;
       liste.forEach((m) => { const k = lvTagKey(m.created_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } ul.append(mgZeile(m)); });
       $('mgMehr').classList.toggle('hidden', mgAlle);
@@ -6426,7 +6737,7 @@
 
     async function ladeZugaenge() {
       const liste = $('tmListe'); if (!liste || !tenant) return;
-      liste.innerHTML = '<p class="lv-leer">Lade …</p>';
+      liste.innerHTML = skelettHtml(3);
       try {
         const r = await apiFetch('/api/mitglieder?tenant_id=' + encodeURIComponent(tenant.id), { headers: numAuth() });
         const j = await r.json();
@@ -6517,7 +6828,8 @@
         : 'Noch keine Einträge. Lege den ersten an, dann erscheinen Namen statt Nummern.';
       ul.innerHTML = '';
       if (!liste.length) {
-        ul.innerHTML = '<p class="lv-leer">' + (ktItems.length ? 'Nichts gefunden.' : 'Noch niemand im Telefonbuch.') + '</p>';
+        ul.innerHTML = ktItems.length ? '<p class="lv-leer">Nichts gefunden.</p>'
+          : leerZustand('Noch niemand im Telefonbuch. Lege den ersten Eintrag an, dann zeigt Vocaris bei Anrufen Namen statt Nummern.', 'Eintrag anlegen', 'klick:ktNeu');
         return;
       }
       liste.forEach((k) => {
@@ -6975,7 +7287,8 @@
       if (tkAuswahl && !tkAlle.some((t) => t.id === tkAuswahl)) tkAuswahl = null;
       if (!tkAuswahl && items.length && window.innerWidth > 900) tkAuswahl = items[0].id;
       const ul = $('tkListe'); ul.innerHTML = '';
-      if (!items.length) ul.innerHTML = '<p class="lv-leer">' + (alle.length ? 'Keine Vorgänge für diese Auswahl.' : 'Noch keine Vorgänge. Nachrichten deines Assistenten erscheinen hier automatisch, oder lege einen von Hand an.') + '</p>';
+      if (!items.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Vorgänge für diese Auswahl.</p>'
+        : leerZustand('Noch keine Vorgänge. Nachrichten deines Assistenten werden automatisch zu Vorgängen mit Nummer und Frist, oder du legst einen von Hand an.', 'Vorgang anlegen', 'klick:tkNeuAuf');
       let grp = null;
       items.forEach((t) => { const [key, titel] = tkGruppe(t); if (key !== grp) { grp = key; const h = document.createElement('div'); h.className = 'lv-tag' + (key === '0-ueber' ? ' ueber' : ''); h.textContent = titel; ul.append(h); } ul.append(tkZeile(t)); });
       renderTicketDetail();
@@ -7039,10 +7352,10 @@
       for (const [k, label] of Object.entries(TK_STATUS)) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm' + (t.status === k ? ' btn--primary' : ' btn--ghost'); b.textContent = label; b.dataset.tip = k === 'done' ? 'Taste E' : (k === 'in_progress' ? 'Taste A' : ''); b.onclick = () => { if (t.status !== k) tkUpdate(t, { status: k }, 'Vorgang #' + t.number + ': ' + label + '.'); }; st.append(b); }
       // Felder (speichern beim Verlassen)
       const f = d.querySelector('[data-felder]');
-      f.innerHTML = '<div><label>Zuständig</label><input data-f="assignee" list="tkWerListe" placeholder="Name" /></div>'
-        + '<div><label>Frist</label><input data-f="due_at" type="datetime-local" /><div class="tk-fristkurz"><button type="button" data-frist="2h">+2 h</button><button type="button" data-frist="morgen">Morgen 9 Uhr</button><button type="button" data-frist="woche">+1 Woche</button><button type="button" data-frist="keine">keine</button></div></div>'
-        + '<div><label>Priorität</label><select data-f="priority"><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select></div>'
-        + '<div><label>Kategorie</label><input data-f="category" list="tkKatListe" placeholder="z. B. Termin, Angebot" /></div>';
+      f.innerHTML = '<div><label>Zuständig</label><input data-f="assignee" aria-label="Zuständig" list="tkWerListe" placeholder="Name" /></div>'
+        + '<div><label>Frist</label><input data-f="due_at" aria-label="Frist" type="datetime-local" /><div class="tk-fristkurz"><button type="button" data-frist="2h">+2 h</button><button type="button" data-frist="morgen">Morgen 9 Uhr</button><button type="button" data-frist="woche">+1 Woche</button><button type="button" data-frist="keine">keine</button></div></div>'
+        + '<div><label>Priorität</label><select data-f="priority" aria-label="Priorität"><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select></div>'
+        + '<div><label>Kategorie</label><input data-f="category" aria-label="Kategorie" list="tkKatListe" placeholder="z. B. Termin, Angebot" /></div>';
       f.querySelector('[data-f=assignee]').value = t.assignee || ''; f.querySelector('[data-f=priority]').value = t.priority || 'normal'; f.querySelector('[data-f=category]').value = t.category || '';
       f.querySelector('[data-f=due_at]').value = t.due_at ? new Date(new Date(t.due_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
       $('tkKatListe').innerHTML = [...new Set(tkAlle.map((x) => x.category).filter(Boolean))].map((k) => '<option value="' + k.replace(/"/g, '&quot;') + '">').join('');
