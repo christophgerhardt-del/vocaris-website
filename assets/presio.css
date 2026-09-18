@@ -515,3 +515,6 @@ pre.code code{background:none;color:inherit;padding:0;font-size:inherit}
 .vgl-fuss{margin-top:14px;font-size:.88rem;color:var(--p-faint);max-width:80ch}
 @media (max-width:640px){.vgl th,.vgl td{padding:11px 12px;font-size:.88rem}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.vgl th:last-child,.vgl td:last-child{min-width:230px}
+.vgl-hinweis{display:none;margin:26px 0 -24px;font-size:.85rem;color:var(--p-faint)}
+@media (max-width:860px){.vgl-hinweis{display:block}}
