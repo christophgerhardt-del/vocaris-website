@@ -4,231 +4,296 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Vocaris · Plattform-Verwaltung</title>
+  <title>Vocaris · Betreiber</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-<link rel="alternate icon" href="assets/favicon.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/tokens.css">
-  <style>
-    :root {
-      --accent:#3ecfd5; --accent-2:#5c5aee; --accent-3:#ff6b5b; --accent-ink:#2b2580;
-      --ink:#14161a; --ink-soft:#4a4f57; --ink-faint:#8b9098;
-      --line:#e7e3da; --white:#fff; --paper:#faf9f6; --paper-2:#f4f2ee;
-      --r:16px; --r-sm:10px; --shadow-sm:0 2px 10px rgba(20,22,26,.05);
-      --shadow:0 18px 50px -18px rgba(10,58,74,.22);
-      --font:'Inter',system-ui,sans-serif; --serif:'Instrument Serif',Georgia,serif;
-    }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:var(--font); color:var(--ink); background:var(--paper-2); line-height:1.5; }
-    a { color:var(--accent); text-decoration:none; }
-    .hidden { display:none !important; }
-
-    /* Login */
-    .login { min-height:100vh; display:grid; place-items:center; padding:24px;
-      background:linear-gradient(150deg,#3ecfd5 0%,#5c5aee 56%,#5b21b6 100%); }
-    .login__card { background:#fff; border-radius:24px; padding:40px 36px; width:100%; max-width:400px;
-      box-shadow:0 40px 90px -30px rgba(10,58,74,.5); }
-    .login__card h1 { font-family:var(--serif); font-weight:400; font-size:30px; margin-bottom:4px; }
-    .login__card .sub { color:var(--ink-soft); font-size:14px; margin-bottom:26px; }
-    label { display:block; font-size:13px; font-weight:600; color:var(--ink-soft); margin:14px 0 6px; }
-    input, select { width:100%; font:inherit; font-size:15px; padding:12px 14px; border:1.5px solid var(--line);
-      border-radius:var(--r-sm); background:#fff; color:var(--ink); }
-    input:focus, select:focus { outline:none; border-color:var(--accent);
-      box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent); }
-    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font:inherit; font-weight:600;
-      font-size:15px; padding:12px 20px; border-radius:100px; border:1px solid transparent; cursor:pointer;
-      transition:transform .15s, box-shadow .15s; }
-    .btn--primary { color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
-    .btn--primary:hover { transform:translateY(-2px); box-shadow:0 16px 34px -10px rgba(10,106,140,.7); }
-    .btn--ghost { color:var(--ink); background:#fff; border-color:var(--line); box-shadow:var(--shadow-sm); }
-    .btn--ghost:hover { transform:translateY(-2px); border-color:#d6d1c5; }
-    .btn--sm { padding:7px 14px; font-size:13px; }
-    .btn--block { width:100%; }
-    .err { color:var(--accent-3); font-size:13.5px; margin-top:12px; min-height:1.1em; font-weight:500; }
-
-    /* App shell */
-    .top { background:#fff; border-bottom:1px solid var(--line); padding:0 28px; height:64px;
-      display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:10; }
-    .top .brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:18px; letter-spacing:-.01em; }
-    .top .brand .m { color:var(--accent); display:flex; }
-    .top .pill { font-size:11.5px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      padding:3px 10px; border-radius:100px; letter-spacing:.02em; }
-    .top .spacer { flex:1; }
-    .top .who { color:var(--ink-faint); font-size:13px; }
-    .wrap { max-width:1100px; margin:0 auto; padding:28px 24px 80px; }
-
-    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .between { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
-    h2.title { font-family:var(--serif); font-weight:400; font-size:26px; margin-bottom:2px; }
-    .muted { color:var(--ink-faint); font-size:13.5px; }
-
-    .card { background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow-sm); }
-    .tenant { padding:18px 20px; margin-bottom:14px; }
-    .tenant__head { display:flex; align-items:flex-start; gap:12px; }
-    .tenant__name { font-size:17px; font-weight:700; letter-spacing:-.01em; }
-    .tenant__email { color:var(--ink-faint); font-size:13px; margin-top:2px; }
-    .badge { font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:100px; white-space:nowrap; }
-    .badge--rest { color:#8a3d17; background:#fdeee2; }
-    .badge--gen { color:var(--accent-ink); background:color-mix(in srgb,var(--accent) 12%,#fff); }
-
-    /* Modulzustand: was die Firma in IHREM Bereich tatsächlich sieht.
-       Bewusst zweifarbig statt nur „an" zu zeigen — ein abgeschaltetes Modul
-       ist eine Information, kein Nichts. */
-    .mods { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
-    .mod { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600;
-           padding:4px 10px; border-radius:100px; border:1px solid var(--line); }
-    .mod--an  { color:#1c6b45; background:#e9f7ef; border-color:#bfe6d0; }
-    .mod--aus { color:var(--ink-faint); background:var(--paper2); }
-    .mod--unbek { color:#8a6d1f; background:#fdf6e3; border-color:#eadfba; }
-    .mod__dot { width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.75; }
-    .ind-wrap { display:inline-flex; align-items:center; gap:6px; }
-    .ind-label { font-size:11.5px; color:var(--ink-faint); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
-    .ind-select { font:inherit; font-size:13px; padding:6px 10px; border:1px solid var(--line);
-                  border-radius:9px; background:#fff; cursor:pointer; }
-    .tenant__stats { display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; }
-    .stat { font-size:13px; color:var(--ink-soft); }
-    .stat b { color:var(--ink); font-weight:700; }
-    .nums { margin-top:12px; display:flex; flex-direction:column; gap:6px; }
-    .num { display:flex; align-items:center; gap:10px; font-size:14px; }
-    .num code { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:3px 9px; font-family:ui-monospace,monospace; }
-    .num .dep { color:var(--ink-faint); font-size:12px; }
-    .tenant__actions { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .prov-wrap { display:inline-flex; align-items:center; gap:6px; margin-left:auto; }
-    .prov-label { font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
-    .prov-select { font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--line); border-radius:100px; background:#fff; color:var(--ink); cursor:pointer; width:auto; }
-
-    dialog { border:none; border-radius:20px; padding:0; box-shadow:0 40px 90px -30px rgba(10,58,74,.5); max-width:440px; width:92%; }
-    dialog::backdrop { background:rgba(20,18,50,.45); backdrop-filter:blur(2px); }
-    .dlg { padding:28px; }
-    .dlg h3 { font-family:var(--serif); font-weight:400; font-size:23px; margin-bottom:16px; }
-    .dlg .foot { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
-    .radio { display:flex; gap:10px; margin-top:6px; }
-    .radio label { flex:1; margin:0; padding:14px; border:1.5px solid var(--line); border-radius:12px; cursor:pointer;
-      font-weight:600; color:var(--ink); transition:border-color .15s, background .15s; }
-    .radio label.sel { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 8%,#fff); }
-    .radio .d { display:block; font-weight:400; font-size:12.5px; color:var(--ink-faint); margin-top:4px; }
-    .radio input { display:none; }
-
-    .toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); opacity:0;
-      background:var(--ink); color:#fff; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:500;
-      pointer-events:none; transition:opacity .2s, transform .2s; z-index:50; }
-    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-    .toast.err { background:var(--accent-3); }
-    .empty { text-align:center; padding:60px 20px; color:var(--ink-faint); }
-
-    /* Margen-Tabelle: Zahlen rechtsbündig, Gesamtzeile fett, negative Marge rot –
-       der Betreiber soll auf einen Blick sehen, welche Firma Geld kostet. */
-    .margen { padding:6px 20px 10px; margin-top:14px; overflow-x:auto; }
-    .margen table { width:100%; border-collapse:collapse; font-size:14px; }
-    .margen th, .margen td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
-    .margen th { font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
-    .margen th:first-child, .margen td:first-child, .margen th:nth-child(2), .margen td:nth-child(2) { text-align:left; }
-    .margen tfoot td { font-weight:700; border-bottom:none; border-top:2px solid var(--ink); }
-    .margen .neg { color:var(--accent-3); font-weight:700; }
-    .margen .pos { color:#1c6b45; font-weight:700; }
-  </style>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="alternate icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 
-  <!-- Login-Gate -->
+  <!-- Login-Gate: erst Supabase-Anmeldung, dann bestätigt /api/admin/me, dass
+       dieser Login in platform_admins steht. Ohne diese Bestätigung bleibt die
+       Seite hier stehen. -->
   <div id="login" class="login">
     <div class="login__card">
-      <div class="top__pill" style="margin-bottom:14px"><span class="pill">PLATTFORM</span></div>
-      <h1>Vocaris-Verwaltung</h1>
-      <p class="sub">Interner Bereich · nur für Plattform-Administratoren.</p>
-      <form id="loginForm">
-        <label>E-Mail</label>
+      <span class="pill">BETREIBER</span>
+      <h1 style="margin-top:12px">Vocaris-Verwaltung</h1>
+      <p class="sub">Interner Bereich, nur für Plattform-Administratoren.</p>
+      <form id="loginForm" novalidate>
+        <label for="email">E-Mail</label>
         <input id="email" type="email" autocomplete="username" required />
-        <label>Passwort</label>
+        <label for="password">Passwort</label>
         <input id="password" type="password" autocomplete="current-password" required />
-        <div class="err" id="loginErr"></div>
-        <button class="btn btn--primary btn--block" style="margin-top:20px">Anmelden</button>
+        <div class="err" id="loginErr" role="alert"></div>
+        <button class="btn btn--primary btn--block login__submit" type="submit">Anmelden</button>
       </form>
     </div>
   </div>
 
-  <!-- App -->
-  <div id="app" class="hidden">
-    <div class="top">
-      <div class="brand"><span class="m">◎</span> Vocaris <span class="pill">ADMIN</span></div>
-      <div class="spacer"></div>
-      <span class="who" id="who"></span>
-      <button class="btn btn--ghost btn--sm" id="logout">Abmelden</button>
-    </div>
-    <div class="wrap">
-      <div class="between" style="margin-bottom:20px">
-        <div>
-          <h2 class="title">Firmen</h2>
-          <div class="muted" id="tenantCount">…</div>
-        </div>
-        <button class="btn btn--primary" id="newBtn">+ Neue Firma</button>
+  <!-- Grundgerüst -->
+  <div id="app" class="shell hidden">
+    <aside class="side">
+      <div class="brand">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="vk-adm" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient></defs><circle cx="50" cy="52" r="42" fill="url(#vk-adm)"/><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g></svg>
+        Vocaris <span class="pill">BETREIBER</span>
       </div>
-      <div id="tenantList"></div>
+      <nav aria-label="Bereiche">
+        <button class="nav-item active" type="button" data-target="sec-firmen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/></svg>Firmen <span class="zahl" id="navFirmen"></span></button>
+        <button class="nav-item" type="button" data-target="sec-margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Margen</button>
+        <button class="nav-item" type="button" data-target="sec-nummern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Nummern <span class="zahl" id="navNummern"></span></button>
+        <button class="nav-item" type="button" data-target="sec-anbieter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16M7 8v8M17 8v8M2 11v2M22 11v2"/></svg>Anbieter &amp; Stimmen</button>
+        <button class="nav-item" type="button" data-target="sec-system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>System</button>
+      </nav>
+      <div class="foot">
+        <span class="side__avatar" id="avatar" aria-hidden="true">·</span>
+        <span class="side__email" id="who"></span>
+        <button class="btn btn--ghost btn--sym side__abmelden" id="logout" type="button" aria-label="Abmelden" title="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+      </div>
+    </aside>
 
-      <!-- Margen: was jede Firma im Monat bringt (Abo) gegen das, was ihre Anrufe kosten -->
-      <div class="between" style="margin:36px 0 12px">
-        <div>
-          <h2 class="title">Margen (30 Tage)</h2>
-          <div class="muted" id="margenInfo">…</div>
+    <!-- Handy: feste Tab-Leiste unten. Die Knöpfe lösen den passenden
+         .nav-item aus, damit es nur eine Navigationslogik gibt. -->
+    <nav class="tabbar" aria-label="Bereiche">
+      <button class="tab-item active" type="button" data-tab="sec-firmen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"/></svg>Firmen</button>
+      <button class="tab-item" type="button" data-tab="sec-margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Margen</button>
+      <button class="tab-item" type="button" data-tab="sec-nummern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Nummern</button>
+      <button class="tab-item" type="button" data-tab="sec-anbieter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16M7 8v8M17 8v8M2 11v2M22 11v2"/></svg>Anbieter</button>
+      <button class="tab-item" type="button" data-tab="sec-system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>System</button>
+    </nav>
+
+    <main class="main">
+
+      <!-- ── Firmen ─────────────────────────────────────────────────────── -->
+      <section id="sec-firmen">
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">Firmen</h1>
+            <p class="pagesub" id="firmenSub">Lade …</p>
+          </div>
+          <div class="db-aktionen">
+            <input class="suche" id="fSuche" type="search" placeholder="Name, E-Mail oder Nummer" aria-label="Firmen durchsuchen" />
+            <button class="btn btn--ghost btn--sym" id="firmenReload" type="button" aria-label="Neu laden" title="Neu laden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+            <button class="btn btn--primary" id="neuBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Neue Firma</button>
+          </div>
         </div>
-        <button class="btn btn--ghost btn--sm" id="margenReload">Neu laden</button>
-      </div>
-      <div class="card margen" id="margen"></div>
-    </div>
+
+        <!-- Kacheln: Firmen, Anrufe, Kosten, Marge – die letzten beiden aus der Margen-Route -->
+        <div class="db-kpis" id="firmenKpis">
+          <div class="db-kpi"><div class="k">Firmen</div><div class="v" id="kFirmen">–</div><div class="d" id="kFirmenD">&nbsp;</div></div>
+          <div class="db-kpi"><div class="k">Anrufe, 30 Tage</div><div class="v" id="kAnrufe">–</div><div class="d" id="kAnrufeD">&nbsp;</div></div>
+          <button class="db-kpi" type="button" data-geh="sec-margen"><div class="k">Kosten, 30 Tage</div><div class="v" id="kKosten">–</div><div class="d" id="kKostenD">&nbsp;</div></button>
+          <button class="db-kpi" type="button" data-geh="sec-margen"><div class="k">Marge, 30 Tage</div><div class="v" id="kMarge">–</div><div class="d" id="kMargeD">&nbsp;</div></button>
+        </div>
+
+        <!-- Filter: Chips je Gruppe; ein Klick auf „Alle" hebt die Gruppe auf -->
+        <div class="filter" id="filter" aria-label="Filter">
+          <div class="fgruppe"><span>Branche</span>
+            <button class="chip aktiv" type="button" data-filter="branche" data-wert="">Alle</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="restaurant">Restaurant</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="general">Allgemein</button>
+          </div>
+          <div class="fgruppe"><span>Anbieter</span>
+            <button class="chip aktiv" type="button" data-filter="anbieter" data-wert="">Alle</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="openai">OpenAI</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="live">GPT-Live</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="gemini">Gemini</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="grok">Grok</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral">Mistral</button>
+          </div>
+          <div class="fgruppe"><span>Tarif</span>
+            <button class="chip aktiv" type="button" data-filter="tarif" data-wert="">Alle</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="klein">Klein</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="standard">Standard</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="gross">Groß</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="trial">Test</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="ohne">Ohne Abo</button>
+          </div>
+          <div class="fgruppe"><span>Status</span>
+            <button class="chip aktiv" type="button" data-filter="status" data-wert="">Alle</button>
+            <button class="chip" type="button" data-filter="status" data-wert="aktiv">Mit Anrufen</button>
+            <button class="chip" type="button" data-filter="status" data-wert="still">Ohne Anrufe</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer">Ohne Nummer</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-login">Ohne Login</button>
+            <button class="chip" type="button" data-filter="status" data-wert="widerspruch">Branche ≠ Module</button>
+          </div>
+        </div>
+
+        <div class="lv-split" id="firmenSplit">
+          <div class="panel lv-liste" id="firmenListe">
+            <div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div>
+          </div>
+          <!-- Platzhalter, solange keine Firma gewählt ist (nur Desktop, auf dem Handy liegt das Detail über der Liste) -->
+          <div class="panel detail-leer" id="detailLeer"><p class="muted">Wähle links eine Firma. Hier stehen dann Nummern, Anbieter und Stimme, Tarif, Kosten und Module.</p></div>
+          <!-- Detailkarte: wird aus tenants + margen befüllt -->
+          <div class="panel lv-detail" id="detail" hidden>
+            <button class="btn btn--ghost detail__zu" id="detailZu" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Zurück zur Liste</button>
+            <div id="detailInhalt"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Margen ─────────────────────────────────────────────────────── -->
+      <section id="sec-margen" hidden>
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">Margen, 30 Tage</h1>
+            <p class="pagesub" id="margenSub">Umsatz ist der Monatspreis laut Abo, Kosten sind Telnyx plus KI je Anruf.</p>
+          </div>
+          <div class="db-aktionen">
+            <button class="chip" type="button" id="margenNurNegativ" aria-pressed="false">Nur negative</button>
+            <button class="btn btn--ghost btn--sym" id="margenReload" type="button" aria-label="Neu laden" title="Neu laden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+          </div>
+        </div>
+        <div class="db-kpis">
+          <div class="db-kpi"><div class="k">Umsatz</div><div class="v" id="mUmsatz">–</div><div class="d" id="mUmsatzD">&nbsp;</div></div>
+          <div class="db-kpi"><div class="k">Kosten</div><div class="v" id="mKosten">–</div><div class="d" id="mKostenD">&nbsp;</div></div>
+          <div class="db-kpi"><div class="k">Marge</div><div class="v" id="mMarge">–</div><div class="d" id="mMargeD">&nbsp;</div></div>
+          <div class="db-kpi"><div class="k">Minuten</div><div class="v" id="mMinuten">–</div><div class="d" id="mMinutenD">&nbsp;</div></div>
+        </div>
+        <div class="panel tabelle" id="margenBox">
+          <div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div>
+        </div>
+      </section>
+
+      <!-- ── Nummern ────────────────────────────────────────────────────── -->
+      <section id="sec-nummern" hidden>
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">Nummern</h1>
+            <p class="pagesub" id="nummernSub">Alle Telefonnummern und die Firma, der sie gehören.</p>
+          </div>
+          <div class="db-aktionen">
+            <button class="btn btn--primary" id="nummerNeuBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nummer zuweisen</button>
+          </div>
+        </div>
+        <div class="panel tabelle" id="nummernBox">
+          <div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div>
+        </div>
+      </section>
+
+      <!-- ── Anbieter & Stimmen ─────────────────────────────────────────── -->
+      <section id="sec-anbieter" hidden>
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">Anbieter &amp; Stimmen</h1>
+            <p class="pagesub">Welches Modell die Anrufe je Firma führt und mit welcher Stimme. Ändern geht in der Firmenkarte.</p>
+          </div>
+        </div>
+        <div class="anbieter-grid" id="anbieterBox"></div>
+      </section>
+
+      <!-- ── System ─────────────────────────────────────────────────────── -->
+      <section id="sec-system" hidden>
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">System</h1>
+            <p class="pagesub">Backend-Stand und Sitzung.</p>
+          </div>
+          <div class="db-aktionen">
+            <button class="btn btn--ghost" id="systemReload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Neu prüfen</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Backend</h3>
+          <dl class="db-fakten" id="systemFakten"><dt>Status</dt><dd>Lade …</dd></dl>
+        </div>
+        <div class="panel">
+          <h3>Sitzung</h3>
+          <dl class="db-fakten" id="sitzungFakten"></dl>
+        </div>
+        <div class="panel">
+          <h3>Verweise</h3>
+          <div class="db-aktionen">
+            <a class="btn btn--ghost" href="app.html" target="_blank" rel="noopener">Kundenbereich</a>
+            <a class="btn btn--ghost" href="./" target="_blank" rel="noopener">Website</a>
+            <a class="btn btn--ghost" href="https://ki-anruf.onrender.com/api/status" target="_blank" rel="noopener">/api/status</a>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <!-- Dialog: Neue Firma -->
-  <dialog id="newDlg">
+  <dialog id="newDlg" aria-labelledby="newTitel">
+    <form class="dlg" id="newForm" method="dialog" novalidate>
+      <h3 id="newTitel">Neue Firma anlegen</h3>
+      <p class="muted">Legt Firma und Login zusammen an. Der Kunde kann sich sofort anmelden.</p>
+      <label for="nName">Firmenname</label>
+      <input id="nName" required placeholder="z. B. Trattoria da Vinci" autocomplete="organization" />
+      <label for="nEmail">Login-E-Mail des Kunden</label>
+      <input id="nEmail" type="email" required placeholder="inhaber@restaurant.de" autocomplete="off" />
+      <label for="nPass">Start-Passwort</label>
+      <input id="nPass" type="text" required minlength="8" placeholder="mindestens 8 Zeichen" autocomplete="off" />
+      <div class="feldhinweis">Gib das Passwort an den Kunden weiter, er kann es im Kundenbereich ändern.</div>
+      <label id="nBrancheLabel">Branche</label>
+      <div class="radio" id="nIndustry" role="radiogroup" aria-labelledby="nBrancheLabel">
+        <label><input type="radio" name="ind" value="restaurant" checked />Restaurant<span class="d">Reservierung, Tischplan und Gästeliste sind sofort aktiv</span></label>
+        <label><input type="radio" name="ind" value="general" />Allgemein<span class="d">Assistent, Wissensbasis und Termine, ohne Restaurant-Funktionen</span></label>
+      </div>
+      <div class="err" id="newErr" role="alert"></div>
+      <div class="foot">
+        <button type="button" class="btn btn--ghost" id="newCancel">Abbrechen</button>
+        <button type="submit" class="btn btn--primary" id="newSave">Firma anlegen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog: Nummer zuweisen (aus der Firmenkarte mit vorgewählter Firma,
+       aus dem Bereich Nummern mit freier Wahl) -->
+  <dialog id="numDlg" aria-labelledby="numTitel">
+    <form class="dlg" id="numForm" method="dialog" novalidate>
+      <h3 id="numTitel">Telefonnummer zuweisen</h3>
+      <p class="muted">Verknüpft eine vorhandene Nummer mit einer Firma. Ist sie schon vergeben, wird sie umgehängt.</p>
+      <label for="numTenant">Firma</label>
+      <select id="numTenant" required></select>
+      <label for="numVal">Nummer</label>
+      <input id="numVal" required inputmode="tel" placeholder="+498941629762" autocomplete="off" />
+      <div class="feldhinweis">Im Format E.164, also mit Landesvorwahl und ohne Leerzeichen.</div>
+      <label for="numDep">Abteilung</label>
+      <select id="numDep">
+        <option value="general">Allgemein</option>
+        <option value="vertrieb">Vertrieb</option>
+        <option value="support">Support</option>
+      </select>
+      <div class="err" id="numErr" role="alert"></div>
+      <div class="foot">
+        <button type="button" class="btn btn--ghost" id="numCancel">Abbrechen</button>
+        <button type="submit" class="btn btn--primary" id="numSave">Zuweisen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog: Firma umbenennen -->
+  <dialog id="nameDlg" aria-labelledby="nameTitel">
+    <form class="dlg" id="nameForm" method="dialog" novalidate>
+      <h3 id="nameTitel">Firma umbenennen</h3>
+      <label for="nameVal">Neuer Name</label>
+      <input id="nameVal" required autocomplete="organization" />
+      <div class="err" id="nameErr" role="alert"></div>
+      <div class="foot">
+        <button type="button" class="btn btn--ghost" id="nameCancel">Abbrechen</button>
+        <button type="submit" class="btn btn--primary" id="nameSave">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog: Rückfrage (ersetzt window.confirm, damit Text und Knöpfe zur Seite passen) -->
+  <dialog id="fragDlg" aria-labelledby="fragTitel">
     <div class="dlg">
-      <h3>Neue Firma anlegen</h3>
-      <form id="newForm">
-        <label>Firmenname</label>
-        <input id="nName" required placeholder="z. B. Trattoria da Vinci" />
-        <label>Login-E-Mail des Kunden</label>
-        <input id="nEmail" type="email" required placeholder="inhaber@restaurant.de" />
-        <label>Start-Passwort</label>
-        <input id="nPass" required minlength="8" placeholder="min. 8 Zeichen" />
-        <label>Branche</label>
-        <div class="radio" id="nIndustry">
-          <label data-v="restaurant"><input type="radio" name="ind" value="restaurant" checked />Restaurant
-            <span class="d">Reservierung, Tischplan &amp; Gästeliste sind sofort aktiv</span></label>
-          <label data-v="general"><input type="radio" name="ind" value="general" />Allgemein
-            <span class="d">Assistent, Wissensbasis &amp; Termine — ohne Restaurant-Funktionen</span></label>
-        </div>
-        <div class="err" id="newErr"></div>
-        <div class="foot">
-          <button type="button" class="btn btn--ghost" id="newCancel">Abbrechen</button>
-          <button type="submit" class="btn btn--primary" id="newSave">Firma anlegen</button>
-        </div>
-      </form>
+      <h3 id="fragTitel"></h3>
+      <p class="muted" id="fragText" style="white-space:pre-line"></p>
+      <div class="foot">
+        <button type="button" class="btn btn--ghost" id="fragNein">Abbrechen</button>
+        <button type="button" class="btn btn--primary" id="fragJa">Ja</button>
+      </div>
     </div>
   </dialog>
 
-  <!-- Dialog: Nummer zuweisen -->
-  <dialog id="numDlg">
-    <div class="dlg">
-      <h3>Telefonnummer zuweisen</h3>
-      <p class="muted" id="numFor" style="margin-bottom:6px"></p>
-      <form id="numForm">
-        <label>Nummer (E.164)</label>
-        <input id="numVal" required placeholder="+498941629762" />
-        <label>Abteilung</label>
-        <select id="numDep">
-          <option value="general">Allgemein</option>
-          <option value="vertrieb">Vertrieb</option>
-          <option value="support">Support</option>
-        </select>
-        <div class="err" id="numErr"></div>
-        <div class="foot">
-          <button type="button" class="btn btn--ghost" id="numCancel">Abbrechen</button>
-          <button type="submit" class="btn btn--primary">Zuweisen</button>
-        </div>
-      </form>
-    </div>
-  </dialog>
-
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -238,23 +303,82 @@
     const API = 'https://ki-anruf.onrender.com';
     const $ = (id) => document.getElementById(id);
     let token = null;
+    let sitzung = null;
 
-    function toast(msg, kind = '') { const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + kind; setTimeout(() => (t.className = 'toast'), 2800); }
+    // ---- Helfer ----
+    let toastTimer = 0;
+    function toast(msg, kind = '') {
+      const t = $('toast'); t.textContent = msg; t.className = 'toast show ' + kind;
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.className = 'toast'), 3000);
+    }
     const auth = () => ({ 'content-type': 'application/json', authorization: 'Bearer ' + token });
-    async function api(path, body) {
-      const res = await fetch(API + path, { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
+    // Alle Admin-Routen sind POST mit JSON-Body; nur /margen ist GET (siehe server.ts).
+    async function api(path, body, methode = 'POST') {
+      const res = await fetch(API + path, methode === 'GET'
+        ? { headers: auth() }
+        : { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || 'Fehler');
+      if (!res.ok) throw new Error(d.error || 'Der Server hat mit Fehler ' + res.status + ' geantwortet.');
       return d;
     }
-    const esc = (s) => (s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const eur = (n) => Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+    const zahl = (n, nk = 0) => Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: nk, maximumFractionDigits: nk });
+    const datum = (iso) => iso ? new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
+    const plural = (n, eins, viele) => n + ' ' + (n === 1 ? eins : viele);
+    const ICON_LEER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>';
+    const leer = (text, knopf, aktion) => '<div class="leer">' + ICON_LEER + '<p>' + esc(text) + '</p>'
+      + (knopf ? '<button class="btn btn--primary" type="button" data-leer="' + esc(aktion) + '">' + esc(knopf) + '</button>' : '') + '</div>';
+    const SKELETT = '<div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div>';
+
+    // Rückfrage als Dialog statt window.confirm: gleicher Stil wie der Rest,
+    // und der Text darf länger sein als eine Browser-Box verträgt.
+    function frage(titel, text, ja = 'Ja') {
+      return new Promise((res) => {
+        $('fragTitel').textContent = titel; $('fragText').textContent = text; $('fragJa').textContent = ja;
+        const d = $('fragDlg');
+        const zu = (antwort) => { d.close(); $('fragJa').onclick = $('fragNein').onclick = null; d.oncancel = null; res(antwort); };
+        $('fragJa').onclick = () => zu(true); $('fragNein').onclick = () => zu(false);
+        d.oncancel = (e) => { e.preventDefault(); zu(false); };
+        d.showModal();
+      });
+    }
+
+    // ---- Namen und Listen ----
+    const ANBIETER = { openai: 'OpenAI (GPT-Realtime)', live: 'OpenAI GPT-Live (Vollduplex)', gemini: 'Google Gemini Live', grok: 'xAI Grok Voice', mistral: 'Mistral (EU/DSGVO)' };
+    const ANBIETER_KURZ = { openai: 'OpenAI', live: 'GPT-Live', gemini: 'Gemini', grok: 'Grok', mistral: 'Mistral' };
+    const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
+    const ABTEILUNG = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
+    // Stimmen je Anbieter: nur diese sind für das jeweilige Modell gültig.
+    const VOICES_BY_PROVIDER = {
+      openai: [['marin', 'Marin'], ['cedar', 'Cedar'], ['alloy', 'Alloy'], ['ash', 'Ash'], ['ballad', 'Ballad'], ['coral', 'Coral'], ['sage', 'Sage'], ['shimmer', 'Shimmer'], ['verse', 'Verse'], ['echo', 'Echo']],
+      grok: [['eve', 'Eve'], ['ara', 'Ara'], ['rex', 'Rex'], ['sal', 'Sal'], ['leo', 'Leo']],
+      gemini: [['Aoede', 'Aoede'], ['Puck', 'Puck'], ['Charon', 'Charon'], ['Kore', 'Kore'], ['Fenrir', 'Fenrir'], ['Leda', 'Leda'], ['Orus', 'Orus'], ['Zephyr', 'Zephyr']],
+      live: [['gleam', 'Gleam'], ['marin', 'Marin'], ['cedar', 'Cedar'], ['alloy', 'Alloy'], ['sage', 'Sage'], ['verse', 'Verse']],
+      mistral: [['en_paul_neutral', 'Paul – neutral'], ['en_paul_cheerful', 'Paul – freundlich'], ['en_paul_confident', 'Paul – souverän'], ['en_paul_happy', 'Paul – fröhlich'], ['gb_oliver_neutral', 'Oliver – britisch'], ['gb_jane_sarcasm', 'Jane – weiblich']],
+    };
+    const stimmeName = (provider, id) => (VOICES_BY_PROVIDER[provider] || []).find(([v]) => v === id)?.[1] || id || '–';
+    function voiceOptions(provider, current) {
+      const list = VOICES_BY_PROVIDER[provider] || VOICES_BY_PROVIDER.openai;
+      const valid = list.some(([v]) => v === current);
+      return list.map(([v, label]) => `<option value="${esc(v)}"${(valid ? v === current : v === list[0][0]) ? ' selected' : ''}>${esc(label)}</option>`).join('');
+    }
+
+    // ---- Zustand ----
+    let tenants = [];          // aus /api/admin/tenants/list
+    let margen = null;         // aus /api/admin/margen
+    const margeVon = (id) => margen?.zeilen.find((z) => z.tenantId === id) || null;
+    let aktiveFirma = null;    // id der geöffneten Detailkarte
+    const filter = { branche: '', anbieter: '', tarif: '', status: '' };
+    let suche = '';
+    let geladenUm = null;
 
     // ---- Auth ----
     $('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       $('loginErr').textContent = '';
       const { data, error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
-      if (error) { $('loginErr').textContent = 'Anmeldung fehlgeschlagen.'; return; }
+      if (error) { $('loginErr').textContent = 'Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.'; return; }
       await enter(data.session);
     });
     $('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
@@ -263,172 +387,265 @@
       token = session?.access_token ?? null;
       if (!token) return showLogin();
       // Admin-Gate: Backend bestätigt, dass dieser Login Plattform-Admin ist.
+      // Body '{}' zwingend: Fastify lehnt POST mit content-type application/json
+      // und LEEREM Body mit 400 ab, das wurde fälschlich als „kein Admin" gewertet.
       try {
-        // Body '{}' zwingend: Fastify lehnt POST mit content-type application/json
-        // und LEEREM Body mit 400 ab – das wurde faelschlich als "kein Admin" gewertet.
         const res = await fetch(API + '/api/admin/me', { method: 'POST', headers: auth(), body: '{}' });
         if (!res.ok) throw new Error();
       } catch {
         $('loginErr').textContent = 'Dieser Zugang ist kein Plattform-Administrator.';
         await sb.auth.signOut(); token = null; return showLogin();
       }
+      sitzung = session;
       $('who').textContent = session.user.email;
+      $('avatar').textContent = (session.user.email || '·')[0].toUpperCase();
       $('login').classList.add('hidden');
       $('app').classList.remove('hidden');
-      loadTenants();
-      loadMargen();
+      ladeAlles();
+      ladeSystem();
     }
     function showLogin() { $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
 
+    // ---- Navigation: eine Logik für Seitenleiste und Tab-Leiste ----
+    function geh(ziel) {
+      document.querySelectorAll('main > section').forEach((s) => (s.hidden = s.id !== ziel));
+      document.querySelectorAll('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.target === ziel));
+      document.querySelectorAll('.tab-item').forEach((b) => b.classList.toggle('active', b.dataset.tab === ziel));
+      document.body.classList.remove('zeigt-detail');
+      window.scrollTo({ top: 0 });
+    }
+    document.querySelectorAll('.nav-item').forEach((b) => (b.onclick = () => geh(b.dataset.target)));
+    document.querySelectorAll('.tab-item').forEach((b) => (b.onclick = () => geh(b.dataset.tab)));
+    document.querySelectorAll('[data-geh]').forEach((b) => (b.onclick = () => geh(b.dataset.geh)));
+
+    // ---- Laden ----
+    async function ladeAlles() {
+      $('firmenListe').innerHTML = SKELETT;
+      $('margenBox').innerHTML = SKELETT;
+      $('nummernBox').innerHTML = SKELETT;
+      // Beide Routen parallel; fällt eine aus, zeigt ihr Bereich den Fehler, der andere läuft.
+      const [tRes, mRes] = await Promise.allSettled([api('/api/admin/tenants/list'), api('/api/admin/margen', null, 'GET')]);
+      geladenUm = new Date();
+      if (tRes.status === 'fulfilled') tenants = tRes.value.tenants || [];
+      else { tenants = []; $('firmenListe').innerHTML = leer(tRes.reason.message, 'Noch einmal laden', 'reload'); $('firmenSub').textContent = 'Firmen konnten nicht geladen werden.'; }
+      if (mRes.status === 'fulfilled') margen = mRes.value; else { margen = null; $('margenBox').innerHTML = leer(mRes.reason.message, 'Noch einmal laden', 'reload-margen'); }
+      renderKpis();
+      if (tRes.status === 'fulfilled') renderFirmen();
+      if (mRes.status === 'fulfilled') renderMargen();
+      renderNummern();
+      renderAnbieter();
+      renderSitzung();
+      if (aktiveFirma && tenants.some((t) => t.id === aktiveFirma)) renderDetail(aktiveFirma);
+    }
+    async function ladeMargen() {
+      $('margenBox').innerHTML = SKELETT;
+      try { margen = await api('/api/admin/margen', null, 'GET'); renderKpis(); renderMargen(); if (aktiveFirma) renderDetail(aktiveFirma); }
+      catch (e) { margen = null; $('margenBox').innerHTML = leer(e.message, 'Noch einmal laden', 'reload-margen'); }
+    }
+    $('firmenReload').onclick = ladeAlles;
+    $('margenReload').onclick = ladeMargen;
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-leer]'); if (!b) return;
+      const a = b.dataset.leer;
+      if (a === 'reload') ladeAlles();
+      else if (a === 'reload-margen') ladeMargen();
+      else if (a === 'neu') $('neuBtn').click();
+      else if (a === 'filter-weg') { Object.keys(filter).forEach((k) => (filter[k] = '')); suche = ''; $('fSuche').value = ''; syncFilterChips(); renderFirmen(); }
+      else if (a === 'nummer') openNumDlg(null);
+    });
+
+    // ---- Kacheln ----
+    function renderKpis() {
+      const g = margen?.gesamt;
+      const mitNummer = tenants.filter((t) => t.numbers.length).length;
+      const anrufe = tenants.reduce((n, t) => n + (t.calls30d || 0), 0);
+      $('kFirmen').textContent = zahl(tenants.length);
+      $('kFirmenD').textContent = plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer';
+      $('kAnrufe').textContent = zahl(anrufe);
+      $('kAnrufeD').textContent = plural(tenants.filter((t) => t.calls30d > 0).length, 'Firma', 'Firmen') + ' mit Anrufen';
+      $('kKosten').textContent = g ? eur(g.kosten.total) : '–';
+      $('kKostenD').textContent = g ? 'Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai) : 'Margen nicht geladen';
+      $('kMarge').textContent = g ? eur(g.marge) : '–';
+      $('kMarge').className = 'v ' + (g ? (g.marge < 0 ? 'minus' : g.marge > 0 ? 'plus' : '') : '');
+      $('kMargeD').textContent = g ? 'Umsatz ' + eur(g.umsatz) : 'Margen nicht geladen';
+      $('navFirmen').textContent = tenants.length || '';
+      $('navNummern').textContent = tenants.reduce((n, t) => n + t.numbers.length, 0) || '';
+      $('firmenSub').textContent = plural(tenants.length, 'Firma', 'Firmen') + ' · ' + plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer · ' + zahl(anrufe) + ' Anrufe in 30 Tagen';
+      if (g) {
+        $('mUmsatz').textContent = eur(g.umsatz); $('mUmsatzD').textContent = plural(margen.zeilen.filter((z) => z.monatspreis != null).length, 'zahlendes Abo', 'zahlende Abos');
+        $('mKosten').textContent = eur(g.kosten.total); $('mKostenD').textContent = 'Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai);
+        $('mMarge').textContent = eur(g.marge); $('mMarge').className = 'v ' + (g.marge < 0 ? 'minus' : g.marge > 0 ? 'plus' : '');
+        $('mMargeD').textContent = plural(margen.zeilen.filter((z) => z.marge < 0).length, 'Firma', 'Firmen') + ' im Minus';
+        $('mMinuten').textContent = zahl(g.minuten, 1); $('mMinutenD').textContent = zahl(g.anrufe) + ' Anrufe';
+        $('margenSub').textContent = 'Seit ' + datum(margen.seit) + ' · Umsatz ist der Monatspreis laut Abo, Kosten sind Telnyx plus KI je Anruf.';
+      }
+    }
+
     // ---- Firmenliste ----
-    async function loadTenants() {
-      const list = $('tenantList');
-      list.innerHTML = '<div class="empty">Lade Firmen…</div>';
-      try {
-        const { tenants } = await api('/api/admin/tenants/list');
-        $('tenantCount').textContent = tenants.length + (tenants.length === 1 ? ' Firma' : ' Firmen');
-        if (!tenants.length) { list.innerHTML = '<div class="empty">Noch keine Firmen. Lege die erste an.</div>'; return; }
-        list.innerHTML = tenants.map(tenantCard).join('');
-        for (const t of tenants) wireTenant(t);
-      } catch (e) { list.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+    // Widerspruch zwischen Branche und Modulzustand ist die häufigste
+    // Verwirrungsquelle im Support, deshalb eigener Filter und Warnung.
+    const widerspruch = (t) => (t.industry === 'restaurant') !== !!t.restaurantEnabled;
+    const tarifVon = (t) => margeVon(t.id)?.tarif || null;
+    function passt(t) {
+      if (filter.branche && (t.industry === 'restaurant' ? 'restaurant' : 'general') !== filter.branche) return false;
+      if (filter.anbieter && (t.voiceProvider || 'openai') !== filter.anbieter) return false;
+      if (filter.tarif) { const tf = tarifVon(t); if (filter.tarif === 'ohne' ? !!tf : tf !== filter.tarif) return false; }
+      if (filter.status === 'aktiv' && !(t.calls30d > 0)) return false;
+      if (filter.status === 'still' && t.calls30d > 0) return false;
+      if (filter.status === 'ohne-nummer' && t.numbers.length) return false;
+      if (filter.status === 'ohne-login' && t.ownerEmail) return false;
+      if (filter.status === 'widerspruch' && !widerspruch(t)) return false;
+      if (suche) {
+        const s = suche.toLowerCase();
+        const text = [t.name, t.ownerEmail, ...t.numbers.map((n) => n.phone_number)].join(' ').toLowerCase();
+        if (!text.includes(s)) return false;
+      }
+      return true;
     }
+    function syncFilterChips() {
+      document.querySelectorAll('#filter .chip').forEach((c) => c.classList.toggle('aktiv', filter[c.dataset.filter] === c.dataset.wert));
+    }
+    $('filter').addEventListener('click', (e) => {
+      const c = e.target.closest('.chip'); if (!c) return;
+      filter[c.dataset.filter] = c.dataset.wert; syncFilterChips(); renderFirmen();
+    });
+    $('fSuche').addEventListener('input', () => { suche = $('fSuche').value.trim(); renderFirmen(); });
 
-    function tenantCard(t) {
-      const badge = t.industry === 'restaurant'
-        ? '<span class="badge badge--rest">🍽 Restaurant</span>'
-        : '<span class="badge badge--gen">Allgemein</span>';
-      const nums = t.numbers.length
-        ? t.numbers.map((n) => {
-            const tag = n.inbound ? '<span class="dep" style="color:var(--accent-2)">eingehend</span>' : (n.department ? '<span class="dep">' + esc(n.department) + '</span>' : '');
-            // Eingehende (geteilte) Nummern kann man hier nicht lösen – sie gehören einer anderen Firma.
-            const act = n.inbound ? '' : ' <a href="#" data-unassign="' + esc(n.phone_number) + '" class="dep" style="margin-left:auto">entfernen</a>';
-            return '<div class="num"><code>' + esc(n.phone_number) + '</code>' + tag + act + '</div>';
-          }).join('')
-        : '<div class="muted">Keine Nummer zugewiesen</div>';
-      // Module so anzeigen, wie der Kunde sie erlebt: „an" heißt, der Bereich
-      // ist in seiner Navigation sichtbar. Branche und Modul sind NICHT dasselbe
-      // — die Branche setzt beim Anlegen nur Voreinstellungen.
-      // Dreiwertig: an / aus / unbekannt. „Unbekannt" tritt auf, wenn diese
-      // Seite schon neu ist, das Backend aber noch nicht — dann fehlt das Feld,
-      // und ein hingeschriebenes „aus" wäre schlicht gelogen.
-      const mod = (wert, text, anTitel, ausTitel) => {
-        if (wert === undefined || wert === null) {
-          return `<span class="mod mod--unbek" title="Zustand unbekannt – Server liefert dieses Feld noch nicht.">` +
-                 `<span class="mod__dot"></span>${esc(text)} ?</span>`;
-        }
-        return `<span class="mod mod--${wert ? 'an' : 'aus'}" title="${esc(wert ? anTitel : ausTitel)}">` +
-               `<span class="mod__dot"></span>${esc(text)}</span>`;
-      };
-      const mods = '<div class="mods">' + [
-        mod(t.restaurantEnabled, 'Reservierung',
-          'Reservierungen, Tischplan und Gästeliste sind für diese Firma sichtbar.',
-          'Kein Tischplan, keine Reservierungen — die Bereiche sind ausgeblendet.'),
-        mod(t.bookingEnabled, 'Termine',
-          'Terminbuchung ist aktiv, der Bereich „Termine" ist sichtbar.',
-          'Terminbuchung aus — der Bereich „Termine" ist ausgeblendet.'),
-        mod(t.publicBooking, 'Online-Buchung',
-          'Gäste können über den öffentlichen Link selbst reservieren.',
-          'Kein öffentlicher Buchungslink.'),
-        mod(t.kioskEnabled, 'Kiosk',
-          'Das Personal-iPad ist freigeschaltet.',
-          'Kiosk-Ansicht nicht freigeschaltet.'),
-      ].join('') + '</div>';
+    function tarifTag(t) {
+      const z = margeVon(t.id);
+      if (!z || !z.tarif) return '<span class="tag tag--aus">ohne Abo</span>';
+      const name = TARIF_NAMEN[z.tarif] || z.tarif;
+      return '<span class="tag ' + (z.monatspreis != null ? 'tag--tarif' : 'tag--test') + '">' + esc(name) + (z.monatspreis == null && z.tarif !== 'trial' ? ' · kein Umsatz' : '') + '</span>';
+    }
+    function firmaZeile(t) {
+      return `<div class="firma${t.id === aktiveFirma ? ' aktiv' : ''}" data-id="${esc(t.id)}">
+        <button class="firma__kopf" type="button" data-firma="${esc(t.id)}" aria-pressed="${t.id === aktiveFirma}">
+          <span class="firma__name"><b>${esc(t.name)}</b>${widerspruch(t) ? '<span class="firma__warn" title="Branche und Module widersprechen sich">⚠</span>' : ''}</span>
+          <span class="firma__zahlen"><b>${zahl(t.calls30d)}</b>${plural(t.numbers.length, 'Nummer', 'Nummern')}</span>
+          <span class="firma__mail">${t.ownerEmail ? esc(t.ownerEmail) : '<em>kein Login</em>'}</span>
+          <span class="firma__tags">
+            <span class="tag${t.industry === 'restaurant' ? ' tag--rest' : ''}">${t.industry === 'restaurant' ? 'Restaurant' : 'Allgemein'}</span>
+            <span class="tag">${esc(ANBIETER_KURZ[t.voiceProvider] || t.voiceProvider)} · ${esc(stimmeName(t.voiceProvider, t.voiceId))}</span>
+            ${tarifTag(t)}
+          </span>
+        </button></div>`;
+    }
+    function renderFirmen() {
+      const box = $('firmenListe');
+      if (!tenants.length) { box.innerHTML = leer('Noch keine Firmen. Lege die erste an, der Login des Kunden entsteht dabei gleich mit.', 'Erste Firma anlegen', 'neu'); return; }
+      const liste = tenants.filter(passt);
+      if (!liste.length) { box.innerHTML = leer('Keine Firma passt zu Suche und Filtern.', 'Filter zurücksetzen', 'filter-weg'); return; }
+      box.innerHTML = liste.map(firmaZeile).join('');
+    }
+    $('firmenListe').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-firma]'); if (!b) return;
+      zeigeDetail(b.dataset.firma);
+    });
+    function zeigeDetail(id) {
+      aktiveFirma = id;
+      document.querySelectorAll('.firma').forEach((f) => { const an = f.dataset.id === id; f.classList.toggle('aktiv', an); f.querySelector('.firma__kopf').setAttribute('aria-pressed', an); });
+      renderDetail(id);
+      $('detail').hidden = false; $('detailLeer').hidden = true;
+      document.body.classList.add('zeigt-detail');   // Handy: Detail schiebt sich über die Liste
+      if (window.innerWidth <= 760) $('detail').scrollTop = 0;
+    }
+    $('detailZu').onclick = () => { document.body.classList.remove('zeigt-detail'); };
 
-      // Widerspruch zwischen Branche und Modulzustand ausdrücklich benennen —
-      // das ist die häufigste Verwirrungsquelle im Support.
-      const hinweis =
-        t.industry === 'restaurant' && !t.restaurantEnabled
-          ? '<div class="muted" style="color:var(--accent-3);margin-top:8px">⚠ Branche Restaurant, aber Reservierung ist aus — diese Firma sieht keinen Tischplan.</div>'
+    // ---- Detailkarte ----
+    // Zeigt nur, was die Routen liefern: Nummern, Anbieter und Stimme, Module,
+    // Anrufe (30 Tage), Anlagedatum aus tenants/list; Tarif, Kosten, Umsatz und
+    // Marge aus /margen. Eine „letzte Aktivität" gibt das Backend nicht her.
+    function modTag(wert, text, anTitel, ausTitel) {
+      if (wert === undefined || wert === null) return `<span class="tag tag--unbek" title="Zustand unbekannt, der Server liefert dieses Feld noch nicht."><span class="punkt"></span>${esc(text)} ?</span>`;
+      return `<span class="tag tag--${wert ? 'an' : 'aus'}" title="${esc(wert ? anTitel : ausTitel)}"><span class="punkt"></span>${esc(text)}</span>`;
+    }
+    function renderDetail(id) {
+      const t = tenants.find((x) => x.id === id); if (!t) return;
+      const z = margeVon(id);
+      const nums = t.numbers.length ? t.numbers.map((n) => {
+        const tag = n.inbound ? '<span class="tag tag--ein" title="Empfangsnummer einer anderen Firma, die hierher weiterleitet">eingehend</span>'
+          : '<span class="tag">' + esc(ABTEILUNG[n.department] || n.department || 'ohne Abteilung') + '</span>';
+        // Eingehende (geteilte) Nummern kann man hier nicht lösen, sie gehören einer anderen Firma.
+        const act = n.inbound ? '' : `<button class="btn" type="button" data-unassign="${esc(n.phone_number)}">Lösen</button>`;
+        return `<div class="num"><code>${esc(n.phone_number)}</code>${tag}${act}</div>`;
+      }).join('') : '<p class="muted">Keine Nummer zugewiesen. Ohne Nummer nimmt der Assistent keine Anrufe an.</p>';
+      const hinweis = t.industry === 'restaurant' && !t.restaurantEnabled
+        ? '<div class="warn">Branche Restaurant, aber Reservierung ist aus: diese Firma sieht keinen Tischplan.</div>'
         : t.industry !== 'restaurant' && t.restaurantEnabled
-          ? '<div class="muted" style="color:var(--accent-3);margin-top:8px">⚠ Branche Allgemein, aber Reservierung ist an — Tischplan und Gästeliste sind sichtbar.</div>'
-          : '';
-      const restHint = mods + hinweis;
-      return `<div class="card tenant" data-id="${t.id}">
-        <div class="tenant__head">
-          <div style="flex:1">
-            <div class="tenant__name">${esc(t.name)}</div>
-            <div class="tenant__email">${t.ownerEmail ? esc(t.ownerEmail) : '<em>kein Login</em>'}</div>
+          ? '<div class="warn">Branche Allgemein, aber Reservierung ist an: Tischplan und Gästeliste sind sichtbar.</div>' : '';
+      $('detailInhalt').innerHTML = `
+        <div class="detail__kopf">
+          <div style="min-width:0;flex:1">
+            <h2>${esc(t.name)}</h2>
+            <p class="muted">${t.ownerEmail ? esc(t.ownerEmail) : '<em>kein Login</em>'} · angelegt ${datum(t.createdAt)}</p>
           </div>
-          ${badge}
+          <div class="db-aktionen">
+            <button class="btn btn--ghost" type="button" id="dName">Umbenennen</button>
+            <button class="btn btn--primary" type="button" id="dOeffnen"${t.ownerEmail ? '' : ' disabled title="Ohne Login lässt sich der Kundenbereich nicht öffnen"'}>Als Firma öffnen</button>
+          </div>
         </div>
-        <div class="tenant__stats">
-          <span class="stat"><b>${t.calls30d}</b> Anrufe (30 T.)</span>
-          <span class="stat"><b>${t.numbers.length}</b> Nummer(n)</span>
+        <dl class="db-fakten">
+          <dt>Anrufe, 30 Tage</dt><dd>${zahl(t.calls30d)}${z ? ' <small>· ' + zahl(z.minuten, 1) + ' Minuten</small>' : ''}</dd>
+          <dt>Tarif</dt><dd>${z && z.tarif ? esc(TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? ' <small>· ' + eur(z.monatspreis) + ' im Monat</small>' : ' <small>· kein Umsatz</small>') : 'ohne Abo'}</dd>
+          <dt>Kosten, 30 Tage</dt><dd>${z ? eur(z.kosten.total) + ' <small>· Telnyx ' + eur(z.kosten.telnyx) + ', KI ' + eur(z.kosten.ai) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
+          <dt>Marge, 30 Tage</dt><dd class="${z ? (z.marge < 0 ? 'minus' : z.marge > 0 ? 'plus' : '') : ''}">${z ? eur(z.marge) + ' <small>· Umsatz ' + eur(z.umsatz) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
+        </dl>
+        <div class="detail__block">
+          <h3>Nummern <button class="btn btn--ghost" type="button" id="dNummerNeu">+ Nummer</button></h3>
+          <div class="nums">${nums}</div>
         </div>
-        <div class="nums">${nums}</div>${restHint}
-        <div class="tenant__actions">
-          <button class="btn btn--primary btn--sm" data-open="${t.id}">Als Firma öffnen</button>
-          <button class="btn btn--ghost btn--sm" data-num="${t.id}" data-name="${esc(t.name)}">+ Nummer</button>
-          <label class="ind-wrap" title="Die Branche setzt Voreinstellungen (Persona, Wissens-Vorlagen, Module). Sie ist keine Sperre — Module lassen sich danach einzeln schalten.">
-            <span class="ind-label">Branche</span>
-            <select class="ind-select" data-ind="${t.id}" data-cur="${t.industry}">
-              <option value="general"${t.industry !== 'restaurant' ? ' selected' : ''}>Allgemein</option>
-              <option value="restaurant"${t.industry === 'restaurant' ? ' selected' : ''}>Restaurant</option>
-            </select>
-          </label>
-          <label class="prov-wrap" title="KI-Modell für die Anrufe">
-            <span class="prov-label">KI</span>
-            <select class="prov-select" data-prov="${t.id}">
-              <option value="openai"${t.voiceProvider === 'openai' ? ' selected' : ''}>OpenAI (GPT-Realtime)</option>
-              <option value="grok"${t.voiceProvider === 'grok' ? ' selected' : ''}>xAI Grok Voice</option>
-              <option value="gemini"${t.voiceProvider === 'gemini' ? ' selected' : ''}>Google Gemini Live</option>
-              <option value="mistral"${t.voiceProvider === 'mistral' ? ' selected' : ''}>Mistral (EU/DSGVO)</option>
-              <option value="live"${t.voiceProvider === 'live' ? ' selected' : ''}>OpenAI GPT-Live (Vollduplex)</option>
-            </select>
-          </label>
-          <label class="prov-wrap" title="Stimme (passend zum Modell)" style="margin-left:0">
-            <span class="prov-label">🔊</span>
-            <select class="prov-select" data-voice="${t.id}">${voiceOptions(t.voiceProvider, t.voiceId)}</select>
-          </label>
+        <div class="detail__block">
+          <h3>Anbieter und Stimme</h3>
+          <div class="felder">
+            <div><label for="dAnbieter">KI-Modell</label><select id="dAnbieter">${Object.entries(ANBIETER).map(([v, n]) => `<option value="${v}"${t.voiceProvider === v ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+            <div><label for="dStimme">Stimme</label><select id="dStimme">${voiceOptions(t.voiceProvider, t.voiceId)}</select></div>
+          </div>
+          <div class="feldhinweis">Beim Modellwechsel wird die Standardstimme des neuen Anbieters gesetzt.</div>
         </div>
-      </div>`;
+        <div class="detail__block">
+          <h3>Branche und Module</h3>
+          <div class="felder">
+            <div><label for="dBranche">Branche</label><select id="dBranche"><option value="general"${t.industry !== 'restaurant' ? ' selected' : ''}>Allgemein</option><option value="restaurant"${t.industry === 'restaurant' ? ' selected' : ''}>Restaurant</option></select></div>
+            <div><span class="feldhinweis" style="margin-top:0">Die Branche setzt Voreinstellungen (Persona, Wissens-Vorlagen, Module). Sie ist keine Sperre, der Kunde schaltet Module danach selbst.</span></div>
+          </div>
+          <div class="mods" style="margin-top:10px">
+            ${modTag(t.restaurantEnabled, 'Reservierung', 'Reservierungen, Tischplan und Gästeliste sind sichtbar.', 'Kein Tischplan, keine Reservierungen.')}
+            ${modTag(t.bookingEnabled, 'Termine', 'Terminbuchung ist aktiv.', 'Terminbuchung aus.')}
+            ${modTag(t.publicBooking, 'Online-Buchung', 'Gäste können über den öffentlichen Link reservieren.', 'Kein öffentlicher Buchungslink.')}
+            ${modTag(t.kioskEnabled, 'Kiosk', 'Das Personal-iPad ist freigeschaltet.', 'Kiosk nicht freigeschaltet.')}
+          </div>
+          ${hinweis}
+        </div>`;
+      wireDetail(t);
     }
-
-    // Stimmen je Anbieter – nur diese sind für das jeweilige Modell gültig.
-    const VOICES_BY_PROVIDER = {
-      openai: [['marin','Marin'],['cedar','Cedar'],['alloy','Alloy'],['ash','Ash'],['ballad','Ballad'],['coral','Coral'],['sage','Sage'],['shimmer','Shimmer'],['verse','Verse'],['echo','Echo']],
-      grok:   [['eve','Eve'],['ara','Ara'],['rex','Rex'],['sal','Sal'],['leo','Leo']],
-      gemini: [['Aoede','Aoede'],['Puck','Puck'],['Charon','Charon'],['Kore','Kore'],['Fenrir','Fenrir'],['Leda','Leda'],['Orus','Orus'],['Zephyr','Zephyr']],
-      live:   [['gleam','Gleam'],['marin','Marin'],['cedar','Cedar'],['alloy','Alloy'],['sage','Sage'],['verse','Verse']],
-      mistral:[['en_paul_neutral','Paul – neutral'],['en_paul_cheerful','Paul – freundlich'],['en_paul_confident','Paul – souverän'],['en_paul_happy','Paul – fröhlich'],['gb_oliver_neutral','Oliver – britisch'],['gb_jane_sarcasm','Jane – weiblich']],
-    };
-    function voiceOptions(provider, current) {
-      const list = VOICES_BY_PROVIDER[provider] || VOICES_BY_PROVIDER.openai;
-      // Ist die gespeicherte Stimme für diesen Anbieter gültig? Sonst erste wählen.
-      const valid = list.some(([v]) => v === current);
-      return list.map(([v, label]) => `<option value="${v}"${(valid ? v === current : v === list[0][0]) ? ' selected' : ''}>${label}</option>`).join('');
-    }
-
-    function wireTenant(t) {
-      const card = document.querySelector(`.tenant[data-id="${t.id}"]`);
-      if (!card) return;
-      card.querySelector(`[data-open="${t.id}"]`).onclick = () => impersonate(t.id, t.name);
-      card.querySelector(`[data-num="${t.id}"]`).onclick = () => openNumDlg(t.id, t.name);
-      card.querySelector(`[data-ind="${t.id}"]`).onchange = (e) => setIndustry(t.id, t.industry, e.target);
-      const prov = card.querySelector(`[data-prov="${t.id}"]`);
-      const voiceSel = card.querySelector(`[data-voice="${t.id}"]`);
+    function wireDetail(t) {
+      $('dOeffnen').onclick = () => impersonate(t.id, t.name);
+      $('dName').onclick = () => openNameDlg(t);
+      $('dNummerNeu').onclick = () => openNumDlg(t.id);
+      const prov = $('dAnbieter'), voiceSel = $('dStimme');
       prov.onchange = async () => {
-        const provider = prov.value;
+        const provider = prov.value; prov.disabled = voiceSel.disabled = true;
         try {
           await api('/api/admin/tenants/provider', { tenantId: t.id, provider });
-          // Stimmen-Dropdown auf die des neuen Anbieters umstellen …
-          voiceSel.innerHTML = voiceOptions(provider, t.voiceId);
           t.voiceProvider = provider;
-          // … und die (neue) Standardstimme gleich speichern, damit sie passt.
+          // Stimmen-Auswahl auf den neuen Anbieter umstellen und die Standardstimme gleich speichern, damit sie passt.
+          voiceSel.innerHTML = voiceOptions(provider, t.voiceId);
           await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value });
           t.voiceId = voiceSel.value;
-          toast('KI-Anbieter: ' + prov.options[prov.selectedIndex].text);
-        } catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; }
+          toast('KI-Modell: ' + ANBIETER[provider] + ', Stimme ' + stimmeName(provider, t.voiceId));
+          renderFirmen(); renderAnbieter();
+        } catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; voiceSel.innerHTML = voiceOptions(t.voiceProvider, t.voiceId); }
+        finally { prov.disabled = voiceSel.disabled = false; }
       };
       voiceSel.onchange = async () => {
-        try { await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value }); t.voiceId = voiceSel.value; toast('Stimme: ' + voiceSel.options[voiceSel.selectedIndex].text); }
+        try { await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value }); t.voiceId = voiceSel.value; toast('Stimme: ' + stimmeName(t.voiceProvider, t.voiceId)); renderFirmen(); renderAnbieter(); }
         catch (e) { toast(e.message, 'err'); voiceSel.value = t.voiceId; }
       };
-      card.querySelectorAll('[data-unassign]').forEach((a) => {
-        a.onclick = async (e) => {
-          e.preventDefault();
-          if (!confirm('Nummer ' + a.dataset.unassign + ' wirklich von dieser Firma lösen?')) return;
-          try { await api('/api/admin/numbers/unassign', { phoneNumber: a.dataset.unassign }); toast('Nummer entfernt'); loadTenants(); }
+      $('dBranche').onchange = (e) => setIndustry(t, e.target);
+      document.querySelectorAll('#detailInhalt [data-unassign]').forEach((b) => {
+        b.onclick = async () => {
+          if (!(await frage('Nummer lösen?', 'Die Nummer ' + b.dataset.unassign + ' wird von ' + t.name + ' getrennt. Anrufe auf dieser Nummer nimmt danach niemand an.', 'Lösen'))) return;
+          try { await api('/api/admin/numbers/unassign', { phoneNumber: b.dataset.unassign }); toast('Nummer gelöst'); await ladeAlles(); }
           catch (err) { toast(err.message, 'err'); }
         };
       });
@@ -439,113 +656,192 @@
       try {
         const d = await api('/api/admin/impersonate', { tenantId });
         // token_hash im Kunden-Dashboard gegen eine echte Session tauschen.
-        const url = 'app.html?imp=' + encodeURIComponent(d.tokenHash) + '&impname=' + encodeURIComponent(name);
-        window.open(url, '_blank');
+        window.open('app.html?imp=' + encodeURIComponent(d.tokenHash) + '&impname=' + encodeURIComponent(name), '_blank');
       } catch (e) { toast(e.message, 'err'); }
     }
 
     // ---- Branche setzen ----
-    // Die Branche ist eine VOREINSTELLUNG, keine Sperre: Beim Wechsel auf
+    // Die Branche ist eine Voreinstellung, keine Sperre: Beim Wechsel auf
     // Restaurant legt die Datenbank Persona, Wissens-Vorlagen und die
     // Reservierung an; beim Wechsel zurück wird die Reservierung abgeschaltet.
-    // Vorhandene Daten (Tische, Reservierungen, Gäste) bleiben in beiden
-    // Richtungen erhalten — deshalb steht das ausdrücklich in der Rückfrage.
-    async function setIndustry(tenantId, cur, selectEl) {
-      const next = selectEl.value;
+    // Vorhandene Daten bleiben in beiden Richtungen erhalten, deshalb steht
+    // das ausdrücklich in der Rückfrage.
+    async function setIndustry(t, sel) {
+      const cur = t.industry === 'restaurant' ? 'restaurant' : 'general';
+      const next = sel.value;
       if (next === cur) return;
-      const msg = next === 'restaurant'
-        ? 'Auf RESTAURANT umstellen?\n\nReservierung wird eingeschaltet, damit erscheinen bei dieser Firma die Bereiche Reservierungen, Tischplan und Gäste. Persona und Wissens-Vorlagen werden gesetzt, sofern noch nicht angepasst.'
-        : 'Auf ALLGEMEIN umstellen?\n\nDie Reservierung wird abgeschaltet — Reservierungen, Tischplan und Gäste verschwinden aus der Navigation dieser Firma.\n\nAlle Daten bleiben erhalten und sind nach dem Zurückstellen wieder da.';
-      if (!confirm(msg)) { selectEl.value = cur; return; }   // Auswahl zurückdrehen
-      selectEl.disabled = true;
+      const ok = next === 'restaurant'
+        ? await frage('Auf Restaurant umstellen?', 'Reservierung wird eingeschaltet, damit erscheinen bei dieser Firma die Bereiche Reservierungen, Tischplan und Gäste. Persona und Wissens-Vorlagen werden gesetzt, sofern noch nicht angepasst.', 'Umstellen')
+        : await frage('Auf Allgemein umstellen?', 'Die Reservierung wird abgeschaltet: Reservierungen, Tischplan und Gäste verschwinden aus der Navigation dieser Firma.\n\nAlle Daten bleiben erhalten und sind nach dem Zurückstellen wieder da.', 'Umstellen');
+      if (!ok) { sel.value = cur; return; }
+      sel.disabled = true;
       try {
-        await api('/api/admin/tenants/industry', { tenantId, industry: next });
-        toast(next === 'restaurant' ? 'Branche: Restaurant — Reservierung aktiv' : 'Branche: Allgemein — Reservierung aus');
-        loadTenants();
-      } catch (e) {
-        selectEl.value = cur;
-        toast(e.message, 'err');
-      } finally {
-        selectEl.disabled = false;
-      }
+        await api('/api/admin/tenants/industry', { tenantId: t.id, industry: next });
+        toast(next === 'restaurant' ? 'Branche Restaurant, Reservierung aktiv' : 'Branche Allgemein, Reservierung aus');
+        await ladeAlles();
+      } catch (e) { sel.value = cur; toast(e.message, 'err'); }
+      finally { sel.disabled = false; }
     }
 
     // ---- Dialog: neue Firma ----
     const newDlg = $('newDlg');
-    $('newBtn').onclick = () => { $('newForm').reset(); $('newErr').textContent = ''; syncRadio(); newDlg.showModal(); };
+    $('neuBtn').onclick = () => { $('newForm').reset(); $('newErr').textContent = ''; newDlg.showModal(); $('nName').focus(); };
     $('newCancel').onclick = () => newDlg.close();
-    $('nIndustry').addEventListener('change', syncRadio);
-    function syncRadio() {
-      $('nIndustry').querySelectorAll('label').forEach((l) => l.classList.toggle('sel', l.querySelector('input').checked));
-    }
     $('newForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       $('newErr').textContent = '';
-      const btn = $('newSave'); btn.disabled = true; btn.textContent = 'Lege an…';
+      const name = $('nName').value.trim(), email = $('nEmail').value.trim(), pass = $('nPass').value;
+      // Fehler vor dem Absenden benennen, nicht nur den Browser-Tooltip zeigen.
+      if (!name) return ($('newErr').textContent = 'Bitte einen Firmennamen eingeben.');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return ($('newErr').textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.');
+      if (pass.length < 8) return ($('newErr').textContent = 'Das Passwort braucht mindestens 8 Zeichen.');
+      const btn = $('newSave'); btn.disabled = true; btn.textContent = 'Lege an …';
       try {
-        await api('/api/admin/tenants/create', {
-          name: $('nName').value.trim(),
-          email: $('nEmail').value.trim(),
-          password: $('nPass').value,
-          industry: $('nIndustry').querySelector('input:checked').value,
-        });
-        newDlg.close(); toast('Firma angelegt'); loadTenants();
+        const d = await api('/api/admin/tenants/create', { name, email, password: pass, industry: $('nIndustry').querySelector('input:checked').value });
+        newDlg.close(); toast('Firma ' + name + ' angelegt');
+        await ladeAlles();
+        if (d.tenantId && tenants.some((t) => t.id === d.tenantId)) zeigeDetail(d.tenantId);
       } catch (err) { $('newErr').textContent = err.message; }
       finally { btn.disabled = false; btn.textContent = 'Firma anlegen'; }
     });
 
     // ---- Dialog: Nummer zuweisen ----
-    const numDlg = $('numDlg'); let numTenant = null;
-    function openNumDlg(tenantId, name) { numTenant = tenantId; $('numFor').textContent = 'Für: ' + name; $('numForm').reset(); $('numErr').textContent = ''; numDlg.showModal(); }
+    const numDlg = $('numDlg');
+    function openNumDlg(tenantId) {
+      $('numForm').reset(); $('numErr').textContent = '';
+      $('numTenant').innerHTML = tenants.map((t) => `<option value="${esc(t.id)}"${t.id === tenantId ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
+      numDlg.showModal(); (tenantId ? $('numVal') : $('numTenant')).focus();
+    }
+    $('nummerNeuBtn').onclick = () => openNumDlg(aktiveFirma);
     $('numCancel').onclick = () => numDlg.close();
     $('numForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       $('numErr').textContent = '';
+      const phoneNumber = $('numVal').value.replace(/[\s/-]/g, ''), tenantId = $('numTenant').value;
+      if (!tenantId) return ($('numErr').textContent = 'Bitte eine Firma wählen.');
+      const btn = $('numSave'); btn.disabled = true;
       try {
-        await api('/api/admin/numbers/assign', { phoneNumber: $('numVal').value.trim(), tenantId: numTenant, department: $('numDep').value });
-        numDlg.close(); toast('Nummer zugewiesen'); loadTenants();
+        await api('/api/admin/numbers/assign', { phoneNumber, tenantId, department: $('numDep').value });
+        numDlg.close(); toast('Nummer ' + phoneNumber + ' zugewiesen');
+        await ladeAlles();
+        if (tenantId !== aktiveFirma) zeigeDetail(tenantId);
       } catch (err) { $('numErr').textContent = err.message; }
+      finally { btn.disabled = false; }
     });
 
-    // ---- Margen (30 Tage) ----
-    // Umsatz ist der Monatspreis laut Abo (nur zahlende Abos), Kosten sind die
-    // Summe aus calls.cost_total der letzten 30 Tage. Ein Monatspreis gegen 30
-    // Tage Kosten ist eine Näherung, aber für den Blick auf die Marge genau genug.
-    const eur = (n) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const zahl = (n, nk = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: nk, maximumFractionDigits: nk });
-    const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
-    const margeZelle = (m) => '<td class="' + (m < 0 ? 'neg' : m > 0 ? 'pos' : '') + '">' + eur(m) + '</td>';
+    // ---- Dialog: umbenennen ----
+    const nameDlg = $('nameDlg'); let nameTenant = null;
+    function openNameDlg(t) { nameTenant = t; $('nameVal').value = t.name; $('nameErr').textContent = ''; nameDlg.showModal(); $('nameVal').select(); }
+    $('nameCancel').onclick = () => nameDlg.close();
+    $('nameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('nameVal').value.trim();
+      if (!name) return ($('nameErr').textContent = 'Der Name darf nicht leer sein.');
+      const btn = $('nameSave'); btn.disabled = true;
+      try { await api('/api/admin/tenants/rename', { tenantId: nameTenant.id, name }); nameDlg.close(); toast('Umbenannt in ' + name); await ladeAlles(); }
+      catch (err) { $('nameErr').textContent = err.message; }
+      finally { btn.disabled = false; }
+    });
 
-    async function loadMargen() {
-      const box = $('margen');
-      box.innerHTML = '<div class="empty">Lade Margen…</div>';
-      try {
-        // Eigener Aufruf statt api(): die Margen-Route ist ein GET ohne Body.
-        const res = await fetch(API + '/api/admin/margen', { headers: auth() });
-        const d = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(d.error || 'Fehler');
-        const seit = new Date(d.seit).toLocaleDateString('de-DE');
-        $('margenInfo').textContent = 'Seit ' + seit + ' · Umsatz = Monatspreis laut Abo, Kosten = Telnyx + KI je Anruf';
-        if (!d.zeilen.length) { box.innerHTML = '<div class="empty">Noch keine Firmen.</div>'; return; }
-        box.innerHTML = margenTabelle(d);
-      } catch (e) { box.innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
-    }
-
-    function margenTabelle(d) {
+    // ---- Margen-Tabelle: sortierbar, negative Marge rot ----
+    const sort = { key: null, auf: true };
+    let nurNegativ = false;
+    const margeKlasse = (m) => m < 0 ? 'neg' : m > 0 ? 'pos' : '';
+    const SPALTEN = [['name', 'Firma', 'l'], ['tarif', 'Tarif', 'l'], ['anrufe', 'Anrufe'], ['minuten', 'Minuten'], ['kosten', 'Kosten'], ['umsatz', 'Umsatz'], ['marge', 'Marge']];
+    const wert = (z, k) => k === 'kosten' ? z.kosten.total : k === 'tarif' ? (TARIF_NAMEN[z.tarif] || z.tarif || '') : z[k];
+    function renderMargen() {
+      const box = $('margenBox');
+      if (!margen) return;
+      let zeilen = margen.zeilen.slice();
+      if (nurNegativ) zeilen = zeilen.filter((z) => z.marge < 0);
+      if (sort.key) zeilen.sort((a, b) => { const x = wert(a, sort.key), y = wert(b, sort.key); const r = typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'de'); return sort.auf ? r : -r; });
+      if (!margen.zeilen.length) { box.innerHTML = leer('Noch keine Firmen, also auch keine Margen.', 'Erste Firma anlegen', 'neu'); return; }
+      if (!zeilen.length) { box.innerHTML = leer('Keine Firma im Minus. So soll es sein.', 'Alle zeigen', 'alle-margen'); return; }
+      const g = margen.gesamt;
+      const kopf = SPALTEN.map(([k, n, l]) => `<th class="${l || ''} ${sort.key === k ? (sort.auf ? 'auf' : 'ab') : ''}" data-sort="${k}" role="button" tabindex="0" aria-sort="${sort.key === k ? (sort.auf ? 'ascending' : 'descending') : 'none'}">${n}</th>`).join('');
       const zeile = (z) => {
-        const tarif = z.tarif ? (TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? '' : ' <span class="muted">(kein Umsatz)</span>') : '<span class="muted">–</span>';
-        return '<tr><td>' + esc(z.name) + '</td><td>' + tarif + '</td><td>' + zahl(z.anrufe) + '</td><td>' + zahl(z.minuten, 1)
-          + '</td><td title="Telnyx ' + eur(z.kosten.telnyx) + ' · KI ' + eur(z.kosten.ai) + '">' + eur(z.kosten.total)
-          + '</td><td>' + eur(z.umsatz) + '</td>' + margeZelle(z.marge) + '</tr>';
+        const tarif = z.tarif ? esc(TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? '' : ' <span class="muted">(kein Umsatz)</span>') : '<span class="muted">–</span>';
+        return `<tr><td class="l"><button class="zeilenlink" type="button" data-firma-geh="${esc(z.tenantId)}">${esc(z.name)}</button></td><td class="l">${tarif}</td><td>${zahl(z.anrufe)}</td><td>${zahl(z.minuten, 1)}</td>`
+          + `<td title="Telnyx ${eur(z.kosten.telnyx)} · KI ${eur(z.kosten.ai)}">${eur(z.kosten.total)}</td><td>${eur(z.umsatz)}</td><td class="${margeKlasse(z.marge)}">${eur(z.marge)}</td></tr>`;
       };
-      const g = d.gesamt;
-      return '<table><thead><tr><th>Mandant</th><th>Tarif</th><th>Anrufe</th><th>Minuten</th><th>Kosten</th><th>Umsatz</th><th>Marge</th></tr></thead>'
-        + '<tbody>' + d.zeilen.map(zeile).join('') + '</tbody>'
-        + '<tfoot><tr><td>Gesamt</td><td>' + zahl(d.zeilen.length) + ' Firmen</td><td>' + zahl(g.anrufe) + '</td><td>' + zahl(g.minuten, 1)
-        + '</td><td title="Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai) + '">' + eur(g.kosten.total)
-        + '</td><td>' + eur(g.umsatz) + '</td>' + margeZelle(g.marge) + '</tr></tfoot></table>';
+      box.innerHTML = `<table id="margenTabelle"><thead><tr>${kopf}</tr></thead><tbody>${zeilen.map(zeile).join('')}</tbody>`
+        + `<tfoot><tr><td class="l">Gesamt</td><td class="l">${plural(margen.zeilen.length, 'Firma', 'Firmen')}</td><td>${zahl(g.anrufe)}</td><td>${zahl(g.minuten, 1)}</td>`
+        + `<td title="Telnyx ${eur(g.kosten.telnyx)} · KI ${eur(g.kosten.ai)}">${eur(g.kosten.total)}</td><td>${eur(g.umsatz)}</td><td class="${margeKlasse(g.marge)}">${eur(g.marge)}</td></tr></tfoot></table>`;
     }
-    $('margenReload').onclick = loadMargen;
+    $('margenBox').addEventListener('click', (e) => {
+      const th = e.target.closest('th[data-sort]');
+      if (th) { const k = th.dataset.sort; sort.auf = sort.key === k ? !sort.auf : true; sort.key = k; renderMargen(); return; }
+      const b = e.target.closest('[data-firma-geh]');
+      if (b) { geh('sec-firmen'); zeigeDetail(b.dataset.firmaGeh); }
+    });
+    $('margenBox').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('th[data-sort]')) { e.preventDefault(); e.target.click(); } });
+    $('margenNurNegativ').onclick = () => { nurNegativ = !nurNegativ; $('margenNurNegativ').classList.toggle('aktiv', nurNegativ); $('margenNurNegativ').setAttribute('aria-pressed', nurNegativ); renderMargen(); };
+    document.addEventListener('click', (e) => { if (e.target.closest('[data-leer="alle-margen"]')) $('margenNurNegativ').click(); });
+
+    // ---- Nummern-Übersicht (aus der Firmenliste abgeleitet, keine eigene Route) ----
+    function renderNummern() {
+      const box = $('nummernBox');
+      const zeilen = [];
+      for (const t of tenants) for (const n of t.numbers) zeilen.push({ t, n });
+      zeilen.sort((a, b) => a.n.phone_number.localeCompare(b.n.phone_number));
+      $('nummernSub').textContent = plural(zeilen.length, 'Nummer', 'Nummern') + ' · ' + plural(tenants.filter((t) => !t.numbers.length).length, 'Firma', 'Firmen') + ' ohne Nummer';
+      if (!zeilen.length) { box.innerHTML = leer('Noch keine Nummer zugewiesen. Ohne Nummer nimmt kein Assistent Anrufe an.', 'Nummer zuweisen', 'nummer'); return; }
+      box.innerHTML = `<table id="nummernTabelle"><thead><tr><th class="l">Nummer</th><th class="l">Firma</th><th class="l">Abteilung</th><th class="l">Art</th><th></th></tr></thead><tbody>`
+        + zeilen.map(({ t, n }) => `<tr><td class="l"><code>${esc(n.phone_number)}</code></td><td class="l"><button class="zeilenlink" type="button" data-firma-geh="${esc(t.id)}">${esc(t.name)}</button></td>`
+          + `<td class="l">${esc(ABTEILUNG[n.department] || n.department || '–')}</td><td class="l">${n.inbound ? '<span class="tag tag--ein">eingehend</span>' : '<span class="tag">eigene</span>'}</td>`
+          + `<td class="aktion">${n.inbound ? '' : `<button class="btn btn--ghost" type="button" data-unassign="${esc(n.phone_number)}" data-name="${esc(t.name)}">Lösen</button>`}</td></tr>`).join('')
+        + '</tbody></table>';
+    }
+    $('nummernBox').addEventListener('click', async (e) => {
+      const g = e.target.closest('[data-firma-geh]');
+      if (g) { geh('sec-firmen'); zeigeDetail(g.dataset.firmaGeh); return; }
+      const b = e.target.closest('[data-unassign]'); if (!b) return;
+      if (!(await frage('Nummer lösen?', 'Die Nummer ' + b.dataset.unassign + ' wird von ' + b.dataset.name + ' getrennt.', 'Lösen'))) return;
+      try { await api('/api/admin/numbers/unassign', { phoneNumber: b.dataset.unassign }); toast('Nummer gelöst'); await ladeAlles(); }
+      catch (err) { toast(err.message, 'err'); }
+    });
+
+    // ---- Anbieter & Stimmen (Gruppierung der Firmenliste) ----
+    function renderAnbieter() {
+      const box = $('anbieterBox');
+      if (!tenants.length) { box.innerHTML = '<div class="panel">' + leer('Noch keine Firmen, also auch keine Anbieter-Zuordnung.', 'Erste Firma anlegen', 'neu') + '</div>'; return; }
+      box.innerHTML = Object.entries(ANBIETER).map(([key, name]) => {
+        const liste = tenants.filter((t) => (t.voiceProvider || 'openai') === key);
+        const anrufe = liste.reduce((n, t) => n + (t.calls30d || 0), 0);
+        return `<div class="panel">
+          <div class="db-panelkopf"><h3>${esc(name)}</h3><span class="muted">${plural(liste.length, 'Firma', 'Firmen')} · ${zahl(anrufe)} Anrufe</span></div>
+          ${liste.length ? liste.map((t) => `<button class="anb-zeile" type="button" data-firma-geh="${esc(t.id)}"><b>${esc(t.name)}</b><span class="tag">${esc(stimmeName(key, t.voiceId))}</span></button>`).join('')
+            : '<p class="muted">Keine Firma nutzt dieses Modell.</p>'}
+        </div>`;
+      }).join('');
+    }
+    $('anbieterBox').addEventListener('click', (e) => { const b = e.target.closest('[data-firma-geh]'); if (b) { geh('sec-firmen'); zeigeDetail(b.dataset.firmaGeh); } });
+
+    // ---- System ----
+    const dauer = (s) => { const t = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60); return (t ? plural(t, 'Tag', 'Tage') + ' ' : '') + h + ' Std ' + m + ' Min'; };
+    async function ladeSystem() {
+      const box = $('systemFakten');
+      try {
+        const res = await fetch(API + '/api/status', { cache: 'no-store' });
+        const d = await res.json();
+        box.innerHTML = `<dt>Backend</dt><dd>${esc(API)}</dd><dt>Status</dt><dd class="${d.ok ? 'plus' : 'minus'}">${d.ok ? 'erreichbar' : 'gestört'}</dd>`
+          + `<dt>Dienst</dt><dd>${esc(d.service || '–')}</dd><dt>Läuft seit</dt><dd>${d.uptimeSeconds != null ? dauer(d.uptimeSeconds) : '–'}</dd>`
+          + `<dt>Serverzeit</dt><dd>${d.time ? new Date(d.time).toLocaleString('de-DE') : '–'}</dd>`;
+      } catch (e) {
+        box.innerHTML = `<dt>Backend</dt><dd>${esc(API)}</dd><dt>Status</dt><dd class="minus">nicht erreichbar</dd><dt>Fehler</dt><dd>${esc(e.message)}</dd>`;
+      }
+      renderSitzung();
+    }
+    function renderSitzung() {
+      if (!sitzung) return;
+      $('sitzungFakten').innerHTML = `<dt>Angemeldet als</dt><dd>${esc(sitzung.user.email)}</dd><dt>Rolle</dt><dd>Plattform-Administrator</dd>`
+        + `<dt>Daten geladen</dt><dd>${geladenUm ? geladenUm.toLocaleTimeString('de-DE') + ' Uhr' : '–'}</dd>`
+        + `<dt>Sitzung läuft ab</dt><dd>${sitzung.expires_at ? new Date(sitzung.expires_at * 1000).toLocaleString('de-DE') : '–'}</dd>`;
+    }
+    $('systemReload').onclick = ladeSystem;
+
+    // Escape schließt das Detail-Blatt auf dem Handy
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail')) document.body.classList.remove('zeigt-detail'); });
 
     // ---- Start ----
     sb.auth.getSession().then(({ data }) => { data.session ? enter(data.session) : showLogin(); });
