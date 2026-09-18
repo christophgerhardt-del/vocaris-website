@@ -136,3 +136,44 @@
 }
 
 @media (max-width:1000px){ :root{ --pad:28px; } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Ergänzung für das neue Gestaltungssystem (assets/neu.css), Sept. 2026.
+   Nur Zusätze — kein bestehender Name wurde geändert oder entfernt.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  /* Abstände auf dem 8-px-Raster */
+  --r1:8px; --r2:16px; --r3:24px; --r4:32px; --r5:40px; --r6:48px;
+  --r8:64px; --r10:80px; --r12:96px; --r14:112px; --r16:128px;
+
+  /* Tiefes Nachtblau: nur Held und Abschluss */
+  --nacht:#08122e;
+  --nacht-2:#0f1d4a;
+  --nacht-linie:rgba(255,255,255,.12);
+  --nacht-text:#c5d0e6;
+
+  /* Elektroblau: der eine Akzent, plus die Stufen, die ein Element braucht */
+  --akzent:var(--marke);
+  --akzent-tief:var(--marke-tief);
+  --akzent-zart:var(--marke-zart);
+  --akzent-ring:rgba(31,94,255,.28);
+
+  /* Überschriften: groß, eng gesetzt */
+  --t-held:clamp(40px,6.2vw,80px);
+  --t-h2:clamp(30px,4.4vw,54px);
+  --t-h3:clamp(19px,1.6vw,22px);
+  --zeile-eng:.98;
+  --sperrung-eng:-.028em;
+
+  /* Ein Schattenstil für alles, was schwebt */
+  --schatten:0 1px 2px rgba(8,18,46,.05), 0 12px 32px -12px rgba(8,18,46,.16);
+  --schatten-tief:0 2px 4px rgba(8,18,46,.06), 0 40px 80px -32px rgba(8,18,46,.30);
+
+  /* Bewegung */
+  --dauer:.55s;
+  --kurve:cubic-bezier(.2,.7,.2,1);
+
+  --breite:1200px;
+  --seite:24px;
+}
+@media (max-width:640px){ :root{ --seite:20px; } }
