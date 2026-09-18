@@ -6,18 +6,128 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-18T14:30" />
+  <meta name="vocaris-stand" content="2026-09-18T15:18" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Schriften aus dem eigenen Haus (assets/fonts), wie auf den übrigen Seiten: keine Verbindung zu Google -->
+  <link rel="stylesheet" href="assets/schriften.css">
   <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="styles.css" />
   <style>
     body { background: var(--paper-2); }
     html { scrollbar-gutter: stable; }
+    /* ---- Dunkelmodus ----
+       Nur die Grundwerte werden umgestellt; alle Bausteine hängen über die Aliase
+       (--paper, --ink, --line, --white, --accent …) daran. Die Marke wird eine Stufe
+       heller, damit Verweise und aktive Zustände auf dunklem Grund lesbar bleiben. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --flaeche-0: #0d1424; --flaeche-1: #141c2e; --flaeche-2: #1b2438; --flaeche-tint: #182240; --flaeche-tint-2: #223060;
+      --text-1: #e9eef7; --text-2: #b7c2d4; --text-3: #8f9cb3; --text-4: #6f7c94;
+      --marke: #6b9bff; --marke-tief: #9dbcff; --marke-hell: #a9c8ff; --marke-zart: #182240;
+      --gut: #3ccf9a; --gut-zart: #123329; --weh: #ff8a80;
+      --linie: #26324a; --linie-stark: #37455f; --linie-dunkel: #37455f;
+      --dunkel: #26324a; --dunkel-2: #2f3d5a; --auf-dunkel: #b7c2d4;
+      --cardfoot: #121a2b; --white: #141c2e; --dark: #2a3752; --dark-2: #34426a;
+      --hoch-1: 0 1px 1px rgba(0,0,0,.25), 0 2px 5px -1px rgba(0,0,0,.3);
+      --hoch-2: 0 2px 5px -1px rgba(0,0,0,.3), 0 12px 24px -8px rgba(0,0,0,.5);
+      --hoch-3: 0 4px 8px -2px rgba(0,0,0,.35), 0 30px 60px -20px rgba(0,0,0,.6);
+      --bg-soft: var(--flaeche-2);
+    }
+    /* Farbige Hinweise (Status, Fristen, Prioritäten): im Dunkeln dunkler Grund, helle Schrift */
+    :root[data-theme="dark"] .as-hinweisstatus[data-art="jetzt"], :root[data-theme="dark"] .gp-status[data-status="gestartet"], :root[data-theme="dark"] .tk-chip.low { background: #123329; color: #6fe0b3; border-color: #1d4d3d; }
+    :root[data-theme="dark"] .as-hinweisstatus[data-art="bald"], :root[data-theme="dark"] .gp-status[data-status="geplant"] { background: #1c2a4d; color: #9dbcff; }
+    :root[data-theme="dark"] .as-hinweisstatus[data-art="vorbei"], :root[data-theme="dark"] .tk-chip.ueber, :root[data-theme="dark"] .lv-meta span.ueber { background: #3a2410; color: #fdba74; border-color: #5a3a1a; }
+    :root[data-theme="dark"] .gp-status[data-status="fehlgeschlagen"], :root[data-theme="dark"] .tk-chip.high { background: #3f1a1a; color: #fca5a5; border-color: #5a2a2a; }
+    :root[data-theme="dark"] .lv-text mark, :root[data-theme="dark"] .bubble mark, :root[data-theme="dark"] .call-summary mark, :root[data-theme="dark"] .lv-mitte mark { background: #5a4500; }
+    :root[data-theme="dark"] .cal__ev.busy { background: repeating-linear-gradient(45deg, #2a3550, #2a3550 6px, #1f2940 6px, #1f2940 12px); }
+    :root[data-theme="dark"] .cal__ev.manual { background: repeating-linear-gradient(45deg, #4a2a26, #4a2a26 6px, #3a201c 6px, #3a201c 12px); }
+    :root[data-theme="dark"] .skelett__zeile { background: linear-gradient(90deg, var(--paper-2) 25%, var(--flaeche-1) 50%, var(--paper-2) 75%); background-size: 200% 100%; }
+    :root[data-theme="dark"] .dept-badge.vertrieb { background: #1c2a4d; color: #9dbcff; }
+    :root[data-theme="dark"] .dept-badge.support { background: #14312a; color: #6fe0b3; }
+    :root[data-theme="dark"] #sec-assistant .db-aktionen .lv-neu { background: #3a2c0c; color: #fbbf24; }
+    :root[data-theme="dark"] mark { background: #4a3b00; color: var(--ink); }
+    :root[data-theme="dark"] .login__main { background: var(--paper); }
+    /* ---- Suche über alles (⌘K) ---- */
+    .side__suche { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 40px; margin: 0 0 10px; padding: 0 10px;
+      border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--paper); color: var(--ink-faint); font: inherit; font-size: 13.5px; cursor: pointer; text-align: left; }
+    .side__suche:hover { border-color: var(--line-lav, var(--line)); color: var(--ink-soft); }
+    .side__suche svg { width: 16px; height: 16px; flex: none; }
+    .side__suche kbd { margin-left: auto; font: 600 11px var(--mono); color: var(--ink-faint); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; background: var(--white); }
+    .side__suchknopf { display: none; }
+    .suche { position: fixed; inset: 0; z-index: 210; display: flex; align-items: flex-start; justify-content: center; padding: 8vh 16px 16px; background: rgba(8,18,46,.45); }
+    .suche.hidden { display: none; }
+    .suche__box { width: min(640px, 100%); max-height: min(70vh, 640px); display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-l, 14px); box-shadow: var(--shadow-lg); overflow: hidden; }
+    .suche__kopf { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+    .suche__kopf svg { width: 18px; height: 18px; color: var(--ink-faint); flex: none; }
+    .suche__feld { flex: 1; min-height: 44px; border: 0; background: none; font: inherit; font-size: 16px; color: var(--ink); outline: none; }
+    .suche__feld::placeholder { color: var(--ph); }
+    .suche__feld, .suche__feld:focus { border: 0 !important; box-shadow: none !important; outline: none !important; background: none !important; padding: 0; }
+    .suche__esc { font: 600 11px var(--mono); color: var(--ink-faint); border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; background: var(--paper); }
+    .suche__liste { overflow-y: auto; padding: 6px; }
+    .suche__gruppe { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); padding: 10px 10px 4px; }
+    .suche__treffer { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: var(--r-sm); background: none; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+    .suche__treffer svg { width: 17px; height: 17px; color: var(--ink-faint); }
+    .suche__treffer b { display: block; font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .suche__treffer span { display: block; font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .suche__treffer small { font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+    .suche__treffer.aktiv, .suche__treffer:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    .suche__treffer.aktiv b { color: var(--accent-ink); }
+    .suche__treffer mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 3px; }
+    .suche__leer { padding: 22px 14px; color: var(--ink-faint); font-size: 14px; text-align: center; }
+    .suche__fuss { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
+    .suche__fuss kbd { font: 600 11px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; background: var(--paper); }
+    /* ---- Kurzbefehl-Hilfe (?) ---- */
+    .kurzhilfe__liste { display: grid; grid-template-columns: auto 1fr; gap: 9px 16px; align-items: center; font-size: 14px; margin: 14px 0 6px; }
+    .kurzhilfe__liste kbd { display: inline-block; font: 600 12px var(--mono); color: var(--ink); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 2px 7px; background: var(--paper); white-space: nowrap; }
+    .kurzhilfe__liste .dann { color: var(--ink-faint); font-size: 12px; margin: 0 4px; }
+    .kurzhilfe__gruppe { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); margin-top: 8px; }
+    /* ---- Onboarding-Checkliste auf dem Dashboard ---- */
+    .check { margin-bottom: 18px; }
+    .check__kopf { display: flex; align-items: center; gap: 12px; }
+    .check__kopf h3 { margin: 0; flex: 1; }
+    .check__balken { flex: 0 0 120px; height: 6px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+    .check__balken span { display: block; height: 100%; background: var(--ok); transition: width .3s; }
+    .check__zu { min-width: 40px; min-height: 40px; border: 0; background: none; border-radius: var(--r-sm); color: var(--ink-faint); cursor: pointer; display: grid; place-items: center; }
+    .check__zu:hover { background: var(--paper-2); color: var(--ink); }
+    .check__zu svg { width: 18px; height: 18px; transition: transform .15s; }
+    .check.zu .check__zu svg { transform: rotate(180deg); }
+    .check__liste { display: grid; gap: 4px; margin-top: 12px; }
+    .check.zu .check__liste, .check.zu .check__sub { display: none; }
+    .check__sub { color: var(--ink-soft); font-size: 13.5px; margin-top: 4px; }
+    .check__schritt { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: var(--r-sm); background: none; font: inherit; text-align: left; color: var(--ink); cursor: pointer; }
+    .check__schritt:hover { background: var(--paper-2); }
+    .check__schritt i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-lav, var(--line)); display: grid; place-items: center; color: #fff; }
+    .check__schritt i svg { width: 13px; height: 13px; opacity: 0; }
+    .check__schritt.erledigt i { background: var(--ok); border-color: var(--ok); } .check__schritt.erledigt i svg { opacity: 1; }
+    .check__schritt.erledigt b { color: var(--ink-faint); text-decoration: line-through; font-weight: 500; }
+    .check__schritt b { font-weight: 600; font-size: 14px; } .check__schritt span { display: block; font-size: 12.5px; color: var(--ink-soft); }
+    .check__schritt small { color: var(--accent); font-weight: 600; font-size: 13px; white-space: nowrap; }
+    .check__schritt.erledigt small { visibility: hidden; }
+    /* ---- Hilfe je Bereich (?) ---- */
+    .db-kopf > div:first-child { position: relative; }
+    .hilfe { display: inline-flex; align-items: center; gap: 6px; }
+    .hilfe__knopf { width: 40px; height: 40px; margin: -8px 0 -8px -6px; border: 0; background: none; border-radius: 50%; color: var(--ink-faint); cursor: pointer; display: inline-grid; place-items: center; vertical-align: middle; }
+    .hilfe__knopf:hover, .hilfe__knopf[aria-expanded="true"] { background: var(--paper-2); color: var(--accent-ink); }
+    .hilfe__knopf svg { width: 19px; height: 19px; }
+    .hilfe__panel { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(420px, calc(100vw - 32px)); padding: 14px 16px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+    .hilfe__panel b { color: var(--ink); } .hilfe__panel p { margin: 0 0 8px; } .hilfe__panel p:last-child { margin: 0; }
+    .hilfe__panel[hidden] { display: none; }
+    /* ---- Verbindungsbalken ---- */
+    .verbindung { position: fixed; top: 0; left: 0; right: 0; z-index: 220; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 9px 16px; font-size: 13.5px; font-weight: 500;
+      color: #fff; background: #b45309; box-shadow: var(--shadow); transform: translateY(-100%); transition: transform .25s; }
+    .verbindung.sichtbar { transform: none; }
+    .verbindung .btn { color: #fff; border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.12); }
+    .verbindung .btn:hover { background: rgba(255,255,255,.22); }
+    /* ---- Ladezustand von Knöpfen, die auf den Server gehen ---- */
+    .btn[aria-busy="true"] { position: relative; color: transparent !important; pointer-events: none; }
+    .btn[aria-busy="true"] > * { visibility: hidden; }
+    .btn[aria-busy="true"]::after { content: ''; position: absolute; width: 16px; height: 16px; top: calc(50% - 8px); left: calc(50% - 8px); border-radius: 50%;
+      border: 2px solid currentColor; border-right-color: transparent; animation: knopfdreh .7s linear infinite; color: var(--ink-faint); }
+    .btn--primary[aria-busy="true"]::after { color: #fff; }
+    @keyframes knopfdreh { to { transform: rotate(360deg); } }
     /* Desktop-Darstellung kompakter (entspricht 80 % Browser-Zoom); Handy bleibt wie es ist */
     @media (min-width: 1100px) {
       :root { --app-zoom: .8; }
@@ -738,7 +848,11 @@
       .shell { grid-template-columns: minmax(0, 1fr); }
       .side { position: sticky; top: 0; z-index: 30; height: auto; min-width: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 8px 10px 6px; gap: 2px 8px; }
       .side .brand { grid-column: 1; grid-row: 1; padding: 4px 4px; font-size: 17px; }
-      .side .foot { grid-column: 2; grid-row: 1; display: flex; gap: 6px; }
+      .side .foot { grid-column: 3; grid-row: 1; display: flex; gap: 6px; }
+      /* Suchfeld weicht der schmalen Kopfzeile; stattdessen eine Lupe rechts neben der Marke */
+      .side__suche { display: none; }
+      .side__suchknopf { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; border-radius: 50%; color: var(--ink-soft); grid-column: 2; grid-row: 1; justify-self: end; }
+      .side__suchknopf svg { width: 22px; height: 22px; }
       .side .foot .btn { padding: 6px 10px; font-size: 12.5px; min-height: 36px; width: auto; }
       .side nav { grid-column: 1 / -1; grid-row: 2; display: flex; overflow-x: auto; gap: 4px; padding: 4px 0 2px; }
       .deptbar, .rs-tabs { display: flex; overflow-x: auto; flex: 0 1 auto; min-width: 0; max-width: calc(100vw - 58px); scrollbar-width: none; }
@@ -946,6 +1060,9 @@
       font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); border-radius: var(--r-sm); cursor: pointer; text-align: left; }
     .konto__liste button:hover { background: var(--paper-2); }
     .konto__liste svg { width: 17px; height: 17px; color: var(--ink-faint); }
+    /* Beschriftung oben, darunter drei gleich breite Knöpfe – so passt es in die schmale Menübreite */
+    .konto__thema { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 10px 10px; font-size: 12.5px; color: var(--ink-faint); border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+    .konto__thema .deptbar { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 3px; max-width: none; } .konto__thema .deptseg { padding: 7px 6px; font-size: 12.5px; min-height: 36px; }
     .konto__mail { padding: 8px 10px 6px; font-size: 12.5px; color: var(--ink-faint); border-bottom: 1px solid var(--line); margin-bottom: 4px; overflow-wrap: anywhere; }
     /* Tab-Leiste und „Mehr"-Blatt gibt es nur auf dem Handy */
     .tabbar, .mehr { display: none; }
@@ -963,9 +1080,12 @@
     @media (prefers-reduced-motion: reduce) { .lv-detail, .mehr__blatt { transition: none !important; } }
     @media (max-width: 760px) {
       /* Kopfzeile oben: nur noch Marke und Avatar; Navigation wandert nach unten. */
-      .side { grid-template-columns: 1fr auto; padding: 6px 12px; min-height: 52px; }
+      .side { grid-template-columns: 1fr auto auto; padding: 6px 12px; min-height: 52px; }
       .side nav, .side .foot { display: none; }
-      .side__avatarknopf { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; border-radius: 50%; grid-column: 2; grid-row: 1; }
+      .side__avatarknopf { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; border-radius: 50%; grid-column: 3; grid-row: 1; }
+      .side__suchknopf { grid-column: 2; }
+      .suche { padding: 12px 10px; } .suche__box { max-height: calc(100vh - 24px); }
+      .verbindung { font-size: 13px; padding: 8px 12px; flex-wrap: wrap; }
       .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, 1fr);
         padding-bottom: env(safe-area-inset-bottom); background: var(--white); border-top: 1px solid var(--line); }
       .tab-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px;
@@ -994,13 +1114,27 @@
       .mehr__eintrag.active svg { color: var(--accent-ink); }
       .mehr__eintrag .gap-badge { margin-left: auto; }
       .mehr__mail { font-size: 13px; color: var(--ink-soft); padding: 4px 10px 6px; overflow-wrap: anywhere; }
+      /* Darstellung im Mehr-Blatt: drei gleich breite Knöpfe in voller Breite, 44 px hoch */
+      .mehr .konto__thema { flex-direction: column; align-items: stretch; gap: 6px; border-bottom: 0; }
+      .mehr .konto__thema .deptbar { display: grid; grid-template-columns: repeat(3, 1fr); max-width: none; }
+      .mehr .konto__thema .deptseg { min-height: 44px; }
       .lv-detail { padding-bottom: 24px; }
       .db-kopf { gap: 10px; }
       .db-aktionen { width: 100%; }
       .db-aktionen .lv-suche { flex: 1 1 100%; }
     }
   </style>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Dunkelmodus so früh wie möglich setzen, damit beim Laden nichts hell aufblitzt.
+       Gemerkt wird die Wahl (hell/dunkel/system) in localStorage; „system" folgt prefers-color-scheme. -->
+  <script>
+    (function () {
+      try {
+        var wahl = localStorage.getItem('vocaris.thema') || 'system';
+        var dunkel = wahl === 'dunkel' || (wahl === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+      } catch (e) { /* ohne Speicher: hell */ }
+    })();
+  </script>
 </head>
 <body>
   <!-- AUTH -->
@@ -1060,6 +1194,9 @@
   <div id="shell" class="shell hidden">
     <aside class="side">
       <a class="brand" href="./"><span class="m"><svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
+      <!-- Suche über alles: Desktop als Feld über der Navigation, auf dem Handy als Lupe in der Kopfzeile -->
+      <button class="side__suche" id="sucheKnopf" type="button" aria-label="Suche über alles öffnen (Strg+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Suchen …</span><kbd id="sucheKbd">⌘K</kbd></button>
+      <button class="side__avatarknopf side__suchknopf" id="sucheKnopfHandy" type="button" aria-label="Suche über alles öffnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
       <nav>
         <div class="nav-group">Betrieb</div>
         <button class="nav-item active" data-target="sec-overview" data-dashboard="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
@@ -1094,6 +1231,8 @@
           </button>
           <div class="konto__liste" id="kontoListe" role="menu" hidden>
             <div class="konto__mail" id="kontoMail" aria-hidden="true"></div>
+            <!-- Darstellung: hell, dunkel oder wie das System; Wahl liegt in localStorage -->
+            <div class="konto__thema" role="group" aria-label="Darstellung"><span>Darstellung</span><div class="deptbar" id="themaWahl"><button class="deptseg" type="button" data-thema="hell">Hell</button><button class="deptseg" type="button" data-thema="dunkel">Dunkel</button><button class="deptseg" type="button" data-thema="system">System</button></div></div>
             <button id="changePwBtn" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Passwort ändern</button>
             <button id="logoutBtn" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Abmelden</button>
           </div>
@@ -1140,6 +1279,9 @@
               <button class="btn btn--ghost sm" type="button" id="dbAnpassen">Anpassen</button>
             </div>
           </div>
+
+          <!-- Einrichtungs-Checkliste: fünf Schritte, solange noch nicht alles erledigt ist (siehe checklisteZeichnen) -->
+          <div class="panel check hidden" id="dbCheckliste"></div>
 
           <div class="db-editleiste" id="dbEditLeiste">
             <div>
@@ -2119,7 +2261,7 @@
               <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:#fdecea;border:2px solid #e0533d"></i>am Tisch</span>
             </div>
           </div>
-          <div id="rsPlan" style="position:relative;height:calc(100vh - 250px);min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background-color:#fbfaf7;background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
+          <div id="rsPlan" style="position:relative;height:calc(100vh - 250px);min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background-color:var(--white);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:30px 30px;touch-action:none"></div>
           <p class="muted" id="rsPlanHint" style="text-align:left;padding:0;margin-top:8px;font-size:12px"></p>
 
           <div id="rsEditPanels" class="hidden">
@@ -2185,7 +2327,7 @@
         <!-- Tisch-Aktions-Dialog (Klick auf einen Tisch im Plan) -->
         <div id="rsTblModal" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center">
           <div id="rsTblBackdrop" style="position:absolute;inset:0;background:#0006"></div>
-          <div style="position:relative;background:#fff;border-radius:16px;padding:22px;width:min(440px,92vw);max-height:88vh;overflow:auto;box-shadow:0 30px 60px -20px #0007">
+          <div style="position:relative;background:var(--white);border-radius:16px;padding:22px;width:min(440px,92vw);max-height:88vh;overflow:auto;box-shadow:0 30px 60px -20px #0007">
             <button id="rsTblClose" type="button" style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;border:none;background:var(--paper-2,#f3efe7);cursor:pointer">✕</button>
             <div id="rsTblBody"></div>
           </div>
@@ -2366,7 +2508,7 @@
                 <div style="margin-top:14px">
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><label style="margin:0;font-size:13px;font-weight:600">Vorschau</label><button id="rsPreviewRefresh" class="btn btn--ghost sm" type="button">Aktualisieren</button><span class="muted" style="font-size:12px">So sieht die Maske auf Ihrer Website aus.</span></div>
                   <div style="border:1px dashed var(--line);border-radius:14px;padding:14px;background:repeating-linear-gradient(45deg,var(--paper-2),var(--paper-2) 10px,transparent 10px,transparent 20px)">
-                    <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px -16px #0004">
+                    <div style="max-width:560px;margin:0 auto;background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 8px 30px -16px #0004">
                       <iframe id="rsEmbedPreview" title="Vorschau Reservierungsmaske" style="width:100%;border:0;display:block;height:640px" scrolling="no"></iframe>
                     </div>
                     <p class="muted" style="text-align:center;margin:10px 0 0;font-size:11px">Beispiel-Darstellung Ihrer Website (die Maske ist echt und live)</p>
@@ -2489,6 +2631,28 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- Suche über alles (⌘K / Strg+K): Anrufe, Nachrichten, Vorgänge, Telefonbuch, Wissen, offene Fragen, Bereiche -->
+  <div id="sucheOverlay" class="suche hidden" role="dialog" aria-modal="true" aria-label="Suche über alles">
+    <div class="suche__box">
+      <div class="suche__kopf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="sucheFeld" class="suche__feld" type="search" placeholder="Nummer, Name, Thema, Vorgang, Wissen, Bereich …" autocomplete="off" spellcheck="false" aria-label="Suchbegriff" aria-controls="sucheListe" aria-activedescendant="" /><kbd class="suche__esc">Esc</kbd></div>
+      <div id="sucheListe" class="suche__liste" role="listbox" aria-label="Treffer"></div>
+      <div class="suche__fuss"><span><kbd>↑</kbd> <kbd>↓</kbd> wählen</span><span><kbd>↵</kbd> öffnen</span><span><kbd>Esc</kbd> schließen</span></div>
+    </div>
+  </div>
+
+  <!-- Kurzbefehl-Hilfe (Taste ?) -->
+  <div id="kurzHilfe" class="pwmodal hidden" role="dialog" aria-modal="true" aria-labelledby="kurzHilfeTitel">
+    <div class="pwmodal__card" style="width:min(520px,94vw)">
+      <h3 id="kurzHilfeTitel">Kurzbefehle</h3>
+      <p class="muted">Gelten überall, solange der Cursor nicht in einem Eingabefeld steht.</p>
+      <div class="kurzhilfe__liste" id="kurzHilfeListe"></div>
+      <div class="stack" style="margin-top:14px"><button id="kurzHilfeZu" class="btn btn--ghost" type="button">Schließen</button></div>
+    </div>
+  </div>
+
+  <!-- Verbindungsbalken: erscheint, wenn Supabase oder der Server nicht antworten -->
+  <div id="verbindung" class="verbindung" role="status" aria-live="polite"><span id="verbindungText">Verbindung unterbrochen, versuche es erneut …</span><button class="btn sm" type="button" id="verbindungNeu">Jetzt neu versuchen</button></div>
+
   <div id="boot" class="hidden"><div class="ring"></div><div>Dein Dashboard wird geladen …</div></div>
 
   <!-- Einrichtungs-Assistent (Onboarding) -->
@@ -2528,7 +2692,8 @@
     const sb = createClient(
       'https://nocsjyzmnskbyccrjayx.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
-      IMP_HASH ? { auth: { storageKey: 'sb-vocaris-imp', persistSession: true, autoRefreshToken: true } } : undefined);
+      // global.fetch: jeder Aufruf läuft durch verbindungsFetch, das bei Netzfehlern den Hinweisbalken zeigt (Runde 3)
+      Object.assign({ global: { fetch: (...a) => verbindungsFetch(...a) } }, IMP_HASH ? { auth: { storageKey: 'sb-vocaris-imp', persistSession: true, autoRefreshToken: true } } : {}));
     const $ = (id) => document.getElementById(id);
     // Pflicht fuer alles, was ueber innerHTML in die Seite geht: Gaestenamen kommen
     // aus der oeffentlichen Buchung und vom Telefon, sind also Fremdeingabe.
@@ -2556,7 +2721,7 @@
       for (let i = 0; i < tries; i++) {
         try { return await fetch(API + path, opts); }
         catch (e) {
-          if (i === tries - 1) throw new Error('Server gerade nicht erreichbar – bitte in ein paar Sekunden nochmal versuchen.');
+          if (i === tries - 1) { verbindungGestoert('api'); throw new Error('Server gerade nicht erreichbar – bitte in ein paar Sekunden nochmal versuchen.'); }
           await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
         }
       }
@@ -2843,6 +3008,7 @@
       }
       const konto = document.createElement('div'); konto.className = 'mehr__gruppe'; konto.textContent = 'Konto'; wrap.append(konto);
       const mail = document.createElement('div'); mail.className = 'mehr__mail'; mail.textContent = $('userEmail').textContent || '–'; wrap.append(mail);
+      const thema = document.createElement('div'); thema.className = 'konto__thema'; thema.innerHTML = '<span>Darstellung</span>' + $('themaWahl').outerHTML.replace('id="themaWahl"', ''); wrap.append(thema); themaWahlVerdrahten(thema);
       wrap.append(eintrag('Passwort ändern', $('changePwBtn').querySelector('svg')?.outerHTML, false, () => { mehrZeigen(false); $('changePwBtn').click(); }));
       wrap.append(eintrag('Abmelden', $('logoutBtn').querySelector('svg')?.outerHTML, false, () => { mehrZeigen(false); $('logoutBtn').click(); }));
     }
@@ -3022,10 +3188,14 @@
         sb.from('webhook_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
         sb.from('booking_config').select('*').eq('tenant_id', tenant.id).maybeSingle(),
         sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked').gte('starts_at', nowIso).order('starts_at').limit(100),
-        sb.from('assistant_config').select('language').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
+        sb.from('assistant_config').select('language, greeting').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(),
       ]);
 
       renderPersonaPresets();
+      // Stand für die Einrichtungs-Checkliste auf dem Dashboard
+      chk.nummer = (nums ?? []).length > 0; chk.wissen = kbCount ?? 0;
+      chk.begruessung = !!(genCfg?.greeting || '').trim();
+      chk.benachrichtigung = !!wh && wh.enabled !== false && [wh.email_to, wh.slack_url, wh.teams_url, wh.telegram_token, wh.sms_to].some((v) => (v || '').trim());
 
       // Schnittstellen / Webhook
       $('whEnabled').checked = wh?.enabled ?? true;
@@ -3088,6 +3258,8 @@
       loadRestaurant();
       waRestore();
       await loadLive();
+      chk.testanruf = liveCalls.size > 0;
+      checklisteZeichnen();
       ensureRealtime(tenant.id);
     }
 
@@ -3477,7 +3649,7 @@
         ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
       const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? '🧹 abräumen' : (seats + 'P'));
       surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + esc(t.name || 'Tisch') + '</b>' +
-        (shape === 'bench' ? '' : '<span style="font-size:11px;color:#666;pointer-events:none">' + sub + '</span>');
+        (shape === 'bench' ? '' : '<span style="font-size:11px;color:var(--ink-soft);pointer-events:none">' + sub + '</span>');
       if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
       box.append(surf);
 
@@ -3804,7 +3976,7 @@
       const here = rsDayRes.filter((r) => r.tids.includes(t.id) && start < r.e && end > r.s);
       const cleaning = t.cleaning_until && new Date(t.cleaning_until).getTime() > Date.now();
       let html = '<h3 style="margin:0 0 2px">' + (t.name || 'Tisch') + '</h3><p class="muted" style="margin:0 0 14px;font-size:13px">' + (t.seats || 0) + ' Plätze · ' + areaName(t.area || 'innen') + ' · ' + date + ' um ' + timeLabel + ' Uhr</p>';
-      if (!here.length && cleaning) html += '<div style="background:#fbf3d0;border:1px solid #e6cf6a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px">🧹 Dieser Tisch muss noch abgeräumt werden.<div class="stack" style="margin-top:8px"><button id="rsTblClean" class="btn btn--primary sm" type="button">Abgeräumt – Tisch freigeben</button></div></div>';
+      if (!here.length && cleaning) html += '<div style="background:color-mix(in srgb, #e6cf6a 25%, var(--white));border:1px solid #e6cf6a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px">🧹 Dieser Tisch muss noch abgeräumt werden.<div class="stack" style="margin-top:8px"><button id="rsTblClean" class="btn btn--primary sm" type="button">Abgeräumt – Tisch freigeben</button></div></div>';
       if (here.length) html += '<div id="rsTblRes"></div>';
       else html += '<div class="if-grid"><label>Personen<input id="rsQpParty" type="number" min="1" value="' + Math.min(t.seats || 2, 2) + '"></label><label>Name (optional)<input id="rsQpName" placeholder="Gast"></label></div>' +
         '<label style="margin-top:8px">Telefon oder E-Mail (optional)<input id="rsQpContact" placeholder="für Bestätigung"></label>' +
@@ -3871,7 +4043,7 @@
       const st = r.status || 'booked';
       const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
       const visits = guestVisitCount(r.customer_phone);
-      const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#1f5eff;background:#f3effe;border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
+      const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#1f5eff;background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
       // No-Show-Historie: Gäste mit früheren No-Shows markieren (ab 2× = Wiederholungstäter, kräftiger).
       const ns = guestNoShowCount(r.customer_phone);
       const repeat = ns >= 2;
@@ -3916,10 +4088,10 @@
       // No-Show-Risiko: heutige, noch offene Gäste mit früheren No-Shows
       const risky = items.filter((r) => r.status === 'booked' && guestNoShowCount(r.customer_phone) > 0).length;
       const tile = (label, value, sub, accent) =>
-        '<div style="background:#fff;border:1px solid #e6e4f0;border-radius:14px;padding:12px 14px">' +
-        '<div style="font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8a8aa0">' + label + '</div>' +
+        '<div style="background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px 14px">' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint)">' + label + '</div>' +
         '<div style="font-size:22px;font-weight:800;color:' + (accent || '#14161a') + ';margin-top:2px;line-height:1.15">' + value + '</div>' +
-        (sub ? '<div style="font-size:12px;color:#6b7280;margin-top:2px">' + sub + '</div>' : '') + '</div>';
+        (sub ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">' + sub + '</div>' : '') + '</div>';
       host.innerHTML =
         tile('Gäste', covers, items.length + ' Reservierung' + (items.length === 1 ? '' : 'en')) +
         tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + upcoming.customer_name : '')) : 'keine offene', upcoming ? '#2563eb' : null) +
@@ -3996,14 +4168,14 @@
       list.innerHTML = '';
       for (const g of items) list.append(guestRow(g));
     }
-    function tagMini(t) { return '<span style="display:inline-block;font-size:11px;font-weight:600;color:#7fdcff;background:#eef0ff;border-radius:999px;padding:2px 9px;margin:4px 4px 0 0">' + t + '</span>'; }
+    function tagMini(t) { return '<span style="display:inline-block;font-size:11px;font-weight:600;color:#7fdcff;background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin:4px 4px 0 0">' + t + '</span>'; }
     function guestRow(g) {
       const div = document.createElement('div'); div.className = 'item'; div.style.cursor = 'pointer';
       const lastLbl = g.last ? new Date(g.last).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-      const star = g.visits >= 2 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#1f5eff;background:#f3effe;border-radius:999px;padding:2px 9px;margin-left:8px">★ Stammgast</span>' : '';
+      const star = g.visits >= 2 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#1f5eff;background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin-left:8px">★ Stammgast</span>' : '';
       const repeat = g.noShows >= 2;
       const ns = g.noShows > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:' + (repeat ? '#c0392b' : '#e0533d') + ';border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + g.noShows + '× No-Show</span>' : '';
-      const nl = g.newsletter ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#0a7d4b;background:#e5f6ee;border-radius:999px;padding:2px 9px;margin-left:6px">✉ Newsletter</span>' : '';
+      const nl = g.newsletter ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#0a7d4b;background:var(--gut-zart);border-radius:999px;padding:2px 9px;margin-left:6px">✉ Newsletter</span>' : '';
       const h = document.createElement('h4'); h.innerHTML = esc(g.name || 'Ohne Namen') + star + ns + nl;
       const p = document.createElement('p');
       p.innerHTML = [g.phone, g.email].filter(Boolean).join(' · ') + ' · ' + g.visits + ' Besuch' + (g.visits === 1 ? '' : 'e') + ' · zuletzt ' + lastLbl + (g.tags && g.tags.length ? '<br>' + g.tags.map(tagMini).join('') : '');
@@ -4017,7 +4189,7 @@
       const host = $('guestDetail'); if (!host) return;
       $('guestListWrap').classList.add('hidden'); host.classList.remove('hidden');
       const val = (x) => (x == null ? '' : String(x)).replace(/"/g, '&quot;');
-      const st = (label, value, accent) => '<div style="background:#fff;border:1px solid #e6e4f0;border-radius:12px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:800;color:' + (accent || '#14161a') + '">' + value + '</div><div style="font-size:11px;color:#8a8aa0;font-weight:600;text-transform:uppercase;letter-spacing:.03em">' + label + '</div></div>';
+      const st = (label, value, accent) => '<div style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:800;color:' + (accent || '#14161a') + '">' + value + '</div><div style="font-size:11px;color:#8a8aa0;font-weight:600;text-transform:uppercase;letter-spacing:.03em">' + label + '</div></div>';
       host.innerHTML =
         '<div class="panel">' +
           '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
@@ -4278,7 +4450,7 @@
       for (const t of tables) {
         rows += '<div style="display:flex;min-width:' + (140 + span * PXMIN) + 'px;align-items:center;margin-bottom:4px">' +
           '<div style="width:140px;flex:none;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (t.name || 'Tisch') + ' <span style="color:#999;font-weight:400">' + (t.seats || 0) + 'P</span></div>' +
-          '<div style="position:relative;flex:1;height:30px;background:#fbfaf7;border-radius:6px;border:1px solid var(--line)">';
+          '<div style="position:relative;flex:1;height:30px;background:var(--paper-2);border-radius:6px;border:1px solid var(--line)">';
         for (const rid of (map[t.id] || [])) {
           const r = resById[rid]; if (!r) continue;
           const s = new Date(r.starts_at), e = r.ends_at ? new Date(r.ends_at) : new Date(s.getTime() + rsSeatingMin * 60000);
@@ -6760,7 +6932,10 @@
       if (!msgs.length) ln.innerHTML = leerText('Noch keine Nachrichten.');
       msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => { geh('sec-messages'); nachrichtOeffnen(m.id); }; ln.append(z); });
       // Einstiegshilfe nur, solange nichts läuft
-      q('dbStart').classList.toggle('hidden', c.length > 0 && nums.length > 0);
+      // Checkliste mit frischen Zahlen; das Start-Panel weicht ihr, solange sie sichtbar ist
+      chk.nummer = nums.length > 0; chk.wissen = kbN ?? chk.wissen; if (c.length) chk.testanruf = true;
+      checklisteZeichnen();
+      q('dbStart').classList.toggle('hidden', (c.length > 0 && nums.length > 0) || !q('dbCheckliste').classList.contains('hidden'));
     }
 
     // ---- Auswertung ----
@@ -7605,6 +7780,7 @@
       }, { onConflict: 'tenant_id' });
       $('whSave').disabled = false;
       $('whHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
+      if (!error) { chk.benachrichtigung = $('whEnabled').checked && ['whEmail', 'whSlack', 'whTeams', 'whTgToken', 'whSms'].some((id) => ($(id)?.value || '').trim()); checklisteZeichnen(); }
     };
     $('whTest').onclick = async () => {
       $('whTest').disabled = true; $('whHint').textContent = 'Sende Test-Event … (gespeicherte Ziele werden getestet)';
@@ -8592,6 +8768,304 @@
       const { data } = await sb.auth.getSession();
       data.session ? showApp(data.session) : showAuth();
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Runde 3: Komfort – Darstellung, Suche über alles, Kurzbefehle, Hilfe,
+    // Einrichtungs-Checkliste, Verbindungsbalken, Ladezustand von Knöpfen.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // ---- Darstellung: hell / dunkel / wie das System ----
+    // Das Kopf-Skript setzt data-theme schon vor dem ersten Zeichnen; hier kommt
+    // nur noch die Umschaltung im Konto-Menü und das Mithören des Systems dazu.
+    const THEMA_KEY = 'vocaris.thema';
+    const dunkelMedia = window.matchMedia('(prefers-color-scheme: dark)');
+    const themaGemerkt = () => { try { const w = localStorage.getItem(THEMA_KEY); return ['hell', 'dunkel', 'system'].includes(w) ? w : 'system'; } catch { return 'system'; } };
+    function themaAnwenden() {
+      const wahl = themaGemerkt();
+      const dunkel = wahl === 'dunkel' || (wahl === 'system' && dunkelMedia.matches);
+      document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+      document.querySelectorAll('[data-thema]').forEach((b) => { b.classList.toggle('active', b.dataset.thema === wahl); b.setAttribute('aria-pressed', String(b.dataset.thema === wahl)); });
+    }
+    function themaSetzen(wahl) { try { localStorage.setItem(THEMA_KEY, wahl); } catch { /* dann nur für diese Sitzung */ } themaAnwenden(); }
+    /** Klicks auf die drei Knöpfe abfangen, ohne dass das Menü darüber zuklappt. */
+    function themaWahlVerdrahten(wrap) {
+      wrap.addEventListener('click', (e) => { const b = e.target.closest('[data-thema]'); if (!b) return; e.stopPropagation(); themaSetzen(b.dataset.thema); });
+      themaAnwenden(); // frisch gebaute Knöpfe (Mehr-Blatt) sofort richtig markieren
+    }
+    themaWahlVerdrahten($('themaWahl'));
+    dunkelMedia.addEventListener('change', themaAnwenden);
+    themaAnwenden();
+
+    // ---- Suche über alles (⌘K / Strg+K) ----
+    // Sucht in dem, was die App schon geladen hat; bei drei und mehr Zeichen
+    // fragt sie zusätzlich ältere Anrufe und Wissen anderer Abteilungen per ilike ab.
+    const IST_MAC = /Mac|iPhone|iPad/.test(navigator.platform || '');
+    if ($('sucheKbd')) $('sucheKbd').textContent = IST_MAC ? '⌘K' : 'Strg K';
+    const suIcon = (ziel) => document.querySelector('.nav-item[data-target="' + ziel + '"] svg')?.outerHTML || '';
+    // Zweitnamen, unter denen jemand einen Bereich suchen könnte
+    const BEREICH_WORTE = {
+      'sec-overview': 'dashboard übersicht start', 'sec-live': 'eingehend anrufe live testanruf', 'sec-outbound': 'ausgehend anrufen wählen rückruf',
+      'sec-kontakte': 'telefonbuch kontakte adressen', 'sec-messages': 'nachrichten rückrufwunsch', 'sec-tickets': 'vorgänge tickets aufgaben',
+      'sec-auswertung': 'auswertung statistik zahlen bericht', 'sec-kb': 'wissensdatenbank wissen einträge faq', 'sec-gaps': 'offene fragen unbeantwortet',
+      'sec-assistant': 'assistent begrüßung stimme öffnungszeiten regeln persona', 'sec-number': 'telefonnummer rufnummer sperrliste sperren',
+      'sec-team': 'zugänge team mitarbeiter einladen benutzer', 'sec-webhooks': 'schnittstellen benachrichtigungen slack e-mail sms webhook api crm ticketsystem',
+      'sec-booking': 'termine kalender buchung', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
+    };
+    let suTreffer = [], suIndex = 0, suServer = { anrufe: [], wissen: [] }, suServerFuer = '', suServerTimer = null;
+    const suNorm = (s) => String(s ?? '').toLowerCase();
+    const suKurz = (s, n = 90) => { s = String(s ?? '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+    /** Treffer aller Quellen, gruppiert. q ist bereits klein geschrieben. */
+    function suQuellen(q) {
+      const passt = (...f) => f.some((x) => suNorm(x).includes(q));
+      const gruppen = [];
+      // Bereiche als Sprungziele (ohne Suchbegriff: alle sichtbaren)
+      const bereiche = [...document.querySelectorAll('.nav-item')].filter(navSichtbar).filter((b) => !q || passt(navText(b), BEREICH_WORTE[b.dataset.target]))
+        .map((b) => ({ art: 'bereich', titel: navText(b), sub: 'Bereich öffnen', icon: b.querySelector('svg')?.outerHTML || '', oeffnen: () => geh(b.dataset.target) }));
+      if (!q) return [{ titel: 'Bereiche', treffer: bereiche }];
+      const anrufe = [...liveCalls.values()].map((x) => x.call).filter((c) => passt(c.caller_number, fmtNr(c.caller_number), ktName(c.caller_number), c.callee_number, c.to_number, c.topic, c.summary, c.notes, lvTagsVon(c).join(' ')))
+        .slice(0, 6).map((c) => suAnruf(c));
+      for (const c of suServer.anrufe) if (!liveCalls.has(c.id) && anrufe.length < 8) anrufe.push(suAnruf(c, true));
+      const nachrichten = [...mgItems.values()].filter((m) => passt(m.caller_name, m.callback_number, m.caller_number, m.summary, m.note, m.category))
+        .slice(0, 6).map((m) => ({ art: 'nachricht', titel: (m.caller_name || fmtNr(m.callback_number || m.caller_number)), sub: suKurz(m.summary), rechts: lvWann(m.created_at), icon: suIcon('sec-messages'), oeffnen: () => { geh('sec-messages'); nachrichtOeffnen(m.id); } }));
+      const vorgaenge = tkAlle.filter((t) => passt('#' + t.number, t.title, t.body, t.caller_name, t.caller_phone, t.assignee, t.category))
+        .slice(0, 6).map((t) => ({ art: 'vorgang', titel: '#' + t.number + ' ' + t.title, sub: suKurz((t.caller_name ? t.caller_name + ' · ' : '') + (t.body || '')), rechts: t.status === 'done' ? 'erledigt' : (t.due_at ? 'Frist ' + lvWann(t.due_at) : ''), icon: suIcon('sec-tickets'), oeffnen: () => { geh('sec-tickets'); vorgangOeffnen(t.id); } }));
+      const kontakte = ktItems.filter((k) => passt(k.name, k.phone, fmtNr(k.phone), k.company, k.email, k.notes))
+        .slice(0, 6).map((k) => ({ art: 'kontakt', titel: k.name || fmtNr(k.phone), sub: [fmtNr(k.phone), k.company].filter(Boolean).join(' · '), icon: suIcon('sec-kontakte'), oeffnen: () => { geh('sec-kontakte'); ktSuche = k.name || k.phone || ''; if ($('ktSuche')) $('ktSuche').value = ktSuche; renderKontakte(); } }));
+      const wissen = kbItems.filter((it) => passt(it.title, it.content, it.category)).slice(0, 6).map((it) => suWissen(it));
+      for (const it of suServer.wissen) if (!kbItems.some((x) => x.id === it.id) && wissen.length < 8) wissen.push(suWissen(it, true));
+      const fragen = [...gapItems, ...(gapBeantwortet || [])].filter((g) => passt(g.question, g.answer))
+        .slice(0, 6).map((g) => ({ art: 'frage', titel: suKurz(g.question, 70), sub: g.status === 'open' ? 'offen · aus einem Anruf' : suKurz(g.answer), rechts: lvWann(g.created_at), icon: suIcon('sec-gaps'), oeffnen: () => { geh('sec-gaps'); frageOeffnen(g.id); } }));
+      for (const [titel, treffer] of [['Anrufe', anrufe], ['Nachrichten', nachrichten], ['Vorgänge', vorgaenge], ['Telefonbuch', kontakte], ['Wissensdatenbank', wissen], ['Offene Fragen', fragen], ['Bereiche', bereiche]]) if (treffer.length) gruppen.push({ titel, treffer });
+      return gruppen;
+    }
+    function suAnruf(c, aelter) {
+      const name = ktName(c.caller_number);
+      return { art: 'anruf', titel: (name ? name + ' · ' : '') + fmtNr(c.caller_number) + (c.topic ? ' · ' + c.topic : ''), sub: suKurz(c.summary || (c.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')), rechts: lvWann(c.started_at) + (aelter ? ' · älter' : ''), icon: suIcon(callRichtung(c) === 'out' ? 'sec-outbound' : 'sec-live'), oeffnen: () => liveOeffnen(c.id) };
+    }
+    function suWissen(it, andereAbt) {
+      return { art: 'wissen', titel: it.title, sub: suKurz(it.content), rechts: andereAbt && it.department !== currentDept ? (DEPT_LABEL[it.department] || it.department) : (it.category || ''), icon: suIcon('sec-kb'),
+        oeffnen: () => { geh('sec-kb'); kbSuche = ''; if ($('kbSuche')) $('kbSuche').value = ''; kbAuswahl = it.id; if (it.department && it.department !== currentDept) setDept(it.department); else renderWissen(); } };
+    }
+    /** Ältere Anrufe und Wissen anderer Abteilungen gezielt nachladen – nur bei drei und mehr Zeichen, entprellt. */
+    function suServerSuchen(q) {
+      clearTimeout(suServerTimer);
+      if (q.length < 3 || !tenant) { suServer = { anrufe: [], wissen: [] }; suServerFuer = ''; return; }
+      if (q === suServerFuer) return;
+      suServerTimer = setTimeout(async () => {
+        const muster = '%' + q.replace(/[%_\\]/g, '\\$&') + '%';
+        const [{ data: a }, { data: w }] = await Promise.all([
+          sb.from('calls').select('id, caller_number, callee_number, topic, summary, notes, status, started_at, direction, mode, tags').eq('tenant_id', tenant.id).or('caller_number.ilike.' + muster + ',topic.ilike.' + muster + ',summary.ilike.' + muster + ',notes.ilike.' + muster).order('started_at', { ascending: false }).limit(5),
+          sb.from('knowledge_base').select('id, title, content, category, department').eq('tenant_id', tenant.id).or('title.ilike.' + muster + ',content.ilike.' + muster).limit(5),
+        ]);
+        if (suNorm($('sucheFeld').value.trim()) !== q) return; // inzwischen weitergetippt
+        suServer = { anrufe: a || [], wissen: w || [] }; suServerFuer = q;
+        suZeichnen();
+      }, 350);
+    }
+    function suZeichnen() {
+      const q = suNorm($('sucheFeld').value.trim());
+      const gruppen = suQuellen(q);
+      const liste = $('sucheListe'); liste.innerHTML = ''; suTreffer = [];
+      if (!gruppen.length) { liste.innerHTML = '<div class="suche__leer">Nichts gefunden für „' + escHtml($('sucheFeld').value.trim()) + '".</div>'; $('sucheFeld').setAttribute('aria-activedescendant', ''); return; }
+      for (const g of gruppen) {
+        const h = document.createElement('div'); h.className = 'suche__gruppe'; h.textContent = g.titel; liste.append(h);
+        for (const t of g.treffer) {
+          const i = suTreffer.length; suTreffer.push(t);
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'suche__treffer'; b.id = 'sucheTreffer' + i; b.setAttribute('role', 'option');
+          b.innerHTML = t.icon + '<div><b></b><span></span></div><small></small>';
+          b.querySelector('b').innerHTML = markierenMit(t.titel, q); b.querySelector('span').innerHTML = markierenMit(t.sub || '', q); b.querySelector('small').textContent = t.rechts || '';
+          if (!t.sub) b.querySelector('span').remove();
+          b.onclick = () => suOeffnen(i); b.onmousemove = () => { if (suIndex !== i) { suIndex = i; suAktiv(); } };
+          liste.append(b);
+        }
+      }
+      suIndex = Math.min(suIndex, suTreffer.length - 1); suAktiv();
+    }
+    function suAktiv() {
+      document.querySelectorAll('.suche__treffer').forEach((b, i) => { b.classList.toggle('aktiv', i === suIndex); b.setAttribute('aria-selected', String(i === suIndex)); });
+      const el = $('sucheTreffer' + suIndex); if (el) { el.scrollIntoView({ block: 'nearest' }); $('sucheFeld').setAttribute('aria-activedescendant', el.id); }
+    }
+    function suOeffnen(i) { const t = suTreffer[i]; if (!t) return; sucheZeigen(false); t.oeffnen(); window.scrollTo({ top: 0 }); }
+    function sucheZeigen(an) {
+      const o = $('sucheOverlay'); if (!o) return;
+      if (an) { mehrZeigen(false); kurzHilfeZeigen(false); }
+      o.classList.toggle('hidden', !an);
+      if (an) { $('sucheFeld').value = ''; suIndex = 0; suServer = { anrufe: [], wissen: [] }; suServerFuer = ''; suZeichnen(); $('sucheFeld').focus(); }
+    }
+    $('sucheKnopf').onclick = () => sucheZeigen(true);
+    $('sucheKnopfHandy').onclick = () => sucheZeigen(true);
+    $('sucheOverlay').addEventListener('click', (e) => { if (!e.target.closest('.suche__box')) sucheZeigen(false); });
+    $('sucheFeld').addEventListener('input', () => { suIndex = 0; suZeichnen(); suServerSuchen(suNorm($('sucheFeld').value.trim())); });
+    $('sucheFeld').addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!suTreffer.length) return; suIndex = (suIndex + (e.key === 'ArrowDown' ? 1 : suTreffer.length - 1)) % suTreffer.length; suAktiv(); }
+      else if (e.key === 'Enter') { e.preventDefault(); suOeffnen(suIndex); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); sucheZeigen(false); }
+    });
+
+    // ---- Kurzbefehle ----
+    // Läuft in der Capture-Phase, damit „g dann e" nicht gleichzeitig „Vorgang erledigt" auslöst.
+    // In Eingabefeldern feuert nichts außer ⌘K / Strg+K.
+    const KURZ_BEREICHE = { d: 'sec-overview', e: 'sec-live', a: 'sec-outbound', n: 'sec-messages', v: 'sec-tickets', w: 'sec-kb', f: 'sec-gaps', u: 'sec-auswertung', s: 'sec-assistant', t: 'sec-number', z: 'sec-team', k: 'sec-kontakte' };
+    const KURZ_HILFE = [
+      ['Überall', null],
+      [[IST_MAC ? '⌘' : 'Strg', 'K'], 'Suche über alles'],
+      [['?'], 'Diese Hilfe'],
+      [['Esc'], 'Schließt Suche, Hilfe, Detail'],
+      ['Bereiche wechseln', null],
+      [['g', 'd'], 'Dashboard'], [['g', 'e'], 'Eingehende Anrufe'], [['g', 'a'], 'Ausgehende Anrufe'], [['g', 'n'], 'Nachrichten'], [['g', 'v'], 'Vorgänge'],
+      [['g', 'w'], 'Wissensdatenbank'], [['g', 'f'], 'Offene Fragen'], [['g', 'u'], 'Auswertung'], [['g', 's'], 'Assistent'], [['g', 'k'], 'Telefonbuch'],
+      ['Im Bereich', null],
+      [['/'], 'In die Suche des Bereichs springen'], [['↑', '↓'], 'Durch die Liste'], [['n'], 'Neuer Vorgang (in Vorgänge)'], [['a'], 'Vorgang in Arbeit'], [['e'], 'Vorgang erledigt'],
+      [[IST_MAC ? '⌘' : 'Strg', 'S'], 'Assistent speichern'], [[IST_MAC ? '⌘' : 'Strg', '↵'], 'Notiz oder Antwort speichern'],
+    ];
+    $('kurzHilfeListe').innerHTML = KURZ_HILFE.map(([tasten, text]) => text === null ? '<div class="kurzhilfe__gruppe">' + tasten + '</div>'
+      : '<div>' + tasten.map((t) => '<kbd>' + t + '</kbd>').join(tasten.length === 2 && tasten[0] === 'g' ? '<span class="dann">dann</span>' : ' ') + '</div><div>' + text + '</div>').join('');
+    function kurzHilfeZeigen(an) { $('kurzHilfe').classList.toggle('hidden', !an); if (an) $('kurzHilfeZu').focus(); }
+    $('kurzHilfeZu').onclick = () => kurzHilfeZeigen(false);
+    $('kurzHilfe').addEventListener('click', (e) => { if (!e.target.closest('.pwmodal__card')) kurzHilfeZeigen(false); });
+    let kurzG = 0;
+    document.addEventListener('keydown', (e) => {
+      if ($('shell').classList.contains('hidden')) return; // nur in der angemeldeten App
+      const inFeld = !!e.target.closest?.('input, textarea, select, [contenteditable="true"]');
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'k') { e.preventDefault(); e.stopPropagation(); sucheZeigen($('sucheOverlay').classList.contains('hidden')); return; }
+      if (inFeld || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!$('sucheOverlay').classList.contains('hidden')) return; // die Suche hat eigene Tasten
+      if (e.key === 'Escape') { kurzHilfeZeigen(false); hilfeSchliessen(); return; }
+      if (e.key === '?') { e.preventDefault(); kurzHilfeZeigen($('kurzHilfe').classList.contains('hidden')); return; }
+      if (!$('kurzHilfe').classList.contains('hidden') || !$('pwModal').classList.contains('hidden') || !$('wizModal').classList.contains('hidden')) return;
+      const k = e.key.length === 1 ? e.key.toLowerCase() : '';
+      if (kurzG && Date.now() - kurzG < 1500) {
+        kurzG = 0;
+        const ziel = KURZ_BEREICHE[k];
+        if (ziel && navSichtbar(navItem(ziel))) { e.preventDefault(); e.stopPropagation(); mehrZeigen(false); geh(ziel); window.scrollTo({ top: 0 }); }
+        return;
+      }
+      if (k === 'g' && !e.shiftKey) { kurzG = Date.now(); e.stopPropagation(); }
+    }, true);
+
+    // ---- Hilfe je Bereich: kleines „?" neben der Überschrift ----
+    const HILFE = {
+      'sec-overview': ['Anrufe, Nachrichten und Vorgänge der letzten Tage auf einen Blick. <b>7 / 14 / 30 Tage</b> wählt den Zeitraum, <b>↻</b> lädt die Zahlen neu.', '<b>Anpassen</b> lässt dich Kacheln verschieben, entfernen oder hinzufügen. Kacheln mit Zahlen sind klickbar und führen in den passenden Bereich.'],
+      'sec-live': ['Alle eingehenden Anrufe mit Mitschrift, Zusammenfassung und Stimmung; laufende Gespräche stehen oben in Echtzeit.', 'Suche, Zeitraum und Stimmung grenzen die Liste ein. Im Detail ergänzt du Notiz und Tags, antwortest per SMS oder planst einen Rückruf. <b>CSV</b> lädt die aktuelle Auswahl herunter.'],
+      'sec-outbound': ['Anrufe, die ihr über Vocaris führt: selbst im Browser, am eigenen Telefon (Vocaris verbindet) oder durch den Assistenten mit einem Auftrag.', 'Nummer eintippen, Weg wählen, <b>Anrufen</b>. Geplante Rückrufe stehen darunter und lassen sich absagen.'],
+      'sec-kontakte': ['Das Telefonbuch ordnet Nummern Namen und Firmen zu. Die Namen erscheinen dann bei Anrufen, Nachrichten und in der Auswertung.', '<b>Neuer Kontakt</b> legt einen Eintrag an; ein Klick auf eine Zeile öffnet ihn zum Bearbeiten.'],
+      'sec-messages': ['Nachrichten, die der Assistent aufgenommen hat: Rückrufwünsche, Anliegen, Dringlichkeit.', '<b>Neu / Erledigt</b> und die Chips filtern die Liste. Im Detail markierst du als erledigt, rufst zurück oder schreibst eine Notiz. <b>CSV</b> exportiert die Auswahl.'],
+      'sec-tickets': ['Jede Nachricht wird ein Vorgang mit Nummer, Frist und Zuständigkeit. <b>+ Vorgang</b> legt einen von Hand an, <b>Liste / Board</b> wechselt die Ansicht.', 'Im Detail änderst du Status (Taste <b>A</b> = in Arbeit, <b>E</b> = erledigt), Priorität und Zuständige und siehst den Verlauf.'],
+      'sec-auswertung': ['Zahlen zu Anrufen im gewählten Zeitraum: Aufkommen, Dauer, Stimmung, Themen und häufigste Anrufer.', 'Balken und Zeilen sind klickbar: Sie filtern die Auswertung oder öffnen <b>Eingehend</b> mit dem passenden Filter.'],
+      'sec-kb': ['Was der Assistent am Telefon wissen soll: Öffnungszeiten, Preise, Abläufe, Ansprechpartner. <b>+ Eintrag</b> legt einen an; Titel und Text änderst du direkt im Detail.', 'Einträge unter <b>Allgemein</b> gelten für alle Abteilungen. Der Wissens-Assistent unten rechts hilft beim Befüllen aus Dokumenten.'],
+      'sec-gaps': ['Fragen von Anrufern, die der Assistent nicht beantworten konnte.', 'Antwort eintippen und <b>Speichern</b>: Sie landet in der Wissensdatenbank und gilt ab dem nächsten Anruf. <b>Verwerfen</b> entfernt Fragen, die nicht passen.'],
+      'sec-assistant': ['Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> führt zu Eingehend, wo du das Ergebnis sofort siehst.'],
+      'sec-booking': ['Terminbuchung am Telefon: Dauer, Puffer, Vorlauf und Zeitfenster festlegen, Kalender verbinden.', 'Gebuchte Termine stehen in der Liste; der iCal-Link bringt sie in deinen Kalender.'],
+      'sec-webhooks': ['Wohin Ereignisse gehen: E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten, Terminen, Fragen und Anrufen. Dazu CRM, Ticketsystem, API-Schlüssel und eigener Webhook.', '<b>Speichern</b> sichert Ereignisse und Kanäle, <b>Test senden</b> prüft alle aktiven Ziele.'],
+      'sec-number': ['Deine Vocaris-Rufnummern mit Abteilung und Weiterleitung. Die Nummer richten wir für dich ein; hier siehst du den Stand.', 'Darunter die <b>Sperrliste</b>: Gesperrte Nummern nimmt der Assistent nicht mehr an.'],
+      'sec-team': ['Wer sich anmelden darf: Inhaber, Verwaltung oder Mitarbeiter mit abgestuften Rechten.', '<b>Einladen</b> schickt eine E-Mail mit Link. Zugänge lassen sich hier auch wieder entfernen.'],
+      'sec-floorplan': ['Tische und Bereiche zeichnen: Im Bearbeitungsmodus ziehst du Tische, legst Plätze fest und fasst sie zusammen.', 'Live zeigt der Plan, welche Tische frei, reserviert oder besetzt sind.'],
+      'sec-restaurant': ['Reservierungen am Telefon und online: Öffnungs- und Sitzzeiten, Kapazität, Bestätigungen und Warteliste.', 'Die Tagesansicht zeigt, wer wann kommt. Status änderst du mit <b>Eingetroffen</b>, <b>Abschließen</b> oder <b>No-Show</b>.'],
+      'sec-guests': ['Gästeprofile aus Reservierungen: Besuche, No-Shows, Notizen und Tags. Ein Klick auf einen Gast öffnet das Profil.', 'Newsletter gehen nur an Gäste mit Einwilligung.'],
+    };
+    function hilfeSchliessen() { document.querySelectorAll('.hilfe__panel:not([hidden])').forEach((p) => { p.hidden = true; document.getElementById(p.dataset.knopf)?.setAttribute('aria-expanded', 'false'); }); }
+    (function hilfeEinbauen() {
+      for (const [id, saetze] of Object.entries(HILFE)) {
+        const kopf = $(id)?.querySelector('.db-kopf > div:first-child'); const h1 = kopf?.querySelector('.pagehead'); if (!h1) continue;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'hilfe__knopf'; b.id = 'hilfe-' + id; b.setAttribute('aria-label', 'Hilfe zu ' + h1.textContent.trim()); b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', 'hilfePanel-' + id);
+        b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        const p = document.createElement('div'); p.className = 'hilfe__panel'; p.id = 'hilfePanel-' + id; p.hidden = true; p.dataset.knopf = b.id; p.setAttribute('role', 'note');
+        p.innerHTML = saetze.map((s) => '<p>' + s + '</p>').join('');
+        b.onclick = (e) => { e.stopPropagation(); const auf = p.hidden; hilfeSchliessen(); p.hidden = !auf; b.setAttribute('aria-expanded', String(auf)); };
+        h1.append(b); kopf.append(p);
+      }
+      document.addEventListener('click', (e) => { if (!e.target.closest('.hilfe__panel')) hilfeSchliessen(); });
+    })();
+
+    // ---- Einrichtungs-Checkliste auf dem Dashboard ----
+    // Fünf Schritte; sichtbar, solange einer offen ist. Zuklappen wird je Mandant gemerkt.
+    const chk = { nummer: false, begruessung: false, wissen: 0, benachrichtigung: false, testanruf: false };
+    const chkKey = () => 'vocaris.checkliste.zu.' + (tenant?.id || '');
+    function checklisteZeichnen() {
+      const box = $('dbCheckliste'); if (!box || !tenant) return;
+      if (currentDept === 'general' && $('greeting')) chk.begruessung = chk.begruessung || !!$('greeting').value.trim();
+      const schritte = [
+        { ok: chk.nummer, t: 'Rufnummer vorhanden', s: chk.nummer ? '' : 'Wir schalten deine Nummer frei – Stand unter Telefonnummer.', ziel: 'sec-number' },
+        { ok: chk.begruessung, t: 'Begrüßung angepasst', s: 'So meldet sich der Assistent beim Abnehmen.', ziel: 'sec-assistant', danach: () => setTimeout(() => { $('greeting')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('greeting')?.focus(); }, 150) },
+        { ok: chk.wissen >= 5, t: 'Mindestens fünf Wissenseinträge', s: chk.wissen + ' von 5 · Öffnungszeiten, Preise, Abläufe', ziel: 'sec-kb' },
+        { ok: chk.benachrichtigung, t: 'Benachrichtigung eingerichtet', s: 'E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten.', ziel: 'sec-webhooks', danach: () => document.querySelector('#ifTabs [data-iftab="benachrichtigungen"]')?.click() },
+        { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live' },
+      ];
+      const fertig = schritte.filter((x) => x.ok).length;
+      if (fertig === schritte.length) { box.classList.add('hidden'); return; }
+      let zu = false; try { zu = localStorage.getItem(chkKey()) === '1'; } catch { /* egal */ }
+      box.classList.remove('hidden'); box.classList.toggle('zu', zu);
+      box.innerHTML = '<div class="check__kopf"><h3>Einrichtung: ' + fertig + ' von ' + schritte.length + ' Schritten</h3><div class="check__balken" aria-hidden="true"><span style="width:' + Math.round(fertig / schritte.length * 100) + '%"></span></div>'
+        + '<button class="check__zu" type="button" aria-expanded="' + !zu + '" aria-controls="dbChecklisteListe" aria-label="' + (zu ? 'Checkliste aufklappen' : 'Checkliste zuklappen') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button></div>'
+        + '<p class="check__sub">Danach nimmt der Assistent Anrufe an, weiß Bescheid und meldet sich bei dir.</p><div class="check__liste" id="dbChecklisteListe"></div>';
+      const liste = box.querySelector('.check__liste');
+      schritte.forEach((x) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'check__schritt' + (x.ok ? ' erledigt' : '');
+        b.innerHTML = '<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></i><div><b></b><span></span></div><small>Öffnen →</small>';
+        b.querySelector('b').textContent = x.t; b.querySelector('span').textContent = x.s; if (!x.s) b.querySelector('span').remove();
+        b.setAttribute('aria-label', x.t + (x.ok ? ' – erledigt' : ' – offen') + ', öffnet ' + (navText(navItem(x.ziel)) || 'den Bereich'));
+        b.onclick = () => { geh(x.ziel); window.scrollTo({ top: 0 }); x.danach?.(); };
+        liste.append(b);
+      });
+      box.querySelector('.check__zu').onclick = () => { try { localStorage.setItem(chkKey(), zu ? '0' : '1'); } catch { /* egal */ } checklisteZeichnen(); };
+    }
+
+    // ---- Verbindung: Hinweisbalken statt stiller Fehler ----
+    // Supabase-Aufrufe laufen durch verbindungsFetch (siehe createClient); der Server-
+    // Aufruf apiFetch meldet sich nach dem letzten Versuch. Danach wird alle fünf
+    // Sekunden geprüft, bis eine der Gegenstellen wieder antwortet.
+    const SB_URL = 'https://nocsjyzmnskbyccrjayx.supabase.co';
+    let verbGestoert = '', verbUhr = null, verbLaeuft = false;
+    const istNetzfehler = (e) => e && (e.name === 'TypeError' || /Load failed|Failed to fetch|NetworkError|network/i.test(e.message || ''));
+    function verbindungsFetch(url, opts) {
+      return fetch(url, opts).then((r) => { if (verbGestoert === 'supabase') verbindungWieder(); return r; }, (e) => { if (istNetzfehler(e) && !(opts?.signal?.aborted)) verbindungGestoert('supabase'); throw e; });
+    }
+    function verbindungGestoert(quelle) {
+      if (verbGestoert) return;
+      verbGestoert = quelle;
+      $('verbindungText').textContent = navigator.onLine === false ? 'Keine Internetverbindung – sobald sie wieder da ist, geht es weiter …' : 'Verbindung unterbrochen, versuche es erneut …';
+      $('verbindung').classList.add('sichtbar');
+      clearInterval(verbUhr); verbUhr = setInterval(verbindungPruefen, 5000);
+    }
+    async function verbindungPruefen() {
+      if (!verbGestoert || verbLaeuft) return;
+      verbLaeuft = true;
+      try {
+        // Es zählt, dass die Gegenstelle antwortet – der Status ist egal.
+        if (verbGestoert === 'api') await fetch(API + '/health', { cache: 'no-store' });
+        else await fetch(SB_URL + '/auth/v1/health', { cache: 'no-store' });
+        verbindungWieder();
+      } catch { /* weiter warten */ }
+      verbLaeuft = false;
+    }
+    function verbindungWieder() {
+      if (!verbGestoert) return;
+      const war = verbGestoert; verbGestoert = ''; clearInterval(verbUhr); verbUhr = null;
+      $('verbindung').classList.remove('sichtbar');
+      toast('Verbindung wieder da.');
+      // Nach einem Supabase-Ausfall die Daten frisch holen, damit nichts Altes stehen bleibt.
+      if (war === 'supabase' && tenant) loadAll().catch(() => { /* zeigt sich beim nächsten Aufruf */ });
+    }
+    $('verbindungNeu').onclick = async () => { const b = $('verbindungNeu'); b.setAttribute('aria-busy', 'true'); await verbindungPruefen(); b.removeAttribute('aria-busy'); };
+    window.addEventListener('offline', () => verbindungGestoert('supabase'));
+    window.addEventListener('online', verbindungPruefen);
+
+    // ---- Knöpfe, die auf den Server gehen: Ladezustand und Schutz vor Doppelklick ----
+    // Wickelt den vorhandenen onclick ein: während er läuft, ist der Knopf gesperrt
+    // und zeigt einen Kreis; Text und Breite bleiben, damit nichts springt.
+    function knopfSchuetzen(id) {
+      const b = $(id); if (!b || typeof b.onclick !== 'function') return;
+      const alt = b.onclick;
+      b.onclick = async function (e) {
+        if (b.getAttribute('aria-busy') === 'true') return;
+        b.setAttribute('aria-busy', 'true'); b.disabled = true;
+        try { return await alt.call(this, e); }
+        finally { b.removeAttribute('aria-busy'); b.disabled = false; }
+      };
+    }
+    ['authBtn', 'pwSave', 'saveBtn', 'addKbBtn', 'callBtn', 'ktSpeichern', 'ingestBtn', 'whSave', 'whTest', 'crmAdd', 'tkAdd', 'tkTest', 'akCreate', 'tkNeuBtn', 'blockAdd', 'bkSave', 'bkAdd', 'bbAdd', 'rbAdd', 'guestSave', 'dbAktualisieren'].forEach(knopfSchuetzen);
+
+
     boot();
   </script>
   <script>
