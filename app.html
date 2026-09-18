@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-09-18T14:10" />
+  <meta name="vocaris-stand" content="2026-09-18T14:30" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -678,6 +678,7 @@
 
     @media (max-width: 700px) {
       .waehl__wege { flex-direction: column; }
+      .waehl__wege .waehl__weg { flex: 0 0 auto; } /* untereinander: Höhe aus dem Inhalt, sonst klemmt flex-basis 0 die Knöpfe auf die Mindesthöhe */
       .waehl__koerper { grid-template-columns: 1fr; gap: 16px; }
       .gespraech { max-width: none; }
     }
@@ -827,7 +828,8 @@
       .shell .deptseg, .shell .db-aktionen .deptseg { min-height: 32px; }
     }
     @media (max-width: 760px) {
-      .shell button:not(.nav-item):not(.tastatur button):not(.db-werk button):not(.pw__toggle), .shell .btn, .shell select,
+      /* :not([type=checkbox]) auch hier, sonst gewinnt die 40-px-Regel oben durch ihre höhere Spezifität. */
+      .shell button:not(.nav-item):not(.tastatur button):not(.db-werk button):not(.pw__toggle):not([type=checkbox]), .shell .btn, .shell .btn.sm, .shell select,
       .shell input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]), .shell .lv-chip, .shell .deptseg, .shell .lv-select,
       .shell .lv-suche, .shell .branch-chip, .shell .chip, .shell .livew__head button, .shell .wa-head-actions button, .shell .db-werk button { min-height: 44px; }
       .shell .deptseg, .shell .db-aktionen .deptseg { min-height: 38px; }
@@ -849,6 +851,76 @@
     .shell input[type=checkbox]:focus-visible { outline: none; } .shell input[type=checkbox]:focus-visible::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
     .shell label:has(> input[type=checkbox]), .shell .chk { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 2px 0; cursor: pointer; color: var(--ink); font-weight: 500; }
     .shell .chk input { width: 48px; }
+    /* Runde 2: Assistent-Einstellungen (Erfassungsfelder, Ziele, Stil, Sonderhinweis) */
+    .as-unter { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
+    .as-felder { display: flex; flex-direction: column; gap: 8px; }
+    .as-felder:empty::before { content: 'Noch nichts eingetragen.'; font-size: 13px; color: var(--ink-faint); }
+    .as-feldzeile { display: grid; gap: 8px; align-items: start; padding: 8px 10px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; }
+    .as-feldzeile--erfassung { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto auto; }
+    .as-feldzeile--ziel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr) auto; }
+    .as-feldzeile input:not([type=checkbox]) { margin: 0; width: 100%; box-sizing: border-box; }
+    .as-feldzeile .as-feldpflicht { margin: 0; min-height: 40px; white-space: nowrap; font-size: 13px; }
+    .as-feldzeile .as-feldweg { min-width: 40px; padding: 0; justify-content: center; font-size: 18px; line-height: 1; }
+    .as-feldkey { display: block; font-size: 11.5px; color: var(--ink-faint); font-family: ui-monospace, monospace; margin-top: 3px; min-height: 14px; }
+    .as-stil { margin-bottom: 0; }
+    .as-hinweisstatus { margin: 10px 0 0; font-size: 13px; padding: 8px 12px; border-radius: 10px; background: var(--paper-2); color: var(--ink-soft); }
+    .as-hinweisstatus[data-art="jetzt"] { background: #dcfce7; color: #166534; }
+    .as-hinweisstatus[data-art="bald"] { background: #dbeafe; color: #1e40af; }
+    .as-hinweisstatus[data-art="vorbei"] { background: #ffedd5; color: #9a3412; }
+    @media (max-width: 700px) { .as-feldzeile--erfassung, .as-feldzeile--ziel { grid-template-columns: minmax(0, 1fr) auto; } .as-feldzeile--erfassung > div, .as-feldzeile--erfassung > input, .as-feldzeile--ziel > input { grid-column: 1; } .as-feldzeile .as-feldweg { grid-column: 2; grid-row: 1; } }
+    /* Runde 2: Tags und Notiz am Anruf */
+    .lv-etiketten { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .lv-etikett { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, var(--white)); color: var(--accent-ink); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); cursor: pointer; }
+    .lv-etikett:hover, .lv-etikett.aktiv { background: color-mix(in srgb, var(--accent) 22%, var(--white)); }
+    .lv-etikett button { font: inherit; border: 0; background: none; color: inherit; cursor: pointer; padding: 0 0 0 2px; min-height: 0 !important; min-width: 24px; line-height: 1; font-size: 14px; opacity: .7; }
+    .lv-etikett button:hover { opacity: 1; }
+    .lv-notiz { margin-top: 14px; }
+    .lv-notiz .lv-etiketten { margin: 6px 0 0; align-items: center; }
+    .lv-notiz .lv-etiketten .lv-etikett { min-height: 30px; font-size: 12.5px; }
+    .lv-notiz .lv-etikett-eingabe { flex: 1; min-width: 160px; margin: 0; font-size: 13px; }
+    .lv-notiz textarea { min-height: 70px; }
+    .lv-filter .lv-etikett { min-height: 40px; font-size: 12.5px; padding: 0 12px; }
+    /* Runde 2: geplante Anrufe */
+    .waehl__spaeter { margin-top: 10px; padding: 10px 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; }
+    .waehl__spaeter label.chk { margin: 0; flex-wrap: wrap; }
+    .waehl__spaeter label.chk b { white-space: nowrap; }
+    .waehl__spaeter .grid2 { margin-top: 6px; }
+    .waehl__spaeter .grid2 > div { min-width: 150px; }
+    .waehl__spaeter .grid2 > div:first-child { flex: 1.3; min-width: 215px; } /* datetime-local braucht Platz für „18.09.2026, 17:40" */
+    .waehl__spaeter input[type=datetime-local] { width: 100%; box-sizing: border-box; min-width: 0; }
+    .gp-liste { display: flex; flex-direction: column; gap: 6px; }
+    .gp-zeile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); }
+    .gp-zeile .gp-wann { font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+    .gp-zeile .gp-wer { font-size: 13.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gp-zeile .gp-auftrag { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-soft); }
+    .gp-zeile .gp-fehler { grid-column: 1 / -1; font-size: 12.5px; color: #b91c1c; }
+    .gp-status { font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+    .gp-status[data-status="geplant"] { background: #dbeafe; color: #1e40af; }
+    .gp-status[data-status="gestartet"] { background: #dcfce7; color: #166534; }
+    .gp-status[data-status="fehlgeschlagen"] { background: #fee2e2; color: #991b1b; }
+    .gp-status[data-status="abgesagt"] { background: var(--paper-2); color: var(--ink-faint); border: 1px solid var(--line); }
+    .gp-zeile .gp-rechts { display: flex; gap: 8px; align-items: center; }
+    @media (max-width: 700px) { .gp-zeile { grid-template-columns: minmax(0, 1fr) auto; } .gp-zeile .gp-wer { grid-column: 1 / -1; } }
+    /* Runde 2: Auswertung */
+    .aw-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .aw-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* Balkenzeilen sind hier Klickziele: 40 px hoch, der Balken sitzt unten in der Zeile. */
+    #sec-auswertung .db-thema[role=button] { min-height: 40px; display: flex; flex-direction: column; justify-content: center; border-radius: 8px; padding: 0 6px; margin: 0 -6px; }
+    #sec-auswertung .db-thema[role=button]:hover { background: var(--paper-2); }
+    #sec-auswertung .db-legende span[role=button] { display: inline-flex; align-items: center; min-height: 40px; padding: 0 8px; border-radius: 8px; }
+    #sec-auswertung .db-legende span[role=button]:hover { background: var(--paper-2); }
+    #sec-auswertung .db-stunden div { height: 32px; cursor: pointer; }
+    #awWochentag, #awThemen { gap: 2px !important; }
+    .aw-dauer { display: flex; flex-direction: column; gap: 2px; }
+    .aw-tabelle { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .aw-tabelle th { text-align: left; font-size: 12px; color: var(--ink-faint); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+    .aw-tabelle td { padding: 6px 8px; border-bottom: 1px solid var(--line); height: 40px; box-sizing: border-box; }
+    .aw-tabelle tr[role=button] { cursor: pointer; } .aw-tabelle tr[role=button]:hover td { background: var(--paper-2); }
+    .aw-tabelle td.z { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .aw-tabelle td.nr { font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--ink-faint); }
+    .aw-filterleiste { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: -4px 0 12px; font-size: 13px; color: var(--ink-soft); }
+    .aw-filterleiste:empty { display: none; }
+    .aw-stunden { margin-bottom: 18px; }
     /* Skelett-Platzhalter statt „Lade …" */
     .skelett { display: flex; flex-direction: column; gap: 8px; padding: 6px; }
     .skelett__zeile { height: 52px; border-radius: var(--r); background: linear-gradient(90deg, var(--paper-2) 25%, #f7f9fc 50%, var(--paper-2) 75%); background-size: 200% 100%; animation: skelett 1.2s linear infinite; }
@@ -996,6 +1068,7 @@
         <button class="nav-item" data-target="sec-kontakte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4z"/><path d="M20 8h-2M20 12h-2M20 16h-2"/><circle cx="10" cy="10" r="2.2"/><path d="M6.5 16a3.5 3.5 0 0 1 7 0"/></svg>Telefonbuch</button>
         <button class="nav-item" data-target="sec-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nachrichten <span id="msgBadge" class="gap-badge hidden"></span></button>
         <button class="nav-item" data-target="sec-tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge <span id="tkBadge" class="gap-badge hidden"></span></button>
+        <button class="nav-item" data-target="sec-auswertung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>Auswertung</button>
         <div class="nav-group">Assistent</div>
         <button class="nav-item" data-target="sec-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Wissensdatenbank</button>
         <button class="nav-item" data-target="sec-gaps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Offene Fragen <span id="gapBadge" class="gap-badge hidden"></span></button>
@@ -1094,7 +1167,8 @@
               <p class="pagesub" id="liveSub">Anrufe, die bei euch eingehen.</p>
             </div>
             <div class="db-aktionen">
-              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
+              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <button class="btn btn--ghost sm" type="button" id="lvCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
             </div>
@@ -1103,6 +1177,7 @@
           <div class="lv-filter">
             <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
             <select id="lvThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
+            <span class="lv-chips" id="lvTagFilter"></span>
             <span class="muted" id="lvAnzahl"></span>
             <span class="lv-streifen" id="lvStreifen" style="margin-left:auto"></span>
           </div>
@@ -1123,7 +1198,8 @@
               <p class="pagesub" id="obSub">Anrufe, die ihr über Vocaris führt.</p>
             </div>
             <div class="db-aktionen">
-              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema oder Text suchen" autocomplete="off" />
+              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <button class="btn btn--ghost sm" type="button" id="obCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--primary sm" type="button" id="obAnrufKnopf">Neuer Anruf</button>
@@ -1171,6 +1247,13 @@
                 <div id="callAuftragFeld" class="hidden">
                   <label class="waehl__label" for="callAuftrag">Auftrag für den Assistenten</label>
                   <textarea id="callAuftrag" rows="4" placeholder="z. B. Termin für Dienstag 9 Uhr anbieten und bestätigen lassen."></textarea>
+                  <div class="waehl__spaeter">
+                    <label class="chk"><input type="checkbox" id="callSpaeter" /> <b>Später anrufen</b> <span class="muted">– der Assistent wählt zur Uhrzeit von selbst</span></label>
+                    <div class="grid2 hidden" id="callSpaeterFelder">
+                      <div><label class="waehl__label" for="callSpaeterWann">Wann</label><input id="callSpaeterWann" type="datetime-local" step="300" /></div>
+                      <div><label class="waehl__label" for="callSpaeterName">Name <span class="muted">optional</span></label><input id="callSpaeterName" placeholder="z. B. Frau Berger" /></div>
+                    </div>
+                  </div>
                 </div>
                 <p class="waehl__erklaerung" id="callErklaerung">Du sprichst über Mikrofon und Kopfhörer am Rechner. Der Angerufene sieht eure Firmennummer, das Gespräch wird mitgeschrieben.</p>
                 <span class="waehl__hinweis" id="callHint" aria-live="polite"></span>
@@ -1214,11 +1297,17 @@
             </div>
           </div>
 
+          <div class="panel" id="obGeplant">
+            <div class="db-panelkopf"><h3>Geplante Anrufe</h3><span class="db-kopfrechts"><span class="muted" id="obGeplantAnzahl"></span><button class="btn btn--ghost sm" type="button" id="obGeplantNeu" title="Neu laden" aria-label="Geplante Anrufe neu laden">↻</button></span></div>
+            <div class="gp-liste" id="obGeplantListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile kurz"></div></div></div>
+          </div>
+
           <div id="obActive"></div>
           <div class="lv-filter">
             <div class="lv-chips" id="obArt"><button class="lv-chip aktiv" type="button" data-art="">Alle Arten</button><button class="lv-chip" type="button" data-art="bridge">Am Telefon</button><button class="lv-chip" type="button" data-art="browser">Im Browser</button><button class="lv-chip" type="button" data-art="assistant">Assistent</button></div>
             <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
             <select id="obThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
+            <span class="lv-chips" id="obTagFilter"></span>
             <span class="muted" id="obAnzahl"></span>
             <span class="lv-streifen" id="obStreifen" style="margin-left:auto"></span>
           </div>
@@ -1272,6 +1361,7 @@
             </div>
             <div class="db-aktionen">
               <input id="mgSuche" aria-label="Nachrichten durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
+              <button class="btn btn--ghost sm" type="button" id="mgCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="mgStatus"><button class="deptseg active" data-status="new" type="button">Offen</button><button class="deptseg" data-status="done" type="button">Erledigt</button><button class="deptseg" data-status="" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="mgNeu" title="Neu laden">↻</button>
             </div>
@@ -1341,6 +1431,36 @@
             <div class="panel lv-detail" id="tkDetail"></div>
           </div>
           <div id="tkBoard" class="tk-board hidden"></div>
+        </section>
+
+        <!-- Auswertung -->
+        <section id="sec-auswertung" class="section hidden">
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead">Auswertung</h1>
+              <p class="pagesub" id="awSub">Wann angerufen wird, worum es geht und wie die Gespräche laufen.</p>
+            </div>
+            <div class="db-aktionen">
+              <div class="deptbar" id="awZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
+              <span class="muted" id="awStand" style="font-size:12.5px"></span>
+              <button class="btn btn--ghost sm" type="button" id="awNeu" title="Neu laden" aria-label="Neu laden">↻</button>
+              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Alle Anrufe</button>
+            </div>
+          </div>
+          <div class="aw-filterleiste" id="awFilterLeiste"></div>
+          <div class="db-kpis aw-kpis" id="awKpis"><div class="db-kpi"><div class="skelett__zeile kurz"></div></div><div class="db-kpi"><div class="skelett__zeile kurz"></div></div><div class="db-kpi"><div class="skelett__zeile kurz"></div></div><div class="db-kpi"><div class="skelett__zeile kurz"></div></div></div>
+          <div class="db-grid" id="awGrid">
+            <div class="panel db-6"><div class="db-panelkopf"><h3>Anrufe je Wochentag</h3><span class="muted" id="awWtSub">zum Filtern anklicken</span></div><div id="awWochentag" style="display:grid;gap:8px"></div></div>
+            <div class="panel db-6">
+              <div class="db-panelkopf"><h3>Anrufe je Stunde</h3><span class="muted" id="awStSub">zum Filtern anklicken</span></div>
+              <div class="db-stunden aw-stunden" id="awStunden"></div>
+              <div class="db-panelkopf" style="margin-top:6px"><h3 style="font-size:14px">Gesprächsdauer</h3><span class="muted">zum Filtern anklicken</span></div>
+              <div class="aw-dauer" id="awDauer"></div>
+            </div>
+            <div class="panel db-4"><div class="db-panelkopf"><h3>Themen</h3><span class="muted">Klick öffnet die Anrufe</span></div><div id="awThemen" style="display:grid;gap:8px"></div></div>
+            <div class="panel db-4"><div class="db-panelkopf"><h3>Stimmung</h3><span class="muted">Klick öffnet die Anrufe</span></div><div id="awStimmung"></div></div>
+            <div class="panel db-4"><div class="db-panelkopf"><h3>Häufigste Anrufer</h3><span class="muted">Klick öffnet die Anrufe</span></div><div style="overflow-x:auto"><table class="aw-tabelle" id="awAnrufer"></table></div></div>
+          </div>
         </section>
 
         <!-- Wissensdatenbank -->
@@ -1504,6 +1624,40 @@
                 <label for="persona">Zusätzliche Hinweise <span class="muted">frei, optional</span></label>
                 <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
               </div>
+              <div class="panel" id="asStil">
+                <h3>Gesprächsstil</h3>
+                <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Wie viel der Assistent von sich aus erzählt. Der Ton (Sie/Du) bleibt davon unberührt.</p>
+                <div class="deptbar as-stil" id="asStilWahl" role="group" aria-label="Gesprächsstil">
+                  <button class="deptseg" type="button" data-stil="knapp">Knapp</button>
+                  <button class="deptseg active" type="button" data-stil="normal">Normal</button>
+                  <button class="deptseg" type="button" data-stil="ausfuehrlich">Ausführlich</button>
+                </div>
+                <input id="asStilWert" type="hidden" value="normal" />
+                <p class="muted as-stil__erklaerung" id="asStilText" style="margin:8px 0 0;text-align:left;padding:0"></p>
+              </div>
+              <div class="panel" id="asHinweis">
+                <h3>Sonderhinweis</h3>
+                <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Etwas, das der Assistent gerade jedem sagt, der anruft: Betriebsferien, Baustelle, Störung. Mit Datum gilt der Hinweis nur in dem Zeitraum.</p>
+                <label for="asNoticeText" style="margin-top:0">Hinweis</label>
+                <textarea id="asNoticeText" rows="2" placeholder="z. B. Vom 20. bis 27. September haben wir Betriebsferien. Ab dem 28. sind wir wieder für Sie da."></textarea>
+                <div class="grid2">
+                  <div><label for="asNoticeFrom">Gilt ab <span class="muted">optional</span></label><input id="asNoticeFrom" type="date" /></div>
+                  <div><label for="asNoticeUntil">Gilt bis <span class="muted">optional</span></label><input id="asNoticeUntil" type="date" /></div>
+                </div>
+                <p class="as-hinweisstatus" id="asNoticeStatus" aria-live="polite"></p>
+              </div>
+              <div class="panel" id="asGlossar">
+                <h3>Glossar</h3>
+                <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Namen und Fachbegriffe, die der Assistent richtig verstehen und aussprechen soll. Ein Begriff je Zeile, die Aussprache in Klammern.</p>
+                <label for="asGlossarText" style="margin-top:0">Begriffe</label>
+                <textarea id="asGlossarText" rows="4" placeholder="Dr. Nguyen (sprich: Nujen)&#10;Sanitär Kroll (sprich: Kroll, nicht Krohl)&#10;Vocaris (sprich: Wo-ka-ris)"></textarea>
+              </div>
+              <div class="panel" id="asErfassung">
+                <h3>Erfassungsfelder</h3>
+                <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Was der Assistent bei jeder Nachricht zusätzlich abfragt, zum Beispiel Kundennummer oder Fahrzeugkennzeichen. Pflichtfelder fragt er nach, bis er sie hat.</p>
+                <div class="as-felder" id="asFelder"></div>
+                <div class="stack" style="margin-top:10px"><button class="btn btn--ghost sm" type="button" id="asFeldNeu">+ Feld hinzufügen</button></div>
+              </div>
               <div class="panel" id="asStimme">
                 <h3>Stimme</h3>
                 <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Wähle eine Stimme und höre dir das Beispiel an. Alle Stimmen sprechen Deutsch. Die Hörproben klingen genau so wie am echten Telefon – schmalbandig, nicht geschönt.</p>
@@ -1519,6 +1673,10 @@
                   <div style="flex:2"><label for="fwdNumber">Weiterleiten an (Telefonnummer)</label><input id="fwdNumber" placeholder="+49 89 12345678" inputmode="tel" /></div>
                   <div><label for="fwdHours">Wann</label><select id="fwdHours"><option value="true">Nur während der Öffnungszeiten</option><option value="false">Immer (rund um die Uhr)</option></select></div>
                 </div>
+                <h4 class="as-unter">Weiterleitungsziele nach Thema <span class="muted">optional</span></h4>
+                <p class="muted" style="margin:0 0 8px;text-align:left;padding:0">Mehrere Ansprechpartner? Der Assistent wählt anhand des Themas, wen er verbindet. Passt kein Thema, nimmt er die Nummer oben.</p>
+                <div class="as-felder" id="asZiele"></div>
+                <div class="stack" style="margin-top:10px"><button class="btn btn--ghost sm" type="button" id="asZielNeu">+ Ziel hinzufügen</button></div>
               </div>
               <div class="panel" id="asSelbst">
                 <h3>Anrufe, die du selbst führst</h3>
@@ -1537,6 +1695,17 @@
                 <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asDisclosure" style="width:auto;margin:0"><span>KI-/Aufzeichnungs-Hinweis zu Gesprächsbeginn ansagen</span></label>
                 <p class="muted" style="margin-top:4px;text-align:left;padding:0">Empfohlen für DE: Der Assistent sagt zu Beginn einen kurzen Satz, dass das Gespräch von einem digitalen Assistenten geführt und verarbeitet wird. Gilt für alle Abteilungen.</p>
               </div>
+              <div class="panel" id="asAufbewahrung">
+                <h3>Aufbewahrung</h3>
+                <label for="asRetention" style="margin-top:0">Anrufe und Nachrichten löschen nach</label>
+                <select id="asRetention"><option value="0">Nie (aus)</option><option value="30">30 Tagen</option><option value="90">90 Tagen</option><option value="180">180 Tagen</option><option value="365">365 Tagen</option></select>
+                <p class="muted" style="margin-top:6px;text-align:left;padding:0">Gelöscht werden täglich alle Anrufe samt Gesprächsverlauf, die älter sind, und erledigte Nachrichten. Offene Nachrichten, Vorgänge und das Telefonbuch bleiben.</p>
+              </div>
+              <div class="panel" id="asBericht">
+                <h3>Wochenbericht</h3>
+                <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asWeekly" style="width:auto;margin:0"><span>Montags eine Mail mit den Zahlen der Woche an den Inhaber</span></label>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Anrufe, Minuten, Nachrichten, Themen und Stimmung der vergangenen Woche, verglichen mit der Woche davor.</p>
+              </div>
             </div>
             <div class="as-seite">
               <div class="panel as-zusammen" id="asZusammen">
@@ -1551,7 +1720,7 @@
               </div>
               <div class="panel as-nav" id="asNav">
                 <h3>Abschnitte</h3>
-                <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStimme">Stimme</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asSelbst">Eigene Anrufe</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a>
+                <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStil">Gesprächsstil</a><a href="#" data-as="asHinweis">Sonderhinweis</a><a href="#" data-as="asGlossar">Glossar</a><a href="#" data-as="asErfassung">Erfassungsfelder</a><a href="#" data-as="asStimme">Stimme</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asSelbst">Eigene Anrufe</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a><a href="#" data-as="asAufbewahrung">Aufbewahrung</a><a href="#" data-as="asBericht">Wochenbericht</a>
               </div>
             </div>
           </div>
@@ -1700,7 +1869,7 @@
               <label class="chk"><input type="checkbox" id="whMsg" /> <b>Neue Nachricht / Lead</b> <span class="muted">– Rückruf/Anliegen aufgenommen</span></label>
               <label class="chk"><input type="checkbox" id="whAppt" /> <b>Termin gebucht</b></label>
               <label class="chk"><input type="checkbox" id="whGap" /> <b>Offene Frage</b> <span class="muted">– nicht beantwortet</span></label>
-              <label class="chk"><input type="checkbox" id="whCall" /> <b>Anruf beendet</b></label>
+              <label class="chk"><input type="checkbox" id="whCall" /> <b>Anruf beendet</b> <span class="muted">– Mail mit Zusammenfassung und Gesprächsverlauf</span></label>
             </div>
           </div>
 
@@ -1718,9 +1887,16 @@
             <input id="whTeams" placeholder="https://….webhook.office.com/…" />
             <label>Telegram <span class="muted">(Bot-Token von @BotFather + Chat-ID)</span></label>
             <div class="grid2">
-              <div style="flex:2"><input id="whTgToken" placeholder="123456:ABC-DEF… (Bot-Token)" /></div>
-              <div><input id="whTgChat" placeholder="Chat-ID, z.B. 12345678" /></div>
+              <div style="flex:2"><input id="whTgToken" placeholder="123456:ABC-DEF… (Bot-Token)" aria-label="Telegram Bot-Token" /></div>
+              <div><input id="whTgChat" placeholder="Chat-ID, z.B. 12345678" aria-label="Telegram Chat-ID" /></div>
             </div>
+            <label for="whSms">SMS <span class="muted">(Handynummer, +49…)</span></label>
+            <div class="grid2">
+              <div style="flex:2"><input id="whSms" placeholder="+49 170 1234567" inputmode="tel" /></div>
+              <div><label class="chk" style="margin:0"><input type="checkbox" id="whSmsUrgent" checked /> <b>nur dringende Nachrichten</b></label></div>
+            </div>
+            <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Kurz und ohne Anhang: Name, Nummer, Anliegen. Aus bedeutet: jede Nachricht kommt auch per SMS.</p>
+            <p class="muted" style="text-align:left;padding:0;margin:14px 0 0;font-size:12.5px">Die E-Mail nach jedem Anruf (Ereignis „Anruf beendet") enthält jetzt die Zusammenfassung und den vollständigen Gesprächsverlauf.</p>
           </div>
 
           </div>
@@ -2385,7 +2561,7 @@
         }
       }
     }
-    const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Nachrichten', 'sec-tickets': 'Vorgänge',
+    const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Nachrichten', 'sec-tickets': 'Vorgänge', 'sec-auswertung': 'Auswertung',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
       'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
 
@@ -2525,14 +2701,15 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten) ladeDashboard();
         if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
         if (typeof syncTabbar === 'function') syncTabbar(b.dataset.target);
         if (b.dataset.target === 'sec-live' && typeof liveBesucht === 'function' && tenant) { liveBesucht(); renderLive(); }
-        if (b.dataset.target === 'sec-outbound' && typeof renderLive === 'function' && tenant) { renderLive(); $('callTo')?.focus(); }
+        if (b.dataset.target === 'sec-outbound' && typeof renderLive === 'function' && tenant) { renderLive(); $('callTo')?.focus(); if (typeof rueckrufeLaden === 'function') rueckrufeLaden(); }
+        if (b.dataset.target === 'sec-auswertung' && typeof ladeAuswertung === 'function' && tenant) ladeAuswertung();
         if (b.dataset.target === 'sec-kontakte' && typeof ladeKontakte === 'function' && tenant) ladeKontakte();
         if (b.dataset.target === 'sec-team' && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
         // Einmal beim ersten Bereichswechsel: die eigene Stufe holen, damit Mitarbeiter die Einstellungen gar nicht erst sehen.
@@ -2833,7 +3010,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -2861,6 +3038,7 @@
       $('whTgToken').value = wh?.telegram_token ?? '';
       $('whTgChat').value = wh?.telegram_chat_id ?? '';
       $('whEmail').value = wh?.email_to ?? ($('userEmail').textContent || '');
+      if ($('whSms')) { $('whSms').value = wh?.sms_to ?? ''; $('whSmsUrgent').checked = wh?.sms_urgent_only !== false; }
       $('whUrl').value = wh?.url ?? '';
       $('whSecret').value = wh?.secret || genSecret();
       renderCrmList();
@@ -2941,11 +3119,14 @@
       $('fwdHours').value = (cfg?.forward_business_hours_only === false) ? 'false' : 'true';
       // KI-Hinweis ist org-weit → immer aus der general-Zeile.
       if ($('asAgentNummer')) {
-        const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('agent_number, bridge_notice, bridge_notice_text, bridge_transcript').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
+        // Eigene Nummer, Sonderhinweis, Glossar, Stil, Erfassungsfelder, Ziele,
+        // Aufbewahrung und Wochenbericht gelten für die ganze Firma → general-Zeile.
+        const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('*').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
         $('asAgentNummer').value = gen?.agent_number ?? '';
         $('asBridgeTranscript').checked = gen?.bridge_transcript !== false;
         $('asBridgeNotice').checked = gen?.bridge_notice ?? false;
         $('asBridgeText').value = gen?.bridge_notice_text ?? '';
+        asNeueFelderFuellen(gen);
       }
       if ($('asDisclosure')) {
         if (currentDept === 'general') $('asDisclosure').checked = cfg?.ai_disclosure ?? false;
@@ -2987,7 +3168,7 @@
     // ---- Schnittstellen: Reiter + Statusleiste ----
     function ifStatus() {
       const box = $('ifStatus'); if (!box) return;
-      const an = $('whEnabled')?.checked; const kanaele = [['E-Mail', $('whEmail')?.value], ['Slack', $('whSlack')?.value], ['Teams', $('whTeams')?.value], ['Telegram', $('whTgToken')?.value]].filter(([, v]) => (v || '').trim()).map(([k]) => k);
+      const an = $('whEnabled')?.checked; const kanaele = [['E-Mail', $('whEmail')?.value], ['Slack', $('whSlack')?.value], ['Teams', $('whTeams')?.value], ['Telegram', $('whTgToken')?.value], ['SMS', $('whSms')?.value]].filter(([, v]) => (v || '').trim()).map(([k]) => k);
       const ereignisse = [['whMsg', 'Nachrichten'], ['whAppt', 'Termine'], ['whGap', 'offene Fragen'], ['whCall', 'Anrufe']].filter(([id]) => $(id)?.checked).map(([, l]) => l);
       const zaehl = (id) => document.querySelectorAll('#' + id + ' .item').length;
       const kacheln = [
@@ -4342,9 +4523,12 @@
     // in liveCalls. LV zeigt auf die Ansicht, die gerade gezeichnet wird; lvEl
     // holt deren Element (lvListe bzw. obListe).
     const LV_ANSICHTEN = {
-      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '' },
-      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '' },
+      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
+      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
     };
+    /** Alle Tags, die der Mandant schon benutzt hat – für die Vorschläge im Detail. */
+    const lvAlleTags = new Set();
+    const lvTagsVon = (c) => (Array.isArray(c.tags) ? c.tags : []).filter(Boolean);
     let LV = LV_ANSICHTEN.ein;
     const lvEl = (n) => $(LV.p + n);
     let lvGeladen = 0, lvAlleGeladen = false, lvTimer = null, lvSuchTimer = null, lvGesehenAlt = 0;
@@ -4382,6 +4566,9 @@
       if (!mehr) { liveCalls.clear(); for (const c of calls ?? []) liveCalls.set(c.id, { call: c, turns: [], geladen: false }); }
       else for (const c of calls ?? []) if (!liveCalls.has(c.id)) liveCalls.set(c.id, { call: c, turns: [], geladen: false });
       lvGeladen += (calls ?? []).length; if ((calls ?? []).length < LV_SEITE) lvAlleGeladen = true;
+      for (const c of calls ?? []) lvTagsVon(c).forEach((t) => lvAlleTags.add(t));
+      // Tags älterer Anrufe einmal nachziehen, damit die Vorschläge vollständig sind.
+      if (!mehr && !lvAlleGeladen) sb.from('calls').select('tags').eq('tenant_id', tenant.id).neq('tags', '{}').limit(2000).then(({ data }) => (data || []).forEach((c) => lvTagsVon(c).forEach((t) => lvAlleTags.add(t))));
       const aktive = (calls ?? []).filter(callIsActive).map((c) => c.id);
       if (aktive.length) await turnsLaden(aktive);
       for (const A of Object.values(LV_ANSICHTEN)) if (A.auswahl && liveCalls.get(A.auswahl)?.geladen === false) await turnsLaden([A.auswahl]);
@@ -4403,7 +4590,7 @@
       if ($(A.sec)?.classList.contains('hidden')) geh(A.sec);
       A.auswahl = id;
       if (!lvGefiltert(null, A).some((x) => x.call.id === id)) {
-        A.zeitraum = 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.suche = '';
+        A.zeitraum = 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.suche = ''; A.tag = '';
         if ($(A.p + 'Suche')) $(A.p + 'Suche').value = '';
         document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((b) => b.classList.toggle('active', b.dataset.tage === '0'));
         document.querySelectorAll('#' + A.p + 'Stimmung .lv-chip').forEach((b) => b.classList.toggle('aktiv', !b.dataset.stimmung));
@@ -4425,7 +4612,8 @@
         if (ausser !== 'art' && A.art && (c.mode || 'assistant') !== A.art) return false;
         if (ausser !== 'stimmung' && A.stimmung && c.sentiment !== A.stimmung) return false;
         if (ausser !== 'thema' && A.thema && c.topic !== A.thema) return false;
-        if (s && ![c.caller_number, c.topic, c.summary, ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        if (ausser !== 'tag' && A.tag && !lvTagsVon(c).includes(A.tag)) return false;
+        if (s && ![c.caller_number, c.topic, c.summary, c.notes, ...lvTagsVon(c), ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
         return true;
       }).sort((a, b) => (callIsActive(b.call) - callIsActive(a.call)) || (new Date(b.call.started_at) - new Date(a.call.started_at)));
     }
@@ -4481,8 +4669,62 @@
       if (c.summary && c.summary.length > 70) z.querySelector('.lv-text').dataset.tip = c.summary;
       const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(c.started_at); r[1].textContent = live ? '' : (lvDauer(c) ? fmtDauer(lvDauer(c)) : '–');
       const A = LV;
+      // Tags unter der Zeile; Klick filtert die Liste, ohne den Anruf zu öffnen.
+      const tags = lvTagsVon(c);
+      if (tags.length) { const w = document.createElement('div'); w.className = 'lv-etiketten'; tags.forEach((t) => { const e = document.createElement('span'); e.className = 'lv-etikett' + (A.tag === t ? ' aktiv' : ''); e.textContent = t; e.dataset.tip = 'Tag · Klick filtert die Liste'; e.onclick = (ev) => { ev.stopPropagation(); lvTagFilterSetzen(A, A.tag === t ? '' : t); }; w.append(e); }); z.querySelector('.lv-mitte').append(w); }
       z.onclick = () => { A.auswahl = c.id; renderLive(); };
       return z;
+    }
+    function lvTagFilterSetzen(A, tag) { A.tag = tag || ''; renderLive(); }
+    /** Aktiver Tag-Filter als Chip in der Filterzeile, mit × zum Entfernen. */
+    function lvTagFilterZeichnen() {
+      const el = lvEl('TagFilter'); if (!el) return; el.innerHTML = '';
+      if (!LV.tag) return;
+      const A = LV; const e = document.createElement('span'); e.className = 'lv-etikett aktiv'; e.textContent = 'Tag: ' + LV.tag;
+      const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Tag-Filter entfernen'); x.onclick = () => lvTagFilterSetzen(A, ''); e.append(x); el.append(e);
+    }
+    /** Tags und Notiz zum Anruf: Chips mit Eingabe (Enter fügt hinzu), Notiz speichert beim Verlassen. */
+    function callNotizTags(x) {
+      const c = x.call; const box = document.createElement('div'); box.className = 'lv-notiz';
+      const uid = 'lvTag' + c.id.replace(/[^a-z0-9]/gi, '').slice(0, 12);
+      box.innerHTML = '<label for="' + uid + '" style="margin-top:0">Tags <span class="muted">Enter fügt hinzu · Klick auf einen Tag filtert die Liste</span></label>'
+        + '<div class="lv-etiketten" data-tags></div>'
+        + '<datalist id="' + uid + 'L"></datalist>'
+        + '<label for="' + uid + 'N">Notiz <span class="muted">wird beim Verlassen des Feldes gespeichert</span></label>'
+        + '<textarea class="db-notizen" id="' + uid + 'N" data-notiz placeholder="Eigene Notiz zu diesem Anruf, z. B. was danach vereinbart wurde."></textarea>';
+      const A = lvAnsichtVon(c);
+      async function speichern(patch, meldung) {
+        // select('id') dazu: ohne Schreibrecht filtert die Datenbank still auf 0 Zeilen, das soll nicht wie Erfolg aussehen.
+        const { data, error } = await sb.from('calls').update(patch).eq('id', c.id).select('id');
+        if (error) { toast('Fehler: ' + error.message, 'err'); return false; }
+        if (!data?.length) { toast('Nicht gespeichert: dein Konto darf Anrufe nicht bearbeiten.', 'err'); return false; }
+        Object.assign(c, patch); if (meldung) toast(meldung); return true;
+      }
+      const wrap = box.querySelector('[data-tags]');
+      function zeichnen() {
+        wrap.innerHTML = '';
+        lvTagsVon(c).forEach((t) => {
+          const e = document.createElement('span'); e.className = 'lv-etikett' + (A.tag === t ? ' aktiv' : ''); e.textContent = t; e.dataset.tip = 'Klick filtert die Liste nach diesem Tag';
+          e.onclick = () => lvTagFilterSetzen(A, A.tag === t ? '' : t);
+          const xb = document.createElement('button'); xb.type = 'button'; xb.textContent = '×'; xb.setAttribute('aria-label', 'Tag ' + t + ' entfernen');
+          xb.onclick = async (ev) => { ev.stopPropagation(); if (await speichern({ tags: lvTagsVon(c).filter((v) => v !== t) })) { if (A.tag === t) A.tag = ''; renderLive(); } };
+          e.append(xb); wrap.append(e);
+        });
+        const inp = document.createElement('input'); inp.className = 'lv-etikett-eingabe'; inp.id = uid; inp.placeholder = lvTagsVon(c).length ? 'weiterer Tag …' : 'z. B. Rückruf, Angebot, Beschwerde'; inp.setAttribute('list', uid + 'L'); inp.autocomplete = 'off';
+        inp.onkeydown = async (e) => {
+          if (e.key !== 'Enter') return; e.preventDefault();
+          const t = inp.value.trim().replace(/\s+/g, ' ').slice(0, 40); if (!t) return;
+          if (lvTagsVon(c).some((v) => v.toLowerCase() === t.toLowerCase())) { inp.value = ''; return; }
+          if (await speichern({ tags: [...lvTagsVon(c), t] })) { lvAlleTags.add(t); renderLive(); setTimeout(() => $(uid)?.focus(), 0); }
+        };
+        wrap.append(inp);
+        const dl = box.querySelector('datalist'); dl.innerHTML = '';
+        [...lvAlleTags].filter((t) => !lvTagsVon(c).includes(t)).sort((a, b) => a.localeCompare(b, 'de')).forEach((t) => { const o = document.createElement('option'); o.value = t; dl.append(o); });
+      }
+      zeichnen();
+      const nt = box.querySelector('[data-notiz]'); nt.value = c.notes || '';
+      nt.onchange = async () => { const v = nt.value.trim() || null; if (v === (c.notes || null)) return; if (await speichern({ notes: v }, 'Notiz gespeichert.')) { const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; } };
+      return box;
     }
     /** Beide Ansichten neu zeichnen – Daten und Filter hängen zusammen. */
     function renderLive() {
@@ -4520,6 +4762,7 @@
       // Filterzeile erst zeigen, wenn es überhaupt etwas zu filtern gibt.
       $(LV.sec).querySelector('.lv-filter')?.classList.toggle('hidden', alle.length === 0);
       const liste = lvGefiltert(); lvEl('Anzahl').textContent = liste.length + (liste.length === 1 ? ' Anruf' : ' Anrufe');
+      lvTagFilterZeichnen();
       if (LV.auswahl && !liveCalls.has(LV.auswahl)) LV.auswahl = null;
       if (!LV.auswahl && liste.length && window.innerWidth > 900) LV.auswahl = liste[0].call.id;
       const ul = lvEl('Liste'); ul.innerHTML = '';
@@ -4539,6 +4782,9 @@
       if (!x) { d.innerHTML = '<p class="lv-leer">Wähle links einen Anruf, um Zusammenfassung und Gesprächsverlauf zu sehen.</p>'; return; }
       if (!x.geladen && !x.laedt) { turnsLaden([x.call.id]).then(renderLive); }
       const c = x.call; const live = callIsActive(c); const st = LV_STIMMUNG[c.sentiment]; const raus = callRichtung(c) === 'out';
+      // Wer gerade eine Notiz tippt, soll sie beim Neuzeichnen (Echtzeit-Ereignis) nicht verlieren.
+      const tippt = d.querySelector('[data-notiz]:focus'); const notizEntwurf = tippt && d.dataset.callId === c.id ? { v: tippt.value, s: tippt.selectionStart } : null;
+      d.dataset.callId = c.id;
       d.innerHTML = '<div class="lv-detailkopf"><div><button class="btn btn--ghost sm lv-zurueck" type="button">‹ Zurück</button><h2 class="lv-nr"></h2><div class="lv-meta"></div></div><div class="stack" style="margin:0" data-kopfaktionen></div></div>'
         + '<div class="call-summary hidden" data-zusammenfassung></div>'
         + '<div data-aktionen></div>'
@@ -4557,7 +4803,8 @@
       if (c.topic) chip(c.topic, 'Thema, automatisch erkannt · Klick filtert die Liste', () => { A.thema = A.thema === c.topic ? '' : c.topic; renderLive(); });
       if (c.status && !live && c.status !== 'ended') chip(c.status);
       if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.innerHTML = markieren(c.summary); z.classList.remove('hidden'); }
-      if (!live) d.querySelector('[data-aktionen]').append(callAktionen(x, d));
+      if (!live) d.querySelector('[data-aktionen]').append(callAktionen(x, d), callNotizTags(x));
+      if (notizEntwurf) { const nt = d.querySelector('[data-notiz]'); if (nt) { nt.value = notizEntwurf.v; nt.focus(); try { nt.setSelectionRange(notizEntwurf.s, notizEntwurf.s); } catch { /* egal */ } } }
       d.querySelector('[data-turns]').textContent = x.turns.length ? x.turns.length + ' Beiträge' : '';
       const gegen = lvGegen(c);
       d.querySelector('[data-kopieren]').onclick = async () => { const txt = x.turns.map((t) => (t.role === 'caller' ? gegen + ': ' : t.role === 'agent' ? 'Mitarbeiter: ' : 'Assistent: ') + t.content).join('\n'); try { await navigator.clipboard.writeText(txt || (c.summary || '')); toast('Gesprächsverlauf kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } };
@@ -4576,10 +4823,31 @@
       const t = document.createElement('span'); t.className = 'muted'; t.style.cssText = 'font-size:12px;align-self:center;margin-right:2px'; t.textContent = 'Zuletzt:'; box.append(t);
       nummern.forEach((n) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = fmtNr(n); b.dataset.tip = 'Nummer übernehmen'; b.onclick = () => { obNummerSetzen(n); }; box.append(b); });
     }
+    /**
+     * CSV so, wie Excel in Deutschland es öffnet: UTF-8 mit BOM, Semikolon,
+     * Zeilenumbruch CRLF, alle Felder in Anführungszeichen. Dateiname mit Datum.
+     */
+    function csvHerunterladen(zeilen, praefix) {
+      const csv = zeilen.map((r) => r.map((x) => '"' + String(x ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n');
+      const heute = new Date(); const datum = heute.getFullYear() + '-' + String(heute.getMonth() + 1).padStart(2, '0') + '-' + String(heute.getDate()).padStart(2, '0');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'vocaris-' + praefix + '-' + datum + '.csv';
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      return a.download;
+    }
+    const csvZeit = (iso) => iso ? new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    /** Die gerade gefilterte Anrufliste einer Ansicht als CSV. */
+    function csvAnrufe(A) {
+      const liste = lvGefiltert(null, A);
+      if (!liste.length) { toast('Keine Anrufe in der Auswahl.', 'err'); return; }
+      const zeilen = [['Datum', 'Richtung', 'Nummer', 'Name', 'Dauer (s)', 'Thema', 'Stimmung', 'Zusammenfassung', 'Tags', 'Notiz']];
+      liste.forEach((x) => { const c = x.call; zeilen.push([csvZeit(c.started_at), callRichtung(c) === 'out' ? 'ausgehend' : 'eingehend', c.caller_number || '', (typeof ktName === 'function' ? ktName(c.caller_number) : '') || '', lvDauer(c) || '', c.topic || '', c.sentiment || '', c.summary || '', lvTagsVon(c).join(', '), c.notes || '']); });
+      csvHerunterladen(zeilen, 'anrufe'); toast(liste.length + (liste.length === 1 ? ' Anruf' : ' Anrufe') + ' exportiert.');
+    }
     // Bedienung beider Ansichten: Suche, Zeitraum, Stimmung, Art, Thema, Nachladen, Tastatur
     (function liveWiring() {
       for (const A of Object.values(LV_ANSICHTEN)) {
         const s = $(A.p + 'Suche'); if (!s) continue;
+        if ($(A.p + 'Csv')) $(A.p + 'Csv').onclick = () => csvAnrufe(A);
         s.oninput = () => { clearTimeout(lvSuchTimer); lvSuchTimer = setTimeout(() => { A.suche = s.value; renderLive(); }, 150); };
         document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); A.zeitraum = Number(b.dataset.tage); renderLive(); });
         document.querySelectorAll('#' + A.p + 'Stimmung .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#' + A.p + 'Stimmung .lv-chip').forEach((x) => x.classList.toggle('aktiv', x === b)); A.stimmung = b.dataset.stimmung || ''; renderLive(); });
@@ -5292,6 +5560,7 @@
           knopf('Zurückrufen', 'btn--primary', () => obAnrufen(nr, c.summary ? 'Rückruf zu: ' + c.summary.slice(0, 140) : '')).dataset.tip = 'So, wie es im Wählfeld eingestellt ist: im Browser, am Telefon oder durch den Assistenten';
         }
         knopf('Assistent ruft zurück …', '', () => auftragBox.classList.toggle('hidden'));
+        knopf('Assistent ruft später zurück', '', () => rueckrufPlanenOeffnen(nr, typeof ktName === 'function' ? ktName(nr) : '', c.summary ? 'Rückruf zu: ' + c.summary.slice(0, 140) : '')).dataset.tip = 'Uhrzeit wählen, der Assistent ruft dann von selbst an';
         if (!raus) knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
       }
@@ -5441,11 +5710,119 @@
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
         ['Stimme', stimme ? stimme.name : stimmenName($('voiceId').value)],
         ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeTranscript')?.checked === false ? ' · ohne Mitschrift' : '') + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
-        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') : 'aus'],
+        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') + (($('asZiele')?.querySelectorAll('.as-feldzeile').length || 0) ? ' · ' + $('asZiele').querySelectorAll('.as-feldzeile').length + ' Ziele nach Thema' : '') : 'aus'],
       ];
+      if ($('asStilWert')) {
+        fakten.push(['Stil', { knapp: 'knapp', normal: 'normal', ausfuehrlich: 'ausführlich' }[$('asStilWert').value] || 'normal']);
+        const art = typeof asHinweisStatus === 'function' ? asHinweisStatus() : 'aus';
+        fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade' }[art] || 'keiner']);
+        const nF = $('asFelder')?.querySelectorAll('.as-feldzeile').length || 0;
+        if (nF) fakten.push(['Erfassung', nF + (nF === 1 ? ' Zusatzfeld' : ' Zusatzfelder')]);
+      }
       $('asFakten').innerHTML = fakten.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
     }
     function asSetzeDirty(v) { asDirty = v; $('asDirty')?.classList.toggle('hidden', !v); if ($('saveBtn')) $('saveBtn').textContent = v ? 'Speichern' : 'Gespeichert'; }
+
+    // ---- Assistent, Runde 2: Sonderhinweis, Glossar, Stil, Erfassungsfelder, Ziele, Aufbewahrung, Wochenbericht ----
+    // Alles liegt in der general-Zeile, weil es für die ganze Firma gilt.
+    const AS_STIL_TEXT = {
+      knapp: 'Kurze Antworten, nur das Nötigste. Gut, wenn viel los ist und Anrufer schnell weiterwollen.',
+      normal: 'Freundlich und vollständig, ohne auszuschweifen. Die Vorgabe für die meisten Betriebe.',
+      ausfuehrlich: 'Erklärt Hintergründe, nennt Alternativen und fragt nach. Gut für Beratung und erklärungsbedürftige Angebote.',
+    };
+    /** Schlüssel aus dem Label: klein, Umlaute aufgelöst, nur a-z0-9_. */
+    const asSchluessel = (label) => String(label || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+    /** Eine Zeile der Erfassungsfelder: Label, Pflicht, Hinweis, Entfernen. */
+    function asFeldZeile(f) {
+      const z = document.createElement('div'); z.className = 'as-feldzeile as-feldzeile--erfassung';
+      z.innerHTML = '<div><input data-label placeholder="z. B. Kundennummer" aria-label="Bezeichnung des Feldes" /><small class="as-feldkey" data-key></small></div>'
+        + '<input data-hint placeholder="Hinweis, z. B. steht auf der Rechnung" aria-label="Hinweis für den Assistenten" />'
+        + '<label class="chk as-feldpflicht"><input type="checkbox" data-required /> <span>Pflicht</span></label>'
+        + '<button class="btn btn--ghost sm as-feldweg" type="button" aria-label="Feld entfernen" data-tip="Entfernen">×</button>';
+      z.querySelector('[data-label]').value = f?.label || '';
+      z.querySelector('[data-hint]').value = f?.hint || '';
+      z.querySelector('[data-required]').checked = !!f?.required;
+      const key = () => { z.querySelector('[data-key]').textContent = asSchluessel(z.querySelector('[data-label]').value) || ' '; };
+      z.querySelector('[data-label]').addEventListener('input', key); key();
+      z.querySelector('.as-feldweg').onclick = () => { z.remove(); asSetzeDirty(true); asVorschau(); };
+      return z;
+    }
+    /** Eine Zeile der Weiterleitungsziele: Name, Nummer, Thema, Entfernen. */
+    function asZielZeile(t) {
+      const z = document.createElement('div'); z.className = 'as-feldzeile as-feldzeile--ziel';
+      z.innerHTML = '<input data-name placeholder="Name, z. B. Werkstatt" aria-label="Name des Ziels" />'
+        + '<input data-number placeholder="+49 89 12345678" inputmode="tel" aria-label="Telefonnummer des Ziels" />'
+        + '<input data-topic placeholder="Thema, z. B. Reparatur, Termin" aria-label="Thema, bei dem dorthin verbunden wird" />'
+        + '<button class="btn btn--ghost sm as-feldweg" type="button" aria-label="Ziel entfernen" data-tip="Entfernen">×</button>';
+      z.querySelector('[data-name]').value = t?.name || '';
+      z.querySelector('[data-number]').value = t?.number || '';
+      z.querySelector('[data-topic]').value = t?.topic || '';
+      z.querySelector('.as-feldweg').onclick = () => { z.remove(); asSetzeDirty(true); asVorschau(); };
+      return z;
+    }
+    function asStilSetzen(v) {
+      const stil = AS_STIL_TEXT[v] ? v : 'normal';
+      if ($('asStilWert')) $('asStilWert').value = stil;
+      document.querySelectorAll('#asStilWahl [data-stil]').forEach((b) => b.classList.toggle('active', b.dataset.stil === stil));
+      if ($('asStilText')) $('asStilText').textContent = AS_STIL_TEXT[stil];
+    }
+    /** Vorschau-Zeile unter dem Sonderhinweis: gilt gerade / gilt ab / abgelaufen. */
+    function asHinweisStatus() {
+      const el = $('asNoticeStatus'); if (!el) return '';
+      const text = $('asNoticeText').value.trim(); const von = $('asNoticeFrom').value; const bis = $('asNoticeUntil').value;
+      const heute = new Date().toISOString().slice(0, 10);
+      const d = (iso) => new Date(iso + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      let status = '', art = '';
+      if (!text) { status = 'Kein Sonderhinweis. Der Assistent sagt nichts Zusätzliches.'; art = 'aus'; }
+      else if (von && von > heute) { status = 'Gilt ab ' + d(von) + (bis ? ' bis ' + d(bis) : '') + '.'; art = 'bald'; }
+      else if (bis && bis < heute) { status = 'Abgelaufen seit ' + d(bis) + '. Der Assistent sagt den Hinweis nicht mehr.'; art = 'vorbei'; }
+      else { status = 'Gilt gerade' + (bis ? ' bis ' + d(bis) : ', ohne Enddatum') + '. Der Assistent sagt den Hinweis bei jedem Anruf.'; art = 'jetzt'; }
+      el.textContent = status; el.dataset.art = art;
+      return art;
+    }
+    function asNeueFelderFuellen(gen) {
+      if (!$('asNoticeText')) return;
+      $('asNoticeText').value = gen?.notice_text ?? '';
+      $('asNoticeFrom').value = gen?.notice_from ?? '';
+      $('asNoticeUntil').value = gen?.notice_until ?? '';
+      $('asGlossarText').value = gen?.glossary ?? '';
+      asStilSetzen(gen?.creativity || 'normal');
+      const felder = $('asFelder'); felder.innerHTML = '';
+      (Array.isArray(gen?.capture_fields) ? gen.capture_fields : []).forEach((f) => felder.append(asFeldZeile(f)));
+      const ziele = $('asZiele'); ziele.innerHTML = '';
+      (Array.isArray(gen?.forward_targets) ? gen.forward_targets : []).forEach((t) => ziele.append(asZielZeile(t)));
+      $('asRetention').value = String([0, 30, 90, 180, 365].includes(Number(gen?.retention_days)) ? Number(gen.retention_days) : 0);
+      $('asWeekly').checked = gen?.weekly_report !== false;
+      asHinweisStatus();
+    }
+    function asNeueFelderLesen() {
+      if (!$('asNoticeText')) return {};
+      const capture_fields = [...$('asFelder').querySelectorAll('.as-feldzeile')].map((z) => {
+        const label = z.querySelector('[data-label]').value.trim(); const key = asSchluessel(label);
+        return key ? { key, label, required: z.querySelector('[data-required]').checked, hint: z.querySelector('[data-hint]').value.trim() } : null;
+      }).filter(Boolean);
+      const forward_targets = [...$('asZiele').querySelectorAll('.as-feldzeile')].map((z) => ({
+        name: z.querySelector('[data-name]').value.trim(), number: z.querySelector('[data-number]').value.replace(/\s+/g, ''), topic: z.querySelector('[data-topic]').value.trim(),
+      })).filter((t) => t.number);
+      return {
+        notice_text: $('asNoticeText').value.trim() || null,
+        notice_from: $('asNoticeFrom').value || null,
+        notice_until: $('asNoticeUntil').value || null,
+        glossary: $('asGlossarText').value.trim() || null,
+        creativity: $('asStilWert').value || 'normal',
+        capture_fields, forward_targets,
+        retention_days: Number($('asRetention').value) || 0,
+        weekly_report: $('asWeekly').checked,
+      };
+    }
+    (function assistentRunde2Wiring() {
+      if (!$('asStilWahl')) return;
+      document.querySelectorAll('#asStilWahl [data-stil]').forEach((b) => b.onclick = () => { asStilSetzen(b.dataset.stil); asSetzeDirty(true); asVorschau(); });
+      $('asFeldNeu').onclick = () => { const z = asFeldZeile(null); $('asFelder').append(z); z.querySelector('[data-label]').focus(); asSetzeDirty(true); };
+      $('asZielNeu').onclick = () => { const z = asZielZeile(null); $('asZiele').append(z); z.querySelector('[data-name]').focus(); asSetzeDirty(true); };
+      ['asNoticeText', 'asNoticeFrom', 'asNoticeUntil'].forEach((id) => $(id).addEventListener('input', asHinweisStatus));
+      asStilSetzen('normal'); asHinweisStatus();
+    })();
     (function assistentWiring() {
       const sec = $('sec-assistant'); if (!sec) return;
       sec.addEventListener('input', (e) => { if (e.target.closest('.as-form')) { asSetzeDirty(true); asVorschau(); } });
@@ -5482,9 +5859,11 @@
       // KI-/Aufzeichnungs-Hinweis ist org-weit → immer auf die general-Zeile schreiben.
       if ($('asDisclosure')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', ai_disclosure: $('asDisclosure').checked }, { onConflict: 'tenant_id,department' });
       // Eigene Rufnummer und Ansage gelten für die ganze Firma.
-      if ($('asAgentNummer')) await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', agent_number: $('asAgentNummer').value.replace(/\s+/g, '') || null, bridge_notice: $('asBridgeNotice').checked, bridge_notice_text: $('asBridgeText').value.trim() || null, bridge_transcript: $('asBridgeTranscript').checked }, { onConflict: 'tenant_id,department' });
+      // Dazu die firmenweiten Felder aus Runde 2 (Sonderhinweis, Glossar, Stil, Erfassung, Ziele, Aufbewahrung, Wochenbericht).
+      let r3 = {};
+      if ($('asAgentNummer')) r3 = await sb.from('assistant_config').upsert({ tenant_id: tenant.id, department: 'general', agent_number: $('asAgentNummer').value.replace(/\s+/g, '') || null, bridge_notice: $('asBridgeNotice').checked, bridge_notice_text: $('asBridgeText').value.trim() || null, bridge_transcript: $('asBridgeTranscript').checked, ...asNeueFelderLesen() }, { onConflict: 'tenant_id,department' });
       $('saveBtn').disabled = false;
-      const err = r1.error || r2.error;
+      const err = r1.error || r2.error || r3.error;
       if (err) return toast('Fehler: ' + err.message, 'err');
       tenant.name = name; $('ovSub').textContent = name;
       $('ovLang').textContent = $('language').value === 'en' ? 'Englisch' : 'Deutsch';
@@ -6384,6 +6763,112 @@
       q('dbStart').classList.toggle('hidden', c.length > 0 && nums.length > 0);
     }
 
+    // ---- Auswertung ----
+    // Zahlen direkt aus Supabase (Anrufe, Nachrichten, Termine, offene Fragen),
+    // ohne Kosten: die gehören dem Betreiber. Wochentag, Stunde und Dauer
+    // filtern innerhalb der Auswertung; Thema, Stimmung und Anrufer springen
+    // nach „Eingehend" mit passendem Filter.
+    let awTage = 30, awDaten = null, awFilter = null;
+    async function ladeAuswertung() {
+      if (!tenant) return;
+      const jetzt = new Date(); const start = new Date(jetzt.getTime() - awTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * awTage * 864e5);
+      const [{ data: calls }, { count: davorN }, { count: msgN }, terminAntwort, { count: gapsN }] = await Promise.all([
+        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(5000),
+        sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
+        sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
+        sb.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
+        sb.from('knowledge_gaps').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
+      ]);
+      awDaten = { c: (calls || []).filter((x) => x.status !== 'active'), davorN: davorN ?? null, msgN: msgN ?? 0, termineN: terminAntwort?.count ?? 0, gapsN: gapsN ?? 0, jetzt };
+      zeichneAuswertung();
+      $('awStand').textContent = 'Stand ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+    const awFilterSetzen = (f) => { awFilter = awFilter && awFilter.art === f.art && awFilter.wert === f.wert ? null : f; zeichneAuswertung(); };
+    const AW_DAUER = [['bis 30 s', 0, 30], ['30 s bis 1 Min', 30, 60], ['1 bis 2 Min', 60, 120], ['2 bis 5 Min', 120, 300], ['über 5 Min', 300, Infinity]];
+    const awDauerKlasse = (s) => AW_DAUER.findIndex(([, a, b]) => s >= a && s < b);
+    /** Nach „Eingehend" springen und dort einen Filter setzen (Thema, Stimmung oder Suche). */
+    function awNachEingehend(patch) {
+      const A = LV_ANSICHTEN.ein;
+      A.zeitraum = awTage === 7 ? 7 : awTage === 30 ? 30 : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = '';
+      Object.assign(A, patch);
+      if ($('lvSuche')) $('lvSuche').value = A.suche;
+      document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.classList.toggle('active', Number(b.dataset.tage) === A.zeitraum));
+      document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => b.classList.toggle('aktiv', (b.dataset.stimmung || '') === A.stimmung));
+      A.auswahl = null; geh('sec-live'); renderLive();
+    }
+    function zeichneAuswertung() {
+      if (!awDaten || !$('awKpis')) return;
+      const { c, davorN, msgN, termineN, gapsN } = awDaten;
+      const passt = (x) => { if (!awFilter) return true; const d = new Date(x.started_at); switch (awFilter.art) { case 'wochentag': return d.getDay() === awFilter.wert; case 'stunde': return d.getHours() === awFilter.wert; case 'dauer': return awDauerKlasse(dauerVon(x)) === awFilter.wert; default: return true; } };
+      const ausser = (art) => (awFilter && awFilter.art !== art) ? c.filter(passt) : c;
+      const gef = c.filter(passt);
+      // Filterleiste
+      const fl = $('awFilterLeiste'); fl.innerHTML = '';
+      if (awFilter) { const b = document.createElement('button'); b.type = 'button'; b.className = 'lv-etikett aktiv'; b.style.minHeight = '40px'; b.style.padding = '0 12px'; b.textContent = awFilter.label + ' · ' + gef.length + ' von ' + c.length + ' Anrufen'; const x = document.createElement('span'); x.textContent = ' ×'; b.append(x); b.setAttribute('aria-label', 'Filter entfernen'); b.onclick = () => { awFilter = null; zeichneAuswertung(); }; fl.append(b); }
+      // Kacheln
+      const dauern = gef.map(dauerVon).filter((s) => s > 0 && s < 3600);
+      const minuten = Math.round(dauern.reduce((a, b) => a + b, 0) / 60);
+      const avg = dauern.length ? dauern.reduce((a, b) => a + b, 0) / dauern.length : 0;
+      const eigene = gef.filter((x) => x.mode === 'bridge' || x.mode === 'browser').length; const assistent = gef.length - eigene;
+      const delta = davorN === null || awFilter ? '' : ((gef.length - davorN >= 0 ? '+' : '') + (gef.length - davorN) + ' gegenüber den ' + awTage + ' Tagen davor');
+      const kacheln = [
+        ['Anrufe', gef.length, delta || ('in ' + awTage + ' Tagen'), 'sec-live', davorN !== null && !awFilter ? (gef.length - davorN > 0 ? 'plus' : gef.length - davorN < 0 ? 'minus' : '') : ''],
+        ['Minuten', minuten, 'Gesprächszeit gesamt', 'sec-live'],
+        ['Ø Dauer', avg ? fmtDauer(avg) : '–', dauern.length ? 'längster ' + fmtDauer(Math.max(...dauern)) : 'noch keine Gespräche', null],
+        ['Nachrichten', msgN, 'vom Assistenten aufgenommen', 'sec-messages'],
+        ['Termine', termineN, 'im Zeitraum gebucht', 'sec-booking'],
+        ['Offene Fragen', gapsN, 'ohne Antwort in der Wissensdatenbank', 'sec-gaps'],
+        ['Anteil Assistent', gef.length ? Math.round(assistent / gef.length * 100) + ' %' : '–', assistent + ' vom Assistenten geführt', 'sec-live'],
+        ['Eigene Anrufe', eigene, 'im Browser oder am Telefon', 'sec-outbound'],
+      ];
+      const kp = $('awKpis'); kp.innerHTML = '';
+      kacheln.forEach(([k, v, d, ziel, cls]) => { const el = document.createElement('div'); el.className = 'db-kpi' + (ziel ? ' klick' : ''); el.innerHTML = '<div class="k"></div><div class="v"></div><div class="d' + (cls ? ' ' + cls : '') + '"></div>'; el.querySelector('.k').textContent = k; el.querySelector('.v').textContent = v; el.querySelector('.d').textContent = d; if (ziel) { el.setAttribute('role', 'button'); el.tabIndex = 0; el.onclick = () => geh(ziel); el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); geh(ziel); } }; } kp.append(el); });
+      // Wochentage (Mo–So)
+      const wtage = new Array(7).fill(0); ausser('wochentag').forEach((x) => wtage[new Date(x.started_at).getDay()]++);
+      const wmax = Math.max(1, ...wtage); const wt = $('awWochentag'); wt.innerHTML = '';
+      const TAGE = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'], TAGS = ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'];
+      [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (awFilter?.art === 'wochentag' && awFilter.wert === i ? ' aktiv' : ''); d.setAttribute('role', 'button'); d.tabIndex = 0; d.style.cursor = 'pointer'; d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = TAGE[i]; d.onclick = () => { if (wtage[i]) awFilterSetzen({ art: 'wochentag', wert: i, label: TAGS[i] }); }; d.onkeydown = (e) => { if (e.key === 'Enter') d.onclick(); }; wt.append(d); });
+      $('awWtSub').textContent = c.length ? 'stärkster Tag: ' + TAGE[wtage.indexOf(Math.max(...wtage))] : 'noch keine Anrufe';
+      // Stunden-Heatmap
+      const stunden = new Array(24).fill(0); ausser('stunde').forEach((x) => stunden[new Date(x.started_at).getHours()]++);
+      const smax = Math.max(1, ...stunden); const st = $('awStunden'); st.innerHTML = '';
+      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.dataset.tip = hI + '–' + (hI + 1) + ' Uhr · ' + (n ? n + (n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe'); d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; d.style.cursor = n ? 'pointer' : 'default'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (awFilter?.art === 'stunde' && awFilter.wert === hI) d.classList.add('aktiv'); if (n) d.onclick = () => awFilterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); st.append(d); });
+      const spitze = stunden.indexOf(Math.max(...stunden));
+      $('awStSub').textContent = c.length ? 'Spitze ' + spitze + '–' + (spitze + 1) + ' Uhr' : 'noch keine Anrufe';
+      // Dauer-Verteilung
+      const dk = AW_DAUER.map(() => 0); ausser('dauer').forEach((x) => { const s = dauerVon(x); if (s > 0) { const i = awDauerKlasse(s); if (i >= 0) dk[i]++; } });
+      const dmax = Math.max(1, ...dk); const dd = $('awDauer'); dd.innerHTML = '';
+      AW_DAUER.forEach(([label], i) => { const d = document.createElement('div'); d.className = 'db-thema' + (awFilter?.art === 'dauer' && awFilter.wert === i ? ' aktiv' : ''); d.setAttribute('role', 'button'); d.tabIndex = 0; d.style.cursor = 'pointer'; d.innerHTML = '<div class="n"><span></span><span>' + dk[i] + '</span></div><div class="b"><span style="width:' + Math.round(dk[i] / dmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = label; d.onclick = () => { if (dk[i]) awFilterSetzen({ art: 'dauer', wert: i, label: 'Dauer ' + label }); }; d.onkeydown = (e) => { if (e.key === 'Enter') d.onclick(); }; dd.append(d); });
+      // Themen Top 8 → Eingehend
+      const themen = {}; gef.forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
+      const top = Object.entries(themen).sort((a, b) => b[1] - a[1]).slice(0, 8); const tmax = top[0]?.[1] || 1;
+      const th = $('awThemen'); th.innerHTML = top.length ? '' : leerText('Themen erscheinen, sobald Anrufe zusammengefasst sind.');
+      top.forEach(([t, n]) => { const d = document.createElement('div'); d.className = 'db-thema'; d.setAttribute('role', 'button'); d.tabIndex = 0; d.style.cursor = 'pointer'; d.dataset.tip = 'Öffnet „Eingehend" mit Thema ' + t; d.innerHTML = '<div class="n"><span></span><span>' + n + '</span></div><div class="b"><span style="width:' + Math.round(n / tmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = t; d.onclick = () => awNachEingehend({ thema: t }); d.onkeydown = (e) => { if (e.key === 'Enter') d.onclick(); }; th.append(d); });
+      // Stimmung → Eingehend
+      const sti = { positiv: 0, neutral: 0, negativ: 0 }; gef.forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
+      const farben = [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']];
+      const sm = $('awStimmung');
+      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" title="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" role="button" tabindex="0"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' % (' + sti[kk] + ')</span>').join('') + '</div>' + '<p class="muted" style="font-size:12.5px;margin:10px 0 0;text-align:left;padding:0">' + (c.length - stN) + ' ohne Bewertung</p>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
+      sm.querySelectorAll('[data-stimmung]').forEach((el) => { el.onclick = () => awNachEingehend({ stimmung: el.dataset.stimmung }); el.onkeydown = (e) => { if (e.key === 'Enter') el.onclick(); }; });
+      // Häufigste Anrufer
+      const nrN = {}; gef.forEach((x) => { const n = (x.caller_number || '').replace(/\s+/g, ''); if (!n) return; const e = nrN[n] || (nrN[n] = { n: 0, letzter: x.started_at }); e.n++; if (x.started_at > e.letzter) e.letzter = x.started_at; });
+      const topNr = Object.entries(nrN).sort((a, b) => b[1].n - a[1].n || (b[1].letzter > a[1].letzter ? 1 : -1)).slice(0, 8);
+      const tb = $('awAnrufer'); tb.innerHTML = '';
+      if (!topNr.length) { tb.innerHTML = '<tbody><tr><td class="muted" style="font-size:13px;border:0;padding:0">Noch keine Anrufe im Zeitraum.</td></tr></tbody>'; }
+      else {
+        tb.innerHTML = '<thead><tr><th>Anrufer</th><th style="text-align:right">Anrufe</th><th style="text-align:right">Zuletzt</th></tr></thead><tbody></tbody>';
+        const body = tb.querySelector('tbody');
+        topNr.forEach(([nr, e]) => { const name = typeof ktName === 'function' ? ktName(nr) : ''; const tr = document.createElement('tr'); tr.setAttribute('role', 'button'); tr.tabIndex = 0; tr.dataset.tip = 'Öffnet „Eingehend" mit dieser Nummer'; tr.innerHTML = '<td></td><td class="z"></td><td class="z"></td>'; tr.children[0].innerHTML = name ? '<b></b><br><span class="nr"></span>' : '<span class="nr"></span>'; if (name) tr.querySelector('b').textContent = name; tr.querySelector('.nr').textContent = fmtNr(nr); tr.querySelector('.nr').className = 'nr'; tr.children[1].textContent = e.n; tr.children[2].textContent = new Date(e.letzter).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); tr.onclick = () => awNachEingehend({ suche: nr, zeitraum: 0 }); tr.onkeydown = (ev) => { if (ev.key === 'Enter') tr.onclick(); }; body.append(tr); });
+      }
+      $('awSub').textContent = c.length ? c.length + (c.length === 1 ? ' Anruf' : ' Anrufe') + ' in den letzten ' + awTage + ' Tagen.' : 'Noch keine Anrufe in den letzten ' + awTage + ' Tagen.';
+    }
+    (function auswertungWiring() {
+      if (!$('awZeitraum')) return;
+      document.querySelectorAll('#awZeitraum [data-tage]').forEach((b) => b.onclick = () => { document.querySelectorAll('#awZeitraum [data-tage]').forEach((x) => x.classList.toggle('active', x === b)); awTage = Number(b.dataset.tage); awFilter = null; ladeAuswertung(); });
+      $('awNeu').onclick = () => ladeAuswertung();
+      $('sec-auswertung').addEventListener('click', (e) => { const g = e.target.closest('[data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
+    })();
+
     // ---- Kosten / Marge (vom Backend, da Tarif-Kalkulation serverseitig) ----
     async function loadCosts() {
       const sum = $('costSummary'), brk = $('costBreak');
@@ -6510,6 +6995,7 @@
         const box = rueckrufBox(nr, m.caller_name || '', m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '', () => { loadTickets(); if (!erledigt) mgAendern(m, { status: 'done', done_at: new Date().toISOString() }).then(renderNachrichten); });
         rb.append(box);
         knopf('Assistent ruft zurück …', '', () => { box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) box.querySelector('[data-auftrag]')?.focus(); });
+        knopf('Assistent ruft später zurück', '', () => rueckrufPlanenOeffnen(nr, m.caller_name || '', m.summary ? 'Rückruf zu: ' + m.summary.slice(0, 140) : '')).dataset.tip = 'Uhrzeit wählen, der Assistent ruft dann von selbst an';
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
       }
       knopf('Vorgang anlegen', '', async () => {
@@ -6531,6 +7017,12 @@
     }
     (function nachrichtenWiring() {
       const s = $('mgSuche'); if (!s) return;
+      if ($('mgCsv')) $('mgCsv').onclick = () => {
+        const liste = mgGefiltert(); if (!liste.length) { toast('Keine Nachrichten in der Auswahl.', 'err'); return; }
+        const zeilen = [['Datum', 'Name', 'Nummer', 'Kategorie', 'Dringlichkeit', 'Status', 'Zusammenfassung', 'Notiz', 'Erledigt am']];
+        liste.forEach((m) => zeilen.push([csvZeit(m.created_at), m.caller_name || '', m.callback_number || m.caller_number || '', m.category || '', m.urgency || '', m.status === 'done' ? 'erledigt' : 'offen', m.summary || '', m.note || '', csvZeit(m.done_at)]));
+        csvHerunterladen(zeilen, 'nachrichten'); toast(liste.length + (liste.length === 1 ? ' Nachricht' : ' Nachrichten') + ' exportiert.');
+      };
       s.oninput = () => { clearTimeout(mgSuchTimer); mgSuchTimer = setTimeout(() => { mgSuche = s.value; renderNachrichten(); }, 150); };
       document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgStatus [data-status]').forEach((x) => x.classList.toggle('active', x === b)); mgStatus = b.dataset.status; renderNachrichten(); });
       document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgDringend .lv-chip').forEach((x) => x.classList.toggle('aktiv', x === b)); mgDringend = b.dataset.dringend || ''; renderNachrichten(); });
@@ -6621,9 +7113,11 @@
     /** Beschriftung, Erklärung und Zusatzfelder an den gewählten Weg anpassen. */
     function obWahlZeigen() {
       const w = WEGE[callWeg] || WEGE.browser;
-      if ($('callBtnText')) $('callBtnText').textContent = w.knopf;
-      $('callErklaerung').textContent = w.text;
+      const spaeter = callWeg === 'assistent' && $('callSpaeter')?.checked;
+      if ($('callBtnText')) $('callBtnText').textContent = spaeter ? 'Anruf planen' : w.knopf;
+      $('callErklaerung').textContent = spaeter ? 'Der Assistent ruft zur gewählten Uhrzeit von selbst an und erledigt den Auftrag. Bis dahin steht der Anruf unten unter „Geplante Anrufe" und lässt sich absagen.' : w.text;
       $('callAuftragFeld').classList.toggle('hidden', callWeg !== 'assistent');
+      $('callSpaeterFelder')?.classList.toggle('hidden', !spaeter);
       // Mikrofon-Zeile nur, wenn im Browser gesprochen wird.
       $('callGeraet')?.classList.toggle('hidden', callWeg !== 'browser');
     }
@@ -6657,6 +7151,76 @@
       }
       $('callBtn')?.click();
     }
+    // ---- Geplante Anrufe: der Assistent ruft später von selbst an ----
+    /** In einer Stunde, auf 5 Minuten gerundet, als Wert für datetime-local (Ortszeit). */
+    function rueckrufVorgabe() {
+      const d = new Date(Date.now() + 3600000); d.setSeconds(0, 0); d.setMinutes(Math.ceil(d.getMinutes() / 5) * 5);
+      const p = (n) => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    const RR_STATUS = { geplant: 'geplant', gestartet: 'gestartet', fehlgeschlagen: 'fehlgeschlagen', abgesagt: 'abgesagt' };
+    let rrLaedt = false;
+    async function rueckrufeLaden() {
+      const liste = $('obGeplantListe'); if (!liste || !tenant || rrLaedt) return; rrLaedt = true;
+      try {
+        const r = await apiFetch('/api/rueckrufe', { headers: numAuth() });
+        const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
+        rueckrufeZeichnen(j.rueckrufe || []);
+      } catch (e) { liste.innerHTML = '<p class="muted" style="font-size:13px;text-align:left;padding:0">Geplante Anrufe konnten nicht geladen werden: ' + escHtml(e.message) + '</p>'; }
+      rrLaedt = false;
+    }
+    function rueckrufeZeichnen(eintraege) {
+      const liste = $('obGeplantListe'); liste.innerHTML = '';
+      // Abgesagte und Gestartete von früher nicht ewig zeigen: nur die letzten 7 Tage.
+      const grenze = Date.now() - 7 * 864e5;
+      const zeigen = eintraege.filter((e) => e.status === 'geplant' || new Date(e.scheduled_at).getTime() > grenze);
+      const offen = zeigen.filter((e) => e.status === 'geplant').length;
+      $('obGeplantAnzahl').textContent = offen ? offen + (offen === 1 ? ' offen' : ' offen') : '';
+      if (!zeigen.length) { liste.innerHTML = leerZustand('Noch kein Anruf geplant. Wähle beim Weg „Der Assistent" die Option „Später anrufen", dann ruft er zur Uhrzeit von selbst an.', 'Anruf planen', 'klick:obPlanenKnopf'); return; }
+      // Geplante zuerst (nächster oben), danach die erledigten, neueste oben.
+      zeigen.sort((a, b) => { const ga = a.status === 'geplant', gb = b.status === 'geplant'; if (ga !== gb) return ga ? -1 : 1; const d = new Date(a.scheduled_at) - new Date(b.scheduled_at); return ga ? d : -d; });
+      zeigen.forEach((e) => {
+        const z = document.createElement('div'); z.className = 'gp-zeile'; z.dataset.rrId = e.id;
+        const name = e.name || (typeof ktName === 'function' ? ktName(e.phone) : '') || '';
+        z.innerHTML = '<span class="gp-wann"></span><span class="gp-wer"></span><span class="gp-rechts"><span class="gp-status"></span></span>'
+          + (e.auftrag ? '<span class="gp-auftrag"></span>' : '') + (e.status === 'fehlgeschlagen' && e.error ? '<span class="gp-fehler"></span>' : '');
+        z.querySelector('.gp-wann').textContent = new Date(e.scheduled_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        z.querySelector('.gp-wer').textContent = (name ? name + ' · ' : '') + fmtNr(e.phone);
+        const st = z.querySelector('.gp-status'); st.dataset.status = e.status; st.textContent = RR_STATUS[e.status] || e.status;
+        if (e.auftrag) z.querySelector('.gp-auftrag').textContent = e.auftrag;
+        if (e.status === 'fehlgeschlagen' && e.error) z.querySelector('.gp-fehler').textContent = 'Fehler: ' + e.error;
+        if (e.status === 'geplant') {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--ghost sm'; b.textContent = 'Absagen'; b.dataset.tip = 'Der Anruf findet dann nicht statt';
+          b.onclick = async () => {
+            b.disabled = true;
+            try { const r = await apiFetch('/api/rueckrufe/' + encodeURIComponent(e.id), { method: 'DELETE', headers: numAuth() }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('Anruf abgesagt.'); rueckrufeLaden(); }
+            catch (err) { toast('Absagen: ' + err.message, 'err'); b.disabled = false; }
+          };
+          z.querySelector('.gp-rechts').append(b);
+        }
+        liste.append(z);
+      });
+    }
+    /** Aus Anruf oder Nachricht heraus: Nummer und Auftrag vorfüllen und die Planung öffnen. */
+    function rueckrufPlanenOeffnen(nr, name, auftrag) {
+      geh('sec-outbound');
+      $('obWaehl')?.classList.remove('hidden');
+      document.querySelectorAll('#callWeg [data-weg]').forEach((x) => x.classList.toggle('aktiv', x.dataset.weg === 'assistent'));
+      callWeg = 'assistent';
+      if ($('callSpaeter')) { $('callSpaeter').checked = true; if (!$('callSpaeterWann').value) $('callSpaeterWann').value = rueckrufVorgabe(); }
+      obWahlZeigen();
+      if (nr) obNummerSetzen(nr);
+      if ($('callSpaeterName') && name) $('callSpaeterName').value = name;
+      const a = $('callAuftrag'); if (a && auftrag && !a.value.trim()) a.value = auftrag;
+      $('obWaehl')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => $('callSpaeterWann')?.focus(), 250);
+    }
+    if ($('callSpaeter')) {
+      $('callSpaeter').onchange = () => { if ($('callSpaeter').checked && !$('callSpaeterWann').value) $('callSpaeterWann').value = rueckrufVorgabe(); obWahlZeigen(); };
+      $('obGeplantNeu').onclick = () => rueckrufeLaden();
+      // Unsichtbarer Knopf für den Leerzustand: öffnet das Wählfeld mit Planung.
+      const pk = document.createElement('button'); pk.type = 'button'; pk.id = 'obPlanenKnopf'; pk.hidden = true; pk.style.display = 'none'; pk.setAttribute('aria-hidden', 'true'); pk.onclick = () => rueckrufPlanenOeffnen('', '', ''); document.body.append(pk);
+    }
     $('callTo')?.addEventListener('input', obEingabe);
     $('callTo')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('callBtn').click(); });
     $('obLeeren') && ($('obLeeren').onclick = () => { const f = $('callTo'); f.value = f.value.slice(0, -1); obEingabe(); f.focus(); });
@@ -6684,6 +7248,23 @@
       }
       const auftrag = ($('callAuftrag')?.value || '').trim();
       if (auftrag.length < 5) { h.textContent = 'Bitte kurz beschreiben, was der Assistent klären soll.'; h.classList.add('fehler'); $('callAuftrag')?.focus(); return; }
+      if ($('callSpaeter')?.checked) {
+        // Nicht wählen, sondern planen: der Server ruft zur Uhrzeit an.
+        const wann = $('callSpaeterWann').value ? new Date($('callSpaeterWann').value) : null;
+        if (!wann || Number.isNaN(wann.getTime())) { h.textContent = 'Bitte Datum und Uhrzeit angeben.'; h.classList.add('fehler'); $('callSpaeterWann')?.focus(); return; }
+        if (wann.getTime() < Date.now() - 60000) { h.textContent = 'Die Uhrzeit liegt in der Vergangenheit.'; h.classList.add('fehler'); $('callSpaeterWann')?.focus(); return; }
+        $('callBtn').disabled = true; h.textContent = 'Plane …';
+        try {
+          const r = await apiFetch('/api/rueckrufe', { method: 'POST', headers: numAuth(), body: JSON.stringify({ phone: to, name: $('callSpaeterName').value.trim() || undefined, auftrag, at: wann.toISOString() }) });
+          const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
+          h.textContent = 'Geplant für ' + wann.toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr.';
+          toast('Anruf geplant.');
+          $('callAuftrag').value = ''; $('callSpaeterName').value = ''; $('callTo').value = ''; $('obLeeren').classList.add('hidden');
+          rueckrufeLaden(); $('obGeplant')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (e) { h.textContent = 'Fehler: ' + e.message; h.classList.add('fehler'); }
+        $('callBtn').disabled = false;
+        return;
+      }
       $('callBtn').disabled = true; h.textContent = 'Verbinde …';
       try {
         const res = await fetch(API + '/api/call', {
@@ -7020,6 +7601,7 @@
         slack_url: $('whSlack').value.trim(), teams_url: $('whTeams').value.trim(),
         telegram_token: $('whTgToken').value.trim(), telegram_chat_id: $('whTgChat').value.trim(),
         email_to: $('whEmail').value.trim(),
+        sms_to: $('whSms')?.value.replace(/\s+/g, '') || null, sms_urgent_only: $('whSmsUrgent')?.checked !== false,
       }, { onConflict: 'tenant_id' });
       $('whSave').disabled = false;
       $('whHint').textContent = error ? 'Fehler: ' + error.message : 'Gespeichert.';
@@ -7465,8 +8047,8 @@
     $('tkExport').onclick = () => {
       const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt']];
       tkGefiltert().forEach((t) => rows.push([t.number, t.title, TK_STATUS[t.status], TK_PRIO[t.priority], t.category || '', t.assignee || '', t.caller_name || '', t.caller_phone || '', fmtZeit(t.due_at), fmtZeit(t.created_at), fmtZeit(t.closed_at)]));
-      const csv = rows.map((r) => r.map((x) => '"' + String(x ?? '').replace(/"/g, '""') + '"').join(';')).join('\n');
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'vorgaenge.csv'; a.click();
+      if (rows.length < 2) { toast('Keine Vorgänge in der Auswahl.', 'err'); return; }
+      csvHerunterladen(rows, 'vorgaenge'); toast((rows.length - 1) + (rows.length === 2 ? ' Vorgang' : ' Vorgänge') + ' exportiert.');
     };
     $('tkNeuBtn').onclick = async () => {
       if (!tenant) return;
