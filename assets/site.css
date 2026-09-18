@@ -201,7 +201,10 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 }
 @media (max-width:560px){
   .callrow{flex-direction:column;}
-  .stats .stat{width:calc(50% - 20px);}
+  .stats{gap:18px 40px;}
+  .stats .stat{width:calc(50% - 20px);flex-wrap:wrap;min-width:0;}
+  .stats .stat .l{white-space:normal;}
+  .stats .stat .n{font-size:24px;overflow-wrap:anywhere;}
   .foot{flex-direction:column;align-items:flex-start;}
 }
 
