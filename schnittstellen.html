@@ -17,14 +17,13 @@
 <meta property="og:url" content="https://vocaris.eu/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/bricolagegrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/schibstedgrotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/schriften.css">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/vocaris.css">
 <link rel="stylesheet" href="assets/presio.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://vocaris.eu/#org", "name": "Vocaris", "url": "https://vocaris.eu/", "logo": "https://vocaris.eu/assets/favicon.svg", "email": "christoph.gerhardt@gmail.com", "areaServed": "DE"}, {"@type": "SoftwareApplication", "name": "Vocaris", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "https://vocaris.eu/", "description": "KI-Telefonassistent für Unternehmen: nimmt Anrufe rund um die Uhr mit natürlicher Stimme entgegen, bucht Termine und Reservierungen, beantwortet Fragen und ruft auf Wunsch zurück. DSGVO-konform, Einrichtung in etwa 15 Minuten, monatlich kündbar.", "publisher": {"@id": "https://vocaris.eu/#org"}, "offers": [{"@type": "Offer", "name": "Klein", "price": "49.00", "priceCurrency": "EUR", "description": "49 € pro Monat, 250 Gesprächsminuten inklusive."}, {"@type": "Offer", "name": "Standard", "price": "99.00", "priceCurrency": "EUR", "description": "99 € pro Monat für mittleres Anrufaufkommen."}, {"@type": "Offer", "name": "Groß", "price": "249.00", "priceCurrency": "EUR", "description": "249 € pro Monat für hohes Anrufaufkommen."}]}]}</script>
-<style>.logo-mark .lg-i{fill:#0a2540} nav.top.fest .logo-mark .lg-i,footer .logo-mark .lg-i{fill:#5c5aee} nav.top.fest .logo-mark svg path,footer .logo-mark svg path{fill:#fff} .logo-mark svg path{fill:#fff}</style>
 </head>
 <body>
 
@@ -153,7 +152,7 @@
 </footer>
 
 <script src="/pv.js" defer></script>
-<script src="assets/site.js"></script>
+<script src="assets/site.js" defer></script>
 <script src="assets/vocaris.js" defer></script>
 <script src="assets/magie.js" defer></script>
 <script src="assets/assistent.js" defer></script>

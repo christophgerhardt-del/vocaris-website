@@ -93,8 +93,6 @@ p{margin:0;}
 .icard.hl .kicker{color:var(--accent);}
 .icard .tt{font-family:var(--sans);font-weight:700;font-size:22px;line-height:1.18;letter-spacing:-.015em;}
 .icard p{font-size:14.5px;line-height:1.6;color:var(--t2);}
-.icard .more{margin-top:auto;font-size:14px;font-weight:600;color:var(--t2);}
-.icard.hl .more{color:var(--accent);}
 
 /* Modelle */
 .cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
@@ -102,7 +100,6 @@ p{margin:0;}
 .mcard .name{font-weight:700;font-size:17px;}
 .mcard p{font-size:14px;line-height:1.55;color:var(--t2);}
 .mcard .st{margin-top:auto;font-size:12px;font-weight:600;}
-.eubadge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:4px 9px;background:var(--accent);color:#fff;border-radius:999px;}
 
 /* Sicherheit */
 .dark-sec{background:var(--ink);color:var(--paper);padding:96px var(--pad);}
@@ -114,7 +111,6 @@ p{margin:0;}
 .scard .s{font-size:13.5px;line-height:1.55;color:var(--on-dark);}
 
 /* Start */
-.centered{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;}
 .step .n{font-family:var(--sans);font-weight:700;font-size:30px;color:var(--accent);}
 .step .t{font-weight:700;font-size:17px;}
 .step p{font-size:14.5px;line-height:1.6;color:var(--t2);}
@@ -139,12 +135,6 @@ p{margin:0;}
 /* ── Aufwertung: Interaktivität & Politur ── */
 html{scroll-behavior:smooth;scroll-padding-top:88px;}
 .hero{position:relative;overflow:hidden;}
-.aurora{position:absolute;inset:-20% -10% auto -10%;height:150%;pointer-events:none;z-index:0;
-  background:radial-gradient(620px 420px at 16% 18%,rgba(95,79,212,.20),transparent 60%),
-             radial-gradient(520px 400px at 86% 78%,rgba(180,169,230,.42),transparent 62%),
-             radial-gradient(440px 340px at 62% 8%,rgba(255,255,255,.55),transparent 55%);
-  animation:aur 20s ease-in-out infinite alternate;}
-@keyframes aur{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(-3%,2%,0) scale(1.09)}}
 .hero-grid{position:relative;z-index:1;}
 .nav{backdrop-filter:saturate(1.3) blur(9px);background:rgba(246,245,241,.82);transition:box-shadow .25s,background .25s;}
 .nav.scrolled{box-shadow:0 8px 30px -22px rgba(10,58,74,.55);background:rgba(246,245,241,.94);}
@@ -166,9 +156,7 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
 @keyframes typ{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
 .wave.live i{transition:height .18s ease;}
-.callcf-anim{opacity:0;transform:translateY(6px);transition:opacity .5s,transform .5s;}
-.callcf-anim.show{opacity:1;transform:none;}
-@media (prefers-reduced-motion:reduce){.reveal,.bub,.callcf-anim{opacity:1!important;transform:none!important;}.aurora{animation:none;}.wave.live i{transition:none;}}
+@media (prefers-reduced-motion:reduce){.reveal,.bub,.callcf-anim{opacity:1!important;transform:none!important;}.wave.live i{transition:none;}}
 
 /* Stat-Band: feine Trennlinien für einen ruhigen, präzisen Eindruck */
 .stats .stat{position:relative;padding:2px 0;}
@@ -210,7 +198,6 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
   .cards-3,.cards-4{grid-template-columns:1fr;}
   .grid-2x2{grid-template-columns:1fr;}
   .grid-art{aspect-ratio:16/11;}
-  .modelle-head{grid-template-columns:1fr!important;gap:20px!important;}
 }
 @media (max-width:560px){
   .callrow{flex-direction:column;}
@@ -222,12 +209,9 @@ html{scroll-behavior:smooth;scroll-padding-top:88px;}
 a.icard{color:var(--ink);text-decoration:none;}
 a.icard:hover{color:var(--ink);}
 .branch-hero .callcard .bub{opacity:1;transform:none;}
-.trust-line{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13px;color:var(--t3);align-items:center;}
-.trust-line b{color:var(--t2);font-weight:600;}
 .softcard{background:var(--lav);border-radius:18px;padding:34px;display:flex;flex-direction:column;gap:16px;}
 .softcard .q{font-size:15px;color:var(--t2);line-height:1.55;}
 .softcard .q b{color:var(--ink);}
-.backhome{font-size:14px;color:var(--t2);}
 
 /* Interaktive Politur (Unterseiten) */
 .scrollprog{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;

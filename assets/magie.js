@@ -185,6 +185,10 @@
   if (!zeile || !('fetch' in window)) return;
   const text = zeile.querySelector('[data-status-text]');
   const mess = zeile.querySelector('[data-status-mess]');
+  // Die Zeile steht weit unten. Gemessen wird erst, wenn sie in die Nähe des
+  // Bildschirms kommt: kein Weckruf ans Backend bei jedem Seitenaufruf, und die
+  // Anfrage konkurriert nicht mit dem, was oben zuerst gezeichnet werden muss.
+  const messen = () => {
   const start = performance.now();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 6000);
@@ -204,6 +208,10 @@
       zeile.hidden = false;
     })
     .catch(() => { clearTimeout(timer); /* nichts anzeigen: keine erfundene Verfügbarkeit */ });
+  };
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es, io) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); messen(); } }, { rootMargin: '600px 0px' }).observe(zeile);
+  } else messen();
 })();
 
 // ── Popups: Verlustrechner und Branchenliste liegen in <dialog> ──────────────
