@@ -1,13 +1,31 @@
 # robots.txt für vocaris.eu
 #
-# Bewusst KEINE Disallow-Regeln für die internen Seiten (app, admin, kiosk,
-# reservieren). Die tragen alle ein "noindex" im Seitenkopf — und damit
-# Google das lesen KANN, muss es die Seite abrufen dürfen. Ein Disallow
-# würde den Abruf verhindern, das noindex bliebe ungelesen, und die Adresse
-# könnte trotzdem als nackter Link im Index landen. Zusperren und
-# Nicht-Indexieren sind zwei verschiedene Dinge; hier ist das zweite gemeint.
+# Zwei Dinge, die leicht verwechselt werden:
+#   Disallow  = nicht abrufen.
+#   noindex   = nicht in den Index aufnehmen.
+#
+# Gesperrt wird hier nur, was niemanden außerhalb des Betriebs angeht: der
+# Kundenbereich, die Verwaltung, die Ansichten für Tresen und Gastgeber und die
+# Testseite. Alle fünf tragen zusätzlich ein "noindex" im Seitenkopf.
+#
+# Wichtig zu wissen: Solange eine Adresse hier gesperrt ist, liest Google das
+# noindex nicht — es muss die Seite dafür abrufen dürfen. Eine Adresse, auf die
+# von außen verlinkt wird, kann deshalb trotz Sperre als nackter Link im Index
+# auftauchen. Für diese fünf Seiten wird von nirgends verlinkt (der Anmelden-
+# Knopf zeigt auf app.html, das ist die einzige Ausnahme und gewollt), deshalb
+# ist die Sperre hier die einfachere Antwort. Sollte doch einmal eine dieser
+# Adressen im Index stehen, muss die Sperre vorübergehend raus, damit Google
+# das noindex lesen und die Seite wieder auswerfen kann.
+#
+# Alles andere — Startseite, Produktseiten, Branchen, Ratgeber und die
+# Rechtstexte — darf und soll gelesen werden.
 
 User-agent: *
+Disallow: /app.html
+Disallow: /admin.html
+Disallow: /kiosk.html
+Disallow: /reservieren.html
+Disallow: /live-test.html
 Allow: /
 
 Sitemap: https://vocaris.eu/sitemap.xml
