@@ -283,7 +283,7 @@ input[type=range].schieber:focus-visible::-webkit-slider-thumb{outline:3px solid
 .ergebnis{background:var(--nacht);color:#fff;border-radius:var(--rund-l);padding:var(--r4);display:grid;gap:var(--r3);align-content:start}
 .ergebnis__gross>span{display:block;font-size:14px;color:var(--nacht-text);margin-bottom:6px}
 .ergebnis__gross b{display:block;font-family:var(--disp);font-weight:600;font-size:clamp(40px,4.5vw,60px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
-.ergebnis__gross b small{display:block;font-family:var(--sans);font-size:14px;font-weight:400;color:var(--nacht-text);letter-spacing:0;margin-top:10px;line-height:1.4}
+.ergebnis__gross b small{display:block;font-family:var(--sans);font-variant-numeric:normal;font-size:14px;font-weight:400;color:var(--nacht-text);letter-spacing:0;margin-top:10px;line-height:1.4}
 .ergebnis__vergleich{display:grid;gap:10px;padding-top:var(--r3);border-top:1px solid var(--nacht-linie);font-size:14.5px}
 .ergebnis__vergleich>div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
 .ergebnis__vergleich>div>span:first-child{color:var(--nacht-text);min-width:120px}

@@ -32,7 +32,7 @@
 .suche input::placeholder{color:var(--text-4)}
 .suche input:focus{outline:none;box-shadow:0 0 0 4px var(--akzent-ring),var(--schatten-tief)}
 .suche input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
-.suche__stand{position:absolute;right:20px;font-size:13px;color:var(--text-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.suche__stand{position:absolute;right:20px;font-size:13px;color:var(--text-3);pointer-events:none}
 .suche__leer{margin-top:var(--r2);color:var(--text-2)}
 .suche__leer:not([hidden]){display:block}
 .branche.aus{display:none}
