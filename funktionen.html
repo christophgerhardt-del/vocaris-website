@@ -20,6 +20,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
 <link rel="preload" href="assets/fonts/bricolagegrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Das Bild im Seitenkopf ist auf dem Schreibtisch das LCP-Element: vorladen, damit es nicht erst nach dem CSS entdeckt wird. -->
+<link rel="preload" as="image" href="assets/produkt/eingehend.webp" imagesrcset="assets/produkt/eingehend-k.webp 1000w, assets/produkt/eingehend.webp 2000w" imagesizes="(max-width:900px) calc(100vw - 48px), 560px" fetchpriority="high">
 <link rel="preload" href="assets/fonts/schibstedgrotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/schriften.css">
 <link rel="stylesheet" href="assets/tokens.css">
