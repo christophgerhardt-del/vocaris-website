@@ -14,14 +14,7 @@
 .fortschritt i{display:block;height:100%;width:100%;background:var(--akzent);transform:scaleX(var(--p,0));transform-origin:left;transition:transform .08s linear}
 
 /* ── 2. Brotkrumen ───────────────────────────────────────────────────────── */
-.brotkrumen ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13.5px;color:var(--text-3)}
-.brotkrumen li{display:inline-flex;align-items:center;gap:8px}
-.brotkrumen li+li::before{content:"›";color:var(--text-4)}
-.brotkrumen a{color:var(--text-2);font-weight:500}
-.brotkrumen a:hover{color:var(--akzent)}
-.brotkrumen--dunkel ol{color:var(--nacht-text)}
-.brotkrumen--dunkel a{color:#fff;opacity:.8}
-.brotkrumen--dunkel li+li::before{color:rgba(255,255,255,.4)}
+/* Grundfassung und dunkle Abwandlung stehen in neu.css. */
 
 /* ── 3. Artikelkopf: hell, ruhig; Klasse .held nur damit die CTA-Leiste
        weiß, wann der Seitenkopf aus dem Bild ist ──────────────────────── */
@@ -109,13 +102,13 @@
 .artikelkarte{display:flex;flex-direction:column;gap:10px;padding:var(--r3);color:var(--text-1);min-height:100%}
 .artikelkarte:hover{text-decoration:none}
 .artikelkarte__kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--r1)}
-.artikelkarte__nr{font-family:var(--disp);font-weight:600;font-size:13px;color:var(--text-4);font-variant-numeric:tabular-nums}
+.artikelkarte__nr{font-family:var(--disp);font-weight:600;font-size:13px;color:var(--text-3);font-variant-numeric:tabular-nums}
 .artikelkarte__titel{font-size:20px;line-height:1.22;letter-spacing:-.012em;margin-top:4px;text-wrap:balance}
 .artikelkarte:hover .artikelkarte__titel{color:var(--akzent)}
 .artikelkarte p{font-size:14.5px;line-height:1.5;color:var(--text-2);flex:1}
 .artikelkarte__meta{display:flex;gap:8px;font-size:13px;color:var(--text-3);margin-top:4px}
 .artikelkarte__mehr{font-size:14px;font-weight:600;color:var(--akzent);margin-top:2px}
-.seitenlinks{margin-top:var(--r4);font-size:14.5px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:6px var(--r3);align-items:center}
+/* .seitenlinks steht in neu.css, weil auch Seiten außerhalb des Ratgebers sie nutzen. */
 
 /* ── 6. Übersicht: Held, Suche, Filter, Kategorien ───────────────────────── */
 .held--ratgeber__innen{position:relative;padding-top:var(--r8);padding-bottom:var(--r12)}

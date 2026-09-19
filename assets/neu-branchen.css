@@ -8,13 +8,9 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Brotkrumen ──────────────────────────────────────────────────────────── */
-.brotkrumen{margin-bottom:var(--r3);font-size:13.5px;color:var(--nacht-text)}
-.brotkrumen ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.brotkrumen li{display:inline-flex;align-items:center;gap:6px}
-.brotkrumen li+li::before{content:"›";color:rgba(255,255,255,.4)}
-.brotkrumen a{color:var(--nacht-text)}
-.brotkrumen a:hover{color:#fff}
-.brotkrumen [aria-current]{color:#fff}
+/* Grundfassung und dunkle Abwandlung stehen in neu.css; die Branchenköpfe
+   tragen .brotkrumen--dunkel. Hier nur die aktuelle Stufe. */
+.brotkrumen--dunkel [aria-current]{color:#fff}
 
 /* ── Held der Branchenseite ──────────────────────────────────────────────── */
 /* Der Seitenabstand der Hülle bleibt erhalten (neu.css setzt im Held nur oben/unten) */

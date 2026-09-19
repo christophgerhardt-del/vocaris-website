@@ -57,6 +57,23 @@ p{margin:0}
 .verweis::after{content:"→";transition:transform .18s var(--kurve)}
 .verweis:hover::after{transform:translateX(3px)}
 
+/* Brotkrumen: der Weg von der Startseite hierher, auf jeder Unterseite sichtbar.
+   Grundfassung für hellen Grund; die Seitengruppen überschreiben sie für
+   dunkle Seitenköpfe (neu-branchen.css, .brotkrumen--dunkel in neu-ratgeber.css). */
+.brotkrumen{margin-bottom:var(--r3);font-size:13.5px;color:var(--text-3)}
+.brotkrumen ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.brotkrumen li{display:inline-flex;align-items:center;gap:8px}
+.brotkrumen li+li::before{content:"›";color:var(--text-4)}
+.brotkrumen a{color:var(--text-2);font-weight:500}
+.brotkrumen a:hover{color:var(--akzent)}
+.brotkrumen--dunkel{color:var(--nacht-text)}
+.brotkrumen--dunkel li+li::before{color:rgba(255,255,255,.4)}
+.brotkrumen--dunkel a{color:var(--nacht-text)}
+.brotkrumen--dunkel a:hover{color:#fff}
+
+/* Querverweise am Ende eines Abschnitts: eine Zeile mit verwandten Seiten. */
+.seitenlinks{margin-top:var(--r4);font-size:14.5px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:6px var(--r3);align-items:center}
+
 /* ── 3. Raster und Abschnitte ────────────────────────────────────────────── */
 .huelle{width:100%;max-width:var(--breite);margin:0 auto;padding-left:var(--seite);padding-right:var(--seite)}
 .abschnitt{padding:var(--r12) 0}
@@ -73,7 +90,7 @@ p{margin:0}
 .kachel--voll{padding:var(--r3)}
 .pille{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:var(--rund-voll);background:var(--akzent-zart);color:var(--akzent-tief);font-size:12.5px;font-weight:600;white-space:nowrap}
 .pille--grau{background:var(--flaeche-2);color:var(--text-2)}
-.pille--gut{background:var(--gut-zart);color:var(--gut)}
+.pille--gut{background:var(--gut-zart);color:var(--gut-lesbar)}
 .pille--weh{background:#fdeceb;color:#b5362e}
 .punkt{width:8px;height:8px;border-radius:50%;background:var(--gut);display:inline-block}
 .punkt--puls{position:relative}
@@ -341,7 +358,7 @@ input[type=range].schieber:focus-visible::-webkit-slider-thumb{outline:3px solid
 .zustimmung input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--akzent);flex:none}
 .formfehler{color:#b5362e;font-size:14px;min-height:1.2em}
 .formfehler:empty{display:none}
-.formerfolg{display:grid;gap:8px;padding:var(--r3);border-radius:var(--rund-l);background:var(--gut-zart);color:var(--gut);font-weight:500}
+.formerfolg{display:grid;gap:8px;padding:var(--r3);border-radius:var(--rund-l);background:var(--gut-zart);color:var(--gut-lesbar);font-weight:500}
 .formerfolg b{font-size:18px}
 .formular .knopf{width:100%;min-height:52px;font-size:16px}
 .formular .klein{text-align:center}
@@ -353,7 +370,7 @@ input[type=range].schieber:focus-visible::-webkit-slider-thumb{outline:3px solid
 .fuss{background:var(--flaeche-0);border-top:1px solid var(--linie);padding:var(--r8) 0 calc(var(--r4) + env(safe-area-inset-bottom));font-size:14.5px;color:var(--text-2)}
 .fuss__oben{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:var(--r4)}
 .fuss__marke p{margin-top:var(--r2);max-width:34ch;line-height:1.55}
-.fuss h4{font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:var(--r2)}
+.fuss h2{font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:var(--r2)}
 .fuss ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .fuss ul a{color:var(--text-2)}
 .fuss ul a:hover{color:var(--akzent)}
