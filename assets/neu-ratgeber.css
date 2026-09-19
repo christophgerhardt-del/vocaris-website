@@ -1,0 +1,186 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Vocaris — Ratgeber (neu-ratgeber.css)
+   ══════════════════════════════════════════════════════════════════════════
+   Ergänzt neu.css für die Übersicht (ratgeber.html) und die Artikelseiten
+   (ratgeber/*.html). Lange Texte brauchen eine ruhige Spalte: höchstens
+   68 Zeichen je Zeile, etwas größere Schrift, mehr Zeilenabstand. Kästen
+   für Tabellen, Checklisten und Beispielgespräche, ein Inhaltsverzeichnis,
+   das auf dem Schreibtisch mitläuft und auf dem Handy ausklappt, eine
+   Lesefortschritt-Leiste oben. Erzeugt von ratgeber-bauen.mjs.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Lesefortschritt ──────────────────────────────────────────────────── */
+.fortschritt{position:fixed;top:0;left:0;right:0;height:3px;z-index:101;pointer-events:none}
+.fortschritt i{display:block;height:100%;width:100%;background:var(--akzent);transform:scaleX(var(--p,0));transform-origin:left;transition:transform .08s linear}
+
+/* ── 2. Brotkrumen ───────────────────────────────────────────────────────── */
+.brotkrumen ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13.5px;color:var(--text-3)}
+.brotkrumen li{display:inline-flex;align-items:center;gap:8px}
+.brotkrumen li+li::before{content:"›";color:var(--text-4)}
+.brotkrumen a{color:var(--text-2);font-weight:500}
+.brotkrumen a:hover{color:var(--akzent)}
+.brotkrumen--dunkel ol{color:var(--nacht-text)}
+.brotkrumen--dunkel a{color:#fff;opacity:.8}
+.brotkrumen--dunkel li+li::before{color:rgba(255,255,255,.4)}
+
+/* ── 3. Artikelkopf: hell, ruhig; Klasse .held nur damit die CTA-Leiste
+       weiß, wann der Seitenkopf aus dem Bild ist ──────────────────────── */
+.held.seitenkopf{background:var(--flaeche-0);color:var(--text-1);margin-top:0;padding:var(--r4) 0 var(--r6);border-bottom:1px solid var(--linie)}
+.held.seitenkopf::before{display:none}
+.held.seitenkopf>.huelle{max-width:1080px}
+.seitenkopf__innen{max-width:52rem;margin-top:var(--r4)}
+.held.seitenkopf h1{font-size:clamp(32px,4.4vw,54px);line-height:1.04;letter-spacing:-.024em;margin:var(--r2) 0 var(--r3)}
+.held.seitenkopf .lede{color:var(--text-2);font-size:clamp(17px,1.3vw,19px);max-width:62ch}
+.artikelmeta{display:flex;flex-wrap:wrap;gap:var(--r1) var(--r3);margin-top:var(--r3);font-size:14px;color:var(--text-3)}
+.artikelmeta span{display:inline-flex;align-items:center;gap:7px}
+.artikelmeta svg{width:16px;height:16px;color:var(--akzent)}
+.schlagworte{list-style:none;margin:var(--r2) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.schlagworte li{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:var(--rund-voll);background:var(--flaeche-1);border:1px solid var(--linie);font-size:12.5px;color:var(--text-2)}
+
+/* ── 4. Lesen: Artikel links, Inhaltsverzeichnis rechts ──────────────────── */
+.lesen{display:grid;grid-template-columns:minmax(0,1fr) 248px;gap:var(--r10);align-items:start;padding:var(--r8) var(--seite) var(--r10);max-width:1080px}
+.inhalt{min-width:0;position:sticky;top:96px;order:2;border-left:1px solid var(--linie);padding-left:var(--r3)}
+.inhalt summary{display:flex;align-items:center;justify-content:space-between;list-style:none;cursor:default;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:var(--r2);pointer-events:none}
+.inhalt summary::-webkit-details-marker{display:none}
+.inhalt summary svg{display:none;width:18px;height:18px;transition:transform .2s}
+.inhalt ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.inhalt a{display:block;padding:6px 0 6px 12px;margin-left:calc(-1*var(--r3) - 1px);border-left:2px solid transparent;font-size:14px;line-height:1.4;color:var(--text-2);transition:color .15s,border-color .15s}
+.inhalt a:hover{color:var(--text-1);text-decoration:none}
+.inhalt a[aria-current="true"]{color:var(--akzent);border-left-color:var(--akzent);font-weight:600}
+
+/* Artikeltext */
+.artikel{min-width:0;max-width:68ch;font-size:17px;line-height:1.68;color:var(--text-1)}
+.artikel>p:first-child{font-size:18.5px;line-height:1.6;color:var(--text-2)}
+.artikel h2{font-size:clamp(24px,2.5vw,32px);line-height:1.12;letter-spacing:-.018em;margin:var(--r6) 0 var(--r2);scroll-margin-top:100px}
+.artikel h3{font-size:20px;line-height:1.25;margin:var(--r4) 0 var(--r1);scroll-margin-top:100px}
+.artikel p{margin:0 0 var(--r2);text-wrap:pretty}
+.artikel a{text-decoration:underline;text-decoration-color:rgba(31,94,255,.35);text-underline-offset:3px;text-decoration-thickness:1.5px;overflow-wrap:anywhere}
+.artikel a:hover{text-decoration-color:var(--akzent)}
+.artikel strong{font-weight:600;color:var(--text-1)}
+.artikel ul,.artikel ol{margin:0 0 var(--r3);padding-left:1.35em}
+.artikel li{margin-bottom:8px;padding-left:4px}
+.artikel li::marker{color:var(--akzent);font-weight:600}
+.artikel ol li::marker{font-family:var(--disp);font-variant-numeric:tabular-nums}
+
+/* Kästen: Tabellen, Checklisten, Beispielgespräche */
+.kasten{margin:var(--r3) 0 var(--r4);border:1px solid var(--linie);border-radius:var(--rund-l);background:var(--flaeche-0);box-shadow:var(--hoch-1)}
+.kasten--liste{padding:var(--r3)}
+.kasten--tabelle{background:var(--flaeche-1);overflow:hidden;position:relative}
+.kasten--tabelle::after{content:"";position:absolute;top:0;right:0;bottom:0;width:48px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.95));pointer-events:none;opacity:0;transition:opacity .2s}
+.kasten--tabelle.scrollt:not(.am-ende)::after{opacity:1}
+.tabelle{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.tabelle table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.45}
+.tabelle--mittel table{min-width:520px}
+.tabelle--breit table{min-width:760px}
+.tabelle th,.tabelle td{padding:12px 16px;text-align:left;vertical-align:top;border-top:1px solid var(--linie)}
+.tabelle thead th{border-top:0;background:var(--flaeche-0);font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+.tabelle tbody th{font-weight:600;color:var(--text-1)}
+.tabelle td{color:var(--text-2)}
+.tabelle td:empty{background:repeating-linear-gradient(-45deg,transparent 0 6px,var(--flaeche-0) 6px 7px);min-width:80px}
+.tabelle tr.summe th,.tabelle tr.summe td{background:var(--akzent-zart);color:var(--text-1)}
+.checkliste{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checkliste li{display:flex;gap:12px;align-items:flex-start;margin:0;padding:0}
+.checkliste input{appearance:none;-webkit-appearance:none;flex:none;width:22px;height:22px;margin:3px 0 0;border:2px solid var(--linie-stark);border-radius:6px;background:var(--flaeche-1);cursor:pointer;transition:background .15s,border-color .15s;display:grid;place-items:center}
+.checkliste input::after{content:"";width:12px;height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;opacity:0;transform:scale(.6);transition:all .15s}
+.checkliste input:checked{background:var(--akzent);border-color:var(--akzent)}
+.checkliste input:checked::after{opacity:1;transform:none}
+.checkliste input:focus-visible{outline:3px solid var(--akzent-ring);outline-offset:2px}
+.checkliste label{cursor:pointer;font-size:16px;line-height:1.55;padding:2px 0}
+.checkliste input:checked+label{color:var(--text-3);text-decoration:line-through;text-decoration-color:var(--linie-stark)}
+.gespraech,.zitat{margin:var(--r3) 0 var(--r4);padding:var(--r3) var(--r3) var(--r2);border-radius:var(--rund-l);background:var(--flaeche-1);border:1px solid var(--linie);box-shadow:var(--hoch-1);position:relative}
+.gespraech::before{content:"Beispielgespräch";display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:var(--r2)}
+.gespraech p{margin:0 0 10px;padding:9px 14px;border-radius:14px;font-size:15.5px;line-height:1.5;background:var(--flaeche-2);max-width:92%;border-bottom-left-radius:4px}
+.gespraech p strong{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:2px}
+.gespraech p:nth-child(odd){margin-left:auto;background:var(--akzent-zart);border-bottom-left-radius:14px;border-bottom-right-radius:4px}
+.gespraech p:nth-child(odd) strong{color:var(--akzent-tief)}
+.zitat{border-left:3px solid var(--akzent);font-family:var(--disp);font-size:18px;line-height:1.45;color:var(--text-1)}
+.zitat::before{content:"Ansage";display:block;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.zitat p{margin:0 0 8px}
+
+/* Fragen am Ende des Artikels */
+.fragen-abschnitt{margin-top:var(--r8);padding-top:var(--r4);border-top:1px solid var(--linie)}
+.fragen-abschnitt h2{margin-top:0}
+.artikel .fragen summary{font-size:17.5px;padding:16px 0}
+.artikel .fragen .antwort{font-size:16px}
+.quellenhinweis{margin-top:var(--r6);font-size:13.5px;color:var(--text-3);line-height:1.5}
+
+/* ── 5. Artikelkarten (Übersicht und Weiterlesen) ────────────────────────── */
+.artikelkarten{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--r2)}
+.artikelkarte{display:flex;flex-direction:column;gap:10px;padding:var(--r3);color:var(--text-1);min-height:100%}
+.artikelkarte:hover{text-decoration:none}
+.artikelkarte__kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--r1)}
+.artikelkarte__nr{font-family:var(--disp);font-weight:600;font-size:13px;color:var(--text-4);font-variant-numeric:tabular-nums}
+.artikelkarte__titel{font-size:20px;line-height:1.22;letter-spacing:-.012em;margin-top:4px;text-wrap:balance}
+.artikelkarte:hover .artikelkarte__titel{color:var(--akzent)}
+.artikelkarte p{font-size:14.5px;line-height:1.5;color:var(--text-2);flex:1}
+.artikelkarte__meta{display:flex;gap:8px;font-size:13px;color:var(--text-3);margin-top:4px}
+.artikelkarte__mehr{font-size:14px;font-weight:600;color:var(--akzent);margin-top:2px}
+.seitenlinks{margin-top:var(--r4);font-size:14.5px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:6px var(--r3);align-items:center}
+
+/* ── 6. Übersicht: Held, Suche, Filter, Kategorien ───────────────────────── */
+.held--ratgeber__innen{position:relative;padding-top:var(--r8);padding-bottom:var(--r12)}
+.held--ratgeber .brotkrumen{margin-bottom:var(--r4)}
+.held--ratgeber h1{font-size:clamp(38px,5.4vw,68px);max-width:15ch}
+.held--ratgeber .lede{max-width:60ch}
+.filterleiste{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--r2);align-items:center;margin-top:calc(-1*var(--r5));position:relative;z-index:2}
+.suche{position:relative;display:flex;align-items:center;background:var(--flaeche-1);border:1px solid var(--linie);border-radius:var(--rund-voll);box-shadow:var(--schatten);height:56px;padding:0 var(--r2) 0 52px}
+.suche svg{position:absolute;left:20px;width:20px;height:20px;color:var(--text-3)}
+.suche input{width:100%;height:100%;border:0;background:none;font-size:16px;outline:none}
+.suche input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;width:16px;height:16px;cursor:pointer;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23697386' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6 6 18'/%3E%3C/svg%3E") center/contain no-repeat}
+.suche:focus-within{border-color:var(--akzent);box-shadow:0 0 0 4px var(--akzent-ring)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;background:var(--flaeche-1);border:1px solid var(--linie);border-radius:var(--rund-voll);box-shadow:var(--schatten);padding:9px}
+.chips .chip{border-color:transparent}
+.filterstand{grid-column:1/-1;font-size:13.5px;color:var(--text-3);padding-left:var(--r2)}
+.kategorien{padding-bottom:var(--r4)}
+.kategorie{padding:var(--r6) 0 var(--r4)}
+.kategorie__kopf{display:flex;gap:var(--r3);align-items:flex-start;margin-bottom:var(--r4);max-width:52rem}
+.kategorie__nr{flex:none;width:44px;height:44px;border-radius:50%;background:var(--akzent-zart);color:var(--akzent-tief);display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:18px;margin-top:4px}
+.kategorie h2{font-size:clamp(26px,3vw,36px)}
+.kategorie .lede{margin-top:6px;font-size:16.5px}
+.leer{padding:var(--r6) 0;font-size:17px;color:var(--text-2)}
+.leer .verweis{color:var(--akzent)}
+.verweiskarte{display:grid;gap:10px;padding:var(--r3);color:var(--text-1);align-content:start}
+.verweiskarte:hover{text-decoration:none}
+.verweiskarte svg{width:26px;height:26px;color:var(--akzent);margin-bottom:6px}
+.verweiskarte p{color:var(--text-2);font-size:15px}
+.verweiskarte .verweis{margin-top:4px}
+
+/* ── 7. Breiten ──────────────────────────────────────────────────────────── */
+@media (max-width:1000px){
+  .lesen{grid-template-columns:minmax(0,1fr);gap:var(--r4);padding-top:var(--r4);max-width:none}
+  .inhalt{position:static;order:0;border-left:0;padding:0;border:1px solid var(--linie);border-radius:var(--rund-l);background:var(--flaeche-0);max-width:68ch}
+  .inhalt summary{pointer-events:auto;cursor:pointer;margin:0;padding:14px var(--r2);font-size:13px}
+  .inhalt summary svg{display:block}
+  .inhalt[open] summary{border-bottom:1px solid var(--linie)}
+  .inhalt[open] summary svg{transform:rotate(180deg)}
+  .inhalt nav{padding:var(--r1) var(--r2) var(--r2)}
+  .inhalt a{margin-left:0;padding:8px 0 8px 12px;font-size:15px}
+  .artikelkarten{grid-template-columns:1fr 1fr}
+  .filterleiste{grid-template-columns:1fr;margin-top:calc(-1*var(--r4))}
+}
+@media (max-width:640px){
+  .held.seitenkopf{padding:var(--r3) 0 var(--r4)}
+  .seitenkopf__innen{margin-top:var(--r3)}
+  .held.seitenkopf h1{font-size:clamp(28px,7.6vw,34px)}
+  .artikel{font-size:16.5px;line-height:1.62}
+  .artikel>p:first-child{font-size:17px}
+  .artikel h2{font-size:24px;margin-top:var(--r5)}
+  .kasten--liste{padding:var(--r2)}
+  .tabelle th,.tabelle td{padding:10px 12px;font-size:14px}
+  .gespraech,.zitat{padding:var(--r2) var(--r2) 6px}
+  .gespraech p{max-width:100%;font-size:15px}
+  .artikelkarten{grid-template-columns:1fr}
+  .artikelkarte{padding:var(--r2) var(--r2) var(--r2)}
+  .artikelkarte__titel{font-size:18px}
+  .held--ratgeber__innen{padding-top:var(--r4);padding-bottom:var(--r8)}
+  .held--ratgeber h1{font-size:clamp(34px,10vw,42px)}
+  .filterleiste{gap:10px}
+  .suche{height:52px}
+  .chips{border-radius:var(--rund-l);padding:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips .chip{flex:none}
+  .kategorie{padding:var(--r5) 0 var(--r2)}
+  .kategorie__kopf{gap:var(--r2)}
+  .kategorie__nr{width:36px;height:36px;font-size:16px;margin-top:0}
+  .seitenlinks{flex-direction:column;align-items:flex-start;gap:8px}
+}
