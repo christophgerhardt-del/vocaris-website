@@ -48,8 +48,18 @@ function letzteAenderung(datei) {
   return new Date().toISOString().slice(0, 10);
 }
 
-const seiten = readdirSync(STAMM)
-  .filter((f) => f.endsWith('.html'))
+/** Alle HTML-Seiten im Stamm und in den Unterordnern (ratgeber/ …). */
+function alleSeiten(unter = '') {
+  const out = [];
+  for (const e of readdirSync(join(STAMM, unter), { withFileTypes: true })) {
+    const rel = unter ? `${unter}/${e.name}` : e.name;
+    if (e.isDirectory()) { if (!['.git', 'assets', 'tools', 'node_modules'].includes(e.name)) out.push(...alleSeiten(rel)); }
+    else if (e.name.endsWith('.html')) out.push(rel);
+  }
+  return out;
+}
+
+const seiten = alleSeiten()
   .sort()
   .map((datei) => {
     const html = readFileSync(join(STAMM, datei), 'utf8');

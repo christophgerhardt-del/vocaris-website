@@ -62,6 +62,9 @@
   --gut:#09825d;
   --gut-hell:#4bd8a4;
   --gut-zart:#e3f5ee;
+  /* Grün als Schriftfarbe auf --gut-zart: --gut kommt dort nur auf 4,25:1 und
+     verfehlt die 4,5:1 aus WCAG AA für kleine Schrift. Ergänzung, kein Ersatz. */
+  --gut-lesbar:#07714f;
   --weh:#e25950;
   --weh-hell:#ff8a80;
 

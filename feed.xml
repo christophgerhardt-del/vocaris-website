@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Vocaris Ratgeber</title>
+    <link>https://vocaris.eu/ratgeber.html</link>
+    <atom:link href="https://vocaris.eu/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Erreichbarkeit, Telefon und KI im Betrieb: Artikel für Praxen, Salons, Handwerk, Kanzleien und Hausverwaltungen.</description>
+    <language>de-DE</language>
+    <lastBuildDate>Fri, 18 Sep 2026 06:00:00 GMT</lastBuildDate>
+    <copyright>Christoph Gerhardt, München</copyright>
+    <item>
+      <title>Notdienst nach Feierabend: Handwerk und Hausverwaltung</title>
+      <link>https://vocaris.eu/ratgeber/notdienst-erreichbarkeit.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/notdienst-erreichbarkeit.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Wie Handwerksbetriebe und Hausverwaltungen Notfälle außerhalb der Öffnungszeiten organisieren: Was dringend ist, wer abnimmt, wie ein Assistent vorsortiert.</description>
+      <category>Nach Branche</category>
+    </item>
+    <item>
+      <title>Terminbuchung am Telefon automatisieren: Praxis und Salon</title>
+      <link>https://vocaris.eu/ratgeber/terminbuchung-telefon.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/terminbuchung-telefon.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Wie ein Telefonassistent Termine bucht: Kalenderanbindung, Regeln für Dauer und Leistung, Bestätigung, Absagen. Ablauf und Checkliste für Praxis und Salon.</description>
+      <category>Nach Branche</category>
+    </item>
+    <item>
+      <title>Datenschutz beim KI-Telefonassistenten: DSGVO-Fragen</title>
+      <link>https://vocaris.eu/ratgeber/datenschutz-ki-telefon.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/datenschutz-ki-telefon.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Welche Rollen, Verträge und Pflichten die DSGVO beim KI-Telefonassistenten mit sich bringt und welche Fragen Betriebe dem Anbieter vorher stellen sollten.</description>
+      <category>Einführen und einrichten</category>
+    </item>
+    <item>
+      <title>Der erste Tag mit dem Telefonassistenten: Anleitung</title>
+      <link>https://vocaris.eu/ratgeber/erster-tag-telefonassistent.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/erster-tag-telefonassistent.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Einrichtung, Begrüßungstext, Wissensdatenbank, Weiterleitungsregeln und Testanruf: Wie Betriebe einen KI-Telefonassistenten am ersten Tag sauber aufsetzen.</description>
+      <category>Einführen und einrichten</category>
+    </item>
+    <item>
+      <title>Rufnummer portieren oder neue Nummer? So stellen Sie um</title>
+      <link>https://vocaris.eu/ratgeber/rufnummer-portieren.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/rufnummer-portieren.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Drei Wege, einen Telefonassistenten an die Betriebsnummer zu hängen: Weiterleitung, Portierung, neue Nummer. Regeln in Deutschland, Österreich, Schweiz.</description>
+      <category>Einführen und einrichten</category>
+    </item>
+    <item>
+      <title>Telefonservice, Sekretariat, Anrufbeantworter oder KI?</title>
+      <link>https://vocaris.eu/ratgeber/telefonservice-vergleich.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/telefonservice-vergleich.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Vier Wege, das Telefon im Betrieb abzudecken: Anrufbeantworter, Telefonservice, eigenes Sekretariat, KI-Telefonassistent. Entscheidungshilfe mit Tabelle.</description>
+      <category>Verstehen und entscheiden</category>
+    </item>
+    <item>
+      <title>KI-Telefonassistent erklärt: Was er kann und was nicht</title>
+      <link>https://vocaris.eu/ratgeber/ki-telefonassistent-erklaert.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/ki-telefonassistent-erklaert.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Wie ein KI-Telefonassistent Anrufe versteht und beantwortet, wo seine Grenzen liegen und woran Betriebe einen guten von einem schlechten unterscheiden.</description>
+      <category>Verstehen und entscheiden</category>
+    </item>
+    <item>
+      <title>Was kostet ein verpasster Anruf? Rechenweg für Betriebe</title>
+      <link>https://vocaris.eu/ratgeber/verpasste-anrufe-kosten.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/verpasste-anrufe-kosten.html</guid>
+      <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Verpasste Anrufe kosten Aufträge, Termine und Vertrauen. So rechnen kleine Betriebe mit eigenen Zahlen aus, was Nichterreichbarkeit im Monat kostet.</description>
+      <category>Verstehen und entscheiden</category>
+    </item>
+  </channel>
+</rss>

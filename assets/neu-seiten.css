@@ -40,6 +40,8 @@
 .karte--dunkel{background:var(--nacht);color:#fff;border-color:var(--nacht)}
 .karte--dunkel p{color:var(--nacht-text)}
 .karte--dunkel>svg{color:#8ab8ff}
+/* Elektroblau kommt auf Nachtblau nur auf 3,61:1. Auf dunklen Karten das helle Blau. */
+.karte--dunkel a{color:#8ab8ff}
 
 /* Ausklapper „Im Kundenbereich so“ */
 .ausklapper{margin-top:auto;padding-top:var(--r2);border-top:1px solid var(--linie)}
@@ -86,7 +88,7 @@
 .ergebnis__tarif{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;margin-top:4px}
 .ergebnis__zeilen{display:grid;gap:0;font-size:14px;padding-top:var(--r2);border-top:1px solid var(--nacht-linie)}
 .ergebnis__zeilen>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--nacht-linie)}
-.ergebnis__zeilen b{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.ergebnis__zeilen b{font-weight:600;white-space:nowrap}
 .ergebnis .knopf--leise{justify-self:start}
 
 /* ── 5. Tabellen ─────────────────────────────────────────────────────────── */
@@ -101,10 +103,10 @@
 .tabelle td{color:var(--text-2)}
 .tabelle .voc{background:var(--akzent-zart);color:var(--text-1)}
 .tabelle thead .voc{color:var(--akzent-tief)}
-.tabelle .haken{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--gut-zart);color:var(--gut);vertical-align:middle}
+.tabelle .haken{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--gut-zart);color:var(--gut-lesbar);vertical-align:middle}
 .tabelle .haken svg{width:12px;height:12px}
 .tabelle .plus{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--flaeche-2);color:var(--text-2);font-weight:700;vertical-align:middle;font-size:14px}
-.tabelle .preis{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--text-1);font-weight:500}
+.tabelle .preis{white-space:nowrap;color:var(--text-1);font-weight:500}
 .vgl thead th{position:sticky;top:72px;z-index:5;box-shadow:0 1px 0 var(--linie)}
 @media (min-width:901px){.tabelle-rahmen--vgl{overflow:visible}.tabelle-rahmen--vgl .vgl thead th:first-child{border-top-left-radius:var(--rund-l)}.tabelle-rahmen--vgl .vgl thead th:last-child{border-top-right-radius:var(--rund-l)}}
 .vgl tbody th{width:16%}
@@ -124,7 +126,7 @@
 .knoten b{font-family:var(--disp);font-size:16.5px;letter-spacing:-.01em;line-height:1.2}
 .knoten span{font-size:13px;color:var(--text-2);line-height:1.45}
 .knoten .pille{justify-self:start;height:22px;font-size:11.5px}
-.knoten--eu .pille{background:var(--gut-zart);color:var(--gut)}
+.knoten--eu .pille{background:var(--gut-zart);color:var(--gut-lesbar)}
 .knoten--us .pille{background:#fff4e5;color:#9a5b00}
 .knoten--aus{opacity:.5;border-style:dashed}
 .knoten--aus svg{color:var(--text-3)}
@@ -197,7 +199,7 @@
 .ep{padding:var(--r3);display:grid;gap:12px;scroll-margin-top:96px;min-width:0}
 .ep__kopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .methode{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;height:24px;padding:0 8px;border-radius:6px;display:inline-flex;align-items:center;background:var(--flaeche-2);color:var(--text-2);flex:none}
-.methode--get{background:var(--gut-zart);color:var(--gut)}
+.methode--get{background:var(--gut-zart);color:var(--gut-lesbar)}
 .methode--post{background:var(--akzent-zart);color:var(--akzent-tief)}
 .methode--patch{background:#fff4e5;color:#9a5b00}
 .methode--delete{background:#fdeceb;color:#b5362e}
