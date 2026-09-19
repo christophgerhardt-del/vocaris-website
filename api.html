@@ -2,267 +2,360 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>API-Dokumentation | Vocaris</title>
 <meta name="description" content="API von Vocaris: Anrufe mit Transkript, Nachrichten, Termine und Vorgänge abrufen, Rückrufe planen, Zugänge verwalten. Signierte Webhooks, Beispiele mit curl.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://vocaris.eu/api.html">
 <meta property="og:title" content="API-Dokumentation | Vocaris">
+<meta property="og:description" content="API von Vocaris: Anrufe mit Transkript, Nachrichten, Termine und Vorgänge abrufen, Rückrufe planen, Zugänge verwalten. Signierte Webhooks, Beispiele mit curl.">
 <meta property="og:image" content="https://vocaris.eu/assets/og-api.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta property="og:description" content="API von Vocaris: Anrufe mit Transkript, Nachrichten, Termine und Vorgänge abrufen, Rückrufe planen, Zugänge verwalten. Signierte Webhooks, Beispiele mit curl.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://vocaris.eu/api.html">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
 <link rel="preload" href="assets/fonts/bricolagegrotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/schibstedgrotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/schriften.css">
 <link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="assets/vocaris.css">
-<link rel="stylesheet" href="assets/presio.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://vocaris.eu/#org", "name": "Vocaris", "url": "https://vocaris.eu/", "logo": "https://vocaris.eu/assets/favicon.svg", "email": "christoph.gerhardt@gmail.com", "areaServed": "DE"}, {"@type": "SoftwareApplication", "name": "Vocaris", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "url": "https://vocaris.eu/", "description": "KI-Telefonassistent für Unternehmen: nimmt Anrufe rund um die Uhr mit natürlicher Stimme entgegen, bucht Termine und Reservierungen, beantwortet Fragen und ruft auf Wunsch zurück. DSGVO-konform, Einrichtung in etwa 15 Minuten, monatlich kündbar.", "publisher": {"@id": "https://vocaris.eu/#org"}, "offers": [{"@type": "Offer", "name": "Klein", "price": "49.00", "priceCurrency": "EUR", "description": "49 € pro Monat, 250 Gesprächsminuten inklusive."}, {"@type": "Offer", "name": "Standard", "price": "99.00", "priceCurrency": "EUR", "description": "99 € pro Monat für mittleres Anrufaufkommen."}, {"@type": "Offer", "name": "Groß", "price": "249.00", "priceCurrency": "EUR", "description": "249 € pro Monat für hohes Anrufaufkommen."}]}]}</script>
+<link rel="stylesheet" href="assets/neu.css">
+<link rel="stylesheet" href="assets/neu-seiten.css">
+<script>document.documentElement.classList.add('js')</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://vocaris.eu/#org","name":"Vocaris","url":"https://vocaris.eu/","logo":"https://vocaris.eu/assets/favicon.svg","email":"christoph.gerhardt@gmail.com","address":{"@type":"PostalAddress","streetAddress":"Rheinstr. 26","postalCode":"80803","addressLocality":"München","addressCountry":"DE"},"areaServed":["DE","AT","CH"]},{"@type":"SoftwareApplication","name":"Vocaris","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://vocaris.eu/","description":"KI-Telefonassistent für Betriebe: nimmt Anrufe rund um die Uhr mit natürlicher Stimme entgegen, bucht Termine und Reservierungen, nimmt Rückrufe auf, leitet Notfälle weiter. In der EU gehostet, Einrichtung in etwa 15 Minuten, monatlich kündbar.","publisher":{"@id":"https://vocaris.eu/#org"},"offers":[{"@type":"Offer","name":"Klein","price":"49.00","priceCurrency":"EUR","description":"49 € pro Monat, 250 Gesprächsminuten inklusive."},{"@type":"Offer","name":"Standard","price":"99.00","priceCurrency":"EUR","description":"99 € pro Monat, 700 Gesprächsminuten inklusive."},{"@type":"Offer","name":"Groß","price":"249.00","priceCurrency":"EUR","description":"249 € pro Monat, 2.000 Gesprächsminuten inklusive."}]},{"@type":"TechArticle","@id":"https://vocaris.eu/api.html","url":"https://vocaris.eu/api.html","name":"API-Dokumentation","description":"API von Vocaris: Anrufe mit Transkript, Nachrichten, Termine und Vorgänge abrufen, Rückrufe planen, Zugänge verwalten. Signierte Webhooks, Beispiele mit curl.","inLanguage":"de","isPartOf":{"@id":"https://vocaris.eu/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Vocaris","item":"https://vocaris.eu/"},{"@type":"ListItem","position":2,"name":"API","item":"https://vocaris.eu/api.html"}]}]}</script>
 </head>
 <body>
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
 
-<a class="skip" href="#main">Zum Inhalt springen</a>
-<nav class="top" id="nav">
-  <div class="wrap nav-inner">
-    <a class="logo" href="index.html"><span class="logo-mark"><svg viewBox="0 0 100 100" width="26" height="26" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
-    <div class="nav-links">
-      <div class="hat-menue">
-        <a href="funktionen.html" class="hat-knopf">Funktionen</a>
-        <button type="button" class="hat-pfeil" aria-expanded="false" aria-haspopup="true" aria-label="Funktionen-Menü öffnen"></button>
-        <div class="flyout">
-          <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg></span><span><b>Anrufannahme</b><span>Rund um die Uhr, natürliche Stimme, unterbrechbar</span></span></a>
-          <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><span><b>Termine &amp; Reservierungen</b><span>Direkt im Gespräch gebucht, per SMS bestätigt</span></span></a>
-          <a href="funktionen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg></span><span><b>Rückrufe &amp; Nachrichten</b><span>Wartelisten, Notfälle erkennen, durchstellen</span></span></a>
-          <a href="ki-modelle.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg></span><span><b>KI-Modelle &amp; Sprachen</b><span>Fünf Anbieter, eine rein europäische Option</span></span></a>
-          <a href="sicherheit.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span><b>Sicherheit &amp; DSGVO</b><span>Verarbeitung in der EU, AV-Vertrag inklusive</span></span></a>
-          <a href="schnittstellen.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><span><b>Schnittstellen &amp; API</b><span>Ticketsystem, CRM, Kalender, Webhooks</span></span></a>
-          <a href="preise.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><span><b>Preise</b><span>Ab 49 € im Monat, mit Rechner</span></span></a>
-          <a href="vergleich.html"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7M3 12h7M3 18h7M14 6h7M14 12h7M14 18h7"/></svg></span><span><b>Vergleich</b><span>Anrufbeantworter, Telefonservice, Anlage, KI</span></span></a>
-        </div>
-      </div>
+<!-- ═══ Kopfzeile (Muster, siehe assets/NEU.md) ═══ -->
+<header class="kopf" id="kopf">
+  <div class="huelle kopf__innen">
+    <a class="marke" href="index.html" aria-label="Vocaris, zur Startseite"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="vk-kg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-kh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="52" r="42" fill="url(#vk-kg)"/><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-kh)"/></svg>Vocaris</a>
+    <nav class="hauptnav" aria-label="Hauptnavigation">
+      <a href="funktionen.html">Funktionen</a>
       <a href="preise.html">Preise</a>
-      <div class="hat-menue">
-        <a href="branchen.html" class="hat-knopf">Branchen</a>
-        <button type="button" class="hat-pfeil" aria-expanded="false" aria-haspopup="true" aria-label="Branchen-Menü öffnen"></button>
-        <div class="flyout branchen-menue"><a href="restaurants.html"><b>Gastronomie</b></a><a href="arztpraxen.html"><b>Arztpraxen</b></a><a href="handwerk.html"><b>Handwerk &amp; Bau</b></a><a href="autowerkstatt.html"><b>Kfz &amp; Autowerkstatt</b></a><a href="friseur.html"><b>Friseur &amp; Salon</b></a><a href="kanzlei.html"><b>Kanzleien</b></a><a href="hotel.html"><b>Hotellerie</b></a><a href="hausverwaltung.html"><b>Hausverwaltung</b></a><a href="immobilienmakler.html"><b>Immobilien</b></a><a href="pflegedienst.html"><b>Ambulante Pflege</b></a><a href="apotheke.html"><b>Apotheke</b></a><a href="versicherungsmakler.html"><b>Versicherung</b></a><a href="software.html"><b>Software &amp; SaaS</b></a><a href="onlineshop.html"><b>Onlinehandel</b></a><a href="physiotherapie.html"><b>Physiotherapie</b></a><a href="tierarzt.html"><b>Tierarztpraxis</b></a><a href="fitnessstudio.html"><b>Fitness &amp; Studio</b></a></div>
-      </div>
-      <a href="fragen.html">Fragen</a>
-      <a href="demo.html">Demo</a>
-      <a class="btn hell" href="app.html" style="margin-left:6px">Anmelden</a>
+      <details class="flyout" data-flyout>
+        <summary aria-haspopup="true">Branchen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="flyout__feld">
+          <a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">Handwerk &amp; Bau</a><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a><a href="friseur.html">Friseur &amp; Salon</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">Software &amp; SaaS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">Fitness &amp; Studio</a>
+          <a class="flyout__alle" href="branchen.html">Alle 17 Branchen im Überblick →</a>
+        </div>
+      </details>
+      <a href="vergleich.html">Vergleich</a>
+      <a href="ratgeber.html">Ratgeber</a>
+    </nav>
+    <div class="kopf__rechts">
+      <a class="anmelden" href="app.html">Anmelden</a>
+      <a class="knopf knopf--klein" href="#testanruf">Testanruf</a>
+      <button class="menueknopf" type="button" aria-expanded="false" aria-controls="mobilmenue" aria-label="Menü öffnen" data-menueknopf>
+        <svg class="auf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="zu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
-    <button class="burger" aria-label="Menü" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
-</nav>
-<div id="main" class="mobil-menue">
-  <a class="gruppe" href="funktionen.html">Funktionen</a>
-  <a href="funktionen.html">Anrufannahme &amp; Termine</a><a href="ki-modelle.html">KI-Modelle</a><a href="sicherheit.html">Sicherheit</a><a href="schnittstellen.html">Schnittstellen</a><a href="preise.html">Preise</a><a href="vergleich.html">Vergleich</a>
-  <div class="gruppe">Branchen</div>
-  <a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">Handwerk &amp; Bau</a><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a><a href="friseur.html">Friseur &amp; Salon</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">Software &amp; SaaS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">Fitness &amp; Studio</a>
-  <div class="gruppe">Mehr</div>
-  <a href="fragen.html">Häufige Fragen</a><a href="demo.html">Demo buchen</a><a href="app.html">Anmelden</a>
+</header>
+<div class="mobilmenue" id="mobilmenue" hidden>
+  <nav class="mobilmenue__gross" aria-label="Menü">
+    <a href="funktionen.html">Funktionen</a>
+    <a href="preise.html">Preise</a>
+    <details>
+      <summary>Branchen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <div class="mobilmenue__liste"><a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">Handwerk &amp; Bau</a><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a><a href="friseur.html">Friseur &amp; Salon</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">Software &amp; SaaS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">Fitness &amp; Studio</a><a href="branchen.html">Alle Branchen →</a></div>
+    </details>
+    <a href="vergleich.html">Vergleich</a>
+    <a href="ratgeber.html">Ratgeber</a>
+    <a href="fragen.html">Häufige Fragen</a>
+  </nav>
+  <div class="mobilmenue__knoepfe">
+    <a class="knopf" href="#testanruf">Kostenloser Testanruf</a>
+    <a class="knopf knopf--leise" href="app.html">Anmelden</a>
+  </div>
+  <div class="mobilmenue__fuss"><a href="demo.html">Demo buchen</a><a href="sicherheit.html">Sicherheit</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
 </div>
 
-<!-- Kopfbereich -->
-<div class="hero-band hero-klein">
-  <div class="hero-farbe"></div>
-  <div class="wrap hero-inhalt">
-    <div class="eyebrow">API</div>
-    <h1>Vocaris in Ihrer Software.</h1>
-    <p class="hero-sub">Eine kleine, klare API mit Schlüssel je Firma. Lesen, was am Telefon passiert ist, Wissen ergänzen, Anrufe auslösen, planen und beenden, Zugänge verwalten. Dazu signierte Webhooks für Make, n8n und Zapier.</p>
-  </div>
-</div>
-<section class="block" id="start">
-  <div class="wrap doku">
-    <div class="reveal"><div class="eyebrow">Erste Schritte</div><h2>Schlüssel holen, Anfrage senden</h2>
-    <p class="intro">Im Kundenbereich unter <b>Schnittstellen → API-Schlüssel</b> einen Schlüssel erstellen. Er beginnt mit <code>vk_live_</code> und wird nur einmal angezeigt. Jede Anfrage trägt ihn im Authorization-Header. Basis-Adresse: <code>https://ki-anruf.onrender.com</code>. Antworten sind JSON, Zeiten in ISO&nbsp;8601 (UTC), Fehler immer als <code>{"error": "…"}</code>. Höchstens 120 Anfragen je Minute und Schlüssel.</p></div>
-    <pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/me \
-  -H &quot;Authorization: Bearer vk_live_IHR_SCHLUESSEL&quot;</code></pre>
-  </div>
-</section>
 
-<section class="block soft" id="endpunkte">
-  <div class="wrap doku">
-    <div class="reveal"><div class="eyebrow">Endpunkte</div><h2>Lesen und schreiben</h2></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/me</code></div><p>Ihre Firma und die zugeordneten Rufnummern.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/me \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;tenant&quot;: { &quot;id&quot;: &quot;…&quot;, &quot;name&quot;: &quot;Praxis Dr. Sommer&quot; }, &quot;numbers&quot;: [ { &quot;number&quot;: &quot;+4989…&quot;, &quot;department&quot;: &quot;general&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/calls</code></div><p>Anrufe, neueste zuerst. Parameter: <code>limit</code> (bis 200), <code>since</code> (ISO-Zeit), <code>status</code> (active | ended).</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/calls?since=2026-09-01T00:00:00Z&amp;limit=50&quot; \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;calls&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;caller_number&quot;: &quot;+49…&quot;, &quot;status&quot;: &quot;ended&quot;, &quot;started_at&quot;: &quot;…&quot;, &quot;ended_at&quot;: &quot;…&quot;, &quot;summary&quot;: &quot;…&quot;, &quot;topic&quot;: &quot;Termin&quot;, &quot;sentiment&quot;: &quot;positiv&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/calls/:id</code></div><p>Ein Anruf mit vollständigem Transkript.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/calls/ANRUF_ID \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;call&quot;: { … }, &quot;transcript&quot;: [ { &quot;role&quot;: &quot;caller&quot;, &quot;content&quot;: &quot;…&quot;, &quot;created_at&quot;: &quot;…&quot; }, { &quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;…&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/messages</code></div><p>Aufgenommene Nachrichten und Rückrufwünsche. Parameter: <code>limit</code>, <code>since</code>.</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/messages?limit=20&quot; \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;messages&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;caller_name&quot;: &quot;…&quot;, &quot;callback_number&quot;: &quot;+49…&quot;, &quot;summary&quot;: &quot;…&quot;, &quot;category&quot;: &quot;…&quot;, &quot;urgency&quot;: &quot;hoch&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/gaps</code></div><p>Offene Fragen, die Vocaris nicht beantworten konnte. Parameter: <code>status</code> (open | answered), <code>limit</code>.</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/gaps?status=open&quot; \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;gaps&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;question&quot;: &quot;…&quot;, &quot;status&quot;: &quot;open&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/gaps/:id/answer</code></div><p>Offene Frage beantworten. Die Antwort wird zugleich als Wissenseintrag gespeichert, der Assistent kennt sie beim nächsten Anruf.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/gaps/FRAGE_ID/answer \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;answer&quot;: &quot;Samstags von 9 bis 13 Uhr geöffnet.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;gap_id&quot;: &quot;…&quot;, &quot;knowledge_entry_created&quot;: true }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/appointments</code></div><p>Termine ab jetzt, aufsteigend. Parameter: <code>from</code>, <code>to</code> (ISO-Zeit), <code>limit</code> (bis 500).</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/appointments?to=2026-12-31T23:59:59Z&quot; \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;appointments&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;starts_at&quot;: &quot;…&quot;, &quot;ends_at&quot;: &quot;…&quot;, &quot;customer_name&quot;: &quot;…&quot;, &quot;customer_phone&quot;: &quot;+49…&quot;, &quot;status&quot;: &quot;booked&quot;, &quot;source&quot;: &quot;assistant&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/tickets</code></div><p>Vorgänge des eingebauten Ticketsystems. Parameter: <code>status</code> (open | in_progress | done), <code>assignee</code>, <code>overdue=1</code>, <code>since</code>, <code>limit</code>.</p><pre class="code"><code>curl &quot;https://ki-anruf.onrender.com/api/v1/tickets?status=open&amp;overdue=1&quot; \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;tickets&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;number&quot;: 27, &quot;title&quot;: &quot;Rückruf: Erika Beispiel · Angebot&quot;, &quot;status&quot;: &quot;open&quot;, &quot;priority&quot;: &quot;high&quot;, &quot;category&quot;: &quot;Angebot&quot;, &quot;assignee&quot;: &quot;Anna&quot;, &quot;due_at&quot;: &quot;…&quot;, &quot;tags&quot;: [], &quot;caller_phone&quot;: &quot;+49…&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/tickets/:id</code></div><p>Ein Vorgang mit allen Notizen.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ticket&quot;: { … }, &quot;notes&quot;: [ { &quot;body&quot;: &quot;…&quot;, &quot;author&quot;: &quot;Team&quot;, &quot;created_at&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/tickets</code></div><p>Vorgang anlegen, etwa aus einem Formular oder Ihrem eigenen System. Felder: <code>title</code>, optional <code>body</code>, <code>priority</code>, <code>caller_name</code>, <code>caller_phone</code>.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/tickets \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;title&quot;: &quot;Rückruf Herr Muster&quot;, &quot;priority&quot;: &quot;high&quot;, &quot;caller_phone&quot;: &quot;+491701234567&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;id&quot;: &quot;…&quot;, &quot;number&quot;: 28 }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode patch">PATCH</span><code class="ep-pfad">/api/v1/tickets/:id</code></div><p>Status, Priorität, Betreff, Zuständigkeit, Kategorie, Schlagwörter oder Frist ändern. <code>status</code>: open | in_progress | done. Jede Änderung erscheint im Verlauf des Vorgangs.</p><pre class="code"><code>curl -X PATCH https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;status&quot;: &quot;in_progress&quot;, &quot;assignee&quot;: &quot;Anna&quot;, &quot;due_at&quot;: &quot;2026-09-10T16:00:00Z&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;ticket&quot;: { &quot;id&quot;: &quot;…&quot;, &quot;status&quot;: &quot;done&quot;, &quot;closed_at&quot;: &quot;…&quot; } }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/tickets/:id/notes</code></div><p>Notiz an einen Vorgang hängen.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID/notes \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;body&quot;: &quot;Kunde zurückgerufen, Termin am Freitag.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;id&quot;: &quot;…&quot; }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/v1/blocked-numbers</code></div><p>Sperrliste: Anrufe dieser Nummern werden abgewiesen, bevor der Assistent abnimmt. Mit Trefferzähler.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/v1/blocked-numbers \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;blocked&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;phone&quot;: &quot;+4930*&quot;, &quot;reason&quot;: &quot;Werbeanrufe&quot;, &quot;hits&quot;: 3, &quot;last_hit&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/blocked-numbers</code></div><p>Nummer sperren. <code>phone</code>: E.164, Bereich mit Stern am Ende (+4930*) oder "anonym" für unterdrückte Rufnummern. Optional <code>reason</code>.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/blocked-numbers \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;phone&quot;: &quot;+491701234567&quot;, &quot;reason&quot;: &quot;Dauerstörer&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;id&quot;: &quot;…&quot;, &quot;phone&quot;: &quot;+491701234567&quot; }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode delete">DELETE</span><code class="ep-pfad">/api/v1/blocked-numbers/:id</code></div><p>Sperre aufheben.</p><pre class="code"><code>curl -X DELETE https://ki-anruf.onrender.com/api/v1/blocked-numbers/EINTRAG_ID \
-  -H &quot;Authorization: Bearer vk_live_…&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/knowledge</code></div><p>Wissenseintrag anlegen, zum Beispiel aus Ihrem eigenen System heraus. Felder: <code>title</code>, <code>content</code>, optional <code>category</code>, <code>department</code>.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/knowledge \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;title&quot;: &quot;Parkplätze&quot;, &quot;content&quot;: &quot;Zwei Kundenparkplätze hinter dem Haus, Einfahrt Gartenstraße.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;id&quot;: &quot;…&quot; }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/v1/calls</code></div><p>Ausgehenden Anruf durch den Assistenten auslösen, von Ihrer Rufnummer aus. Felder: <code>to</code> (+49…), optional <code>auftrag</code> (was der Assistent klären soll, ein bis drei Sätze) und <code>name</code> des Angerufenen. Mit Auftrag stellt sich der Assistent vor, nennt den Grund und erledigt den Auftrag; die Zusammenfassung holen Sie danach über <code>GET /api/v1/calls</code>.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/v1/calls \
-  -H &quot;Authorization: Bearer vk_live_…&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;to&quot;: &quot;+491701234567&quot;, &quot;name&quot;: &quot;Frau Beispiel&quot;, &quot;auftrag&quot;: &quot;Termin am Freitag um 10 Uhr bestätigen und fragen, ob die Versichertenkarte mitgebracht wird.&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;sid&quot;: &quot;…&quot; }</code></pre></div>
-  </div>
-</section>
+<main id="inhalt">
 
-<section class="block" id="steuern">
-  <div class="wrap doku">
-    <div class="reveal"><div class="eyebrow">Kundenbereich</div><h2>Anrufe steuern, Rückrufe planen, Zugänge verwalten</h2>
-    <p class="intro">Diese Endpunkte gehören zum Kundenbereich und werden mit dem <b>Login-Token</b> Ihrer Sitzung aufgerufen (<code>Authorization: Bearer LOGIN_TOKEN</code>), nicht mit dem <code>vk_live_</code>-Schlüssel. Sie sind gedacht für eigene Oberflächen, die den Kundenbereich ergänzen, etwa eine Anzeige am Empfang. Gleiche Basis-Adresse, gleiche Fehlerform; 401 heißt hier: nicht angemeldet, 403: keine Firma zugeordnet oder kein Recht.</p></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/call/hangup</code></div><p>Ein laufendes Gespräch des Assistenten beenden. Feld: <code>call_id</code> (die Anruf-ID aus dem Kundenbereich oder aus <code>GET /api/v1/calls</code>). Aufgelegt wird in der Leitung, nicht nur in der Anzeige. Ist der Anruf nicht mehr aktiv, wird der Eintrag geschlossen und die Antwort trägt <code>schon: true</code>. Fehler: 400 ohne <code>call_id</code>, 401 ohne Token, 403 ohne zugeordnete Firma, 404 wenn der Anruf nicht zu Ihrer Firma gehört, 409 solange noch keine Leitung bekannt ist, 502 wenn der Netzbetreiber nicht auflegen konnte.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/call/hangup \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;call_id&quot;: &quot;ANRUF_ID&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode">WS</span><code class="ep-pfad">/media-mithoeren</code></div><p>WebSocket zum Mithören eines laufenden Gesprächs. Parameter in der Adresse: <code>token</code> (Login-Token) und <code>call_id</code>. Nach <code>{ &quot;event&quot;: &quot;start&quot; }</code> kommen beide Gesprächsspuren als Nachrichten <code>{ &quot;event&quot;: &quot;media&quot;, &quot;spur&quot;: &quot;…&quot;, &quot;payload&quot;: &quot;…&quot; }</code>, der Ton als μ-law 8 kHz, Base64-kodiert. Es geht nichts zurück in die Leitung, der Anrufer kann nicht gestört werden. Ohne Zugriff oder bei beendetem Gespräch antwortet der Server mit <code>{ &quot;event&quot;: &quot;fehler&quot; }</code> und schließt die Verbindung.</p><pre class="code"><code>wss://ki-anruf.onrender.com/media-mithoeren?token=LOGIN_TOKEN&amp;call_id=ANRUF_ID</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/rueckrufe</code></div><p>Geplante Anrufe des Assistenten Ihrer Firma, mit Status (<code>geplant</code>, <code>gestartet</code>, <code>abgesagt</code>, <code>fehlgeschlagen</code>) und Fehlertext, falls ein Anruf nicht zustande kam. Fehler: 401 ohne Token, 403 ohne zugeordnete Firma.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/rueckrufe \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;rueckrufe&quot;: [ { &quot;id&quot;: &quot;…&quot;, &quot;phone&quot;: &quot;+49…&quot;, &quot;name&quot;: &quot;Frau Berger&quot;, &quot;auftrag&quot;: &quot;Angebot nachfassen&quot;, &quot;scheduled_at&quot;: &quot;2026-09-19T12:00:00.000Z&quot;, &quot;status&quot;: &quot;geplant&quot;, &quot;error&quot;: null, &quot;created_at&quot;: &quot;…&quot;, &quot;started_at&quot;: null } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/rueckrufe</code></div><p>Anruf durch den Assistenten zu einer festen Uhrzeit planen. Felder: <code>phone</code> (+49…), <code>at</code> (ISO-Zeit, nicht in der Vergangenheit), optional <code>name</code> des Angerufenen und <code>auftrag</code> (was zu klären ist, ein bis drei Sätze). Ein Prüflauf je Minute startet fällige Einträge über denselben Weg wie einen sofortigen Assistenten-Anruf. Fehler: 400 wenn Nummer oder Uhrzeit fehlen, die Nummer nicht dem Format +49… entspricht oder die Uhrzeit nicht lesbar ist oder in der Vergangenheit liegt; 401 ohne Token; 403 ohne zugeordnete Firma.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/rueckrufe \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;phone&quot;: &quot;+491701234567&quot;, &quot;name&quot;: &quot;Frau Berger&quot;, &quot;auftrag&quot;: &quot;Fragen, ob das Angebot vom Montag passt.&quot;, &quot;at&quot;: &quot;2026-09-19T12:00:00Z&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;message&quot;: &quot;Anruf geplant.&quot;, &quot;id&quot;: &quot;…&quot; }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode delete">DELETE</span><code class="ep-pfad">/api/rueckrufe/:id</code></div><p>Geplanten Anruf absagen. Geht nur, solange er noch nicht gestartet ist. Fehler: 404 wenn der Eintrag nicht zu Ihrer Firma gehört oder schon gestartet wurde.</p><pre class="code"><code>curl -X DELETE https://ki-anruf.onrender.com/api/rueckrufe/EINTRAG_ID \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/calendar/apple</code></div><p>Apple-Kalender per öffentlichem Kalender-Link verbinden (nur lesend: der Assistent sieht belegte Zeiten und bucht nur, was frei ist). Feld: <code>url</code>, der Link aus der Kalender-Freigabe (<code>webcal://</code> oder <code>https://</code>). Der Kalender wird einmal geladen und geprüft; die Antwort nennt die Zahl der Termine der nächsten Wochen. Fehler: 400 wenn der Link fehlt, kein webcal- oder https-Link ist oder sich nicht laden lässt; 401 ohne Token; 403 ohne zugeordnete Firma.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/calendar/apple \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;url&quot;: &quot;webcal://p12-caldav.icloud.com/published/2/…&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;message&quot;: &quot;Kalender verbunden.&quot;, &quot;termine&quot;: 14 }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode get">GET</span><code class="ep-pfad">/api/mitglieder</code></div><p>Zugänge Ihrer Firma und Ihre eigene Stufe (<code>owner</code>, <code>admin</code> oder <code>member</code>). Sehen darf jedes Mitglied; ändern dürfen nur Inhaber und Admins. Wer zu mehreren Firmen gehört, nennt die Firma mit <code>?tenant_id=…</code>. Fehler: 401 ohne Token, 403 wenn Sie nicht zu dieser Firma gehören.</p><pre class="code"><code>curl https://ki-anruf.onrender.com/api/mitglieder \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;stufe&quot;: &quot;owner&quot;, &quot;mitglieder&quot;: [ { &quot;userId&quot;: &quot;…&quot;, &quot;email&quot;: &quot;empfang@praxis.de&quot;, &quot;stufe&quot;: &quot;member&quot;, &quot;seit&quot;: &quot;…&quot; } ] }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode post">POST</span><code class="ep-pfad">/api/mitglieder</code></div><p>Zugang anlegen. Felder: <code>email</code>, optional <code>password</code> und <code>stufe</code> (<code>admin</code> oder <code>member</code>, Vorgabe member). Fehler: 400 wenn die E-Mail fehlt oder ungültig ist, 403 wenn Sie kein Inhaber oder Admin sind.</p><pre class="code"><code>curl -X POST https://ki-anruf.onrender.com/api/mitglieder \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;email&quot;: &quot;empfang@praxis.de&quot;, &quot;stufe&quot;: &quot;member&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true, &quot;message&quot;: &quot;…&quot;, &quot;user_id&quot;: &quot;…&quot; }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode patch">PATCH</span><code class="ep-pfad">/api/mitglieder/:userId</code></div><p>Stufe eines Zugangs ändern. Feld: <code>stufe</code> (<code>admin</code> oder <code>member</code>). Die eigene Stufe ändert ein anderer Admin, damit sich niemand selbst aussperrt. Fehler: 400 bei ungültiger Stufe oder eigenem Zugang, 403 ohne Verwaltungsrecht, 404 wenn der Zugang nicht zu Ihrer Firma gehört.</p><pre class="code"><code>curl -X PATCH https://ki-anruf.onrender.com/api/mitglieder/USER_ID \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot; -H &quot;Content-Type: application/json&quot; \
-  -d &#x27;{&quot;stufe&quot;: &quot;admin&quot;}&#x27;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
-    <div class="ep reveal"><div class="ep-kopf"><span class="ep-methode delete">DELETE</span><code class="ep-pfad">/api/mitglieder/:userId</code></div><p>Zugang aus der Firma entfernen. Den eigenen Zugang entfernt ein anderer Admin. Fehler: 400 beim eigenen Zugang, 403 ohne Verwaltungsrecht, 500 wenn das Entfernen fehlschlägt.</p><pre class="code"><code>curl -X DELETE https://ki-anruf.onrender.com/api/mitglieder/USER_ID \
-  -H &quot;Authorization: Bearer LOGIN_TOKEN&quot;</code></pre><p class="ep-antwort">Antwort</p><pre class="code"><code>{ &quot;ok&quot;: true }</code></pre></div>
+<!-- ═══ Seitenkopf ═══ -->
+<header class="seitenkopf seitenkopf--schmal" data-seitenkopf>
+  <div class="huelle seitenkopf__innen">
+    <span class="vorzeile">API</span>
+    <h1>Vocaris in <em>Ihrer Software.</em></h1>
+    <p class="lede">Eine kleine, klare API mit Schlüssel je Firma. Lesen, was am Telefon passiert ist, Wissen ergänzen, Anrufe auslösen, planen und beenden, Zugänge verwalten. Dazu signierte Webhooks für Make, n8n und Zapier.</p>
+    <ul class="seitenkopf__fakten" aria-label="Kurz gesagt">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>JSON, ISO 8601, Bearer-Schlüssel</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>120 Anfragen je Minute und Schlüssel</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Jeder Schlüssel sieht nur die eigene Firma</li>
+    </ul>
   </div>
-</section>
+</header>
 
-<section class="block soft" id="webhooks">
-  <div class="wrap doku">
-    <div class="reveal"><div class="eyebrow">Webhooks</div><h2>Ereignisse, die zu Ihnen kommen</h2>
-    <p class="intro">Unter <b>Schnittstellen → Automatisierung</b> tragen Sie eine Adresse und ein Geheimnis ein. Vocaris sendet dann pro Ereignis eine POST-Anfrage mit JSON. Fünf Ereignisse: <code>message.captured</code>, <code>appointment.booked</code>, <code>gap.created</code>, <code>call.ended</code>, <code>ticket.created</code> (neuer Vorgang mit Nummer, Priorität und Frist). <code>call.ended</code> bringt Name des Anrufers, Dauer, Thema, Zusammenfassung, Stimmung, Richtung und den Gesprächsverlauf gleich mit; ein Nachladen über <code>GET /api/v1/calls/:id</code> ist nicht mehr nötig. Derselbe Inhalt geht auf Wunsch als E-Mail, in Slack, Teams oder Telegram; dringende Nachrichten zusätzlich als SMS an eine Nummer Ihrer Wahl.</p></div>
-    <pre class="code"><code>POST https://ihre-adresse.de/vocaris
+<section class="abschnitt abschnitt--kopf" aria-label="Dokumentation">
+  <div class="huelle doku" data-doku>
+
+    <nav class="seitennav" aria-label="Inhalt der Dokumentation">
+      <ul>
+        <li><a href="#start">Erste Schritte</a></li>
+        <li><a href="#endpunkte">Endpunkte</a>
+          <ul>
+            <li><a href="#ep-me"><span class="methode methode--get">GET</span><code>/me</code></a></li>
+            <li><a href="#ep-calls"><span class="methode methode--get">GET</span><code>/calls</code></a></li>
+            <li><a href="#ep-call"><span class="methode methode--get">GET</span><code>/calls/:id</code></a></li>
+            <li><a href="#ep-messages"><span class="methode methode--get">GET</span><code>/messages</code></a></li>
+            <li><a href="#ep-gaps"><span class="methode methode--get">GET</span><code>/gaps</code></a></li>
+            <li><a href="#ep-gap-answer"><span class="methode methode--post">POST</span><code>/gaps/:id/answer</code></a></li>
+            <li><a href="#ep-appointments"><span class="methode methode--get">GET</span><code>/appointments</code></a></li>
+            <li><a href="#ep-tickets"><span class="methode methode--get">GET</span><code>/tickets</code></a></li>
+            <li><a href="#ep-ticket"><span class="methode methode--get">GET</span><code>/tickets/:id</code></a></li>
+            <li><a href="#ep-ticket-post"><span class="methode methode--post">POST</span><code>/tickets</code></a></li>
+            <li><a href="#ep-ticket-patch"><span class="methode methode--patch">PATCH</span><code>/tickets/:id</code></a></li>
+            <li><a href="#ep-ticket-notes"><span class="methode methode--post">POST</span><code>/tickets/:id/notes</code></a></li>
+            <li><a href="#ep-blocked"><span class="methode methode--get">GET</span><code>/blocked-numbers</code></a></li>
+            <li><a href="#ep-blocked-post"><span class="methode methode--post">POST</span><code>/blocked-numbers</code></a></li>
+            <li><a href="#ep-blocked-delete"><span class="methode methode--delete">DELETE</span><code>/blocked-numbers/:id</code></a></li>
+            <li><a href="#ep-knowledge"><span class="methode methode--post">POST</span><code>/knowledge</code></a></li>
+            <li><a href="#ep-calls-post"><span class="methode methode--post">POST</span><code>/calls</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#steuern">Kundenbereich</a>
+          <ul>
+            <li><a href="#ep-hangup"><span class="methode methode--post">POST</span><code>/call/hangup</code></a></li>
+            <li><a href="#ep-mithoeren"><span class="methode">WS</span><code>/media-mithoeren</code></a></li>
+            <li><a href="#ep-rueckrufe"><span class="methode methode--get">GET</span><code>/rueckrufe</code></a></li>
+            <li><a href="#ep-rueckrufe-post"><span class="methode methode--post">POST</span><code>/rueckrufe</code></a></li>
+            <li><a href="#ep-rueckrufe-delete"><span class="methode methode--delete">DELETE</span><code>/rueckrufe/:id</code></a></li>
+            <li><a href="#ep-apple"><span class="methode methode--post">POST</span><code>/calendar/apple</code></a></li>
+            <li><a href="#ep-mitglieder"><span class="methode methode--get">GET</span><code>/mitglieder</code></a></li>
+            <li><a href="#ep-mitglieder-post"><span class="methode methode--post">POST</span><code>/mitglieder</code></a></li>
+            <li><a href="#ep-mitglieder-patch"><span class="methode methode--patch">PATCH</span><code>/mitglieder/:userId</code></a></li>
+            <li><a href="#ep-mitglieder-delete"><span class="methode methode--delete">DELETE</span><code>/mitglieder/:userId</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#webhooks">Webhooks</a></li>
+        <li><a href="#fehler">Fehler und Grenzen</a></li>
+      </ul>
+    </nav>
+
+    <div class="doku__inhalt">
+
+      <section id="start" aria-labelledby="start-titel">
+        <span class="vorzeile">Erste Schritte</span>
+        <h2 id="start-titel">Schlüssel holen, Anfrage senden.</h2>
+        <p>Im Kundenbereich unter <b>Schnittstellen → API-Schlüssel</b> einen Schlüssel erstellen. Er beginnt mit <code>vk_live_</code> und wird nur einmal angezeigt. Jede Anfrage trägt ihn im Authorization-Header. Basis-Adresse: <code>https://ki-anruf.onrender.com</code>. Antworten sind JSON, Zeiten in ISO&nbsp;8601 (UTC), Fehler immer als <code>{"error": "…"}</code>. Höchstens 120 Anfragen je Minute und Schlüssel.</p>
+        <div class="sprachwahl" style="margin:var(--r3) 0 var(--r2)"><span>Beispiele als</span><div class="schalter" role="group" aria-label="Sprache der Beispiele"><button type="button" data-sprache="curl" aria-pressed="true">curl</button><button type="button" data-sprache="js" aria-pressed="false">JavaScript</button></div></div>
+        <pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/v1/me \
+  -H "Authorization: Bearer vk_live_IHR_SCHLUESSEL"</code></pre>
+      </section>
+
+      <section id="endpunkte" aria-labelledby="endpunkte-titel">
+        <span class="vorzeile">Endpunkte</span>
+        <h2 id="endpunkte-titel">Lesen und schreiben.</h2>
+        <p>Alle Endpunkte unter <code>/api/v1/</code>, jeweils mit dem <code>vk_live_</code>-Schlüssel. Beispiele lassen sich mit einem Klick kopieren und zwischen curl und JavaScript umschalten.</p>
+        <div style="display:grid;gap:var(--r2);margin-top:var(--r4)">
+          <div class="kachel ep" id="ep-me"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/me</code></div><p>Ihre Firma und die zugeordneten Rufnummern.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/v1/me \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "tenant": { "id": "…", "name": "Praxis Dr. Sommer" }, "numbers": [ { "number": "+4989…", "department": "general" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-calls"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/calls</code></div><p>Anrufe, neueste zuerst. Parameter: <code>limit</code> (bis 200), <code>since</code> (ISO-Zeit), <code>status</code> (active | ended).</p><pre class="code" data-curl><code>curl "https://ki-anruf.onrender.com/api/v1/calls?since=2026-09-01T00:00:00Z&amp;limit=50" \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "calls": [ { "id": "…", "caller_number": "+49…", "status": "ended", "started_at": "…", "ended_at": "…", "summary": "…", "topic": "Termin", "sentiment": "positiv" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-call"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/calls/:id</code></div><p>Ein Anruf mit vollständigem Transkript.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/v1/calls/ANRUF_ID \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "call": { … }, "transcript": [ { "role": "caller", "content": "…", "created_at": "…" }, { "role": "assistant", "content": "…", "created_at": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-messages"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/messages</code></div><p>Aufgenommene Nachrichten und Rückrufwünsche. Parameter: <code>limit</code>, <code>since</code>.</p><pre class="code" data-curl><code>curl "https://ki-anruf.onrender.com/api/v1/messages?limit=20" \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "messages": [ { "id": "…", "caller_name": "…", "callback_number": "+49…", "summary": "…", "category": "…", "urgency": "hoch", "created_at": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-gaps"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/gaps</code></div><p>Offene Fragen, die Vocaris nicht beantworten konnte. Parameter: <code>status</code> (open | answered), <code>limit</code>.</p><pre class="code" data-curl><code>curl "https://ki-anruf.onrender.com/api/v1/gaps?status=open" \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "gaps": [ { "id": "…", "question": "…", "status": "open", "created_at": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-gap-answer"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/gaps/:id/answer</code></div><p>Offene Frage beantworten. Die Antwort wird zugleich als Wissenseintrag gespeichert, der Assistent kennt sie beim nächsten Anruf.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/gaps/FRAGE_ID/answer \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"answer": "Samstags von 9 bis 13 Uhr geöffnet."}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "gap_id": "…", "knowledge_entry_created": true }</code></pre></div>
+          <div class="kachel ep" id="ep-appointments"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/appointments</code></div><p>Termine ab jetzt, aufsteigend. Parameter: <code>from</code>, <code>to</code> (ISO-Zeit), <code>limit</code> (bis 500).</p><pre class="code" data-curl><code>curl "https://ki-anruf.onrender.com/api/v1/appointments?to=2026-12-31T23:59:59Z" \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "appointments": [ { "id": "…", "starts_at": "…", "ends_at": "…", "customer_name": "…", "customer_phone": "+49…", "status": "booked", "source": "assistant" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-tickets"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/tickets</code></div><p>Vorgänge des eingebauten Ticketsystems. Parameter: <code>status</code> (open | in_progress | done), <code>assignee</code>, <code>overdue=1</code>, <code>since</code>, <code>limit</code>.</p><pre class="code" data-curl><code>curl "https://ki-anruf.onrender.com/api/v1/tickets?status=open&amp;overdue=1" \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "tickets": [ { "id": "…", "number": 27, "title": "Rückruf: Erika Beispiel · Angebot", "status": "open", "priority": "high", "category": "Angebot", "assignee": "Anna", "due_at": "…", "tags": [], "caller_phone": "+49…", "created_at": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-ticket"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/tickets/:id</code></div><p>Ein Vorgang mit allen Notizen.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ticket": { … }, "notes": [ { "body": "…", "author": "Team", "created_at": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-ticket-post"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/tickets</code></div><p>Vorgang anlegen, etwa aus einem Formular oder Ihrem eigenen System. Felder: <code>title</code>, optional <code>body</code>, <code>priority</code>, <code>caller_name</code>, <code>caller_phone</code>.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/tickets \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"title": "Rückruf Herr Muster", "priority": "high", "caller_phone": "+491701234567"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "id": "…", "number": 28 }</code></pre></div>
+          <div class="kachel ep" id="ep-ticket-patch"><div class="ep__kopf"><span class="methode methode--patch">PATCH</span><code class="ep__pfad">/api/v1/tickets/:id</code></div><p>Status, Priorität, Betreff, Zuständigkeit, Kategorie, Schlagwörter oder Frist ändern. <code>status</code>: open | in_progress | done. Jede Änderung erscheint im Verlauf des Vorgangs.</p><pre class="code" data-curl><code>curl -X PATCH https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"status": "in_progress", "assignee": "Anna", "due_at": "2026-09-10T16:00:00Z"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "ticket": { "id": "…", "status": "done", "closed_at": "…" } }</code></pre></div>
+          <div class="kachel ep" id="ep-ticket-notes"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/tickets/:id/notes</code></div><p>Notiz an einen Vorgang hängen.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/tickets/VORGANG_ID/notes \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"body": "Kunde zurückgerufen, Termin am Freitag."}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "id": "…" }</code></pre></div>
+          <div class="kachel ep" id="ep-blocked"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/v1/blocked-numbers</code></div><p>Sperrliste: Anrufe dieser Nummern werden abgewiesen, bevor der Assistent abnimmt. Mit Trefferzähler.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/v1/blocked-numbers \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "blocked": [ { "id": "…", "phone": "+4930*", "reason": "Werbeanrufe", "hits": 3, "last_hit": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-blocked-post"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/blocked-numbers</code></div><p>Nummer sperren. <code>phone</code>: E.164, Bereich mit Stern am Ende (+4930*) oder "anonym" für unterdrückte Rufnummern. Optional <code>reason</code>.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/blocked-numbers \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"phone": "+491701234567", "reason": "Dauerstörer"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "id": "…", "phone": "+491701234567" }</code></pre></div>
+          <div class="kachel ep" id="ep-blocked-delete"><div class="ep__kopf"><span class="methode methode--delete">DELETE</span><code class="ep__pfad">/api/v1/blocked-numbers/:id</code></div><p>Sperre aufheben.</p><pre class="code" data-curl><code>curl -X DELETE https://ki-anruf.onrender.com/api/v1/blocked-numbers/EINTRAG_ID \
+  -H "Authorization: Bearer vk_live_…"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true }</code></pre></div>
+          <div class="kachel ep" id="ep-knowledge"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/knowledge</code></div><p>Wissenseintrag anlegen, zum Beispiel aus Ihrem eigenen System heraus. Felder: <code>title</code>, <code>content</code>, optional <code>category</code>, <code>department</code>.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/knowledge \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"title": "Parkplätze", "content": "Zwei Kundenparkplätze hinter dem Haus, Einfahrt Gartenstraße."}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "id": "…" }</code></pre></div>
+          <div class="kachel ep" id="ep-calls-post"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/v1/calls</code></div><p>Ausgehenden Anruf durch den Assistenten auslösen, von Ihrer Rufnummer aus. Felder: <code>to</code> (+49…), optional <code>auftrag</code> (was der Assistent klären soll, ein bis drei Sätze) und <code>name</code> des Angerufenen. Mit Auftrag stellt sich der Assistent vor, nennt den Grund und erledigt den Auftrag; die Zusammenfassung holen Sie danach über <code>GET /api/v1/calls</code>.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/v1/calls \
+  -H "Authorization: Bearer vk_live_…" -H "Content-Type: application/json" \
+  -d '{"to": "+491701234567", "name": "Frau Beispiel", "auftrag": "Termin am Freitag um 10 Uhr bestätigen und fragen, ob die Versichertenkarte mitgebracht wird."}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "sid": "…" }</code></pre></div>
+        </div>
+      </section>
+
+      <section id="steuern" aria-labelledby="steuern-titel">
+        <span class="vorzeile">Kundenbereich</span>
+        <h2 id="steuern-titel">Anrufe steuern, Rückrufe planen, Zugänge verwalten.</h2>
+        <p>Diese Endpunkte gehören zum Kundenbereich und werden mit dem <b>Login-Token</b> Ihrer Sitzung aufgerufen (<code>Authorization: Bearer LOGIN_TOKEN</code>), nicht mit dem <code>vk_live_</code>-Schlüssel. Sie sind gedacht für eigene Oberflächen, die den Kundenbereich ergänzen, etwa eine Anzeige am Empfang. Gleiche Basis-Adresse, gleiche Fehlerform; 401 heißt hier: nicht angemeldet, 403: keine Firma zugeordnet oder kein Recht.</p>
+        <div style="display:grid;gap:var(--r2);margin-top:var(--r4)">
+          <div class="kachel ep" id="ep-hangup"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/call/hangup</code></div><p>Ein laufendes Gespräch des Assistenten beenden. Feld: <code>call_id</code> (die Anruf-ID aus dem Kundenbereich oder aus <code>GET /api/v1/calls</code>). Aufgelegt wird in der Leitung, nicht nur in der Anzeige. Ist der Anruf nicht mehr aktiv, wird der Eintrag geschlossen und die Antwort trägt <code>schon: true</code>. Fehler: 400 ohne <code>call_id</code>, 401 ohne Token, 403 ohne zugeordnete Firma, 404 wenn der Anruf nicht zu Ihrer Firma gehört, 409 solange noch keine Leitung bekannt ist, 502 wenn der Netzbetreiber nicht auflegen konnte.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/call/hangup \
+  -H "Authorization: Bearer LOGIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"call_id": "ANRUF_ID"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true }</code></pre></div>
+          <div class="kachel ep" id="ep-mithoeren"><div class="ep__kopf"><span class="methode">WS</span><code class="ep__pfad">/media-mithoeren</code></div><p>WebSocket zum Mithören eines laufenden Gesprächs. Parameter in der Adresse: <code>token</code> (Login-Token) und <code>call_id</code>. Nach <code>{ "event": "start" }</code> kommen beide Gesprächsspuren als Nachrichten <code>{ "event": "media", "spur": "…", "payload": "…" }</code>, der Ton als μ-law 8 kHz, Base64-kodiert. Es geht nichts zurück in die Leitung, der Anrufer kann nicht gestört werden. Ohne Zugriff oder bei beendetem Gespräch antwortet der Server mit <code>{ "event": "fehler" }</code> und schließt die Verbindung.</p><pre class="code"><code>wss://ki-anruf.onrender.com/media-mithoeren?token=LOGIN_TOKEN&amp;call_id=ANRUF_ID</code></pre></div>
+          <div class="kachel ep" id="ep-rueckrufe"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/rueckrufe</code></div><p>Geplante Anrufe des Assistenten Ihrer Firma, mit Status (<code>geplant</code>, <code>gestartet</code>, <code>abgesagt</code>, <code>fehlgeschlagen</code>) und Fehlertext, falls ein Anruf nicht zustande kam. Fehler: 401 ohne Token, 403 ohne zugeordnete Firma.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/rueckrufe \
+  -H "Authorization: Bearer LOGIN_TOKEN"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "rueckrufe": [ { "id": "…", "phone": "+49…", "name": "Frau Berger", "auftrag": "Angebot nachfassen", "scheduled_at": "2026-09-19T12:00:00.000Z", "status": "geplant", "error": null, "created_at": "…", "started_at": null } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-rueckrufe-post"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/rueckrufe</code></div><p>Anruf durch den Assistenten zu einer festen Uhrzeit planen. Felder: <code>phone</code> (+49…), <code>at</code> (ISO-Zeit, nicht in der Vergangenheit), optional <code>name</code> des Angerufenen und <code>auftrag</code> (was zu klären ist, ein bis drei Sätze). Ein Prüflauf je Minute startet fällige Einträge über denselben Weg wie einen sofortigen Assistenten-Anruf. Fehler: 400 wenn Nummer oder Uhrzeit fehlen, die Nummer nicht dem Format +49… entspricht oder die Uhrzeit nicht lesbar ist oder in der Vergangenheit liegt; 401 ohne Token; 403 ohne zugeordnete Firma.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/rueckrufe \
+  -H "Authorization: Bearer LOGIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"phone": "+491701234567", "name": "Frau Berger", "auftrag": "Fragen, ob das Angebot vom Montag passt.", "at": "2026-09-19T12:00:00Z"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "message": "Anruf geplant.", "id": "…" }</code></pre></div>
+          <div class="kachel ep" id="ep-rueckrufe-delete"><div class="ep__kopf"><span class="methode methode--delete">DELETE</span><code class="ep__pfad">/api/rueckrufe/:id</code></div><p>Geplanten Anruf absagen. Geht nur, solange er noch nicht gestartet ist. Fehler: 404 wenn der Eintrag nicht zu Ihrer Firma gehört oder schon gestartet wurde.</p><pre class="code" data-curl><code>curl -X DELETE https://ki-anruf.onrender.com/api/rueckrufe/EINTRAG_ID \
+  -H "Authorization: Bearer LOGIN_TOKEN"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true }</code></pre></div>
+          <div class="kachel ep" id="ep-apple"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/calendar/apple</code></div><p>Apple-Kalender per öffentlichem Kalender-Link verbinden (nur lesend: der Assistent sieht belegte Zeiten und bucht nur, was frei ist). Feld: <code>url</code>, der Link aus der Kalender-Freigabe (<code>webcal://</code> oder <code>https://</code>). Der Kalender wird einmal geladen und geprüft; die Antwort nennt die Zahl der Termine der nächsten Wochen. Fehler: 400 wenn der Link fehlt, kein webcal- oder https-Link ist oder sich nicht laden lässt; 401 ohne Token; 403 ohne zugeordnete Firma.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/calendar/apple \
+  -H "Authorization: Bearer LOGIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"url": "webcal://p12-caldav.icloud.com/published/2/…"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "message": "Kalender verbunden.", "termine": 14 }</code></pre></div>
+          <div class="kachel ep" id="ep-mitglieder"><div class="ep__kopf"><span class="methode methode--get">GET</span><code class="ep__pfad">/api/mitglieder</code></div><p>Zugänge Ihrer Firma und Ihre eigene Stufe (<code>owner</code>, <code>admin</code> oder <code>member</code>). Sehen darf jedes Mitglied; ändern dürfen nur Inhaber und Admins. Wer zu mehreren Firmen gehört, nennt die Firma mit <code>?tenant_id=…</code>. Fehler: 401 ohne Token, 403 wenn Sie nicht zu dieser Firma gehören.</p><pre class="code" data-curl><code>curl https://ki-anruf.onrender.com/api/mitglieder \
+  -H "Authorization: Bearer LOGIN_TOKEN"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "stufe": "owner", "mitglieder": [ { "userId": "…", "email": "empfang@praxis.de", "stufe": "member", "seit": "…" } ] }</code></pre></div>
+          <div class="kachel ep" id="ep-mitglieder-post"><div class="ep__kopf"><span class="methode methode--post">POST</span><code class="ep__pfad">/api/mitglieder</code></div><p>Zugang anlegen. Felder: <code>email</code>, optional <code>password</code> und <code>stufe</code> (<code>admin</code> oder <code>member</code>, Vorgabe member). Fehler: 400 wenn die E-Mail fehlt oder ungültig ist, 403 wenn Sie kein Inhaber oder Admin sind.</p><pre class="code" data-curl><code>curl -X POST https://ki-anruf.onrender.com/api/mitglieder \
+  -H "Authorization: Bearer LOGIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"email": "empfang@praxis.de", "stufe": "member"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true, "message": "…", "user_id": "…" }</code></pre></div>
+          <div class="kachel ep" id="ep-mitglieder-patch"><div class="ep__kopf"><span class="methode methode--patch">PATCH</span><code class="ep__pfad">/api/mitglieder/:userId</code></div><p>Stufe eines Zugangs ändern. Feld: <code>stufe</code> (<code>admin</code> oder <code>member</code>). Die eigene Stufe ändert ein anderer Admin, damit sich niemand selbst aussperrt. Fehler: 400 bei ungültiger Stufe oder eigenem Zugang, 403 ohne Verwaltungsrecht, 404 wenn der Zugang nicht zu Ihrer Firma gehört.</p><pre class="code" data-curl><code>curl -X PATCH https://ki-anruf.onrender.com/api/mitglieder/USER_ID \
+  -H "Authorization: Bearer LOGIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"stufe": "admin"}'</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true }</code></pre></div>
+          <div class="kachel ep" id="ep-mitglieder-delete"><div class="ep__kopf"><span class="methode methode--delete">DELETE</span><code class="ep__pfad">/api/mitglieder/:userId</code></div><p>Zugang aus der Firma entfernen. Den eigenen Zugang entfernt ein anderer Admin. Fehler: 400 beim eigenen Zugang, 403 ohne Verwaltungsrecht, 500 wenn das Entfernen fehlschlägt.</p><pre class="code" data-curl><code>curl -X DELETE https://ki-anruf.onrender.com/api/mitglieder/USER_ID \
+  -H "Authorization: Bearer LOGIN_TOKEN"</code></pre><p class="ep__antwort">Antwort</p><pre class="code"><code>{ "ok": true }</code></pre></div>
+        </div>
+      </section>
+
+      <section id="webhooks" aria-labelledby="webhooks-titel">
+        <span class="vorzeile">Webhooks</span>
+        <h2 id="webhooks-titel">Ereignisse, die zu Ihnen kommen.</h2>
+        <p>Unter <b>Schnittstellen → Automatisierung</b> tragen Sie eine Adresse und ein Geheimnis ein. Vocaris sendet dann pro Ereignis eine POST-Anfrage mit JSON. Fünf Ereignisse: <code>message.captured</code>, <code>appointment.booked</code>, <code>gap.created</code>, <code>call.ended</code>, <code>ticket.created</code> (neuer Vorgang mit Nummer, Priorität und Frist). <code>call.ended</code> bringt Name des Anrufers, Dauer, Thema, Zusammenfassung, Stimmung, Richtung und den Gesprächsverlauf gleich mit; ein Nachladen über <code>GET /api/v1/calls/:id</code> ist nicht mehr nötig. Derselbe Inhalt geht auf Wunsch als E-Mail, in Slack, Teams oder Telegram; dringende Nachrichten zusätzlich als SMS an eine Nummer Ihrer Wahl.</p>
+        <div style="display:grid;gap:var(--r2);margin-top:var(--r3)">
+          <pre class="code"><code>POST https://ihre-adresse.de/vocaris
 Content-Type: application/json
 X-Vocaris-Event: message.captured
 X-Vocaris-Signature: sha256=3f1a…
 
 {
-  &quot;event&quot;: &quot;message.captured&quot;,
-  &quot;occurred_at&quot;: &quot;2026-09-08T12:00:00.000Z&quot;,
-  &quot;data&quot;: {
-    &quot;caller_name&quot;: &quot;Max Mustermann&quot;,
-    &quot;callback_number&quot;: &quot;+49 170 1234567&quot;,
-    &quot;caller_number&quot;: &quot;+49 170 1234567&quot;,
-    &quot;summary&quot;: &quot;Rückruf gewünscht zu Angebot&quot;,
-    &quot;category&quot;: &quot;Angebot&quot;,
-    &quot;urgency&quot;: &quot;mittel&quot;
+  "event": "message.captured",
+  "occurred_at": "2026-09-08T12:00:00.000Z",
+  "data": {
+    "caller_name": "Max Mustermann",
+    "callback_number": "+49 170 1234567",
+    "caller_number": "+49 170 1234567",
+    "summary": "Rückruf gewünscht zu Angebot",
+    "category": "Angebot",
+    "urgency": "mittel"
   }
 }</code></pre>
-    <p class="ep-antwort" style="margin-top:18px">Beispiel call.ended</p>
-    <pre class="code"><code>{
-  &quot;event&quot;: &quot;call.ended&quot;,
-  &quot;occurred_at&quot;: &quot;2026-09-18T09:41:07.000Z&quot;,
-  &quot;data&quot;: {
-    &quot;call_id&quot;: &quot;…&quot;,
-    &quot;mode&quot;: &quot;assistant&quot;,
-    &quot;caller_name&quot;: &quot;Erika Beispiel&quot;,
-    &quot;caller_number&quot;: &quot;+49 170 1234567&quot;,
-    &quot;direction&quot;: &quot;in&quot;,
-    &quot;started_at&quot;: &quot;2026-09-18T09:39:52.000Z&quot;,
-    &quot;duration_seconds&quot;: 75,
-    &quot;topic&quot;: &quot;Termin&quot;,
-    &quot;summary&quot;: &quot;Kontrolltermin am Freitag um 10 Uhr vereinbart, Bestätigung per SMS.&quot;,
-    &quot;sentiment&quot;: &quot;positiv&quot;,
-    &quot;transcript&quot;: [
-      { &quot;role&quot;: &quot;caller&quot;, &quot;content&quot;: &quot;Guten Tag, ich hätte gern einen Termin zur Kontrolle.&quot; },
-      { &quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;Gern. Am Freitag habe ich um 10 Uhr oder um 16 Uhr etwas frei.&quot; },
-      { &quot;role&quot;: &quot;caller&quot;, &quot;content&quot;: &quot;Zehn Uhr passt.&quot; }
+          <p class="ep__antwort">Beispiel call.ended</p>
+          <pre class="code"><code>{
+  "event": "call.ended",
+  "occurred_at": "2026-09-18T09:41:07.000Z",
+  "data": {
+    "call_id": "…",
+    "mode": "assistant",
+    "caller_name": "Erika Beispiel",
+    "caller_number": "+49 170 1234567",
+    "direction": "in",
+    "started_at": "2026-09-18T09:39:52.000Z",
+    "duration_seconds": 75,
+    "topic": "Termin",
+    "summary": "Kontrolltermin am Freitag um 10 Uhr vereinbart, Bestätigung per SMS.",
+    "sentiment": "positiv",
+    "transcript": [
+      { "role": "caller", "content": "Guten Tag, ich hätte gern einen Termin zur Kontrolle." },
+      { "role": "assistant", "content": "Gern. Am Freitag habe ich um 10 Uhr oder um 16 Uhr etwas frei." },
+      { "role": "caller", "content": "Zehn Uhr passt." }
     ]
   }
 }</code></pre>
-    <p><code>direction</code> ist <code>in</code> für eingehende und <code>out</code> für Anrufe des Assistenten; <code>role</code> im Verlauf ist <code>caller</code>, <code>assistant</code> oder, bei Ihren eigenen Gesprächen, <code>agent</code>. Zusammenfassung und Stimmung fehlen, falls sie beim Versand noch nicht berechnet waren.</p>
-    <h3>Signatur prüfen</h3>
-    <p>Der Header <code>X-Vocaris-Signature</code> ist HMAC-SHA256 über den rohen Anfragetext mit Ihrem Geheimnis. Vergleichen Sie zeitkonstant.</p>
-    <pre class="code"><code>// Node.js
-import { createHmac, timingSafeEqual } from &quot;node:crypto&quot;;
-const erwartet = &quot;sha256=&quot; + createHmac(&quot;sha256&quot;, GEHEIMNIS).update(rohText).digest(&quot;hex&quot;);
-const gueltig = timingSafeEqual(Buffer.from(erwartet), Buffer.from(req.headers[&quot;x-vocaris-signature&quot;] || &quot;&quot;));</code></pre>
-    <h3>Make, n8n, Zapier</h3>
-    <p>In allen drei Werkzeugen genügt ein „Webhook"-Auslöser: Adresse kopieren, bei Vocaris eintragen, „Test senden" klicken. Danach stehen die Felder aus <code>data</code> in Ihrem Szenario zur Verfügung. Für Abfragen (etwa Transkript nachladen) nutzen Sie einen HTTP-Schritt mit dem API-Schlüssel.</p>
-  </div>
-</section>
+        </div>
+        <p class="doku__text"><code>direction</code> ist <code>in</code> für eingehende und <code>out</code> für Anrufe des Assistenten; <code>role</code> im Verlauf ist <code>caller</code>, <code>assistant</code> oder, bei Ihren eigenen Gesprächen, <code>agent</code>. Zusammenfassung und Stimmung fehlen, falls sie beim Versand noch nicht berechnet waren.</p>
+        <h3>Signatur prüfen</h3>
+        <p class="doku__text">Der Header <code>X-Vocaris-Signature</code> ist HMAC-SHA256 über den rohen Anfragetext mit Ihrem Geheimnis. Vergleichen Sie zeitkonstant.</p>
+        <pre class="code" style="margin-top:var(--r2)"><code>// Node.js
+import { createHmac, timingSafeEqual } from "node:crypto";
+const erwartet = "sha256=" + createHmac("sha256", GEHEIMNIS).update(rohText).digest("hex");
+const gueltig = timingSafeEqual(Buffer.from(erwartet), Buffer.from(req.headers["x-vocaris-signature"] || ""));</code></pre>
+        <h3>Make, n8n, Zapier</h3>
+        <p class="doku__text">In allen drei Werkzeugen genügt ein „Webhook“-Auslöser: Adresse kopieren, bei Vocaris eintragen, „Test senden“ klicken. Danach stehen die Felder aus <code>data</code> in Ihrem Szenario zur Verfügung. Für Abfragen (etwa Transkript nachladen) nutzen Sie einen HTTP-Schritt mit dem API-Schlüssel.</p>
+      </section>
 
-<section class="block" id="fehler">
-  <div class="wrap doku">
-    <div class="reveal"><div class="eyebrow">Fehler und Grenzen</div><h2>Was Sie zurückbekommen</h2></div>
-    <div class="karten">
-      <div class="karte reveal"><h3>401</h3><p>Schlüssel fehlt, ist ungültig oder widerrufen.</p></div>
-      <div class="karte reveal"><h3>400 / 404</h3><p>Pflichtfeld fehlt oder falsch formatiert, beziehungsweise Objekt gehört nicht zu Ihrer Firma.</p></div>
-      <div class="karte reveal"><h3>429</h3><p>Mehr als 120 Anfragen je Minute mit einem Schlüssel. Kurz warten, dann erneut.</p></div>
-      <div class="karte reveal"><h3>403 / 409 / 502</h3><p>Nur im Kundenbereich: keine Firma zugeordnet oder kein Recht (403), Leitung noch nicht bekannt (409), Netzbetreiber konnte nicht auflegen (502).</p></div>
+      <section id="fehler" aria-labelledby="fehler-titel">
+        <span class="vorzeile">Fehler und Grenzen</span>
+        <h2 id="fehler-titel">Was Sie zurückbekommen.</h2>
+        <div class="fehlercodes" style="margin-top:var(--r4)">
+          <div class="kachel karte"><h3>401</h3><p>Schlüssel fehlt, ist ungültig oder widerrufen.</p></div>
+          <div class="kachel karte"><h3>400 / 404</h3><p>Pflichtfeld fehlt oder falsch formatiert, beziehungsweise Objekt gehört nicht zu Ihrer Firma.</p></div>
+          <div class="kachel karte"><h3>429</h3><p>Mehr als 120 Anfragen je Minute mit einem Schlüssel. Kurz warten, dann erneut.</p></div>
+          <div class="kachel karte"><h3>403 / 409 / 502</h3><p>Nur im Kundenbereich: keine Firma zugeordnet oder kein Recht (403), Leitung noch nicht bekannt (409), Netzbetreiber konnte nicht auflegen (502).</p></div>
+        </div>
+        <p class="doku__text" style="margin-top:var(--r3)">Schlüssel lassen sich im Kundenbereich jederzeit widerrufen. Jeder Schlüssel sieht ausschließlich Daten der eigenen Firma. Fragen an <a href="demo.html">unser Team</a>.</p>
+      </section>
+
     </div>
-    <p class="intro reveal" style="margin-top:22px">Schlüssel lassen sich im Kundenbereich jederzeit widerrufen. Jeder Schlüssel sieht ausschließlich Daten der eigenen Firma. Fragen an <a class="leise" href="demo.html">unser Team</a>.</p>
   </div>
 </section>
 
-<!-- Abschluss -->
-<section class="block" style="padding-top:20px" id="testanruf">
-  <div class="wrap"><div class="cta-band reveal">
-    <h2>In wenigen Sekunden klingelt Ihr Telefon</h2>
-    <p>Rufnummer eintragen — Vocaris ruft Sie an, und Sie hören selbst, wie ein Gespräch klingt. Kostenlos, unverbindlich, ohne Anmeldung.</p>
-    <form class="hero-form callform cta-form" data-callform>
-      <input type="tel" inputmode="tel" placeholder="+49 · Ihre Rufnummer" aria-label="Ihre Rufnummer" required>
-      <button type="submit" class="btn hell">Testanruf erhalten</button>
-      <label class="consent"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken unter dieser Nummer anruft.</label>
-      <div class="formerr" data-err></div>
+<!-- ═══ Abschluss: Testanruf ═══ -->
+<section class="abschnitt dunkel abschluss" id="testanruf" aria-labelledby="testanruf-titel">
+  <div class="huelle abschluss__innen">
+    <div data-zeig>
+      <span class="vorzeile">Kostenloser Testanruf</span>
+      <h2 id="testanruf-titel" style="margin-top:var(--r2)">In wenigen Sekunden klingelt Ihr Telefon.</h2>
+      <p class="lede" style="margin-top:var(--r2)">Rufnummer eintragen, Vocaris ruft Sie an, und Sie hören selbst, wie ein Gespräch klingt. Kostenlos, unverbindlich, ohne Anmeldung.</p>
+      <div class="demo-zeile">
+        <a class="knopf knopf--leise" href="demo.html">Demo-Termin vereinbaren</a>
+        <span class="klein" style="color:var(--nacht-text)">30 Minuten, wir richten Ihren Assistenten gemeinsam ein.</span>
+      </div>
+    </div>
+    <form class="formular" data-callform data-zeig novalidate>
+      <h3>Lassen Sie sich anrufen</h3>
+      <div class="feld"><label for="telefon">Ihre Rufnummer</label><input type="tel" id="telefon" inputmode="tel" autocomplete="tel" placeholder="+49 …" required aria-describedby="tel-hinweis"><span class="klein" id="tel-hinweis" style="text-align:left">Deutsche Nummer im Format +49, Festnetz oder Mobil.</span></div>
+      <label class="zustimmung"><input type="checkbox" data-consent required> Ich bin einverstanden, dass Vocaris mich einmalig zu Demozwecken unter dieser Nummer anruft.</label>
+      <div class="formfehler" data-err role="alert"></div>
+      <button type="submit" class="knopf">Jetzt anrufen lassen</button>
+      <p class="klein">Vocaris ruft in Sekunden zurück · keine Anmeldung</p>
     </form>
-    <p class="cta-alt">Lieber persönlich? <a href="demo.html">Demo buchen</a> · <a href="preise.html">Preise ansehen</a></p>
-  </div></div>
+  </div>
 </section>
 
-<footer class="gross">
-  <div class="wrap">
-    <div class="fuss-grid">
-      <div class="fuss-marke"><div class="logo"><span class="logo-mark"><svg viewBox="0 0 100 100" width="26" height="26" aria-hidden="true"><defs><radialGradient id="vk-fussg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-fussh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-fusss" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-fussg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-fusss)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-fussh)"/></svg></span>Vocaris</div><p>Der KI-Telefonassistent für Betriebe, die nicht immer ans Telefon können — Termine, Reservierungen, Rückrufe, rund um die Uhr. In der EU gehostet.</p><p style="margin-top:14px">Rheinstr. 26<br>80803 München</p></div>
-      <div><h4>Produkt</h4><a href="funktionen.html">Funktionen</a><a href="funktionen.html#beispiele">Beispielgespräche</a><a href="schnittstellen.html">Schnittstellen</a><a href="api.html">API</a><a href="fragen.html">Häufige Fragen</a><a href="branchen.html">Alle Branchen</a><a href="ki-modelle.html">KI-Modelle</a><a href="sicherheit.html">Sicherheit</a><a href="preise.html">Preise</a><a href="vergleich.html">Vergleich</a><a href="demo.html">Demo buchen</a></div>
-      <div><h4>Branchen</h4><a href="restaurants.html">Gastronomie</a><a href="arztpraxen.html">Arztpraxen</a><a href="handwerk.html">Handwerk &amp; Bau</a><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a><a href="friseur.html">Friseur &amp; Salon</a><a href="kanzlei.html">Kanzleien</a><a href="hotel.html">Hotellerie</a><a href="hausverwaltung.html">Hausverwaltung</a><a href="immobilienmakler.html">Immobilien</a><a href="pflegedienst.html">Ambulante Pflege</a><a href="apotheke.html">Apotheke</a><a href="versicherungsmakler.html">Versicherung</a><a href="software.html">Software &amp; SaaS</a><a href="onlineshop.html">Onlinehandel</a><a href="physiotherapie.html">Physiotherapie</a><a href="tierarzt.html">Tierarztpraxis</a><a href="fitnessstudio.html">Fitness &amp; Studio</a></div>
-      <div><h4>Rechtliches</h4><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a><a href="sicherheit.html">Sicherheit</a><a href="app.html">Anmelden</a></div>
+</main>
+
+<footer class="fuss">
+  <div class="huelle">
+    <div class="fuss__oben">
+      <div class="fuss__marke">
+        <a class="marke" href="index.html"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="vk-fg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-fh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="52" r="42" fill="url(#vk-fg)"/><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-fh)"/></svg>Vocaris</a>
+        <p>Der KI-Telefonassistent für Betriebe, die nicht immer ans Telefon können. Termine, Reservierungen, Rückrufe, rund um die Uhr. In der EU gehostet.</p>
+        <p>Rheinstr. 26<br>80803 München</p>
+      </div>
+      <div><h4>Produkt</h4><ul><li><a href="funktionen.html">Funktionen</a></li><li><a href="preise.html">Preise</a></li><li><a href="vergleich.html">Vergleich</a></li><li><a href="ki-modelle.html">KI-Modelle</a></li><li><a href="schnittstellen.html">Schnittstellen</a></li><li><a href="sicherheit.html">Sicherheit</a></li><li><a href="fragen.html">Häufige Fragen</a></li><li><a href="ratgeber.html">Ratgeber</a></li></ul></div>
+      <div><h4>Branchen</h4><ul><li><a href="restaurants.html">Gastronomie</a></li><li><a href="arztpraxen.html">Arztpraxen</a></li><li><a href="handwerk.html">Handwerk &amp; Bau</a></li><li><a href="kanzlei.html">Kanzleien</a></li><li><a href="hausverwaltung.html">Hausverwaltung</a></li><li><a href="hotel.html">Hotellerie</a></li><li><a href="autowerkstatt.html">Kfz &amp; Autowerkstatt</a></li><li><a href="branchen.html">Alle 17 Branchen</a></li></ul></div>
+      <div><h4>Kontakt</h4><ul><li><a href="#testanruf">Testanruf</a></li><li><a href="demo.html">Demo buchen</a></li><li><a href="app.html">Anmelden</a></li><li><a href="impressum.html">Impressum</a></li><li><a href="datenschutz.html">Datenschutz</a></li><li><a href="agb.html">AGB</a></li></ul></div>
     </div>
-    <div class="fuss-unten"><span>© 2026 Vocaris · Christoph Gerhardt, München</span><span><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a></span></div>
+    <div class="fuss__unten">
+      <span class="eu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Verarbeitung und Hosting in der EU</span>
+      <span>© 2026 Vocaris · Christoph Gerhardt, München <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a></span>
+    </div>
   </div>
 </footer>
 
+<!-- Feste CTA-Leiste auf dem Handy -->
+<div class="ctaleiste" data-ctaleiste aria-hidden="true">
+  <a class="knopf" href="#testanruf" tabindex="-1">Testanruf</a>
+  <a class="knopf knopf--leise" href="demo.html" tabindex="-1">Demo</a>
+</div>
+
 <script src="/pv.js" defer></script>
-<script src="assets/site.js" defer></script>
-<script src="assets/vocaris.js" defer></script>
-<script src="assets/magie.js" defer></script>
-<script src="assets/assistent.js" defer></script>
+<script src="assets/neu.js" defer></script>
+<script src="assets/neu-seiten.js" defer></script>
 </body>
 </html>
