@@ -14,7 +14,7 @@
 .seitenkopf{position:relative;padding:var(--r8) 0 var(--r6);overflow:hidden}
 .seitenkopf::before{content:"";position:absolute;inset:0;background:radial-gradient(720px 380px at 88% -20%,var(--akzent-zart),transparent 62%);pointer-events:none}
 .seitenkopf__innen{position:relative;max-width:58rem}
-.seitenkopf h1{margin-top:var(--r2);font-size:clamp(38px,5.6vw,72px)}
+.seitenkopf h1{margin-top:var(--r2);font-size:clamp(38px,5.6vw,72px);overflow-wrap:break-word;hyphens:auto}
 .seitenkopf h1 em{font-style:normal;color:var(--akzent)}
 .seitenkopf .lede{margin-top:var(--r3);max-width:64ch}
 .seitenkopf .knopfzeile{margin-top:var(--r4)}
@@ -187,7 +187,7 @@
 .seitennav code{font-family:var(--mono);font-size:12px}
 .seitennav .methode{height:18px;font-size:10px;padding:0 5px;margin-right:6px}
 .doku__inhalt{display:grid;gap:var(--r8);min-width:0}
-.doku__inhalt>section{scroll-margin-top:96px}
+.doku__inhalt>section{scroll-margin-top:96px;min-width:0}
 .doku__inhalt h2{font-size:clamp(26px,3vw,36px);margin-top:var(--r1)}
 .doku__inhalt h3{font-size:19px;margin-top:var(--r4)}
 .doku__inhalt>section>p,.doku__text{color:var(--text-2);font-size:15.5px;line-height:1.65;max-width:76ch;margin-top:var(--r2)}
@@ -336,7 +336,7 @@
   .seitennav::-webkit-scrollbar{display:none}
   .seitennav>ul{display:flex;gap:6px;width:max-content}
   .seitennav ul ul{display:none}
-  .seitennav>ul>li>a{white-space:nowrap;height:36px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--linie-stark);border-radius:var(--rund-voll);font-size:13.5px;font-weight:500;color:var(--text-2);background:var(--flaeche-1)}
+  .seitennav>ul>li>a{white-space:nowrap;height:44px;display:inline-flex;align-items:center;padding:0 16px;border:1px solid var(--linie-stark);border-radius:var(--rund-voll);font-size:13.5px;font-weight:500;color:var(--text-2);background:var(--flaeche-1)}
   .seitennav>ul>li>a.aktiv{background:var(--nacht);border-color:var(--nacht);color:#fff}
   .demo{grid-template-columns:minmax(0,1fr);gap:var(--r5)}
   .zwei{grid-template-columns:minmax(0,1fr)}
@@ -371,7 +371,7 @@
   .suchfeld input{height:50px}
   .checkliste summary{font-size:15.5px}
   .checkliste .antwort{padding-left:0}
-  .schalter button{height:38px;padding:0 14px;font-size:14px}
+  .schalter button{height:44px;padding:0 14px;font-size:14px}
   .recht__text h2{scroll-margin-top:130px}
   .recht__text h3{scroll-margin-top:130px}
   .doku__inhalt>section,.ep{scroll-margin-top:130px}
