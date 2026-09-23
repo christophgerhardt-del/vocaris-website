@@ -5,6 +5,9 @@
 // Keine Cookies, keine IDs, keine personenbezogenen Daten (DSGVO-unkritisch).
 // Der anon-Key ist öffentlich; RLS erlaubt ihm ausschließlich INSERT.
 (function () {
+  // Lokale Prüfläufe (Playwright gegen 127.0.0.1) zählen nicht mit – am 18.09. standen
+  // sonst 694 eigene Aufrufe in der Statistik.
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || navigator.webdriver) return;
   var SB = 'https://nocsjyzmnskbyccrjayx.supabase.co';
   var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4';
   var page = location.pathname.replace(/^\/+/, '').replace(/\.html$/, '');
