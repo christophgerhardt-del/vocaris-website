@@ -1,0 +1,36 @@
+# Vocaris
+
+> Vocaris ist ein KI-Telefonassistent für Betriebe im deutschsprachigen Raum. Er nimmt Anrufe rund um die Uhr mit natürlicher Stimme an, bucht Termine und Tische, nimmt Nachrichten und Rückrufwünsche auf, leitet nach Thema an Menschen weiter und schickt nach jedem Gespräch eine Zusammenfassung mit Verlauf. Datenhaltung in Frankfurt; der europäische Sprachweg läuft vollständig in der EU. Ab 49 € im Monat, monatlich kündbar, Einrichtung in etwa 15 Minuten.
+
+## Produkt
+
+- [Funktionen](https://vocaris.eu/funktionen.html): alle Funktionen in fünf Gruppen (Gespräch, Wissen, Benachrichtigen, Zusammenarbeit, Datenschutz)
+- [Preise](https://vocaris.eu/preise.html): Tarife 49, 99 und 249 € mit Minutenkontingent, Preisrechner
+- [Vergleich](https://vocaris.eu/vergleich.html): Anrufbeantworter, Telefonservice, Telefonanlage und KI-Assistent im Vergleich
+- [KI-Modelle](https://vocaris.eu/ki-modelle.html): die fünf Sprachwege, darunter ein rein europäischer
+- [Sicherheit](https://vocaris.eu/sicherheit.html): Datenhaltung, Verschlüsselung, Auftragsverarbeitung
+- [Schnittstellen](https://vocaris.eu/schnittstellen.html): Kalender, CRM, Ticketsysteme, Slack, Teams, Webhooks
+- [API](https://vocaris.eu/api.html): öffentliche Schnittstelle und Webhook-Ereignisse
+
+## Branchen
+
+- [Übersicht](https://vocaris.eu/branchen.html): 17 Branchen, je mit Beispielgespräch
+- [Arztpraxen](https://vocaris.eu/arztpraxen.html), [Kanzleien](https://vocaris.eu/kanzlei.html), [Handwerk](https://vocaris.eu/handwerk.html), [Restaurants](https://vocaris.eu/restaurants.html), [Hausverwaltung](https://vocaris.eu/hausverwaltung.html), [Immobilienmakler](https://vocaris.eu/immobilienmakler.html), [Hotels](https://vocaris.eu/hotel.html), [Apotheken](https://vocaris.eu/apotheke.html)
+
+## Ratgeber
+
+- [Ratgeber-Übersicht](https://vocaris.eu/ratgeber.html)
+- [Was kostet ein verpasster Anruf?](https://vocaris.eu/ratgeber/verpasste-anrufe-kosten.html)
+- [KI-Telefonassistent erklärt](https://vocaris.eu/ratgeber/ki-telefonassistent-erklaert.html)
+- [Telefonservice, Sekretariat, Anrufbeantworter oder KI](https://vocaris.eu/ratgeber/telefonservice-vergleich.html)
+- [Terminbuchung am Telefon automatisieren](https://vocaris.eu/ratgeber/terminbuchung-telefon.html)
+- [Datenschutz beim KI-Telefonassistenten](https://vocaris.eu/ratgeber/datenschutz-ki-telefon.html)
+- [Rufnummer portieren oder neue Nummer](https://vocaris.eu/ratgeber/rufnummer-portieren.html)
+- [Der erste Tag mit dem Telefonassistenten](https://vocaris.eu/ratgeber/erster-tag-telefonassistent.html)
+- [Notdienst und Erreichbarkeit außerhalb der Öffnungszeiten](https://vocaris.eu/ratgeber/notdienst-erreichbarkeit.html)
+
+## Kontakt
+
+- Testanruf: Rufnummer auf der Startseite eintragen, Vocaris ruft in Sekunden zurück
+- [Demo buchen](https://vocaris.eu/demo.html)
+- Anbieter: Christoph Gerhardt, München, [Impressum](https://vocaris.eu/impressum.html)
