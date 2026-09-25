@@ -116,3 +116,29 @@
   .branchen--alle .branche q{display:block;font-size:13.5px}
   .branchen--alle .branche .branche__mehr{display:block;font-size:13px}
 }
+
+/* ── Zusatzabschnitte (Vergleich, Einordnung) auf einzelnen Branchenseiten ── */
+.zusatz{border-top:1px solid var(--linie)}
+.zusatz__text{max-width:52rem;display:grid;gap:var(--r2);color:var(--text-2);font-size:17px;line-height:1.65}
+.zusatz__text+.vergleichstabelle,.zusatz__text+.grenzen{margin-top:var(--r4)}
+.zusatz__text a,.vergleichstabelle a,.zusatz__punkte a{color:var(--akzent);text-decoration:underline;text-underline-offset:3px}
+.vergleichstabelle{margin-top:var(--r4);border:1px solid var(--linie);border-radius:var(--rund-l);background:var(--flaeche-0);overflow:hidden}
+.vergleichstabelle+.zusatz__text,.grenzen+.zusatz__text{margin-top:var(--r4)}
+.vergleichstabelle table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.5}
+.vergleichstabelle th,.vergleichstabelle td{padding:14px 18px;text-align:left;vertical-align:top;border-top:1px solid var(--linie)}
+.vergleichstabelle thead th{border-top:0;font-size:14px;font-weight:700;color:var(--text-1,inherit);background:var(--flaeche-1,transparent)}
+.vergleichstabelle thead th:last-child,.vergleichstabelle td:last-child{background:color-mix(in srgb,var(--akzent) 6%,transparent)}
+.vergleichstabelle tbody th{font-weight:700;width:17%;color:var(--text-1,inherit)}
+.vergleichstabelle td{color:var(--text-2)}
+@media (max-width:760px){
+  .vergleichstabelle{border:0;background:none;overflow:visible;display:grid;gap:var(--r2)}
+  .vergleichstabelle thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .vergleichstabelle table,.vergleichstabelle tbody{display:grid;gap:12px}
+  .vergleichstabelle tr{display:grid;border:1px solid var(--linie);border-radius:var(--rund-l);background:var(--flaeche-0);overflow:hidden}
+  .vergleichstabelle th,.vergleichstabelle td{border-top:0;padding:10px 16px}
+  .vergleichstabelle tbody th{width:auto;padding-top:14px;font-size:16px}
+  .vergleichstabelle td{border-top:1px solid var(--linie)}
+  .vergleichstabelle td::before{content:attr(data-spalte);display:block;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:var(--text-1,inherit);margin-bottom:2px}
+  .zusatz__text{font-size:16px}
+}
+.zusatz__punkte--haken li::before{background:color-mix(in srgb,var(--akzent) 12%,transparent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f5eff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/10px no-repeat}
