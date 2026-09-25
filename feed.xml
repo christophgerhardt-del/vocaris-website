@@ -6,8 +6,16 @@
     <atom:link href="https://vocaris.eu/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Erreichbarkeit, Telefon und KI im Betrieb: Artikel für Praxen, Salons, Handwerk, Kanzleien und Hausverwaltungen.</description>
     <language>de-DE</language>
-    <lastBuildDate>Fri, 18 Sep 2026 06:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 25 Sep 2026 06:00:00 GMT</lastBuildDate>
     <copyright>Christoph Gerhardt, München</copyright>
+    <item>
+      <title>Sekretariatsservice für Kanzleien: was Anwälte brauchen</title>
+      <link>https://vocaris.eu/ratgeber/sekretariatsservice-kanzlei.html</link>
+      <guid isPermaLink="true">https://vocaris.eu/ratgeber/sekretariatsservice-kanzlei.html</guid>
+      <pubDate>Fri, 25 Sep 2026 06:00:00 GMT</pubDate>
+      <description>Mitarbeiterin, externer Sekretariatsservice, Anrufservice oder KI-Assistent: was das Kanzleitelefon leisten muss und worauf Anwälte bei der Wahl achten.</description>
+      <category>Nach Branche</category>
+    </item>
     <item>
       <title>Notdienst nach Feierabend: Handwerk und Hausverwaltung</title>
       <link>https://vocaris.eu/ratgeber/notdienst-erreichbarkeit.html</link>
