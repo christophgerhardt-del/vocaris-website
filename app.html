@@ -6793,12 +6793,12 @@
       const akt = d.querySelector('[data-aktionen]'); const knopf = (text, cls, fn, wohin) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; (wohin || akt).append(b); return b; };
       if (g.status === 'open') {
         const ta = d.querySelector('[data-antwort]'); const hinweis = d.querySelector('[data-hinweis]');
-        ta.oninput = () => { hinweis.textContent = ta.value.trim().length && ta.value.trim().length < 30 ? 'Ein, zwei ganze Sätze reichen. Je klarer, desto besser antwortet der Assistent.' : ''; };
+        ta.oninput = () => { hinweis.textContent = GAP_LUECKE.test(ta.value) ? 'Ersetze noch die Stellen in eckigen Klammern durch eure Angaben – erst dann gilt die Antwort.' : ta.value.trim().length && ta.value.trim().length < 30 ? 'Ein, zwei ganze Sätze reichen. Je klarer, desto besser antwortet der Assistent.' : ''; };
         const save = knopf('Beantworten & ins Wissen übernehmen', 'btn--primary', () => answerGap(g, ta.value.trim(), save), d.querySelector('[data-kopf]'));
         ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') answerGap(g, ta.value.trim(), save); };
         knopf('✨ KI-Antwort vorschlagen', '', async function () {
           this.disabled = true; const orig = this.textContent; this.textContent = 'Entwerfe …';
-          try { const res = await apiFetch('/api/gap-suggest', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ question: g.question, department: dep }) }); const j = await res.json(); if (!res.ok) throw new Error(j.error || 'Fehler'); ta.value = j.answer || ''; ta.focus(); ta.oninput(); }
+          try { const res = await apiFetch('/api/gap-suggest', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken }, body: JSON.stringify({ question: g.question, department: dep }) }); const j = await res.json(); if (!res.ok) throw new Error(j.error || 'Fehler'); ta.value = j.answer || ''; ta.focus(); ta.oninput(); const m = ta.value.match(GAP_LUECKE); if (m) ta.setSelectionRange(m.index, m.index + m[0].length); }
           catch (e) { toast('Fehler: ' + e.message, 'err'); }
           this.disabled = false; this.textContent = orig;
         });
@@ -6822,8 +6822,11 @@
         const del = knopf('Löschen', '', async () => { if (!confirm('Diese Frage endgültig löschen?')) return; const { error } = await sb.from('knowledge_gaps').delete().eq('id', g.id); if (error) { toast('Fehler: ' + error.message, 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); gapAuswahl = null; toast('Gelöscht.'); renderFragen(); }); del.style.marginLeft = 'auto';
       }
     }
+    // Platzhalter aus dem KI-Entwurf („[ja/nein]“, „[Anzahl]“) – wie luecken() in ki-anruf/src/services/wissen-routen.ts.
+    const GAP_LUECKE = /\[[^\[\]\n]{1,80}\]/;
     async function answerGap(g, answer, btn) {
       if (!answer) return toast('Bitte eine Antwort eingeben.', 'err');
+      if (GAP_LUECKE.test(answer)) return toast('Bitte ersetze zuerst die Stellen in eckigen Klammern.', 'err');
       if (btn) btn.disabled = true;
       const dep = g.department || 'general';
       const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
