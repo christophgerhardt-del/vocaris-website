@@ -2813,7 +2813,7 @@
       support: 'Einstellungen für die Support-Nummer. Leere Felder übernehmen automatisch die Allgemein-Einstellung.',
     };
     const liveCalls = new Map();
-    const API = 'https://ki-anruf.onrender.com';
+    const API = 'https://api.vocaris.eu';
     // Robuster API-Aufruf: bei reinem Netzwerkfehler (z.B. Server startet nach
     // einem Deploy gerade neu → „Load failed") kurz warten und erneut versuchen.
     async function apiFetch(path, opts, tries = 3) {

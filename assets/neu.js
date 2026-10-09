@@ -9,7 +9,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
-  var API = 'https://ki-anruf.onrender.com';
+  var API = 'https://api.vocaris.eu';
   var RUHIG = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (s, w) { return (w || document).querySelector(s); };
   var $$ = function (s, w) { return Array.prototype.slice.call((w || document).querySelectorAll(s)); };
