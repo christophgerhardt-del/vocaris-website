@@ -16,6 +16,11 @@
      nur 4,25:1, #5f6b7d schafft überall mindestens 4,8:1. */
   --ink-faint: #5f6b7d;
   --accent-ink: var(--marke-tief);
+  /* Für Flächen mit weißer Schrift (Primärknopf, Avatar) getrennt von --accent:
+     im Dunkelmodus ist --marke bewusst heller, damit er als Text/Link auf
+     dunklem Grund trägt — als Knopf-Fläche unter weißer Schrift reicht das
+     nicht (siehe Override unten). Im Hellmodus identisch mit --accent. */
+  --accent-auf-weiss: var(--accent);
   --accent-3: var(--weh);
   --white: #fff;
   --dark: var(--dunkel);
@@ -40,6 +45,9 @@
   --flaeche-0: #0d1424; --flaeche-1: #141c2e; --flaeche-2: #1b2438; --flaeche-tint: #182240; --flaeche-tint-2: #223060;
   --text-1: #e9eef7; --text-2: #b7c2d4; --text-3: #8f9cb3; --text-4: #6f7c94;
   --marke: #6b9bff; --marke-tief: #9dbcff; --marke-hell: #a9c8ff; --marke-zart: #182240;
+  /* Weiß auf #6b9bff schafft nur 2,7:1 (verfehlt AA). Für Knopf-Fläche und
+     Avatar das kräftigere Hellmodus-Blau wiederverwenden: Weiß darauf 5,12:1. */
+  --accent-auf-weiss: #1f5eff;
   --gut: #3ccf9a; --gut-zart: #123329; --weh: #ff8a80;
   --linie: #26324a; --linie-stark: #37455f; --linie-dunkel: #37455f;
   --dunkel: #26324a; --auf-dunkel: #b7c2d4;
@@ -83,7 +91,7 @@ input::placeholder { color: var(--text-4); }
 .btn svg { width: 16px; height: 16px; flex: none; }
 /* Elektroblau als einziger Akzent, kein Verlauf: der helle Verlaufsrand auf
    --accent-2 kam bei weißer Schrift nur auf ~2:1 Kontrast (WCAG AA verlangt 4,5:1). */
-.btn--primary { color: #fff; background: var(--accent); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+.btn--primary { color: #fff; background: var(--accent-auf-weiss); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
 .btn--primary:hover { transform: translateY(-1px); background: var(--accent-ink); }
 .btn--ghost { color: var(--ink); background: var(--white); border-color: var(--line); box-shadow: var(--shadow-sm); }
 .btn--ghost:hover { border-color: var(--linie-stark); }
@@ -121,7 +129,7 @@ input::placeholder { color: var(--text-4); }
 /* Für Screenreader sichtbaren Text in sonst leeren Spaltenköpfen (z. B. die Aktionsspalte der Nummern-Tabelle) */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .side .foot { border-top: 1px solid var(--line); padding-top: 12px; display: flex; align-items: center; gap: 8px; }
-.side__avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; background: var(--accent); }
+.side__avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; background: var(--accent-auf-weiss); }
 .side__email { flex: 1; min-width: 0; font-size: 12.5px; color: var(--ink-faint); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .side__abmelden { flex: none; }
 .main { padding: 26px 32px 80px; min-width: 0; max-width: 1280px; width: 100%; }

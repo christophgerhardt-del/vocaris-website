@@ -103,34 +103,34 @@
 
         <!-- Filter: Chips je Gruppe; ein Klick auf „Alle" hebt die Gruppe auf -->
         <div class="filter" id="filter" aria-label="Filter">
-          <div class="fgruppe"><span>Branche</span>
-            <button class="chip aktiv" type="button" data-filter="branche" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="branche" data-wert="restaurant">Restaurant</button>
-            <button class="chip" type="button" data-filter="branche" data-wert="general">Allgemein</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgBranche"><span id="fgBranche">Branche</span>
+            <button class="chip aktiv" type="button" data-filter="branche" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="restaurant" aria-pressed="false">Restaurant</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="general" aria-pressed="false">Allgemein</button>
           </div>
-          <div class="fgruppe"><span>Anbieter</span>
-            <button class="chip aktiv" type="button" data-filter="anbieter" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="openai">OpenAI</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="live">GPT-Live</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="gemini">Gemini</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="grok">Grok</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral">Mistral</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgAnbieter"><span id="fgAnbieter">Anbieter</span>
+            <button class="chip aktiv" type="button" data-filter="anbieter" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="openai" aria-pressed="false">OpenAI</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="live" aria-pressed="false">GPT-Live</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="gemini" aria-pressed="false">Gemini</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="grok" aria-pressed="false">Grok</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral" aria-pressed="false">Mistral</button>
           </div>
-          <div class="fgruppe"><span>Tarif</span>
-            <button class="chip aktiv" type="button" data-filter="tarif" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="klein">Klein</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="standard">Standard</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="gross">Groß</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="trial">Test</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="ohne">Ohne Abo</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgTarif"><span id="fgTarif">Tarif</span>
+            <button class="chip aktiv" type="button" data-filter="tarif" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="klein" aria-pressed="false">Klein</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="standard" aria-pressed="false">Standard</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="gross" aria-pressed="false">Groß</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="trial" aria-pressed="false">Test</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="ohne" aria-pressed="false">Ohne Abo</button>
           </div>
-          <div class="fgruppe"><span>Status</span>
-            <button class="chip aktiv" type="button" data-filter="status" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="status" data-wert="aktiv">Mit Anrufen</button>
-            <button class="chip" type="button" data-filter="status" data-wert="still">Ohne Anrufe</button>
-            <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer">Ohne Nummer</button>
-            <button class="chip" type="button" data-filter="status" data-wert="ohne-login">Ohne Login</button>
-            <button class="chip" type="button" data-filter="status" data-wert="widerspruch">Branche ≠ Module</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgStatus"><span id="fgStatus">Status</span>
+            <button class="chip aktiv" type="button" data-filter="status" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="status" data-wert="aktiv" aria-pressed="false">Mit Anrufen</button>
+            <button class="chip" type="button" data-filter="status" data-wert="still" aria-pressed="false">Ohne Anrufe</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer" aria-pressed="false">Ohne Nummer</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-login" aria-pressed="false">Ohne Login</button>
+            <button class="chip" type="button" data-filter="status" data-wert="widerspruch" aria-pressed="false">Branche ≠ Module</button>
           </div>
         </div>
 
@@ -330,9 +330,17 @@
     const auth = () => ({ 'content-type': 'application/json', authorization: 'Bearer ' + token });
     // Alle Admin-Routen sind POST mit JSON-Body; nur /margen ist GET (siehe server.ts).
     async function api(path, body, methode = 'POST') {
-      const res = await fetch(API + path, methode === 'GET'
-        ? { headers: auth() }
-        : { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
+      let res;
+      try {
+        res = await fetch(API + path, methode === 'GET'
+          ? { headers: auth() }
+          : { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
+      } catch {
+        // fetch() selbst scheitert bei echtem Netzwerkausfall/DNS/CORS (nicht bei HTTP-Fehlern,
+        // die laufen unten über !res.ok) mit einer rohen, englischen TypeError („Failed to fetch");
+        // siehe enter() und ladeSystem() für dasselbe, dort schon übersetzte Muster.
+        throw new Error('Server nicht erreichbar. Bitte Verbindung prüfen und noch einmal versuchen.');
+      }
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || 'Der Server hat mit Fehler ' + res.status + ' geantwortet.');
       return d;
@@ -580,7 +588,11 @@
       return true;
     }
     function syncFilterChips() {
-      document.querySelectorAll('#filter .chip').forEach((c) => c.classList.toggle('aktiv', filter[c.dataset.filter] === c.dataset.wert));
+      document.querySelectorAll('#filter .chip').forEach((c) => {
+        const aktiv = filter[c.dataset.filter] === c.dataset.wert;
+        c.classList.toggle('aktiv', aktiv);
+        c.setAttribute('aria-pressed', aktiv);
+      });
     }
     // Solange /margen nicht geladen ist, lässt sich kein Tarif bestimmen: die Tarif-Chips
     // (außer „Alle") sperren, statt falsche Treffer zu zeigen (siehe passt()/tarifTag()).
@@ -673,6 +685,10 @@
     }
     function renderDetail(id) {
       const t = tenants.find((x) => x.id === id); if (!t) return;
+      // Der Fokus steht oft auf einem Knopf INNERHALB von detailInhalt (z. B. „Lösen" nach
+      // einer bestätigten Aktion, die renderDetail() neu aufruft): das folgende innerHTML
+      // entfernt dieses Element aus dem DOM, der Fokus fiele sonst unkontrolliert auf <body>.
+      const hatteFokusInnen = $('detailInhalt').contains(document.activeElement);
       const z = margeVon(id);
       const nums = t.numbers.length ? t.numbers.map((n) => {
         const tag = n.inbound ? '<span class="tag tag--ein" title="Empfangsnummer einer anderen Firma, die hierher weiterleitet">eingehend</span>'
@@ -688,7 +704,7 @@
       $('detailInhalt').innerHTML = `
         <div class="detail__kopf">
           <div style="min-width:0;flex:1">
-            <h2>${esc(t.name)}</h2>
+            <h2 tabindex="-1">${esc(t.name)}</h2>
             <p class="muted">${t.ownerEmail ? esc(t.ownerEmail) : '<em>kein Login</em>'} · angelegt ${datum(t.createdAt)}</p>
           </div>
           <div class="db-aktionen">
@@ -729,6 +745,8 @@
           ${hinweis}
         </div>`;
       wireDetail(t);
+      // Nachfolger für den weggefallenen Fokus: die Detail-Überschrift, nicht <body>.
+      if (hatteFokusInnen) $('detailInhalt').querySelector('h2').focus();
     }
     function wireDetail(t) {
       $('dOeffnen').onclick = () => impersonate(t.id, t.name);

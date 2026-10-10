@@ -362,6 +362,9 @@
     .cal__ev { position: absolute; left: 3px; right: 3px; min-height: 16px; border-radius: 7px; padding: 2px 6px;
       font-size: 11px; line-height: 1.25; overflow: hidden; color: #fff; box-shadow: var(--shadow-sm);
       background: var(--accent); cursor: pointer; }
+    /* Zu kurz für zwei Textzeilen (kurzer Termin + langer Name): einzeilig mit „…" abschneiden,
+       statt umbrechen zu lassen – sonst rutscht die zweite Zeile unter die Box (siehe place()). */
+    .cal__ev--knapp { white-space: nowrap; text-overflow: ellipsis; }
     .cal__ev .t { font-weight: 700; }
     .cal__ev.busy { background: repeating-linear-gradient(45deg, #d7dae2, #d7dae2 6px, #eceef3 6px, #eceef3 12px);
       color: var(--ink-soft); box-shadow: none; cursor: default; }
@@ -419,6 +422,11 @@
       background: var(--white); transition: border-color .15s, box-shadow .15s; }
     .item:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: var(--shadow-sm); }
     .item h4 { font-size: 15px; margin-bottom: 6px; overflow-wrap: anywhere; }
+    /* Wie .item h4, aber für Zeilentitel, die als erste Überschrift nach dem Bereichs-h1 stehen
+       (Reservierungsliste, Gästeliste): dort muss die Ebene h3 sein, sonst überspringt die
+       Gliederung h2 (siehe .vh oben bei pagehead) direkt auf h4 – ein eigener Klassenname statt
+       der generischen h4-Regel, damit alle anderen „.item h4" unverändert bleiben. */
+    .item .item__titel { font-size: 15px; margin: 0 0 6px; overflow-wrap: anywhere; }
     .item p { color: var(--ink-soft); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
     .muted { color: var(--ink-faint); font-size: 14px; }
     .btn.sm { padding: 7px 13px; font-size: 13px; }
@@ -705,6 +713,7 @@
     .if-status { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 12px; }
     .if-status .db-kpi { padding: 10px 14px; } .if-status .db-kpi .v { font-size: 22px; }
     @media (max-width: 1100px) { .if-status { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bk-split { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) { .if-status { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 900px) { .tk-felder { grid-template-columns: 1fr 1fr; } .lv-detailkopf { flex-direction: column; } .lv-detailkopf > div { width: 100%; } }
     .lv-dot.haken { background: #16a34a; position: relative; } .lv-dot.haken::after { content: ''; position: absolute; left: 3px; top: 1px; width: 3px; height: 5px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
     #lvDetail .stack .btn { margin: 0; }
@@ -849,7 +858,7 @@
     /* Mitarbeiter: Bereich sichtbar, aber nichts anfassbar. Suche und Filter bleiben frei. */
     .nur-lesen-hinweis { display: none; margin: 0 0 6px; padding: 6px 10px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 10%, var(--white)); color: var(--ink); font-size: 13px; }
     .nur-lesen .nur-lesen-hinweis { display: inline-block; }
-    .nur-lesen button:not(.nav-item):not([data-deptbar] button), .nur-lesen input:not([type=search]), .nur-lesen textarea, .nur-lesen select { pointer-events: none; opacity: .55; }
+    .nur-lesen button:not(.nav-item):not([data-deptbar] button), .nur-lesen input:not([type=search]), .nur-lesen textarea, .nur-lesen select, .nur-lesen .tk-titel-edit { pointer-events: none; opacity: .55; }
     @media (max-width: 700px) { .kt-felder { grid-template-columns: 1fr; } .kt-nr { display: none; } }
     /* Telefonbuch-Zeile auf schmalen Breiten: Knöpfe in eigene Zeile, Name/Text nie auf 0 quetschen */
     @media (max-width: 900px) {
@@ -904,7 +913,22 @@
       .side__suchknopf svg { width: 22px; height: 22px; }
       .side .foot .btn { padding: 6px 10px; font-size: 12.5px; min-height: 36px; width: auto; }
       .side nav { grid-column: 1 / -1; grid-row: 2; display: flex; overflow-x: auto; gap: 4px; padding: 4px 0 2px; }
-      .deptbar, .rs-tabs { display: flex; overflow-x: auto; flex: 0 1 auto; min-width: 0; max-width: calc(100vw - 58px); scrollbar-width: none; }
+      .deptbar, .rs-tabs { display: flex; overflow-x: auto; flex: 0 1 auto; min-width: 0; max-width: calc(100vw - 58px); scrollbar-width: none;
+        /* Hinweis, dass die Reihe weitergeht, statt sie kommentarlos mitten im Wort enden zu
+           lassen: ein Schatten an jedem Rand, der nur auftaucht, wenn dort wirklich noch etwas
+           verborgen ist. Zwei Grafik-Ebenen pro Seite – eine scrollt mit dem Inhalt mit (deckt
+           den Schatten ab, solange man am jeweiligen Ende steht), die andere hängt fest am
+           Rand (der eigentliche Schatten). */
+        background-image:
+          linear-gradient(to right, var(--paper-2), transparent),
+          linear-gradient(to left, var(--paper-2), transparent),
+          linear-gradient(to right, color-mix(in srgb, var(--ink) 20%, transparent), transparent),
+          linear-gradient(to left, color-mix(in srgb, var(--ink) 20%, transparent), transparent);
+        background-repeat: no-repeat;
+        background-size: 24px 100%, 24px 100%, 14px 100%, 14px 100%;
+        background-position: 0 0, 100% 0, 0 0, 100% 0;
+        background-attachment: local, local, scroll, scroll;
+      }
       .deptbar .deptseg { flex: none; }
       .deptbar::-webkit-scrollbar { display: none; }
       .side nav { min-width: 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -1284,7 +1308,7 @@
     <aside class="side">
       <a class="brand" href="./"><span class="m"><svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
       <!-- Suche über alles: Desktop als Feld über der Navigation, auf dem Handy als Lupe in der Kopfzeile -->
-      <button class="side__suche" id="sucheKnopf" type="button" aria-label="Suchen – über alles (Strg+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Suchen …</span><kbd id="sucheKbd">⌘K</kbd></button>
+      <button class="side__suche" id="sucheKnopf" type="button" aria-label="Suchen … – über alles (Strg+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Suchen …</span><kbd id="sucheKbd">⌘K</kbd></button>
       <button class="side__avatarknopf side__suchknopf" id="sucheKnopfHandy" type="button" aria-label="Suchen – über alles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
       <nav>
         <div class="nav-group">Betrieb</div>
@@ -1357,6 +1381,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Dashboard</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub"><span id="ovSub">—</span> · <span id="ovStatus" class="db-status">—</span></p>
             </div>
             <div class="db-aktionen">
@@ -1395,6 +1420,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Eingehende Anrufe</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="liveSub">Anrufe, die bei dir eingehen.</p>
             </div>
             <div class="db-aktionen">
@@ -1426,6 +1452,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Ausgehende Anrufe</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="obSub">Anrufe, die du über Vocaris führst.</p>
             </div>
             <div class="db-aktionen">
@@ -1561,6 +1588,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Telefonbuch</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="ktSub">Namen zu deinen Nummern.</p>
             </div>
             <div class="db-aktionen">
@@ -1610,6 +1638,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Nachrichten</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="mgSub">Rückrufe und Anliegen, die dein Assistent aufgenommen hat.</p>
             </div>
             <div class="db-aktionen">
@@ -1638,6 +1667,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Vorgänge</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="tkSub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
             </div>
             <div class="db-aktionen">
@@ -1691,6 +1721,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Auswertung</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="awSub">Wann angerufen wird, worum es geht und wie die Gespräche laufen.</p>
             </div>
             <div class="db-aktionen">
@@ -1721,6 +1752,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Wissensdatenbank</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="nur-lesen-hinweis">Nur Lesen: Einträge ändert der Inhaber oder ein Admin.</p>
               <p class="pagesub" id="kbSub">Worüber dein Assistent Auskunft gibt. Er antwortet nur auf Basis dieser Einträge.</p>
             </div>
@@ -1814,6 +1846,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Offene Fragen</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="gapSub">Fragen, die dein Assistent nicht beantworten konnte.</p>
             </div>
             <div class="db-aktionen">
@@ -1834,6 +1867,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Assistent</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="asSub">Name, Begrüßung, Verhalten, Öffnungszeiten, Sprache und Stimme.</p>
             </div>
             <div class="db-aktionen">
@@ -2010,6 +2044,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Termine</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="nur-lesen-hinweis">Nur Lesen: Terminregeln ändert der Inhaber oder ein Admin.</p>
               <p class="pagesub">Dein Assistent vergibt am Telefon Termine auf Basis deiner Öffnungszeiten. Gebuchte Termine erscheinen hier und im verbundenen Kalender.</p>
             </div>
@@ -2129,6 +2164,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Schnittstellen</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub">Leite Anliegen, Termine und offene Fragen dorthin, wo dein Team arbeitet: Benachrichtigungen, CRM, Ticketsystem, Automatisierung oder eigene Software.</p>
             </div>
             <div class="db-aktionen">
@@ -2282,6 +2318,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Telefonnummer</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z. B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
             </div>
             <div class="db-aktionen">
@@ -2337,10 +2374,11 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Zugänge</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub" id="tmSub">Wer mit diesem Konto arbeitet.</p>
             </div>
             <div class="db-aktionen">
-              <button class="btn btn--primary sm" type="button" id="tmNeu" hidden>Zugang anlegen</button>
+              <button class="btn btn--primary sm" type="button" id="tmNeu" hidden aria-expanded="false" aria-controls="tmForm">Zugang anlegen</button>
             </div>
           </div>
 
@@ -2350,11 +2388,11 @@
               <div><label class="waehl__label" for="tmPw">Passwort (leer lassen: Einladung per E-Mail)</label><input id="tmPw" type="password" placeholder="leer = Einladungslink" autocomplete="new-password" /></div>
               <div><label class="waehl__label" for="tmStufe">Stufe</label>
                 <select id="tmStufe">
-                  <option value="member">Mitarbeiter: Anrufe, Nachrichten, Vorgänge, Termine</option>
-                  <option value="admin">Admin: zusätzlich Einstellungen und Zugänge</option>
+                  <option value="member">Mitarbeiter</option>
+                  <option value="admin">Admin</option>
                 </select></div>
             </div>
-            <p class="muted" style="margin:10px 0 0;font-size:13px">Ohne Passwort bekommt die Person eine Einladung per E-Mail und setzt ihr Passwort selbst. Gibt es die E-Mail schon als Vocaris-Login, wird dieser Login hinzugefügt.</p>
+            <p class="muted" style="margin:10px 0 0;font-size:13px">Mitarbeiter: Anrufe, Nachrichten, Vorgänge und Termine. Admin: zusätzlich Einstellungen und Zugänge. Ohne Passwort bekommt die Person eine Einladung per E-Mail und setzt ihr Passwort selbst. Gibt es die E-Mail schon als Vocaris-Login, wird dieser Login hinzugefügt.</p>
             <div class="stack" style="margin-top:12px">
               <button class="btn btn--primary" type="button" id="tmSpeichern">Anlegen</button>
               <button class="btn btn--ghost" type="button" id="tmAbbrechen">Abbrechen</button>
@@ -2369,6 +2407,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Tischplan</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub">Ordne Tische per Drag &amp; Drop an, ändere Form/Größe und platziere Elemente wie Haupteingang und Toilette. Getrennt nach Bereich (drinnen, draußen, Bar).</p>
             </div>
             <div class="db-aktionen">
@@ -2476,12 +2515,13 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Reservierungen</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub">Dein Tages-Cockpit: Reservierungen als Liste oder Zeitleiste, direkt anlegen, Status pflegen. Einstellungen unten.</p>
             </div>
             <div class="db-aktionen">
               <button id="rsGotoPlan" class="btn btn--ghost sm" type="button">Tischplan</button>
               <button id="rsWalkOpen" class="btn btn--ghost sm" type="button">Walk-in</button>
-              <button id="rsNewBtn" class="btn btn--primary sm" type="button">+ Reservierung</button>
+              <button id="rsNewBtn" class="btn btn--primary sm" type="button" aria-expanded="false" aria-controls="rsNewPanel">+ Reservierung</button>
             </div>
           </div>
 
@@ -2673,6 +2713,7 @@
           <div class="db-kopf">
             <div>
               <h1 class="pagehead">Gäste</h1>
+              <h2 class="vh">Inhalt</h2>
               <p class="pagesub">Deine Kundenkartei – automatisch aus Reservierungen. Öffne einen Gast für Stammdaten, Kennzeichnungen, Anmerkungen &amp; Newsletter. Der Assistent kennt diese Angaben beim nächsten Anruf.</p>
             </div>
           </div>
@@ -2745,7 +2786,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Assistent</span>
     </button>
-    <div id="waPanel" class="wa-panel" role="dialog" aria-label="Wissens-Assistent" inert>
+    <div id="waPanel" class="wa-panel" role="dialog" aria-modal="true" aria-label="Wissens-Assistent" inert>
       <div class="wa-head">
         <div>
           <div class="wa-title">Wissens-Assistent</div>
@@ -2902,6 +2943,10 @@
       toastUhr = setTimeout(() => (t.className = 'toast'), dauer);
       return t;
     }
+    /** Einen noch laufenden Toast sofort beenden – z. B. beim Bereichswechsel, damit eine Meldung
+     *  aus dem vorherigen Kontext (etwa einem gerade geschlossenen Dialog) nicht in den neuen
+     *  Bereich hinüberhängt. */
+    function toastSchliessen() { if (toastUhr) { clearTimeout(toastUhr); toastUhr = null; } const t = $('toast'); if (t) t.className = 'toast'; }
     /** Hilfe für update()/delete(): wertet den Fehler aus, statt bei RLS-Ablehnung oder
      *  Netzwerkfehler trotzdem "Erfolg" zu melden. meldung erscheint nur bei echtem Erfolg. */
     async function schreiben(promise, meldung) {
@@ -3097,12 +3142,13 @@
         }
         document.querySelectorAll('.section').forEach((s) => s.classList.toggle('hidden', s.id !== b.dataset.target));
         document.querySelectorAll('.nav-item').forEach((n) => { const an = n === b; n.classList.toggle('active', an); if (an) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current'); });
+        toastSchliessen();
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
         document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
-        if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function') loadGuests();
+        if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function' && (!guestDatenZeit || Date.now() - guestDatenZeit > 60000)) loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten && Date.now() - dbDatenZeit > 60000) ladeDashboard();
         if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
         if (typeof syncTabbar === 'function') syncTabbar(b.dataset.target);
@@ -3216,6 +3262,27 @@
         const warOffen = !liste.hidden;
         zeigen(false); mehrZeigen(false);
         if (warOffen && liste.contains(document.activeElement)) knopf.focus();
+      });
+      // Pfeiltasten bewegen den Fokus innerhalb des geöffneten Menüs (Darstellung, Passwort
+      // ändern, Abmelden) statt ihn auf dem Knopf stehen zu lassen – gängiges Menü-Tastaturmuster.
+      const fokusbar = () => [...liste.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+        .filter((x) => !x.disabled && x.offsetParent !== null);
+      knopf.addEventListener('keydown', (e) => {
+        if (liste.hidden || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+        const f = fokusbar(); if (!f.length) return;
+        e.preventDefault(); f[e.key === 'ArrowDown' ? 0 : f.length - 1].focus();
+      });
+      liste.addEventListener('keydown', (e) => {
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+        const f = fokusbar(); if (!f.length) return;
+        e.preventDefault();
+        const i = f.indexOf(document.activeElement);
+        let next;
+        if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = f.length - 1;
+        else if (e.key === 'ArrowDown') next = i < 0 ? 0 : (i + 1) % f.length;
+        else next = i < 0 ? f.length - 1 : (i - 1 + f.length) % f.length;
+        f[next].focus();
       });
     })();
 
@@ -4009,7 +4076,7 @@
 
       const surf = document.createElement('div');
       const radius = shape === 'round' ? '50%' : (shape === 'bench' ? '6px' : '11px');
-      const col = st ? OCC_COL[st.status] : (cleaning ? { b: '#b08900', bg: '#fbf3d0' } : { b: '#3f7d63', bg: '#ffffff' });
+      const col = st ? OCC_COL[st.status] : (cleaning ? { b: '#b08900', bg: '#fbf3d0' } : { b: '#3f7d63', bg: 'var(--white)' });
       surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + col.b +
         ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
       const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? '🧹 abräumen' : (seats + 'P'));
@@ -4075,8 +4142,10 @@
         });
       }
 
-      // box ist per Zeigerereignis (Klick/Touch) erreichbar, aber ohne tabindex nicht per Tastatur fokussierbar –
-      // openTableModal() nimmt dafür einfach das zuvor fokussierte Element als Rückziel (siehe fokusFalle).
+      // Per Tastatur erreichbar machen: box bekommt role="button" + tabindex, Enter/Leertaste öffnen
+      // denselben Dialog wie ein Klick (siehe keydown-Listener in makeTableDraggable).
+      box.setAttribute('role', 'button'); box.tabIndex = 0;
+      box.setAttribute('aria-label', (t.name || 'Tisch') + ', ' + (occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? 'wird abgeräumt' : seats + ' Plätze, frei')));
       makeTableDraggable(box, t, plan, () => openTableModal(t));
       return box;
     }
@@ -4200,6 +4269,14 @@
           t.pos_x = px; t.pos_y = py;
           await schreibenGeprueft(sb.from('restaurant_tables').update({ pos_x: px, pos_y: py }).eq('id', t.id).select('id'));
         } else if (onClick) { onClick(); } // Klick ohne Ziehen → Tisch-Aktionen
+      });
+      // Tastatur: Enter/Leertaste wie ein Klick – nur wenn der Fokus auf der box selbst liegt
+      // (Anfasser/Entfernen/Drehen sind eigene <button>/Elemente mit eigener Tastatur-Bedienung).
+      box.addEventListener('keydown', (e) => {
+        if (e.target !== box) return;
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        if (onClick) onClick();
       });
     }
 
@@ -4425,7 +4502,8 @@
       const ns = guestNoShowCount(r.customer_phone);
       const repeat = ns >= 2;
       const nsBadge = ns > 0 ? '<span title="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
-      const h = document.createElement('h4');
+      // h3 statt h4: dies ist die erste Überschrift nach dem Bereichs-h1/h2 (siehe .item__titel oben).
+      const h = document.createElement('h3'); h.className = 'item__titel';
       h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
       p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
@@ -4441,14 +4519,29 @@
       return div;
     }
     // ---- Tages-Cockpit (Liste ⇄ Timeline) + Walk-ins ----
+    // Reservierungen + Tisch-Zuordnung des gewählten Tages: von Kpis/View/Timeline gemeinsam
+    // genutzt statt dreifach geladen. refreshDay() setzt den Zwischenspeicher vor jedem Lauf
+    // zurück, damit Statusänderungen/Tageswechsel immer frische Daten bekommen.
+    let rsTagesPromise = null;
+    function rsTagesLaden(date) {
+      if (!rsTagesPromise) rsTagesPromise = (async () => {
+        const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+          .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
+        const items = res || [];
+        const ids = items.map((r) => r.id);
+        let jt = [];
+        if (ids.length) { const { data } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); jt = data || []; }
+        return { items, jt };
+      })();
+      return rsTagesPromise;
+    }
     // ---- Tages-Überblick (KPI-Leiste) ----
     async function renderDayKpis() {
       const host = $('rsDayKpis'); if (!host) return;
       const date = $('rsDayDate').value; if (!date) { host.classList.add('hidden'); return; }
       await ensureGuestVisits();
-      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
-        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
-      const items = (res || []).filter((r) => r.status !== 'cancelled');
+      const { items: tagesRes } = await rsTagesLaden(date);
+      const items = tagesRes.filter((r) => r.status !== 'cancelled');
       if (!items.length) { host.innerHTML = ''; host.classList.add('hidden'); return; }
       const active = items.filter((r) => r.status !== 'no_show');
       const covers = active.reduce((a, r) => a + (r.party_size || 0), 0);
@@ -4479,6 +4572,7 @@
     }
     let rsDayView = 'list';
     async function refreshDay() {
+      rsTagesPromise = null;                        // frisch laden, von allen drei Teilen gemeinsam genutzt
       await renderDayKpis();                       // Überblick oben
       await renderDayView();                       // Zusammenfassung + Liste
       if (rsDayView === 'timeline') await renderTimeline();
@@ -4488,7 +4582,7 @@
     }
     // ---- Gäste / CRM ----
     const GUEST_TAG_SUGGEST = ['Stammgast', 'VIP', 'Allergiker', 'Vegetarier', 'Veganer', 'Familie/Kind', 'Geburtstag', 'Firmenkunde', 'Weinliebhaber', 'Rollstuhl'];
-    let guestData = [], guestProfiles = {};
+    let guestData = [], guestProfiles = {}, guestDatenZeit = 0;
     async function loadGuests() {
       const list = $('guestList'); if (!list) return;
       backToGuestList();
@@ -4527,6 +4621,7 @@
         const pname = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.name || '';
         return { ...g, name: g.name || pname, email: g.email || p.email || '', phone: g.phone || p.phone || '', preferences: p.preferences || '', newsletter: !!p.newsletter, tags: Array.isArray(p.tags) ? p.tags : [] };
       }).sort((a, b) => (b.visits - a.visits) || String(a.name).localeCompare(String(b.name)));
+      guestDatenZeit = Date.now();
       renderGuests();
     }
     function backToGuestList() {
@@ -4556,7 +4651,8 @@
       const star = g.visits >= 2 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:var(--accent-ink);background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin-left:8px">★ Stammgast</span>' : '';
       const ns = g.noShows > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + g.noShows + '× No-Show</span>' : '';
       const nl = g.newsletter ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:#0a7d4b;background:var(--gut-zart);border-radius:999px;padding:2px 9px;margin-left:6px">✉ Newsletter</span>' : '';
-      const h = document.createElement('h4'); h.innerHTML = esc(g.name || 'Ohne Namen') + star + ns + nl;
+      // h3 statt h4: dies ist die erste Überschrift nach dem Bereichs-h1/h2 (siehe .item__titel oben).
+      const h = document.createElement('h3'); h.className = 'item__titel'; h.innerHTML = esc(g.name || 'Ohne Namen') + star + ns + nl;
       const p = document.createElement('p');
       p.innerHTML = esc([g.phone, g.email].filter(Boolean).join(' · ')) + ' · ' + g.visits + ' Besuch' + (g.visits === 1 ? '' : 'e') + ' · zuletzt ' + lastLbl + (g.tags && g.tags.length ? '<br>' + g.tags.map((t) => tagMini(esc(t))).join('') : '');
       div.append(h, p);
@@ -4615,7 +4711,7 @@
       $('guestNewRes').onclick = () => {
         document.querySelector('.nav-item[data-target="sec-restaurant"]')?.click();
         setTimeout(() => {
-          $('rsNewPanel')?.classList.remove('hidden');
+          $('rsNewPanel')?.classList.remove('hidden'); $('rsNewBtn')?.setAttribute('aria-expanded', 'true');
           if ($('rsResName')) $('rsResName').value = g.name || '';
           if ($('rsResPhone')) $('rsResPhone').value = (p.phone || g.phone || '');
           if ($('rsResEmail')) $('rsResEmail').value = (p.email || g.email || '');
@@ -4753,11 +4849,9 @@
       const date = $('rsDayDate').value; if (!date) return;
       await ensureGuestVisits();
       const q = ($('rsDaySearch').value || '').trim().toLowerCase();
-      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
-        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
-      const map = {}; const ids = (res || []).map((r) => r.id);
-      if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt || []) (map[j.reservation_id] ||= []).push(j.table_id); }
-      let items = (res || []).filter((r) => r.status !== 'cancelled');
+      const { items: res, jt } = await rsTagesLaden(date);
+      const map = {}; for (const j of jt) (map[j.reservation_id] ||= []).push(j.table_id);
+      let items = res.filter((r) => r.status !== 'cancelled');
       if (q) items = items.filter((r) => (r.customer_name || '').toLowerCase().includes(q));
       const covers = items.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
       const sm = $('rsDaySummary'); if (sm) sm.textContent = items.length ? (items.length + ' Reservierung' + (items.length === 1 ? '' : 'en') + ' · ' + covers + ' Gäste') : 'Keine Reservierungen';
@@ -4797,7 +4891,7 @@
     $('rsViewTimeline')?.addEventListener('click', () => setDayView('timeline'));
     $('rsViewWaitlist')?.addEventListener('click', () => setDayView('waitlist'));
     $('rsViewAnalytics')?.addEventListener('click', () => setDayView('analytics'));
-    $('rsNewBtn')?.addEventListener('click', () => { const p = $('rsNewPanel'); p.classList.toggle('hidden'); if (!p.classList.contains('hidden')) { if (!$('rsResDate').value) $('rsResDate').value = $('rsDayDate').value; p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+    $('rsNewBtn')?.addEventListener('click', () => { const p = $('rsNewPanel'); const nunVersteckt = p.classList.toggle('hidden'); $('rsNewBtn').setAttribute('aria-expanded', String(!nunVersteckt)); if (!nunVersteckt) { if (!$('rsResDate').value) $('rsResDate').value = $('rsDayDate').value; p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
     $('rsWalkOpen')?.addEventListener('click', () => { const p = $('rsWalkPanel'); p?.classList.toggle('hidden'); if (p && !p.classList.contains('hidden')) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     $('rsWalkBtn')?.addEventListener('click', doWalkin);
 
@@ -4814,15 +4908,14 @@
     async function renderTimeline() {
       const wrap = $('rsTimeline'); if (!wrap) return;
       const date = $('rsDayDate').value; if (!date) return;
-      const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
-        .in('status', ['booked', 'seated', 'completed'])
-        .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString());
+      const { items: alleRes, jt } = await rsTagesLaden(date);
+      const res = alleRes.filter((r) => ['booked', 'seated', 'completed'].includes(r.status));
+      const idSet = new Set(res.map((r) => r.id));
       const map = {};
-      const ids = (res ?? []).map((r) => r.id);
-      if (ids.length) { const { data: jt } = await sb.from('reservation_tables').select('reservation_id, table_id').in('reservation_id', ids); for (const j of jt ?? []) (map[j.table_id] ||= []).push(j.reservation_id); }
+      for (const j of jt) if (idSet.has(j.reservation_id)) (map[j.table_id] ||= []).push(j.reservation_id);
       // Fallback: Haupttisch, falls keine Verknüpfung
-      for (const r of res ?? []) if (r.table_id && !(map[r.table_id] || []).includes(r.id)) (map[r.table_id] ||= []).push(r.id);
-      const resById = Object.fromEntries((res ?? []).map((r) => [r.id, r]));
+      for (const r of res) if (r.table_id && !(map[r.table_id] || []).includes(r.id)) (map[r.table_id] ||= []).push(r.id);
+      const resById = Object.fromEntries(res.map((r) => [r.id, r]));
       const { lo, hi } = dayInterval(date);
       const span = hi - lo;
       const PXMIN = Math.max(1.4, 760 / span); // px pro Minute
@@ -5084,7 +5177,7 @@
         const r = await apiFetch('/api/restaurant/reserve', { method: 'POST', headers: numAuth(), body: JSON.stringify(body) });
         const d = await r.json();
         hint.textContent = d.message || (r.ok ? 'Reserviert.' : 'Fehler.');
-        if (r.ok && d.ok) { $('rsResName').value = ''; $('rsResTime').value = ''; $('rsResPhone').value = ''; $('rsResEmail').value = ''; $('rsResNotes').value = ''; $('rsTimes').innerHTML = ''; $('rsNewPanel')?.classList.add('hidden'); loadRestaurant(); }
+        if (r.ok && d.ok) { $('rsResName').value = ''; $('rsResTime').value = ''; $('rsResPhone').value = ''; $('rsResEmail').value = ''; $('rsResNotes').value = ''; $('rsTimes').innerHTML = ''; $('rsNewPanel')?.classList.add('hidden'); $('rsNewBtn')?.setAttribute('aria-expanded', 'false'); loadRestaurant(); }
       } catch (e) { hint.textContent = e.message || 'Fehler.'; }
     });
 
@@ -5263,7 +5356,7 @@
       const tags = lvTagsVon(c);
       if (tags.length) { const w = document.createElement('div'); w.className = 'lv-etiketten'; tags.forEach((t) => { const e = document.createElement('span'); e.className = 'lv-etikett' + (A.tag === t ? ' aktiv' : ''); e.textContent = t; e.dataset.tip = 'Tag · Klick filtert die Liste'; e.onclick = (ev) => { ev.stopPropagation(); lvTagFilterSetzen(A, A.tag === t ? '' : t); }; w.append(e); }); z.querySelector('.lv-mitte').append(w); }
       z.onclick = () => { A.auswahl = c.id; renderLive(); };
-      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-selected', c.id === LV.auswahl ? 'true' : 'false');
+      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', c.id === LV.auswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
       // Kontrolle dort) – sonst bliebe der Fokus auf einer Zeile, die unter dem Detail verschwindet
       // (auf dem Handy) bzw. bekäme der Nutzer die neue Auswahl nicht mit.
@@ -5367,7 +5460,10 @@
       $(LV.sec).querySelector('.lv-filter')?.classList.toggle('hidden', alle.length === 0);
       const liste = lvGefiltert(); lvEl('Anzahl').textContent = liste.length + (liste.length === 1 ? ' Anruf' : ' Anrufe');
       lvTagFilterZeichnen();
-      if (LV.auswahl && !liveCalls.has(LV.auswahl)) LV.auswahl = null;
+      // Nicht nur prüfen, ob der Anruf überhaupt noch existiert, sondern ob er auch im aktuellen
+      // Filter (Suche/Zeitraum/Stimmung/…) auftaucht – sonst bliebe rechts ein Anruf stehen, der
+      // links gar nicht mehr zu sehen ist.
+      if (LV.auswahl && !liste.some((x) => x.call.id === LV.auswahl)) LV.auswahl = null;
       if (!LV.auswahl && liste.length && window.innerWidth > 900) LV.auswahl = liste[0].call.id;
       const ul = lvEl('Liste'); ul.innerHTML = '';
       if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Anrufe für diese Auswahl.</p>'
@@ -5397,7 +5493,7 @@
       const bekannt = typeof ktName === 'function' ? ktName(c.caller_number) : '';
       d.querySelector('.lv-nr').textContent = bekannt || fmtNr(c.caller_number);
       d.querySelector('.lv-zurueck').onclick = () => { A.auswahl = null; renderLive(); };
-      const meta = d.querySelector('.lv-meta'); const chip = (t, tip, klick) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); return s; };
+      const meta = d.querySelector('.lv-meta'); const chip = (t, tip, klick) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; if (klick) { s.classList.add('klick'); s.onclick = klick; s.tabIndex = 0; s.setAttribute('role', 'button'); s.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); klick(); }); } meta.append(s); return s; };
       if (live) { const s = document.createElement('span'); s.className = 'live-pill'; s.innerHTML = '● Live · <span data-seit></span>'; s.querySelector('[data-seit]').dataset.seit = c.started_at; s.querySelector('[data-seit]').textContent = fmtSeit(c.started_at); meta.append(s); }
       if (bekannt) chip(fmtNr(c.caller_number), 'Nummer aus dem Telefonbuch');
       if (raus) chip(LV_ART[c.mode] || 'Assistent', LV_ART_TIP[c.mode] || LV_ART_TIP.assistant, () => { A.art = A.art === (c.mode || 'assistant') ? '' : (c.mode || 'assistant'); document.querySelectorAll('#obArt .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.art || '') === A.art)))); renderLive(); });
@@ -6010,7 +6106,9 @@
     const TASTEN = [['1', ''], ['2', 'ABC'], ['3', 'DEF'], ['4', 'GHI'], ['5', 'JKL'], ['6', 'MNO'], ['7', 'PQRS'], ['8', 'TUV'], ['9', 'WXYZ']];
     /** Was der Screenreader zu einer Taste sagt; Buchstaben einzeln, sonst wird „ABC" zum Wort. */
     const TASTEN_NAMEN = { '*': 'Stern', '#': 'Raute', '+': 'Plus', '⌫': 'Letzte Ziffer löschen' };
-    const tasteBenennen = (zeichen, buchstaben) => TASTEN_NAMEN[zeichen] || (zeichen + (buchstaben ? ' ' + buchstaben : ''));
+    // Ohne Leerzeichen vor den Buchstaben: sichtbar steht „2ABC" (ohne Trenner), das Label soll
+    // denselben Text enthalten (WCAG 2.5.3 Label in Name), nicht „2 ABC".
+    const tasteBenennen = (zeichen, buchstaben) => TASTEN_NAMEN[zeichen] || (zeichen + (buchstaben || ''));
 
     /**
      * Tastenfeld bauen. Dasselbe Gitter dient zwei Zwecken:
@@ -6195,9 +6293,9 @@
       });
       const del = knopf('Löschen', '', async () => {
         if (!confirm('Diesen Anruf samt Gesprächsverlauf endgültig löschen?')) return;
-        await sb.from('call_turns').delete().eq('call_id', c.id);
-        const { error } = await sb.from('calls').delete().eq('id', c.id);
-        if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; }
+        const { error: turnsFehler } = await sb.from('call_turns').delete().eq('call_id', c.id);
+        if (turnsFehler) { toast('Fehler: ' + fehlerText(turnsFehler), 'err'); return; }
+        if (!(await schreibenGeprueft(sb.from('calls').delete().eq('id', c.id).select('id')))) return;
         liveCalls.delete(c.id); for (const A of Object.values(LV_ANSICHTEN)) if (A.auswahl === c.id) A.auswahl = null; renderLive(); toast('Anruf gelöscht.');
       });
       del.style.marginLeft = 'auto';
@@ -6335,7 +6433,7 @@
       const zeiten = iv.length ? iv.map(([a, b]) => a + '–' + b).join(', ') + ' Uhr' : 'geschlossen';
       const stimme = (typeof VOICES !== 'undefined' ? VOICES.find((v) => v.id === $('voiceId').value) : null);
       const fakten = [
-        ['Rolle', $('roleDesc').value.trim() || '–'],
+        ['Rolle', escHtml($('roleDesc').value.trim()) || '–'],
         ['Ton', TON_LABEL[$('tone').value] || $('tone').value],
         ['Sprache', $('language').value === 'en' ? 'Englisch' : 'Deutsch'],
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
@@ -6579,12 +6677,6 @@
     // ---- Wissensdatenbank (Liste links nach Kategorie, Eintrag rechts) ----
     let kbItems = [], kbAuswahl = null, kbSuche = '', kbKat = '', kbSuchTimer = null, kbNeuId = null;
     function renderKb(items) { kbItems = items || []; if (kbAuswahl && !kbItems.some((x) => x.id === kbAuswahl)) kbAuswahl = null; renderWissen(); }
-    async function loadKb() {
-      if (!tenant) return;
-      const { data, error } = await sb.from('knowledge_base').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).order('created_at');
-      if (error) { toast('Fehler beim Laden der Wissensdatenbank: ' + fehlerText(error), 'err'); const ul = $('kbListe'); if (ul && !kbItems.length) ul.innerHTML = fehlerZustand(loadKb); return; }
-      renderKb(data || []);
-    }
     const kbKatName = (it) => it.category || 'Allgemein';
     function kbGefiltert(ausser) {
       const s = kbSuche.trim().toLowerCase();
@@ -6628,7 +6720,7 @@
       z.querySelector('.lv-text').innerHTML = markierenMit((it.content || '').replace(/\s+/g, ' ').slice(0, 140), kbSuche);
       z.querySelector('.lv-rechts span:last-child').textContent = new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
       z.onclick = () => { kbAuswahl = it.id; renderWissen(); };
-      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-selected', it.id === kbAuswahl ? 'true' : 'false');
+      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', it.id === kbAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
       // Kontrolle dort) – sonst bliebe der Fokus auf einer Zeile, die unter dem Detail verschwindet
       // (auf dem Handy) bzw. bekäme der Nutzer die neue Auswahl nicht mit.
@@ -6645,8 +6737,7 @@
       return z;
     }
     async function kbUpdate(it, patch, meldung) {
-      const { error } = await sb.from('knowledge_base').update(patch).eq('id', it.id);
-      if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return false; }
+      if (!(await schreibenGeprueft(sb.from('knowledge_base').update(patch).eq('id', it.id).select('id')))) return false;
       Object.assign(it, patch); if (meldung) toast(meldung); return true;
     }
     function renderWissenDetail() {
@@ -6662,7 +6753,7 @@
       const tt = d.querySelector('[data-titel]'); tt.textContent = it.title;
       d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = it.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== it.title) { await kbUpdate(it, { title: v.slice(0, 200) }, 'Titel geändert.'); renderWissen(); } else renderWissenDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = it.title; inp.blur(); } }; };
       const meta = d.querySelector('.lv-meta'); const mchip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
-      mchip(kbKatName(it)); if (deptSichtbar) mchip(DEPT_LABEL[it.department] || it.department); mchip('angelegt ' + new Date(it.created_at).toLocaleDateString('de-DE')); mchip((it.content || '').length + ' Zeichen', 'Länge des Inhalts');
+      mchip(kbKatName(it)); if (deptSichtbar) mchip(DEPT_LABEL[it.department] || it.department); mchip('angelegt ' + new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })); mchip((it.content || '').length + ' Zeichen', 'Länge des Inhalts');
       if (kbIstVorlage(it)) { const v = document.createElement('span'); v.className = 'kb-vorlage'; v.textContent = 'Vorlage'; v.dataset.tip = 'Noch nicht angepasst – ersetze die eckigen Klammern mit euren Angaben und speichere, dann fällt der Platzhalter weg'; meta.append(v); }
       const kopf = d.querySelector('[data-kopf]'); const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'btn btn--primary sm'; sp.textContent = 'Speichern'; sp.dataset.tip = 'Strg+Enter im Text'; kopf.append(sp);
       const fCat = d.querySelector('[data-f=category]'); fCat.value = it.category || '';
@@ -6678,7 +6769,7 @@
       knopf('Probefrage stellen', '', () => { if (typeof waOpen === 'function') { waOpen(true); const w = $('waText'); if (w) { w.value = 'Was weißt du zu „' + it.title + '“?'; w.focus(); } } });
       knopf('Kopieren', '', async () => { try { await navigator.clipboard.writeText(it.title + '\n' + (it.content || '')); toast('Kopiert.'); } catch { toast('Kopieren nicht möglich.', 'err'); } });
       knopf('Duplizieren', '', async () => { const { data, error } = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: it.department || currentDept, category: it.category, title: it.title + ' (Kopie)', content: it.content }).select().maybeSingle(); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } if (data) { kbItems.push(data); kbAuswahl = data.id; } toast('Kopie angelegt.'); renderWissen(); });
-      const del = knopf('Löschen', '', async () => { if (!confirm('Eintrag „' + it.title + '“ löschen?')) return; const { error } = await sb.from('knowledge_base').delete().eq('id', it.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } kbItems = kbItems.filter((x) => x.id !== it.id); kbAuswahl = null; toast('Gelöscht.'); renderWissen(); }); del.style.marginLeft = 'auto';
+      const del = knopf('Löschen', '', async () => { if (!confirm('Eintrag „' + it.title + '“ löschen?')) return; if (!(await schreibenGeprueft(sb.from('knowledge_base').delete().eq('id', it.id).select('id')))) return; kbItems = kbItems.filter((x) => x.id !== it.id); kbAuswahl = null; toast('Gelöscht.'); renderWissen(); }); del.style.marginLeft = 'auto';
     }
     $('addKbBtn').onclick = async () => {
       if (!tenant) return;
@@ -7131,7 +7222,7 @@
       z.querySelector('.lv-text').innerHTML = g.status === 'open' ? 'Frage aus einem Anruf' : (g.answer ? markierenMit(g.answer.replace(/\s+/g, ' ').slice(0, 140), gapSuche) : 'verworfen');
       const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(g.status === 'open' ? g.created_at : (g.answered_at || g.created_at)); const dep = g.department || 'general'; r[1].textContent = dep !== 'general' ? (DEPT_LABEL[dep] || dep) : '';
       z.onclick = () => { gapAuswahl = g.id; renderFragen(); };
-      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-selected', g.id === gapAuswahl ? 'true' : 'false');
+      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', g.id === gapAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
       // Kontrolle dort) – sonst bliebe der Fokus auf einer Zeile, die unter dem Detail verschwindet
       // (auf dem Handy) bzw. bekäme der Nutzer die neue Auswahl nicht mit.
@@ -7456,7 +7547,7 @@
       const plan = String(sub?.plan || 'trial').toLowerCase(); const inkl = PLAN_MINUTEN[plan];
       const balken = q('dbMinutenBalken');
       if (inkl) { const qq = Math.min(100, minuten / inkl * 100); balken.style.width = qq + '%'; balken.classList.toggle('warn', qq > 90); q('dbMinutenSub').textContent = Math.round(minuten) + ' von ' + inkl + ' Minuten im Tarif ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
-      else { balken.style.width = '0%'; q('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE') : '') : 'Tarif ' + plan; }
+      else { balken.style.width = '0%'; q('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '') : 'Tarif ' + plan; }
       q('ovMsg').textContent = msgN;
       q('dbOffen').textContent = kz.offen ?? 0; const ue = q('dbUeber'); ue.className = 'd' + (kz.ueberfaellig ? ' minus' : ''); ue.textContent = kz.ueberfaellig ? kz.ueberfaellig + ' überfällig' : 'nichts überfällig';
       q('ovGaps').textContent = gapsN;
@@ -7715,7 +7806,10 @@
       const sel = $('mgKategorie'); const cur = mgKategorie; sel.innerHTML = '<option value="">Alle Kategorien</option>';
       kats.forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = k + ' (' + (kN[k] || 0) + ')'; sel.append(o); }); sel.value = kats.includes(cur) ? cur : ''; mgKategorie = sel.value;
       const liste = mgGefiltert(); $('mgAnzahl').textContent = liste.length + (liste.length === 1 ? ' Nachricht' : ' Nachrichten');
-      if (mgAuswahl && !mgItems.has(mgAuswahl)) mgAuswahl = null;
+      // Nicht nur prüfen, ob die Nachricht überhaupt noch existiert, sondern ob sie auch im aktuellen
+      // Filter (Suche/Status/Dringlichkeit/Kategorie) auftaucht – sonst bliebe rechts eine Nachricht
+      // stehen, die links gar nicht mehr zu sehen ist.
+      if (mgAuswahl && !liste.some((m) => m.id === mgAuswahl)) mgAuswahl = null;
       if (!mgAuswahl && liste.length && window.innerWidth > 900) mgAuswahl = liste[0].id;
       const ul = $('mgListe'); ul.innerHTML = '';
       if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Nachrichten für diese Auswahl.</p>'
@@ -7735,7 +7829,7 @@
       z.querySelector('.lv-text').innerHTML = markierenMit(m.summary || 'ohne Zusammenfassung', mgSuche); if (m.summary && m.summary.length > 70) z.querySelector('.lv-text').dataset.tip = m.summary;
       const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(m.created_at); r[1].textContent = erledigt ? 'erledigt' : (m.caller_name ? fmtNr(m.callback_number || m.caller_number || '') : '');
       z.onclick = () => { mgAuswahl = m.id; renderNachrichten(); };
-      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-selected', m.id === mgAuswahl ? 'true' : 'false');
+      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', m.id === mgAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
       // Kontrolle dort) – sonst bliebe der Fokus auf einer Zeile, die unter dem Detail verschwindet
       // (auf dem Handy) bzw. bekäme der Nutzer die neue Auswahl nicht mit.
@@ -7775,7 +7869,7 @@
       if (nr) chip(fmtNr(nr), 'Rückrufnummer · Klick kopiert sie', async () => { try { await navigator.clipboard.writeText(nr); toast('Nummer kopiert.'); } catch { toast(nr); } });
       if (dk) chip(MG_DRING[dk][1], 'Dringlichkeit, vom Assistenten eingeschätzt · Klick filtert die Liste', () => { mgDringend = mgDringend === dk ? '' : dk; document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.dringend || '') === mgDringend)))); renderNachrichten(); });
       if (m.category) chip(m.category, 'Kategorie · Klick filtert die Liste', () => { mgKategorie = mgKategorie === m.category ? '' : m.category; renderNachrichten(); });
-      if (erledigt) chip('erledigt' + (m.done_at ? ' am ' + new Date(m.done_at).toLocaleDateString('de-DE') : ''));
+      if (erledigt) chip('erledigt' + (m.done_at ? ' am ' + new Date(m.done_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''));
       const eb = d.querySelector('[data-erledigt]'); eb.textContent = erledigt ? 'Wieder öffnen' : 'Erledigt'; eb.className = 'btn sm ' + (erledigt ? 'btn--ghost' : 'btn--primary'); eb.dataset.tip = erledigt ? 'Zurück in „Offen“' : 'Als erledigt markieren (Taste E)';
       eb.onclick = async () => { if (await mgAendern(m, erledigt ? { status: 'new', done_at: null } : { status: 'done', done_at: new Date().toISOString() })) { toast(erledigt ? 'Wieder geöffnet.' : 'Erledigt.'); renderNachrichten(); } };
       const zs = d.querySelector('[data-zusammenfassung]'); zs.innerHTML = m.summary ? markierenMit(m.summary, mgSuche) : '<span class="muted">Keine Zusammenfassung.</span>';
@@ -8137,7 +8231,7 @@
           z.innerHTML = '<span class="kt-avatar"></span><div class="kt-mitte"><b></b><span></span></div><div class="stack"></div>';
           z.querySelector('.kt-avatar').textContent = (m.email || '?').trim().charAt(0).toUpperCase();
           z.querySelector('b').textContent = m.email || '(ohne E-Mail)';
-          z.querySelector('.kt-mitte span').textContent = TM_STUFEN[m.stufe] + (m.seit ? ' · seit ' + new Date(m.seit).toLocaleDateString('de-DE') : '') + (m.userId === meineId ? ' · das bist du' : '');
+          z.querySelector('.kt-mitte span').textContent = TM_STUFEN[m.stufe] + (m.seit ? ' · seit ' + new Date(m.seit).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '') + (m.userId === meineId ? ' · das bist du' : '');
           const st = z.querySelector('.stack');
           if (darf && m.stufe !== 'owner' && m.userId !== meineId) {
             const sel = document.createElement('select'); sel.className = 'sm';
@@ -8168,8 +8262,8 @@
       }
     }
 
-    $('tmNeu')?.addEventListener('click', () => { $('tmForm').classList.remove('hidden'); $('tmHinweis').textContent = ''; $('tmMail').focus(); });
-    $('tmAbbrechen')?.addEventListener('click', () => { $('tmForm').classList.add('hidden'); $('tmMail').value = ''; $('tmPw').value = ''; });
+    $('tmNeu')?.addEventListener('click', () => { $('tmForm').classList.remove('hidden'); $('tmNeu').setAttribute('aria-expanded', 'true'); $('tmHinweis').textContent = ''; $('tmMail').focus(); });
+    $('tmAbbrechen')?.addEventListener('click', () => { $('tmForm').classList.add('hidden'); $('tmNeu')?.setAttribute('aria-expanded', 'false'); $('tmMail').value = ''; $('tmPw').value = ''; });
     $('tmSpeichern')?.addEventListener('click', async () => {
       const email = $('tmMail').value.trim(), password = $('tmPw').value, stufe = $('tmStufe').value;
       if (!email) { $('tmHinweis').textContent = 'Eine E-Mail-Adresse fehlt.'; return; }
@@ -8180,7 +8274,7 @@
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || 'Anlegen fehlgeschlagen.');
         toast(j.message || 'Zugang angelegt.');
-        $('tmForm').classList.add('hidden'); $('tmMail').value = ''; $('tmPw').value = ''; $('tmHinweis').textContent = '';
+        $('tmForm').classList.add('hidden'); $('tmNeu')?.setAttribute('aria-expanded', 'false'); $('tmMail').value = ''; $('tmPw').value = ''; $('tmHinweis').textContent = '';
         ladeZugaenge();
       } catch (e) { $('tmHinweis').textContent = e.message; }
       finally { $('tmSpeichern').disabled = false; }
@@ -8697,7 +8791,7 @@
       el.innerHTML = '';
       aktiv.forEach((k) => {
         const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
-        const wann = k.last_used_at ? 'zuletzt ' + new Date(k.last_used_at).toLocaleDateString('de-DE') : 'noch nie benutzt';
+        const wann = k.last_used_at ? 'zuletzt ' + new Date(k.last_used_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'noch nie benutzt';
         const txt = document.createElement('span'); txt.textContent = `${k.name} · ${k.prefix}… · ${wann}`;
         const del = document.createElement('button'); del.className = 'btn btn--ghost sm'; del.textContent = 'Widerrufen'; del.style.float = 'right';
         del.onclick = async () => { if (!confirm('Diesen Schlüssel widerrufen? Verbundene Automatisierungen verlieren sofort den Zugriff.')) return; if (!(await schreiben(sb.from('api_keys').update({ revoked_at: new Date().toISOString() }).eq('id', k.id)))) return; toast('Widerrufen.'); renderKeyList(); };
@@ -8814,7 +8908,7 @@
       if (t.status === 'done') { r[0].textContent = 'erledigt'; r[1].textContent = lvWann(t.closed_at || t.updated_at); }
       else { r[0].textContent = fmtFrist(t.due_at); r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].classList.add('ueber-text'); r[1].textContent = lvWann(t.created_at); }
       z.onclick = () => { tkAuswahl = t.id; renderTickets(); };
-      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-selected', t.id === tkAuswahl ? 'true' : 'false');
+      z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', t.id === tkAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
       // Kontrolle dort) – sonst bliebe der Fokus auf einer Zeile, die unter dem Detail verschwindet
       // (auf dem Handy) bzw. bekäme der Nutzer die neue Auswahl nicht mit.
@@ -8876,7 +8970,7 @@
       const tt = d.querySelector('[data-titel]'); tt.textContent = t.title;
       d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = t.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== t.title) await tkUpdate(t, { title: v.slice(0, 160) }, 'Betreff geändert.'); else renderTicketDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = t.title; inp.blur(); } }; };
       // Kennzeichen
-      const meta = d.querySelector('.lv-meta'); const mchip = (txt, tip, klick, cls) => { const s = document.createElement('span'); s.textContent = txt; if (tip) s.dataset.tip = tip; if (cls) s.classList.add(cls); if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); };
+      const meta = d.querySelector('.lv-meta'); const mchip = (txt, tip, klick, cls) => { const s = document.createElement('span'); s.textContent = txt; if (tip) s.dataset.tip = tip; if (cls) s.classList.add(cls); if (klick) { s.classList.add('klick'); s.onclick = klick; s.tabIndex = 0; s.setAttribute('role', 'button'); s.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); klick(); }); } meta.append(s); };
       mchip((TK_QUELLE[t.source] || t.source) + ' · ' + fmtZeit(t.created_at), 'Angelegt');
       if (t.status !== 'done') mchip(t.due_at ? 'Frist ' + fmtFrist(t.due_at) : fmtFrist(t.due_at), t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist', null, ueber ? 'ueber' : ''); else mchip('erledigt ' + fmtZeit(t.closed_at));
       mchip('Priorität ' + (TK_PRIO[t.priority] || 'Normal'), 'Klick filtert die Liste', () => { tkPrio = tkPrio === t.priority ? '' : t.priority; document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.tkprio || '') === tkPrio)))); renderTickets(); });
@@ -9228,7 +9322,9 @@
         const idx = dayIndex(d); if (idx < 0 || idx > 6) return null;
         const minTop = (d.getHours() * 60 + d.getMinutes()) - sH * 60;
         const ev = document.createElement('div'); ev.className = 'cal__ev' + (cls ? ' ' + cls : '');
-        ev.style.top = Math.max(0, minTop * PX) + 'px'; ev.style.height = Math.max(16, durMin * PX) + 'px';
+        const h = Math.max(16, durMin * PX);
+        ev.style.top = Math.max(0, minTop * PX) + 'px'; ev.style.height = h + 'px';
+        if (h < 32) ev.classList.add('cal__ev--knapp'); // zu kurz für zwei Zeilen → einzeilig abschneiden
         colEls[idx].append(ev); return ev;
       }
       busy.forEach((b) => { const s = new Date(b.start), e = new Date(b.end); const ev = place(s, (e - s) / 60000, 'busy'); if (ev) ev.innerHTML = '<span class="t">Belegt</span>'; });
@@ -9370,7 +9466,7 @@
         [...rec].sort((a, b) => ord[a.weekday] - ord[b.weekday]).forEach((b) => {
           const allDay = b.from_time === '00:00' && (b.to_time === '23:59' || b.to_time === '24:00');
           mkRow((BB_DAYNAME[b.weekday] || b.weekday) + ' · ' + (allDay ? 'ganztägig' : b.from_time + '–' + b.to_time + ' Uhr') + (b.note ? ' · ' + b.note : ''),
-            async () => { if (!(await schreiben(sb.from('recurring_blocks').delete().eq('id', b.id)))) return; toast('Gelöscht.'); renderBusyList(); renderWeek(); });
+            async () => { if (!(await schreibenGeprueft(sb.from('recurring_blocks').delete().eq('id', b.id).select('id')))) return; toast('Gelöscht.'); renderBusyList(); renderWeek(); });
         });
       }
       if (once && once.length) {
@@ -9488,7 +9584,9 @@
     }
     $('waLauncher').onclick = () => waOpen(true);
     $('waClose').onclick = () => waOpen(false);
-    $('waPanel').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); waOpen(false); } });
+    // Escape schließt; Tab bleibt sonst innerhalb des offenen Panels (ohne das greift inert
+    // zwar im geschlossenen Zustand, aber im offenen fehlt die Fokusfalle – axe „aria-modal").
+    $('waPanel').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); waOpen(false); } else tabFalle(e, $('waPanel')); });
     $('waNew').onclick = () => { if (confirm('Unterhaltung zurücksetzen?')) waReset(); };
     $('waSend').onclick = () => waSendText();
     $('waText').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waSendText(); } });
@@ -9641,7 +9739,11 @@
       if (q.length < 3 || !tenant) { suServer = { anrufe: [], wissen: [] }; suServerFuer = ''; return; }
       if (q === suServerFuer) return;
       suServerTimer = setTimeout(async () => {
-        const muster = '%' + q.replace(/[%_\\]/g, '\\$&') + '%';
+        // Erst die ILIKE-Platzhalter (%, _, \) escapen, danach den ganzen Wert in doppelte
+        // Anführungszeichen setzen – PostgREST trennt .or()-Bedingungen sonst an Komma/Klammer,
+        // was z. B. bei „Müller, Peter" die Server-Nachsuche mit HTTP 400 scheitern lässt.
+        const roh = '%' + q.replace(/[%_\\]/g, '\\$&') + '%';
+        const muster = '"' + roh.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
         const [{ data: a, error: ea }, { data: w, error: ew }] = await Promise.all([
           sb.from('calls').select('id, caller_number, topic, summary, notes, status, started_at, direction, mode, tags').eq('tenant_id', tenant.id).or('caller_number.ilike.' + muster + ',topic.ilike.' + muster + ',summary.ilike.' + muster + ',notes.ilike.' + muster).order('started_at', { ascending: false }).limit(5),
           sb.from('knowledge_base').select('id, title, content, category, department').eq('tenant_id', tenant.id).or('title.ilike.' + muster + ',content.ilike.' + muster).limit(5),
