@@ -332,7 +332,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offs
   .detail__zu { display: inline-flex; margin-bottom: 8px; }
   /* Klickziele auf dem Handy 44 px */
   .btn, .chip, input, select, .nav-item, .firma__kopf, .num, .anb-zeile { min-height: 44px; }
+  .btn--sym { min-width: 44px; }
   .tabelle td .btn { min-height: 44px; }   /* gleiche Spezifität wie die Grundregel oben, gewinnt hier per Reihenfolge */
+  .detail__block h3 .btn { min-height: 44px; }   /* gleiche Spezifität wie die Grundregel oben, gewinnt hier per Reihenfolge */
   .db-kpi .v { font-size: 21px; }
   .pagehead { font-size: 23px; }
   .dlg { padding: 20px 18px; }

@@ -561,6 +561,13 @@
         $('mMargeD').textContent = plural(margen.zeilen.filter((z) => z.marge < 0).length, 'Firma', 'Firmen') + ' im Minus';
         $('mMinuten').textContent = zahl(g.minuten, 1); $('mMinutenD').textContent = zahl(g.anrufe) + ' Anrufe';
         $('margenSub').textContent = 'Seit ' + datum(margen.seit) + ' · Umsatz ist der Monatspreis laut Abo, Kosten sind Telnyx plus KI je Anruf.';
+      } else {
+        $('mUmsatz').textContent = '–'; $('mUmsatzD').textContent = ' ';
+        $('mKosten').textContent = '–'; $('mKostenD').textContent = 'Margen nicht geladen';
+        $('mMarge').textContent = '–'; $('mMarge').className = 'v';
+        $('mMargeD').textContent = 'Margen nicht geladen';
+        $('mMinuten').textContent = '–'; $('mMinutenD').textContent = ' ';
+        $('margenSub').textContent = 'Margen nicht geladen.';
       }
     }
 
@@ -1002,8 +1009,9 @@
     }
     $('systemReload').onclick = ladeSystem;
 
-    // Escape schließt das Detail-Blatt auf dem Handy
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail')) schliesseDetailBlatt(); });
+    // Escape schließt das Detail-Blatt auf dem Handy – nur wenn nicht gerade ein Dialog darüber offen ist,
+    // sonst soll Escape erst den Dialog schließen (ein Druck = eine Ebene).
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail') && !document.querySelector('dialog[open]')) schliesseDetailBlatt(); });
 
     // ---- Start ----
     sb.auth.getSession().then(({ data }) => { data.session ? enter(data.session) : showLogin(); });

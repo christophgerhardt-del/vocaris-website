@@ -831,9 +831,12 @@
 
     .waehl__ruf--schwebend { display: none; }
     @media (max-width: 760px) {
-      .waehl__ruf--schwebend:not(.hidden) { display: flex; position: fixed; left: 12px; right: 84px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 45; box-shadow: var(--hoch-2); }
+      /* Als schmaler, runder Knopf unten rechts statt als volle Leiste: eine volle Breite legte sich
+         beim Scrollen über mehrere Zifferntasten gleichzeitig und fing deren Antippen ab. */
+      .waehl__ruf--schwebend:not(.hidden) { display: flex; position: fixed; left: auto; right: 16px; bottom: calc(86px + env(safe-area-inset-bottom)); z-index: 45; box-shadow: var(--hoch-2); width: 56px; height: 56px; padding: 0; border-radius: 50%; gap: 0; }
+      .waehl__ruf--schwebend:not(.hidden) span { display: none; }
       /* Toast darf den schwebenden Anrufen-Knopf (und die Wähltasten darüber) nicht verdecken. */
-      body:has(#callBtnSchwebend:not(.hidden)) .toast { bottom: calc(136px + env(safe-area-inset-bottom)); }
+      body:has(#callBtnSchwebend:not(.hidden)) .toast { bottom: calc(152px + env(safe-area-inset-bottom)); }
     }
     @media (max-width: 700px) {
       .waehl__wege { flex-direction: column; }
@@ -1791,7 +1794,7 @@
               </div>
             </div>
             <label for="kbContent">Inhalt</label>
-            <textarea id="kbContent" placeholder="z. B. Montag bis Freitag von 8 bis 17 Uhr ..."></textarea>
+            <textarea id="kbContent" placeholder="z. B. Montag bis Freitag von 8 bis 17 Uhr …"></textarea>
             <div class="stack"><button id="addKbBtn" class="btn btn--primary">Eintrag hinzufügen</button><button class="btn btn--ghost" type="button" onclick="document.getElementById('kbNeuPanel').classList.add('hidden')">Abbrechen</button></div>
           </div>
           <div class="panel hidden" id="kbImportPanel">
@@ -1916,12 +1919,12 @@
               </div>
               <div class="panel" id="asVerhalten" data-astab="verhalten">
                 <h3>Verhalten</h3>
-                <label for="behaviorRules" style="margin-top:0">Verhalten</label>
+                <label for="behaviorRules" style="margin-top:0">Feste Verhaltensregeln <span class="muted">z. B. wie mit bestimmten Anliegen umgegangen wird</span></label>
                 <textarea id="behaviorRules" placeholder="z. B. Bei Terminwunsch keine Zusage machen, sondern einen Rückruf mit Name, Nummer und Anliegen aufnehmen."></textarea>
                 <label for="guardrails">Grenzen / Tabus <span class="muted">Standard-Sicherheitsregeln gelten zusätzlich automatisch</span></label>
                 <textarea id="guardrails" placeholder="z. B. Keine medizinische Beratung oder Diagnosen am Telefon."></textarea>
                 <label for="persona">Zusätzliche Hinweise <span class="muted">frei, optional</span></label>
-                <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten ..."></textarea>
+                <textarea id="persona" placeholder="Sonstige Hinweise an den Assistenten …"></textarea>
               </div>
               <div class="panel" id="asStil" data-astab="verhalten">
                 <h3>Gesprächsstil</h3>
@@ -2418,7 +2421,7 @@
             <div id="rsAreaTabs" class="branch-chips" style="margin:0"></div>
           </div>
           <div id="rsAreaManage" class="panel hidden" style="margin:0 0 10px">
-            <h4 style="margin:0 0 8px">Bereiche verwalten</h4>
+            <h3 style="margin:0 0 8px">Bereiche verwalten</h3>
             <div id="rsAreaList" style="display:flex;flex-direction:column;gap:6px"></div>
             <div class="if-grid" style="margin-top:10px">
               <label>Neuer Bereich<input id="rsAreaNew" placeholder="z. B. Wintergarten"></label>
@@ -2905,6 +2908,7 @@
     // Welche Module sind eingeschaltet? Steuert die Sichtbarkeit der Bereiche.
     let module = { termine: false, reservierung: false };
     let currentDept = 'general';
+    let deptLadeGen = 0; // Laufzähler gegen Wettläufe beim schnellen Abteilungswechsel (siehe loadDept()).
     const DEPT_LABEL = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
     const KB_HINT = {
       general: 'Allgemeines Wissen — gilt für alle Abteilungen (Vertrieb und Support).',
@@ -3676,10 +3680,14 @@
       if (!tenant) return;
       const kh = $('kbDeptHint'); if (kh) kh.textContent = KB_HINT[currentDept] || '';
       const ah = $('asDeptHint'); if (ah) ah.textContent = AS_HINT[currentDept] || '';
+      // Laufzähler: wird currentDept erneut gewechselt, bevor diese Antwort da ist, darf sie das
+      // Formular der inzwischen aktiven Abteilung nicht mehr überschreiben (gleiches Muster wie lvLadeGen).
+      const dGen = ++deptLadeGen;
       const [{ data: cfg, error: errCfg }, { data: kb, error: errKb }] = await Promise.all([
         sb.from('assistant_config').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).maybeSingle(),
         sb.from('knowledge_base').select('*').eq('tenant_id', tenant.id).eq('department', currentDept).order('created_at'),
       ]);
+      if (dGen !== deptLadeGen) return; // veraltet – inzwischen wurde die Abteilung erneut gewechselt
       // Bei einem Serverfehler hier NICHT mit leeren Werten weiterfahren: das Formular würde auf
       // "nichts eingerichtet" zurückfallen, und ein versehentliches "Speichern" überschriebe die
       // echten Einstellungen mit Leerfeldern. Lieber den bisherigen Formularstand stehen lassen.
@@ -3706,6 +3714,7 @@
         // Eigene Nummer, Sonderhinweis, Glossar, Stil, Erfassungsfelder, Ziele,
         // Aufbewahrung und Wochenbericht gelten für die ganze Firma → general-Zeile.
         const gen = currentDept === 'general' ? cfg : (await sb.from('assistant_config').select('*').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle()).data;
+        if (dGen !== deptLadeGen) return; // veraltet – inzwischen wurde die Abteilung erneut gewechselt
         $('asAgentNummer').value = gen?.agent_number ?? '';
         $('asBridgeTranscript').checked = gen?.bridge_transcript !== false;
         $('asBridgeNotice').checked = gen?.bridge_notice ?? false;
@@ -3714,7 +3723,11 @@
       }
       if ($('asDisclosure')) {
         if (currentDept === 'general') $('asDisclosure').checked = cfg?.ai_disclosure ?? false;
-        else { const { data: gen } = await sb.from('assistant_config').select('ai_disclosure').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle(); $('asDisclosure').checked = gen?.ai_disclosure ?? false; }
+        else {
+          const { data: gen } = await sb.from('assistant_config').select('ai_disclosure').eq('tenant_id', tenant.id).eq('department', 'general').maybeSingle();
+          if (dGen !== deptLadeGen) return; // veraltet – inzwischen wurde die Abteilung erneut gewechselt
+          $('asDisclosure').checked = gen?.ai_disclosure ?? false;
+        }
       }
       renderKb(kb ?? []);
       asSetzeDirty(false); asVorschau();
@@ -3933,7 +3946,7 @@
       }
     }
     function genToken() { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map((b) => b.toString(16).padStart(2, '0')).join(''); }
-    let rsDayRes = [], rsCombos = []; // gecachte Reservierungen + zusammengelegte Tische des Tages
+    let rsDayRes = [], rsCombos = [], rsBelegungTimer = null; // gecachte Reservierungen + zusammengelegte Tische des Tages
     let rsEditMode = false, rsAreas = []; // Bearbeitungsmodus + frei definierbare Bereiche
     const OCC_COL = { seated: { b: '#e0533d', bg: '#fdecea' }, booked: { b: '#d98a3d', bg: '#fdf3e6' } };
     const EL_META = {
@@ -4057,7 +4070,7 @@
       }
     }
 
-    function buildTableEl(t, plan) {
+    function buildTableEl(t, plan, stackIdx) {
       const shape = t.shape || 'round', rot = t.rotation || 0, seats = Math.max(1, t.seats || 1);
       const st = rsTableStatus.get(t.id); // { status:'seated'|'booked', label } oder undefined
       const occ = !!st;
@@ -4065,10 +4078,15 @@
       const cleaning = !occ && !rsEditMode && t.cleaning_until && new Date(t.cleaning_until).getTime() > Date.now();
       let { tw, th } = dispDims(t);
       const pw = PLAN_W, ph = PLAN_H;
-      const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), t.pos_x ?? 40));
-      const y = Math.max(0, Math.min(ph - (th + T_PAD * 2), t.pos_y ?? 40));
+      // Mehrere Tische/Elemente an exakt derselben Position (z. B. durch einen Datenfehler) wären sonst
+      // nur noch als ein einziges, übereinanderliegendes Element antippbar – renderRsPlan() übergibt für
+      // jedes weitere Element am selben Platz einen Stapel-Index, um sie sichtbar zu versetzen.
+      const stackOff = (stackIdx || 0) * 20;
+      const x = Math.max(0, Math.min(pw - (tw + T_PAD * 2), (t.pos_x ?? 40) + stackOff));
+      const y = Math.max(0, Math.min(ph - (th + T_PAD * 2), (t.pos_y ?? 40) + stackOff));
       const box = document.createElement('div');
       box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:' + (rsEditMode ? 'grab' : 'pointer') + ';touch-action:none;user-select:none';
+      if (stackOff) { box.style.outline = '2px dashed #d98a3d'; box.style.outlineOffset = '2px'; box.title = 'Lag auf derselben Position wie weitere Tische/Elemente – automatisch leicht versetzt.'; }
 
       const chairs = document.createElement('div');
       chairs.style.cssText = 'position:absolute;inset:0;pointer-events:none';
@@ -4079,7 +4097,12 @@
       const col = st ? OCC_COL[st.status] : (cleaning ? { b: '#b08900', bg: '#fbf3d0' } : { b: '#3f7d63', bg: 'var(--white)' });
       surf.style.cssText = 'position:absolute;left:' + T_PAD + 'px;top:' + T_PAD + 'px;border:2px solid ' + col.b +
         ';background:' + col.bg + ';border-radius:' + radius + ';box-shadow:0 4px 12px #00000022;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;cursor:inherit';
-      const sub = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? '🧹 abräumen' : (seats + 'P'));
+      // zustandBeschreibung (ausführlich, fürs aria-label) und zustandSichtbar (Kurzform auf der
+      // Kachel) getrennt halten, aber die Kurzform auch wörtlich ins aria-label aufnehmen – sonst
+      // weicht der sichtbare Text ("2P") vom Accessible Name ("2 Plätze, frei") komplett ab.
+      const zustandBeschreibung = occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? 'wird abgeräumt' : (seats + ' Plätze, frei'));
+      const zustandSichtbar = occ ? zustandBeschreibung : (cleaning ? 'abräumen' : (seats + 'P'));
+      const sub = cleaning ? '🧹 ' + zustandSichtbar : zustandSichtbar;
       surf.innerHTML = '<b style="font-size:12px;pointer-events:none">' + esc(t.name || 'Tisch') + '</b>' +
         (shape === 'bench' ? '' : '<span style="font-size:11px;color:var(--ink-soft);pointer-events:none">' + sub + '</span>');
       if (st && st.label) surf.title = st.label; // wer sitzt/reserviert hier
@@ -4145,7 +4168,7 @@
       // Per Tastatur erreichbar machen: box bekommt role="button" + tabindex, Enter/Leertaste öffnen
       // denselben Dialog wie ein Klick (siehe keydown-Listener in makeTableDraggable).
       box.setAttribute('role', 'button'); box.tabIndex = 0;
-      box.setAttribute('aria-label', (t.name || 'Tisch') + ', ' + (occ ? (st.status === 'seated' ? 'am Tisch' : 'reserviert') : (cleaning ? 'wird abgeräumt' : seats + ' Plätze, frei')));
+      box.setAttribute('aria-label', (t.name || 'Tisch') + ', ' + zustandSichtbar + (zustandSichtbar === zustandBeschreibung ? '' : ', ' + zustandBeschreibung) + (stackOff ? ' · lag auf gleicher Position wie weitere Tische, automatisch versetzt' : ''));
       makeTableDraggable(box, t, plan, () => openTableModal(t));
       return box;
     }
@@ -4180,8 +4203,18 @@
         }
         if (drew) plan.append(svg);
       }
-      els.forEach((e) => plan.append(buildElementEl(e, plan)));
-      tables.forEach((t) => plan.append(buildTableEl(t, plan)));
+      // Kollisionserkennung: liegen mehrere Tische/Elemente exakt auf derselben Position (z. B. durch
+      // einen Datenfehler), wäre sonst nur noch das zuletzt gezeichnete antippbar – die anderen fängt
+      // kein Klick/Tipp mehr ab. Jedes weitere Element an einem bereits belegten Platz bekommt einen
+      // Stapel-Index, den buildTableEl()/buildElementEl() in einen sichtbaren Versatz übersetzen.
+      const stapelPlatz = new Map(); // "x:y" -> Anzahl bisher gesehener Elemente/Tische an dieser Position
+      const stapelIdx = (it) => {
+        const key = Math.round(it.pos_x ?? 40) + ':' + Math.round(it.pos_y ?? 40);
+        const i = stapelPlatz.get(key) || 0; stapelPlatz.set(key, i + 1);
+        return i;
+      };
+      els.forEach((e) => plan.append(buildElementEl(e, plan, stapelIdx(e))));
+      tables.forEach((t) => plan.append(buildTableEl(t, plan, stapelIdx(t))));
       if (!rsTableStatus.size) $('rsPlanHint').textContent = 'Tipp: Tisch antippen für Reservierung/Details · ziehen zum Anordnen · ⟳ drehen · Ecke ziehen = Größe.';
     }
     function tableCenter(t, plan) {
@@ -4191,14 +4224,17 @@
       return { x: x + W / 2, y: y + H / 2 };
     }
 
-    function buildElementEl(el, plan) {
+    function buildElementEl(el, plan, stackIdx) {
       const meta = EL_META[el.kind] || EL_META.label;
       let w = el.width || 90, h = el.height || 50;
       const pw = PLAN_W, ph = PLAN_H;
-      const x = Math.max(0, Math.min(pw - w, el.pos_x ?? 40));
-      const y = Math.max(0, Math.min(ph - h, el.pos_y ?? 40));
+      // Siehe buildTableEl(): Versatz, wenn mehrere Elemente/Tische exakt dieselbe Position teilen.
+      const stackOff = (stackIdx || 0) * 20;
+      const x = Math.max(0, Math.min(pw - w, (el.pos_x ?? 40) + stackOff));
+      const y = Math.max(0, Math.min(ph - h, (el.pos_y ?? 40) + stackOff));
       const box = document.createElement('div');
       box.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;cursor:' + (rsEditMode ? 'grab' : 'default') + ';touch-action:none;user-select:none;z-index:1';
+      if (stackOff) { box.style.outline = '2px dashed #d98a3d'; box.style.outlineOffset = '2px'; box.title = 'Lag auf derselben Position wie weitere Tische/Elemente – automatisch leicht versetzt.'; }
       const surf = document.createElement('div');
       surf.style.cssText = 'width:' + w + 'px;height:' + h + 'px;border:1px dashed ' + meta.bd + ';background:' + meta.bg +
         ';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1;color:#444;font-size:12px;font-weight:600;overflow:hidden;pointer-events:none';
@@ -4670,7 +4706,7 @@
         '<div class="panel">' +
           '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
             '<button id="guestBack" class="btn btn--ghost sm" type="button">‹ Zurück</button>' +
-            '<h2 style="margin:0;font-size:18px">' + esc(g.name || 'Gast') + '</h2>' +
+            '<h2 style="margin:0;font-size:18px;min-width:0;overflow-wrap:anywhere">' + esc(g.name || 'Gast') + '</h2>' +
             '<div style="margin-left:auto;display:flex;gap:8px"><button id="guestNewRes" class="btn sm" type="button">+ Reservierung anlegen</button><button id="guestSave" class="btn btn--primary sm" type="button">Speichern</button></div>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px">' +
@@ -4771,7 +4807,7 @@
         const r = await apiFetch('/api/newsletter/send', { method: 'POST', headers: numAuth(), body: JSON.stringify({ subject, message }) });
         const d = await r.json().catch(() => ({}));
         if (!r.ok || !d.ok) throw new Error(d.message || d.error || 'Versand fehlgeschlagen.');
-        $('nlHint').innerHTML = '<span style="color:#0a7d4b;font-weight:600">✓ ' + (d.message || 'Gesendet.') + '</span>';
+        $('nlHint').innerHTML = '<span style="color:#0a7d4b;font-weight:600">✓ ' + escHtml(d.message || 'Gesendet.') + '</span>';
         toast('Newsletter gesendet.');
         $('nlSubject').value = ''; $('nlMessage').value = '';
       } catch (e) { $('nlHint').innerHTML = '<span style="color:#c0392b">' + escHtml(e.message) + '</span>'; }
@@ -5054,7 +5090,12 @@
       const kind = $('rsElKind').value || 'label';
       const label = $('rsElLabel').value.trim();
       const size = kind === 'wall' ? { width: 140, height: 16 } : { width: 100, height: 52 };
-      const { error } = await sb.from('floor_elements').insert({ tenant_id: tenant.id, area: rsArea || 'innen', kind, label: label || null, pos_x: 40, pos_y: 40, ...size });
+      // Wie bei rsAddTable gestaffelt anlegen, statt immer auf (40,40) – sonst landen mehrere
+      // nacheinander angelegte Elemente exakt übereinander.
+      const area = rsArea || 'innen';
+      const n = rsElements.filter((e) => (e.area || 'innen') === area).length;
+      const pos_x = 40 + (n % 4) * 120, pos_y = 40 + Math.floor(n / 4) * 80;
+      const { error } = await sb.from('floor_elements').insert({ tenant_id: tenant.id, area, kind, label: label || null, pos_x, pos_y, ...size });
       if (error) { toast('Fehler: ' + fehlerText(error)); return; }
       $('rsElLabel').value = ''; toast('Element hinzugefügt.'); loadRestaurant();
     });
@@ -6286,6 +6327,7 @@
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
       }
       knopf('Vorgang anlegen', '', async () => {
+        if (!confirm('Vorgang aus diesem Anruf anlegen?')) return;
         const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? c.summary.slice(0, 90) : nr || 'Anrufer');
         const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title: title.slice(0, 160), body: (c.summary || '') + (x.turns.length ? '\n\nGesprächsverlauf im Vorgang einsehbar.' : ''), source: 'call', caller_phone: nr || null, call_id: c.id, category: c.topic || null }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; }
@@ -6414,6 +6456,13 @@
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'knowledge_gaps', filter: 'tenant_id=eq.' + tenantId }, (p) => {
           const g = p.new; if (!g || g.status !== 'open' || gapItems.some((x) => x.id === g.id)) return;
           gapItems.unshift(g); toast('Neue offene Frage: ' + (g.question || '').slice(0, 70)); renderFragen(); if (typeof renderWissen === 'function') renderWissen();
+        })
+        // Tischplan/Belegung ohne dieses Abo: ein zweites offenes Gerät (z. B. Empfang + Service)
+        // sieht eine hier gerade angelegte/geänderte Reservierung sonst dauerhaft nicht, auch nicht
+        // nach einem Bereichswechsel (renderRsPlan() zeichnet nur aus dem Speicher, kein Serverabruf).
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: 'tenant_id=eq.' + tenantId }, () => {
+          if (!tenant || !$('rsPlanDate')) return;
+          clearTimeout(rsBelegungTimer); rsBelegungTimer = setTimeout(() => loadDayOccupancy($('rsPlanDate').value), 400);
         })
         .subscribe();
     }
@@ -6811,7 +6860,9 @@
     // ---- Persona: Öffnungszeiten-Raster ----
     const H_DAYS = [['mon','Mo'],['tue','Di'],['wed','Mi'],['thu','Do'],['fri','Fr'],['sat','Sa'],['sun','So']];
     const H_WD = (a, b) => ({ mon:[[a,b]], tue:[[a,b]], wed:[[a,b]], thu:[[a,b]], fri:[[a,b]], sat:[], sun:[] });
-    const tInput = (cls, val, beschriftung) => `<input type="time" class="${cls}" value="${val || ''}" aria-label="${beschriftung || ''}">`;
+    // val kommt aus business_hours (Datenbank) – ungeschützt ins value-Attribut gesetzt, bricht ein
+    // „ aus dem Wert daraus und hängt beliebige Attribute/Event-Handler ins DOM (Attribut-Ausbruch).
+    const tInput = (cls, val, beschriftung) => `<input type="time" class="${cls}" value="${esc(val || '')}" aria-label="${esc(beschriftung || '')}">`;
     function renderHours(data) {
       const g = $('hoursGrid'); if (!g) return; g.innerHTML = '';
       H_DAYS.forEach(([k, lbl]) => {
@@ -7331,7 +7382,7 @@
     // Kacheln (Widgets) aus einem Katalog; Reihenfolge, Breite und Auswahl legt
     // der Nutzer selbst fest („Anpassen"). Das Layout liegt im Browser und im
     // Nutzerprofil (user_metadata.dashboard[tenant]) und gilt so auf jedem Gerät.
-    let dbTage = 14, dbEdit = false, dbDaten = null, dbDatenZeit = 0, dbFilter = null, dbLayout = null, dbLayoutFuer = null, dbSpeicherTimer = null, dbZieh = null, dbNotizTimer = null;
+    let dbTage = 14, dbEdit = false, dbDaten = null, dbDatenZeit = 0, dbFilter = null, dbLayout = null, dbLayoutFuer = null, dbSpeicherTimer = null, dbZieh = null, dbNotizTimer = null, dbLadeGen = 0;
     const dbLeer = document.createElement('div');
     const q = (id) => document.getElementById(id) || dbLeer;
     // Nie in einen Bereich springen, den die Kuratierung/ein Modul gerade ausblendet (sonst Navigations-Sackgasse).
@@ -7445,8 +7496,21 @@
       });
       // Einblendung beim Überfahren (Tagesbalken, Zeitskala)
       const tip = document.createElement('div'); tip.className = 'db-tip'; tip.hidden = true; document.body.append(tip);
+      let tipTouchZiel = null, tipTouchTimer = null;
       const tipSetzen = (e) => { const el = e.target.closest?.('[data-tip]'); if (!el) { tip.hidden = true; return; } tip.textContent = el.dataset.tip; tip.hidden = false; const r = tip.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY - r.height - 10; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14; if (y < 8) y = e.clientY + 18; tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
-      document.addEventListener('mousemove', tipSetzen); document.addEventListener('mouseleave', () => { tip.hidden = true; }); document.addEventListener('click', () => { tip.hidden = true; });
+      document.addEventListener('mousemove', tipSetzen); document.addEventListener('mouseleave', () => { tip.hidden = true; }); document.addEventListener('click', (e) => { if (tipTouchZiel && e.target.closest?.('[data-tip]') === tipTouchZiel) { tipTouchZiel = null; return; } tip.hidden = true; });
+      // Touch: mousemove feuert beim Antippen nicht – ohne eigenen Handler wären die data-tip-Hinweise auf
+      // Handy/Tablet nie erreichbar. Tippen zeigt den Hinweis kurz an der Elementposition; der Klick, der
+      // aus derselben Berührung folgt, blendet ihn (anders als ein Klick woanders) nicht sofort wieder aus.
+      document.addEventListener('touchstart', (e) => {
+        const el = e.target.closest?.('[data-tip]'); if (!el) return;
+        tipTouchZiel = el; tip.textContent = el.dataset.tip; tip.hidden = false;
+        const er = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+        let x = er.left, y = er.top - tr.height - 10; if (y < 8) y = er.bottom + 8;
+        if (x + tr.width > innerWidth - 8) x = Math.max(8, innerWidth - tr.width - 8);
+        tip.style.left = x + 'px'; tip.style.top = y + 'px';
+        clearTimeout(tipTouchTimer); tipTouchTimer = setTimeout(() => { tip.hidden = true; tipTouchZiel = null; }, 2500);
+      }, { passive: true });
       sec.addEventListener('keydown', (e) => { const k = e.target.closest?.('.db-kpi[role=button]'); if (k && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); k.click(); } });
       sec.addEventListener('dragstart', (e) => { const w = e.target.closest?.('[data-widget]'); if (!w || !dbEdit) return; dbZieh = w.dataset.widget; w.classList.add('zieht'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dbZieh); } catch { /* egal */ } });
       sec.addEventListener('dragover', (e) => {
@@ -7476,6 +7540,9 @@
     // Daten holen (ein Rutsch), dann zeichnen
     async function ladeDashboard() {
       if (!tenant) return;
+      // Laufzähler gegen Wettläufe: wird der Zeitraum (7/14/30 Tage) erneut gewechselt, bevor diese
+      // Antwort da ist, darf sie die inzwischen aktiven Zahlen nicht mehr überschreiben.
+      const dbGen = ++dbLadeGen;
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - dbTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * dbTage * 864e5);
       const heute0 = new Date(jetzt); heute0.setHours(0, 0, 0, 0);
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
@@ -7499,6 +7566,7 @@
         // Für die Checkliste zählen nur Einträge ohne den Vorlagen-Platzhalter „Bitte anpassen" (siehe kbIstVorlage).
         sb.from('knowledge_base').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).not('content', 'ilike', '%Bitte anpassen%'),
       ]);
+      if (dbGen !== dbLadeGen) return; // veraltet – inzwischen wurde der Zeitraum erneut gewechselt
       // Bei einem Fehler lieber den alten Stand stehen lassen als mit lauter Nullen neu zu zeichnen –
       // sonst sieht ein Serverfehler aus wie "nichts offen/erledigt" in jeder einzelnen Kachel.
       const fehler = ergebnisse.find((r) => r.error);
@@ -7577,9 +7645,9 @@
         if (dbTage > 14) { lab = ''; if (i % 5 === 0 || i === tage.length - 1) { const mitMonat = t.d.getMonth() !== labMonat; labMonat = t.d.getMonth(); lab = t.d.getDate() + '.' + (mitMonat ? (t.d.getMonth() + 1) + '.' : ''); } }
         const col = document.createElement('div'); col.className = 'col' + (dbFilter?.art === 'tag' && dbFilter.wert === t.d.getTime() ? ' aktiv' : ''); col.dataset.tip = t.d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' · ' + (t.n ? t.n + (t.n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe');
         col.innerHTML = '<div class="c">' + (t.n || '') + '</div><div class="bar' + (t.n ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div>';
-        if (t.n) col.onclick = () => filterSetzen({ art: 'tag', wert: t.d.getTime(), label: t.d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) }); chart.append(col); });
+        if (t.n) { col.setAttribute('role', 'button'); col.tabIndex = 0; col.onclick = () => filterSetzen({ art: 'tag', wert: t.d.getTime(), label: t.d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) }); col.onkeydown = (e) => { if (e.key === 'Enter') col.onclick(); }; } chart.append(col); });
       const smax = Math.max(1, ...stunden); const st = q('dbStunden'); st.innerHTML = '';
-      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.dataset.tip = hI + '–' + (hI + 1) + ' Uhr · ' + (n ? n + (n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe'); d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (dbFilter?.art === 'stunde' && dbFilter.wert === hI) d.classList.add('aktiv'); if (n) d.onclick = () => filterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); st.append(d); });
+      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.dataset.tip = hI + '–' + (hI + 1) + ' Uhr · ' + (n ? n + (n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe'); d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (dbFilter?.art === 'stunde' && dbFilter.wert === hI) d.classList.add('aktiv'); if (n) { d.setAttribute('role', 'button'); d.tabIndex = 0; d.onclick = () => filterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); d.onkeydown = (e) => { if (e.key === 'Enter') d.onclick(); }; } st.append(d); });
       // Wochentage
       const wmax = Math.max(1, ...wtage); const wt = q('dbWochentag'); wt.innerHTML = '';
       [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'wochentag' && dbFilter.wert === i ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'][i]; if (wtage[i]) d.onclick = () => filterSetzen({ art: 'wochentag', wert: i, label: ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'][i] }); wt.append(d); });
@@ -7648,17 +7716,21 @@
     // ohne Kosten: die gehören dem Betreiber. Wochentag, Stunde und Dauer
     // filtern innerhalb der Auswertung; Thema, Stimmung und Anrufer springen
     // nach „Eingehend" mit passendem Filter.
-    let awTage = 30, awDaten = null, awFilter = null;
+    let awTage = 30, awDaten = null, awFilter = null, awLaufId = 0;
     async function ladeAuswertung() {
       if (!tenant) return;
+      // Laufzähler gegen Wettläufe: wird der Zeitraum erneut gewechselt, bevor diese Antwort da ist,
+      // darf sie das inzwischen aktive Ergebnis nicht mehr überschreiben (gleiches Muster wie deptLadeGen).
+      const meinLauf = ++awLaufId;
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - awTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * awTage * 864e5);
       const ergebnisse = await Promise.all([
         sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(5000),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
-        sb.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
+        sb.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'booked').gte('created_at', start.toISOString()),
         sb.from('knowledge_gaps').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'open'),
       ]);
+      if (meinLauf !== awLaufId) return; // veraltet – inzwischen wurde der Zeitraum erneut gewechselt
       // Gleiches Prinzip wie bei ladeDashboard: bei Fehler den alten Stand behalten statt mit Nullen neu zu zeichnen.
       const fehler = ergebnisse.find((r) => r.error);
       if (fehler) {
@@ -7720,7 +7792,7 @@
       // Stunden-Heatmap
       const stunden = new Array(24).fill(0); ausser('stunde').forEach((x) => stunden[new Date(x.started_at).getHours()]++);
       const smax = Math.max(1, ...stunden); const st = $('awStunden'); st.innerHTML = '';
-      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.dataset.tip = hI + '–' + (hI + 1) + ' Uhr · ' + (n ? n + (n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe'); d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; d.style.cursor = n ? 'pointer' : 'default'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (awFilter?.art === 'stunde' && awFilter.wert === hI) d.classList.add('aktiv'); if (n) d.onclick = () => awFilterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); st.append(d); });
+      stunden.forEach((n, hI) => { const d = document.createElement('div'); d.dataset.tip = hI + '–' + (hI + 1) + ' Uhr · ' + (n ? n + (n === 1 ? ' Anruf' : ' Anrufe') : 'keine Anrufe'); d.style.background = n ? 'color-mix(in srgb, var(--accent) ' + Math.round(20 + n / smax * 80) + '%, var(--paper-2))' : 'var(--paper-2)'; d.style.cursor = n ? 'pointer' : 'default'; if (hI % 6 === 0) d.innerHTML = '<span>' + hI + '</span>'; if (awFilter?.art === 'stunde' && awFilter.wert === hI) d.classList.add('aktiv'); if (n) { d.setAttribute('role', 'button'); d.tabIndex = 0; d.onclick = () => awFilterSetzen({ art: 'stunde', wert: hI, label: hI + '–' + (hI + 1) + ' Uhr' }); d.onkeydown = (e) => { if (e.key === 'Enter') d.onclick(); }; } st.append(d); });
       const spitze = stunden.indexOf(Math.max(...stunden));
       $('awStSub').textContent = c.length ? 'Spitze ' + spitze + '–' + (spitze + 1) + ' Uhr' : 'noch keine Anrufe';
       // Dauer-Verteilung
@@ -7887,6 +7959,7 @@
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
       }
       knopf('Vorgang anlegen', '', async () => {
+        if (!confirm('Vorgang aus dieser Nachricht anlegen?')) return;
         const title = ((m.category ? m.category + ': ' : '') + (m.summary ? m.summary.slice(0, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
         const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } vorgangAngelegtToast(data?.id); loadTickets();
@@ -8264,6 +8337,10 @@
 
     $('tmNeu')?.addEventListener('click', () => { $('tmForm').classList.remove('hidden'); $('tmNeu').setAttribute('aria-expanded', 'true'); $('tmHinweis').textContent = ''; $('tmMail').focus(); });
     $('tmAbbrechen')?.addEventListener('click', () => { $('tmForm').classList.add('hidden'); $('tmNeu')?.setAttribute('aria-expanded', 'false'); $('tmMail').value = ''; $('tmPw').value = ''; });
+    // Auf dem Handy schiebt die Bildschirmtastatur „Anlegen"/„Abbrechen" sonst aus dem Sichtbereich,
+    // ohne jeden Hinweis zum Hochscrollen – nach dem Einblenden der Tastatur (kurzer Layout-Sprung)
+    // die Knöpfe wieder ins Bild holen.
+    $('tmForm')?.addEventListener('focusin', () => { setTimeout(() => $('tmSpeichern')?.scrollIntoView({ block: 'nearest' }), 300); });
     $('tmSpeichern')?.addEventListener('click', async () => {
       const email = $('tmMail').value.trim(), password = $('tmPw').value, stufe = $('tmStufe').value;
       if (!email) { $('tmHinweis').textContent = 'Eine E-Mail-Adresse fehlt.'; return; }
@@ -9313,7 +9390,10 @@
       axis += '</div>';
       let cols = '';
       for (let i = 0; i < 7; i++) cols += `<div class="cal__col" data-day="${i}" style="height:${colH}px"></div>`;
-      el.innerHTML = head + `<div class="cal__grid">${axis}${cols}</div>`;
+      // tabindex: das Raster ist bei engem Platz vertikal scrollbar (max-height, overflow-y:auto),
+      // hat aber keine fokussierbaren Kinder, die es sonst in den Fokus holen würden – ohne eigenes
+      // tabindex kommen Tastaturnutzer nicht an den abgeschnittenen, unteren Teil heran.
+      el.innerHTML = head + `<div class="cal__grid" tabindex="0" aria-label="Kalenderraster, zum Scrollen fokussieren">${axis}${cols}</div>`;
 
       const colEls = el.querySelectorAll('.cal__col');
       const dayIndex = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return Math.round((x.getTime() - start.getTime()) / 86400000); };
@@ -9329,14 +9409,21 @@
       }
       busy.forEach((b) => { const s = new Date(b.start), e = new Date(b.end); const ev = place(s, (e - s) / 60000, 'busy'); if (ev) ev.innerHTML = '<span class="t">Belegt</span>'; });
       // Band über einen (Teil-)Tag rendern – für mehrtägige/ganztägige & wiederkehrende Sperren.
-      function placeBand(idx, startMin, endMin, cls, html, onClick) {
+      function placeBand(idx, startMin, endMin, cls, html, onClick, ariaLabel) {
         if (idx < 0 || idx > 6) return;
         const top = Math.max(0, startMin - sH * 60) * PX;
         const bot = (Math.min(endMin, eH * 60) - sH * 60) * PX;
         if (bot <= top) return;
         const ev = document.createElement('div'); ev.className = 'cal__ev ' + cls;
         ev.style.top = top + 'px'; ev.style.height = Math.max(14, bot - top) + 'px';
-        ev.innerHTML = html; if (onClick) ev.onclick = onClick;
+        ev.innerHTML = html;
+        // Nur per Maus bedienbar wäre eine Sperrung sonst nicht aufhebbar für Tastaturnutzer
+        // (siehe gleiches Muster bei Termin-Blöcken weiter unten).
+        if (onClick) {
+          ev.onclick = onClick; ev.setAttribute('role', 'button'); ev.tabIndex = 0;
+          if (ariaLabel) ev.setAttribute('aria-label', ariaLabel);
+          ev.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ev.onclick(e); } };
+        }
         colEls[idx].append(ev);
       }
       const DAY_MS = 86400000;
@@ -9347,9 +9434,12 @@
           const dStart = ds.getTime(), dEnd = dStart + DAY_MS;
           const os = Math.max(bs, dStart), oe = Math.min(be, dEnd);
           if (oe <= os) continue;
+          const vonZeit = new Date(os).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          const bisZeit = new Date(oe).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
           placeBand(i, (os - dStart) / 60000, (oe - dStart) / 60000, 'manual',
             '<span class="t">Gesperrt</span>',
-            async (evt) => { evt.stopPropagation(); if (!confirm('Sperrung aufheben?')) return; if (!(await schreiben(sb.from('busy_blocks').delete().eq('id', b.id)))) return; toast('Freigegeben.'); renderWeek(); renderBusyList(); });
+            async (evt) => { evt.stopPropagation(); if (!confirm('Sperrung aufheben?')) return; if (!(await schreiben(sb.from('busy_blocks').delete().eq('id', b.id)))) return; toast('Freigegeben.'); renderWeek(); renderBusyList(); },
+            'Gesperrt ' + vonZeit + '–' + bisZeit + ' Uhr, zum Aufheben auswählen');
         }
       });
       const WD = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -9380,11 +9470,16 @@
         const t = document.createElement('span'); t.className = 't'; t.textContent = hhmm(s) + ' ';
         ev.append(t, document.createTextNode(a.customer_name || 'Termin'));
         ev.title = 'Klicken zum Absagen';
+        // Per Tastatur erreichbar machen (gleiches Muster wie bei den Sperrungen in placeBand()),
+        // sonst ist ein Termin im Kalenderraster nur mit der Maus absagbar.
+        ev.setAttribute('role', 'button'); ev.tabIndex = 0;
+        ev.setAttribute('aria-label', 'Termin ' + hhmm(s) + ' Uhr, ' + (a.customer_name || 'ohne Namen') + ', zum Absagen auswählen');
         ev.onclick = async () => {
           if (!confirm('Termin am ' + s.toLocaleString('de-DE') + ' absagen?')) return;
           if (!(await schreiben(sb.from('appointments').update({ status: 'cancelled' }).eq('id', a.id)))) return;
           toast('Termin abgesagt.'); renderWeek(); loadAll();
         };
+        ev.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ev.onclick(); } };
       });
     }
     $('calPrev').onclick = () => { calStart = mondayOf(calStart || new Date()); calStart.setDate(calStart.getDate() - 7); renderWeek(); };
@@ -9688,6 +9783,9 @@
     // fragt sie zusätzlich ältere Anrufe und Wissen anderer Abteilungen per ilike ab.
     const IST_MAC = /Mac|iPhone|iPad/.test(navigator.platform || '');
     if ($('sucheKbd')) $('sucheKbd').textContent = IST_MAC ? '⌘K' : 'Strg K';
+    // aria-label muss den sichtbaren Tastenhinweis mitführen – sonst weicht er auf dem Mac
+    // ("⌘K" sichtbar) vom fest hinterlegten "(Strg+K)" im Accessible Name ab.
+    if ($('sucheKnopf')) $('sucheKnopf').setAttribute('aria-label', 'Suchen … – über alles (' + (IST_MAC ? '⌘K' : 'Strg K') + ')');
     const suIcon = (ziel) => document.querySelector('.nav-item[data-target="' + ziel + '"] svg')?.outerHTML || '';
     // Zweitnamen, unter denen jemand einen Bereich suchen könnte
     const BEREICH_WORTE = {
