@@ -11,6 +11,18 @@
   <link rel="stylesheet" href="assets/schriften.css">
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/admin.css">
+  <!-- Dunkelmodus so früh wie möglich setzen (gleiches Vorgehen wie app.html), damit beim
+       Laden nichts hell aufblitzt. Gemerkt wird die Wahl (hell/dunkel/system) in localStorage
+       unter demselben Schlüssel wie im Kundenbereich, „system" folgt prefers-color-scheme. -->
+  <script>
+    (function () {
+      try {
+        var wahl = localStorage.getItem('vocaris.thema') || 'system';
+        var dunkel = wahl === 'dunkel' || (wahl === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+      } catch (e) { /* ohne Speicher: hell */ }
+    })();
+  </script>
 </head>
 <body>
 
@@ -50,6 +62,7 @@
       <div class="foot">
         <span class="side__avatar" id="avatar" aria-hidden="true">·</span>
         <span class="side__email" id="who"></span>
+        <button class="btn btn--ghost btn--sym" id="themaToggle" type="button"></button>
         <button class="btn btn--ghost btn--sym side__abmelden" id="logout" type="button" aria-label="Abmelden" title="Abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
       </div>
     </aside>
@@ -84,40 +97,40 @@
         <div class="db-kpis" id="firmenKpis">
           <div class="db-kpi"><div class="k">Firmen</div><div class="v" id="kFirmen">–</div><div class="d" id="kFirmenD">&nbsp;</div></div>
           <div class="db-kpi"><div class="k">Anrufe, 30 Tage</div><div class="v" id="kAnrufe">–</div><div class="d" id="kAnrufeD">&nbsp;</div></div>
-          <button class="db-kpi" type="button" data-geh="sec-margen"><div class="k">Kosten, 30 Tage</div><div class="v" id="kKosten">–</div><div class="d" id="kKostenD">&nbsp;</div></button>
-          <button class="db-kpi" type="button" data-geh="sec-margen"><div class="k">Marge, 30 Tage</div><div class="v" id="kMarge">–</div><div class="d" id="kMargeD">&nbsp;</div></button>
+          <button class="db-kpi" type="button" data-geh="sec-margen"><span class="k">Kosten, 30 Tage</span><span class="v" id="kKosten">–</span><span class="d" id="kKostenD">&nbsp;</span></button>
+          <button class="db-kpi" type="button" data-geh="sec-margen"><span class="k">Marge, 30 Tage</span><span class="v" id="kMarge">–</span><span class="d" id="kMargeD">&nbsp;</span></button>
         </div>
 
         <!-- Filter: Chips je Gruppe; ein Klick auf „Alle" hebt die Gruppe auf -->
         <div class="filter" id="filter" aria-label="Filter">
-          <div class="fgruppe"><span>Branche</span>
-            <button class="chip aktiv" type="button" data-filter="branche" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="branche" data-wert="restaurant">Restaurant</button>
-            <button class="chip" type="button" data-filter="branche" data-wert="general">Allgemein</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgBranche"><span id="fgBranche">Branche</span>
+            <button class="chip aktiv" type="button" data-filter="branche" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="restaurant" aria-pressed="false">Restaurant</button>
+            <button class="chip" type="button" data-filter="branche" data-wert="general" aria-pressed="false">Allgemein</button>
           </div>
-          <div class="fgruppe"><span>Anbieter</span>
-            <button class="chip aktiv" type="button" data-filter="anbieter" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="openai">OpenAI</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="live">GPT-Live</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="gemini">Gemini</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="grok">Grok</button>
-            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral">Mistral</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgAnbieter"><span id="fgAnbieter">Anbieter</span>
+            <button class="chip aktiv" type="button" data-filter="anbieter" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="openai" aria-pressed="false">OpenAI</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="live" aria-pressed="false">GPT-Live</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="gemini" aria-pressed="false">Gemini</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="grok" aria-pressed="false">Grok</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral" aria-pressed="false">Mistral</button>
           </div>
-          <div class="fgruppe"><span>Tarif</span>
-            <button class="chip aktiv" type="button" data-filter="tarif" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="klein">Klein</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="standard">Standard</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="gross">Groß</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="trial">Test</button>
-            <button class="chip" type="button" data-filter="tarif" data-wert="ohne">Ohne Abo</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgTarif"><span id="fgTarif">Tarif</span>
+            <button class="chip aktiv" type="button" data-filter="tarif" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="klein" aria-pressed="false">Klein</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="standard" aria-pressed="false">Standard</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="gross" aria-pressed="false">Groß</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="trial" aria-pressed="false">Test</button>
+            <button class="chip" type="button" data-filter="tarif" data-wert="ohne" aria-pressed="false">Ohne Abo</button>
           </div>
-          <div class="fgruppe"><span>Status</span>
-            <button class="chip aktiv" type="button" data-filter="status" data-wert="">Alle</button>
-            <button class="chip" type="button" data-filter="status" data-wert="aktiv">Mit Anrufen</button>
-            <button class="chip" type="button" data-filter="status" data-wert="still">Ohne Anrufe</button>
-            <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer">Ohne Nummer</button>
-            <button class="chip" type="button" data-filter="status" data-wert="ohne-login">Ohne Login</button>
-            <button class="chip" type="button" data-filter="status" data-wert="widerspruch">Branche ≠ Module</button>
+          <div class="fgruppe" role="group" aria-labelledby="fgStatus"><span id="fgStatus">Status</span>
+            <button class="chip aktiv" type="button" data-filter="status" data-wert="" aria-pressed="true">Alle</button>
+            <button class="chip" type="button" data-filter="status" data-wert="aktiv" aria-pressed="false">Mit Anrufen</button>
+            <button class="chip" type="button" data-filter="status" data-wert="still" aria-pressed="false">Ohne Anrufe</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer" aria-pressed="false">Ohne Nummer</button>
+            <button class="chip" type="button" data-filter="status" data-wert="ohne-login" aria-pressed="false">Ohne Login</button>
+            <button class="chip" type="button" data-filter="status" data-wert="widerspruch" aria-pressed="false">Branche ≠ Module</button>
           </div>
         </div>
 
@@ -298,7 +311,11 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
     const sb = createClient(
       'https://nocsjyzmnskbyccrjayx.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4');
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
+      // Eigener storageKey: sonst teilt sich die Betreiber-Ansicht den localStorage-Eintrag
+      // mit app.html (gleiches Muster wie dort für die Impersonation, Zeile ~2795) und ein
+      // fehlschlagendes Admin-Gate (signOut) würde einen parallel offenen Kunden-Tab abmelden.
+      { auth: { storageKey: 'sb-vocaris-admin', persistSession: true, autoRefreshToken: true } });
     const API = 'https://api.vocaris.eu';
     const $ = (id) => document.getElementById(id);
     let token = null;
@@ -313,9 +330,17 @@
     const auth = () => ({ 'content-type': 'application/json', authorization: 'Bearer ' + token });
     // Alle Admin-Routen sind POST mit JSON-Body; nur /margen ist GET (siehe server.ts).
     async function api(path, body, methode = 'POST') {
-      const res = await fetch(API + path, methode === 'GET'
-        ? { headers: auth() }
-        : { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
+      let res;
+      try {
+        res = await fetch(API + path, methode === 'GET'
+          ? { headers: auth() }
+          : { method: 'POST', headers: auth(), body: JSON.stringify(body || {}) });
+      } catch {
+        // fetch() selbst scheitert bei echtem Netzwerkausfall/DNS/CORS (nicht bei HTTP-Fehlern,
+        // die laufen unten über !res.ok) mit einer rohen, englischen TypeError („Failed to fetch");
+        // siehe enter() und ladeSystem() für dasselbe, dort schon übersetzte Muster.
+        throw new Error('Server nicht erreichbar. Bitte Verbindung prüfen und noch einmal versuchen.');
+      }
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || 'Der Server hat mit Fehler ' + res.status + ' geantwortet.');
       return d;
@@ -324,6 +349,7 @@
     const eur = (n) => Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     const zahl = (n, nk = 0) => Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: nk, maximumFractionDigits: nk });
     const datum = (iso) => iso ? new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
+    const datumZeit = (ms) => ms ? new Date(ms).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–';
     const plural = (n, eins, viele) => n + ' ' + (n === 1 ? eins : viele);
     const ICON_LEER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>';
     const leer = (text, knopf, aktion) => '<div class="leer">' + ICON_LEER + '<p>' + esc(text) + '</p>'
@@ -365,6 +391,7 @@
 
     // ---- Zustand ----
     let tenants = [];          // aus /api/admin/tenants/list
+    let tenantsFehler = false; // true nur bei echtem Ladefehler, nicht bei „keine Firmen"
     let margen = null;         // aus /api/admin/margen
     const margeVon = (id) => margen?.zeilen.find((z) => z.tenantId === id) || null;
     let aktiveFirma = null;    // id der geöffneten Detailkarte
@@ -372,15 +399,52 @@
     let suche = '';
     let geladenUm = null;
 
+    // ---- Darstellung: hell / dunkel / wie das System ----
+    // Kopf-Skript setzt data-theme schon vor dem ersten Zeichnen; hier nur noch
+    // die Umschaltung per Knopf und das Mithören des Systems, gleiches Muster wie app.html.
+    const THEMA_KEY = 'vocaris.thema';
+    const dunkelMedia = window.matchMedia('(prefers-color-scheme: dark)');
+    const THEMA_LABEL = { hell: 'Hell', dunkel: 'Dunkel', system: 'Automatisch (System)' };
+    const THEMA_ICON = {
+      hell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>',
+      dunkel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.3A9 9 0 1 1 11.7 3a7 7 0 0 0 9.3 9.3z"/></svg>',
+      system: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>',
+    };
+    const themaGemerkt = () => { try { const w = localStorage.getItem(THEMA_KEY); return ['hell', 'dunkel', 'system'].includes(w) ? w : 'system'; } catch { return 'system'; } };
+    function themaAnwenden() {
+      const wahl = themaGemerkt();
+      const dunkel = wahl === 'dunkel' || (wahl === 'system' && dunkelMedia.matches);
+      document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+      const btn = $('themaToggle');
+      btn.innerHTML = THEMA_ICON[wahl];
+      btn.title = 'Darstellung: ' + THEMA_LABEL[wahl] + ' (klicken zum Wechseln)';
+      btn.setAttribute('aria-label', 'Darstellung: ' + THEMA_LABEL[wahl] + ', klicken zum Wechseln');
+    }
+    function themaSetzen(wahl) { try { localStorage.setItem(THEMA_KEY, wahl); } catch { /* dann nur für diese Sitzung */ } themaAnwenden(); }
+    $('themaToggle').onclick = () => { const reihe = ['system', 'hell', 'dunkel']; themaSetzen(reihe[(reihe.indexOf(themaGemerkt()) + 1) % reihe.length]); };
+    dunkelMedia.addEventListener('change', () => { if (themaGemerkt() === 'system') themaAnwenden(); });
+    themaAnwenden();
+
     // ---- Auth ----
     $('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       $('loginErr').textContent = '';
-      const { data, error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
-      if (error) { $('loginErr').textContent = 'Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.'; return; }
-      await enter(data.session);
+      const btn = $('loginForm').querySelector('.login__submit');
+      if (btn.disabled) return;   // kein Doppel-Absenden während die Anfrage läuft
+      btn.disabled = true; btn.setAttribute('aria-busy', 'true'); const textVorher = btn.textContent; btn.textContent = 'Anmelden …';
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+        if (error) { $('loginErr').textContent = 'Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.'; return; }
+        await enter(data.session);
+      } finally { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = textVorher; }
     });
     $('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    // Supabase erneuert das Token im Hintergrund automatisch; ohne diesen Zuhörer blieb die
+    // einmal in enter() gelesene `token`-Variable stehen und jede Anfrage nach Ablauf scheiterte.
+    sb.auth.onAuthStateChange((ereignis, session) => {
+      if (session) { token = session.access_token; sitzung = session; renderSitzung(); }
+      else if (ereignis === 'SIGNED_OUT') { token = null; }
+    });
 
     async function enter(session) {
       token = session?.access_token ?? null;
@@ -388,16 +452,25 @@
       // Admin-Gate: Backend bestätigt, dass dieser Login Plattform-Admin ist.
       // Body '{}' zwingend: Fastify lehnt POST mit content-type application/json
       // und LEEREM Body mit 400 ab, das wurde fälschlich als „kein Admin" gewertet.
+      let res;
       try {
-        const res = await fetch(API + '/api/admin/me', { method: 'POST', headers: auth(), body: '{}' });
-        if (!res.ok) throw new Error();
+        res = await fetch(API + '/api/admin/me', { method: 'POST', headers: auth(), body: '{}' });
       } catch {
+        $('loginErr').textContent = 'Server nicht erreichbar. Bitte Verbindung prüfen und noch einmal versuchen.';
+        return showLogin();
+      }
+      if (res.status === 401 || res.status === 403) {
         $('loginErr').textContent = 'Dieser Zugang ist kein Plattform-Administrator.';
         await sb.auth.signOut(); token = null; return showLogin();
       }
+      if (!res.ok) {
+        // Serverstörung (5xx) ist kein „kein Admin", die Sitzung bleibt bestehen.
+        $('loginErr').textContent = 'Der Server antwortet gerade nicht richtig (Fehler ' + res.status + '). Bitte gleich noch einmal versuchen.';
+        return showLogin();
+      }
       sitzung = session;
-      $('who').textContent = session.user.email;
-      $('avatar').textContent = (session.user.email || '·')[0].toUpperCase();
+      $('who').textContent = session.user.email; $('who').title = session.user.email;
+      $('avatar').textContent = (session.user.email || '·')[0].toUpperCase(); $('avatar').title = session.user.email || '';
       $('login').classList.add('hidden');
       $('app').classList.remove('hidden');
       ladeAlles();
@@ -408,14 +481,16 @@
     // ---- Navigation: eine Logik für Seitenleiste und Tab-Leiste ----
     function geh(ziel) {
       document.querySelectorAll('main > section').forEach((s) => (s.hidden = s.id !== ziel));
-      document.querySelectorAll('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.target === ziel));
-      document.querySelectorAll('.tab-item').forEach((b) => b.classList.toggle('active', b.dataset.tab === ziel));
+      document.querySelectorAll('.nav-item').forEach((b) => { const an = b.dataset.target === ziel; b.classList.toggle('active', an); an ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
+      document.querySelectorAll('.tab-item').forEach((b) => { const an = b.dataset.tab === ziel; b.classList.toggle('active', an); an ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
       document.body.classList.remove('zeigt-detail');
       window.scrollTo({ top: 0 });
     }
     document.querySelectorAll('.nav-item').forEach((b) => (b.onclick = () => geh(b.dataset.target)));
     document.querySelectorAll('.tab-item').forEach((b) => (b.onclick = () => geh(b.dataset.tab)));
     document.querySelectorAll('[data-geh]').forEach((b) => (b.onclick = () => geh(b.dataset.geh)));
+    // Anfangszustand (sec-firmen ist schon im Markup aktiv) bekommt aria-current ohne geh() aufzurufen.
+    document.querySelectorAll('.nav-item.active, .tab-item.active').forEach((b) => b.setAttribute('aria-current', 'page'));
 
     // ---- Laden ----
     async function ladeAlles() {
@@ -425,8 +500,8 @@
       // Beide Routen parallel; fällt eine aus, zeigt ihr Bereich den Fehler, der andere läuft.
       const [tRes, mRes] = await Promise.allSettled([api('/api/admin/tenants/list'), api('/api/admin/margen', null, 'GET')]);
       geladenUm = new Date();
-      if (tRes.status === 'fulfilled') tenants = tRes.value.tenants || [];
-      else { tenants = []; $('firmenListe').innerHTML = leer(tRes.reason.message, 'Noch einmal laden', 'reload'); $('firmenSub').textContent = 'Firmen konnten nicht geladen werden.'; }
+      if (tRes.status === 'fulfilled') { tenants = tRes.value.tenants || []; tenantsFehler = false; }
+      else { tenants = []; tenantsFehler = true; $('firmenListe').innerHTML = leer(tRes.reason.message, 'Noch einmal laden', 'reload'); $('firmenSub').textContent = 'Firmen konnten nicht geladen werden.'; }
       if (mRes.status === 'fulfilled') margen = mRes.value; else { margen = null; $('margenBox').innerHTML = leer(mRes.reason.message, 'Noch einmal laden', 'reload-margen'); }
       renderKpis();
       if (tRes.status === 'fulfilled') renderFirmen();
@@ -438,8 +513,8 @@
     }
     async function ladeMargen() {
       $('margenBox').innerHTML = SKELETT;
-      try { margen = await api('/api/admin/margen', null, 'GET'); renderKpis(); renderMargen(); if (aktiveFirma) renderDetail(aktiveFirma); }
-      catch (e) { margen = null; $('margenBox').innerHTML = leer(e.message, 'Noch einmal laden', 'reload-margen'); }
+      try { margen = await api('/api/admin/margen', null, 'GET'); renderKpis(); renderMargen(); if (!tenantsFehler) renderFirmen(); if (aktiveFirma) renderDetail(aktiveFirma); }
+      catch (e) { margen = null; $('margenBox').innerHTML = leer(e.message, 'Noch einmal laden', 'reload-margen'); renderKpis(); if (!tenantsFehler) renderFirmen(); }
     }
     $('firmenReload').onclick = ladeAlles;
     $('margenReload').onclick = ladeMargen;
@@ -456,20 +531,29 @@
     // ---- Kacheln ----
     function renderKpis() {
       const g = margen?.gesamt;
-      const mitNummer = tenants.filter((t) => t.numbers.length).length;
-      const anrufe = tenants.reduce((n, t) => n + (t.calls30d || 0), 0);
-      $('kFirmen').textContent = zahl(tenants.length);
-      $('kFirmenD').textContent = plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer';
-      $('kAnrufe').textContent = zahl(anrufe);
-      $('kAnrufeD').textContent = plural(tenants.filter((t) => t.calls30d > 0).length, 'Firma', 'Firmen') + ' mit Anrufen';
+      if (tenantsFehler) {
+        // Firmen (und damit Anrufe/Nummern) konnten nicht geladen werden: „–" statt irreführender
+        // Nullen zeigen, firmenSub nicht überschreiben (dort steht bereits der echte Fehlertext).
+        $('kFirmen').textContent = '–'; $('kFirmenD').textContent = ' ';
+        $('kAnrufe').textContent = '–'; $('kAnrufeD').textContent = ' ';
+        $('navFirmen').textContent = ''; $('navNummern').textContent = '';
+      } else {
+        const mitNummer = tenants.filter((t) => t.numbers.length).length;
+        const anrufe = tenants.reduce((n, t) => n + (t.calls30d || 0), 0);
+        $('kFirmen').textContent = zahl(tenants.length);
+        $('kFirmenD').textContent = plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer';
+        $('kAnrufe').textContent = zahl(anrufe);
+        $('kAnrufeD').textContent = plural(tenants.filter((t) => t.calls30d > 0).length, 'Firma', 'Firmen') + ' mit Anrufen';
+        $('navFirmen').textContent = tenants.length || '';
+        $('navNummern').textContent = tenants.reduce((n, t) => n + t.numbers.length, 0) || '';
+        $('firmenSub').textContent = plural(tenants.length, 'Firma', 'Firmen') + ' · ' + plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer · ' + zahl(anrufe) + ' Anrufe in 30 Tagen';
+      }
       $('kKosten').textContent = g ? eur(g.kosten.total) : '–';
       $('kKostenD').textContent = g ? 'Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai) : 'Margen nicht geladen';
       $('kMarge').textContent = g ? eur(g.marge) : '–';
       $('kMarge').className = 'v ' + (g ? (g.marge < 0 ? 'minus' : g.marge > 0 ? 'plus' : '') : '');
       $('kMargeD').textContent = g ? 'Umsatz ' + eur(g.umsatz) : 'Margen nicht geladen';
-      $('navFirmen').textContent = tenants.length || '';
-      $('navNummern').textContent = tenants.reduce((n, t) => n + t.numbers.length, 0) || '';
-      $('firmenSub').textContent = plural(tenants.length, 'Firma', 'Firmen') + ' · ' + plural(mitNummer, 'Firma', 'Firmen') + ' mit Nummer · ' + zahl(anrufe) + ' Anrufe in 30 Tagen';
+      syncTarifChips();
       if (g) {
         $('mUmsatz').textContent = eur(g.umsatz); $('mUmsatzD').textContent = plural(margen.zeilen.filter((z) => z.monatspreis != null).length, 'zahlendes Abo', 'zahlende Abos');
         $('mKosten').textContent = eur(g.kosten.total); $('mKostenD').textContent = 'Telnyx ' + eur(g.kosten.telnyx) + ' · KI ' + eur(g.kosten.ai);
@@ -477,6 +561,13 @@
         $('mMargeD').textContent = plural(margen.zeilen.filter((z) => z.marge < 0).length, 'Firma', 'Firmen') + ' im Minus';
         $('mMinuten').textContent = zahl(g.minuten, 1); $('mMinutenD').textContent = zahl(g.anrufe) + ' Anrufe';
         $('margenSub').textContent = 'Seit ' + datum(margen.seit) + ' · Umsatz ist der Monatspreis laut Abo, Kosten sind Telnyx plus KI je Anruf.';
+      } else {
+        $('mUmsatz').textContent = '–'; $('mUmsatzD').textContent = ' ';
+        $('mKosten').textContent = '–'; $('mKostenD').textContent = 'Margen nicht geladen';
+        $('mMarge').textContent = '–'; $('mMarge').className = 'v';
+        $('mMargeD').textContent = 'Margen nicht geladen';
+        $('mMinuten').textContent = '–'; $('mMinutenD').textContent = ' ';
+        $('margenSub').textContent = 'Margen nicht geladen.';
       }
     }
 
@@ -488,7 +579,9 @@
     function passt(t) {
       if (filter.branche && (t.industry === 'restaurant' ? 'restaurant' : 'general') !== filter.branche) return false;
       if (filter.anbieter && (t.voiceProvider || 'openai') !== filter.anbieter) return false;
-      if (filter.tarif) { const tf = tarifVon(t); if (filter.tarif === 'ohne' ? !!tf : tf !== filter.tarif) return false; }
+      // Ohne geladene Margen lässt sich der Tarif nicht bestimmen: Filter dann nicht anwenden,
+      // sonst meldet „Ohne Abo" fälschlich alle Firmen und die echten Tarife 0 Treffer.
+      if (filter.tarif && margen !== null) { const tf = tarifVon(t); if (filter.tarif === 'ohne' ? !!tf : tf !== filter.tarif) return false; }
       if (filter.status === 'aktiv' && !(t.calls30d > 0)) return false;
       if (filter.status === 'still' && t.calls30d > 0) return false;
       if (filter.status === 'ohne-nummer' && t.numbers.length) return false;
@@ -502,7 +595,21 @@
       return true;
     }
     function syncFilterChips() {
-      document.querySelectorAll('#filter .chip').forEach((c) => c.classList.toggle('aktiv', filter[c.dataset.filter] === c.dataset.wert));
+      document.querySelectorAll('#filter .chip').forEach((c) => {
+        const aktiv = filter[c.dataset.filter] === c.dataset.wert;
+        c.classList.toggle('aktiv', aktiv);
+        c.setAttribute('aria-pressed', aktiv);
+      });
+    }
+    // Solange /margen nicht geladen ist, lässt sich kein Tarif bestimmen: die Tarif-Chips
+    // (außer „Alle") sperren, statt falsche Treffer zu zeigen (siehe passt()/tarifTag()).
+    function syncTarifChips() {
+      document.querySelectorAll('#filter .chip[data-filter="tarif"]').forEach((c) => {
+        const istAlle = c.dataset.wert === '';
+        const sperren = margen === null && !istAlle;
+        c.disabled = sperren;
+        c.title = sperren ? 'Margen nicht geladen, Tarif ist unbekannt.' : '';
+      });
     }
     $('filter').addEventListener('click', (e) => {
       const c = e.target.closest('.chip'); if (!c) return;
@@ -511,6 +618,7 @@
     $('fSuche').addEventListener('input', () => { suche = $('fSuche').value.trim(); renderFirmen(); });
 
     function tarifTag(t) {
+      if (margen === null) return '<span class="tag tag--unbek" title="Margen nicht geladen, der Tarif kann gerade nicht angezeigt werden.">Tarif unbekannt</span>';
       const z = margeVon(t.id);
       if (!z || !z.tarif) return '<span class="tag tag--aus">ohne Abo</span>';
       const name = TARIF_NAMEN[z.tarif] || z.tarif;
@@ -540,15 +648,39 @@
       const b = e.target.closest('[data-firma]'); if (!b) return;
       zeigeDetail(b.dataset.firma);
     });
+    let letzterFirmaKnopf = null;   // für den Fokus beim Schließen des Detail-Blatts auf dem Handy
+    function hintergrundSperren(an) {
+      // Handy: Detail legt sich als Blatt über die Liste; ohne inert bleibt die verdeckte
+      // Liste per Tastatur/Screenreader erreichbar, obwohl sie unsichtbar ist.
+      ['firmenListe', 'filter', 'firmenKpis'].forEach((id) => $(id)?.toggleAttribute('inert', an));
+      document.querySelector('.tabbar')?.toggleAttribute('inert', an);
+      document.querySelector('.side')?.toggleAttribute('inert', an);
+    }
     function zeigeDetail(id) {
       aktiveFirma = id;
-      document.querySelectorAll('.firma').forEach((f) => { const an = f.dataset.id === id; f.classList.toggle('aktiv', an); f.querySelector('.firma__kopf').setAttribute('aria-pressed', an); });
+      document.querySelectorAll('.firma').forEach((f) => {
+        const an = f.dataset.id === id; f.classList.toggle('aktiv', an);
+        const kopf = f.querySelector('.firma__kopf'); kopf.setAttribute('aria-pressed', an);
+        if (an) letzterFirmaKnopf = kopf;
+      });
       renderDetail(id);
       $('detail').hidden = false; $('detailLeer').hidden = true;
       document.body.classList.add('zeigt-detail');   // Handy: Detail schiebt sich über die Liste
-      if (window.innerWidth <= 760) $('detail').scrollTop = 0;
+      if (window.innerWidth <= 760) {
+        $('detail').scrollTop = 0;
+        hintergrundSperren(true);
+        $('detailZu').focus();
+      } else if (window.innerWidth <= 1100) {
+        // Zwischen 761 und 1100 px steht das Detail unter der Liste (eine Spalte), ohne Scroll
+        // bliebe es außerhalb des Sichtbereichs und ein Klick wirkte wirkungslos.
+        $('detail').scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
     }
-    $('detailZu').onclick = () => { document.body.classList.remove('zeigt-detail'); };
+    function schliesseDetailBlatt() {
+      document.body.classList.remove('zeigt-detail');
+      if (window.innerWidth <= 760) { hintergrundSperren(false); letzterFirmaKnopf?.focus(); }
+    }
+    $('detailZu').onclick = schliesseDetailBlatt;
 
     // ---- Detailkarte ----
     // Zeigt nur, was die Routen liefern: Nummern, Anbieter und Stimme, Module,
@@ -560,6 +692,10 @@
     }
     function renderDetail(id) {
       const t = tenants.find((x) => x.id === id); if (!t) return;
+      // Der Fokus steht oft auf einem Knopf INNERHALB von detailInhalt (z. B. „Lösen" nach
+      // einer bestätigten Aktion, die renderDetail() neu aufruft): das folgende innerHTML
+      // entfernt dieses Element aus dem DOM, der Fokus fiele sonst unkontrolliert auf <body>.
+      const hatteFokusInnen = $('detailInhalt').contains(document.activeElement);
       const z = margeVon(id);
       const nums = t.numbers.length ? t.numbers.map((n) => {
         const tag = n.inbound ? '<span class="tag tag--ein" title="Empfangsnummer einer anderen Firma, die hierher weiterleitet">eingehend</span>'
@@ -575,7 +711,7 @@
       $('detailInhalt').innerHTML = `
         <div class="detail__kopf">
           <div style="min-width:0;flex:1">
-            <h2>${esc(t.name)}</h2>
+            <h2 tabindex="-1">${esc(t.name)}</h2>
             <p class="muted">${t.ownerEmail ? esc(t.ownerEmail) : '<em>kein Login</em>'} · angelegt ${datum(t.createdAt)}</p>
           </div>
           <div class="db-aktionen">
@@ -585,7 +721,7 @@
         </div>
         <dl class="db-fakten">
           <dt>Anrufe, 30 Tage</dt><dd>${zahl(t.calls30d)}${z ? ' <small>· ' + zahl(z.minuten, 1) + ' Minuten</small>' : ''}</dd>
-          <dt>Tarif</dt><dd>${z && z.tarif ? esc(TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? ' <small>· ' + eur(z.monatspreis) + ' im Monat</small>' : ' <small>· kein Umsatz</small>') : 'ohne Abo'}</dd>
+          <dt>Tarif</dt><dd>${margen === null ? '<small>Margen nicht geladen</small>' : z && z.tarif ? esc(TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? ' <small>· ' + eur(z.monatspreis) + ' im Monat</small>' : ' <small>· kein Umsatz</small>') : 'ohne Abo'}</dd>
           <dt>Kosten, 30 Tage</dt><dd>${z ? eur(z.kosten.total) + ' <small>· Telnyx ' + eur(z.kosten.telnyx) + ', KI ' + eur(z.kosten.ai) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
           <dt>Marge, 30 Tage</dt><dd class="${z ? (z.marge < 0 ? 'minus' : z.marge > 0 ? 'plus' : '') : ''}">${z ? eur(z.marge) + ' <small>· Umsatz ' + eur(z.umsatz) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
         </dl>
@@ -616,6 +752,8 @@
           ${hinweis}
         </div>`;
       wireDetail(t);
+      // Nachfolger für den weggefallenen Fokus: die Detail-Überschrift, nicht <body>.
+      if (hatteFokusInnen) $('detailInhalt').querySelector('h2').focus();
     }
     function wireDetail(t) {
       $('dOeffnen').onclick = () => impersonate(t.id, t.name);
@@ -623,18 +761,34 @@
       $('dNummerNeu').onclick = () => openNumDlg(t.id);
       const prov = $('dAnbieter'), voiceSel = $('dStimme');
       prov.onchange = async () => {
-        const provider = prov.value; prov.disabled = voiceSel.disabled = true;
+        const provider = prov.value, alt = t.voiceProvider;
+        if (provider === alt) return;
+        prov.disabled = voiceSel.disabled = true;
+        let anbieterGesetzt = false;
         try {
           await api('/api/admin/tenants/provider', { tenantId: t.id, provider });
-          t.voiceProvider = provider;
+          anbieterGesetzt = true;
           // Stimmen-Auswahl auf den neuen Anbieter umstellen und die Standardstimme gleich speichern, damit sie passt.
           voiceSel.innerHTML = voiceOptions(provider, t.voiceId);
           await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value });
-          t.voiceId = voiceSel.value;
+          // Erst nach BEIDEN erfolgreichen Aufrufen übernehmen, sonst zeigt die Karte einen
+          // Anbieter, dessen Stimme serverseitig gar nicht gesetzt wurde.
+          t.voiceProvider = provider; t.voiceId = voiceSel.value;
           toast('KI-Modell: ' + ANBIETER[provider] + ', Stimme ' + stimmeName(provider, t.voiceId));
-          renderFirmen(); renderAnbieter();
-        } catch (e) { toast(e.message, 'err'); prov.value = t.voiceProvider; voiceSel.innerHTML = voiceOptions(t.voiceProvider, t.voiceId); }
-        finally { prov.disabled = voiceSel.disabled = false; }
+        } catch (e) {
+          if (anbieterGesetzt) {
+            // Die Stimme konnte nicht gesetzt werden, der Anbieter wurde aber schon gespeichert:
+            // serverseitig zurückstellen, sonst bleibt dort ein Widerspruch (neuer Anbieter, alte,
+            // für ihn ungültige Stimme) stehen, den die Liste nicht zeigt.
+            try { await api('/api/admin/tenants/provider', { tenantId: t.id, provider: alt }); }
+            catch { /* bestmöglich versucht, der Fehler ist dem Admin schon gemeldet */ }
+          }
+          toast(e.message, 'err');
+          prov.value = alt; voiceSel.innerHTML = voiceOptions(alt, t.voiceId);
+        } finally {
+          prov.disabled = voiceSel.disabled = false;
+          renderFirmen(); renderAnbieter();   // in jedem Fall: Liste muss den tatsächlichen Endzustand zeigen
+        }
       };
       voiceSel.onchange = async () => {
         try { await api('/api/admin/tenants/voice', { tenantId: t.id, voice: voiceSel.value }); t.voiceId = voiceSel.value; toast('Stimme: ' + stimmeName(t.voiceProvider, t.voiceId)); renderFirmen(); renderAnbieter(); }
@@ -708,7 +862,10 @@
     const numDlg = $('numDlg');
     function openNumDlg(tenantId) {
       $('numForm').reset(); $('numErr').textContent = '';
-      $('numTenant').innerHTML = tenants.map((t) => `<option value="${esc(t.id)}"${t.id === tenantId ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
+      // Ohne vorgewählte Firma einen Platzhalter voranstellen: sonst wählt der Browser
+      // stillschweigend die erste Firma der Liste aus, und die Pflichtprüfung unten greift nie.
+      const platzhalter = tenantId ? '' : '<option value="" disabled selected>Firma wählen …</option>';
+      $('numTenant').innerHTML = platzhalter + tenants.map((t) => `<option value="${esc(t.id)}"${t.id === tenantId ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
       numDlg.showModal(); (tenantId ? $('numVal') : $('numTenant')).focus();
     }
     $('nummerNeuBtn').onclick = () => openNumDlg(aktiveFirma);
@@ -718,6 +875,8 @@
       $('numErr').textContent = '';
       const phoneNumber = $('numVal').value.replace(/[\s/-]/g, ''), tenantId = $('numTenant').value;
       if (!tenantId) return ($('numErr').textContent = 'Bitte eine Firma wählen.');
+      if (!phoneNumber) return ($('numErr').textContent = 'Bitte eine Nummer eingeben.');
+      if (!/^\+?[0-9]{6,15}$/.test(phoneNumber)) return ($('numErr').textContent = 'Bitte im Format +49… ohne Leerzeichen eingeben.');
       const btn = $('numSave'); btn.disabled = true;
       try {
         await api('/api/admin/numbers/assign', { phoneNumber, tenantId, department: $('numDep').value });
@@ -757,7 +916,9 @@
       if (!margen.zeilen.length) { box.innerHTML = leer('Noch keine Firmen, also auch keine Margen.', 'Erste Firma anlegen', 'neu'); return; }
       if (!zeilen.length) { box.innerHTML = leer('Keine Firma im Minus. So soll es sein.', 'Alle zeigen', 'alle-margen'); return; }
       const g = margen.gesamt;
-      const kopf = SPALTEN.map(([k, n, l]) => `<th class="${l || ''} ${sort.key === k ? (sort.auf ? 'auf' : 'ab') : ''}" data-sort="${k}" role="button" tabindex="0" aria-sort="${sort.key === k ? (sort.auf ? 'ascending' : 'descending') : 'none'}">${n}</th>`).join('');
+      // role="button" auf dem th war ungültig (aria-sort gilt nur für columnheader/rowheader):
+      // die Sortierung sitzt stattdessen auf einem echten <button> im th, das bleibt columnheader.
+      const kopf = SPALTEN.map(([k, n, l]) => `<th class="${l || ''} sortierbar ${sort.key === k ? (sort.auf ? 'auf' : 'ab') : ''}" aria-sort="${sort.key === k ? (sort.auf ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sortknopf" data-sort="${k}">${n}</button></th>`).join('');
       const zeile = (z) => {
         const tarif = z.tarif ? esc(TARIF_NAMEN[z.tarif] || z.tarif) + (z.monatspreis != null ? '' : ' <span class="muted">(kein Umsatz)</span>') : '<span class="muted">–</span>';
         return `<tr><td class="l"><button class="zeilenlink" type="button" data-firma-geh="${esc(z.tenantId)}">${esc(z.name)}</button></td><td class="l">${tarif}</td><td>${zahl(z.anrufe)}</td><td>${zahl(z.minuten, 1)}</td>`
@@ -768,24 +929,30 @@
         + `<td title="Telnyx ${eur(g.kosten.telnyx)} · KI ${eur(g.kosten.ai)}">${eur(g.kosten.total)}</td><td>${eur(g.umsatz)}</td><td class="${margeKlasse(g.marge)}">${eur(g.marge)}</td></tr></tfoot></table>`;
     }
     $('margenBox').addEventListener('click', (e) => {
-      const th = e.target.closest('th[data-sort]');
-      if (th) { const k = th.dataset.sort; sort.auf = sort.key === k ? !sort.auf : true; sort.key = k; renderMargen(); return; }
+      const knopf = e.target.closest('button[data-sort]');
+      if (knopf) {
+        const k = knopf.dataset.sort; sort.auf = sort.key === k ? !sort.auf : true; sort.key = k; renderMargen();
+        // Fokus nach dem Neuaufbau der Tabelle wiederherstellen, sonst fällt er bei jedem
+        // Sortieren auf <body> zurück und Tastaturnutzer müssen neu durch die Seite tabben.
+        $('margenBox').querySelector('[data-sort="' + k + '"]')?.focus();
+        return;
+      }
       const b = e.target.closest('[data-firma-geh]');
       if (b) { geh('sec-firmen'); zeigeDetail(b.dataset.firmaGeh); }
     });
-    $('margenBox').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('th[data-sort]')) { e.preventDefault(); e.target.click(); } });
     $('margenNurNegativ').onclick = () => { nurNegativ = !nurNegativ; $('margenNurNegativ').classList.toggle('aktiv', nurNegativ); $('margenNurNegativ').setAttribute('aria-pressed', nurNegativ); renderMargen(); };
     document.addEventListener('click', (e) => { if (e.target.closest('[data-leer="alle-margen"]')) $('margenNurNegativ').click(); });
 
     // ---- Nummern-Übersicht (aus der Firmenliste abgeleitet, keine eigene Route) ----
     function renderNummern() {
       const box = $('nummernBox');
+      if (tenantsFehler) { box.innerHTML = leer('Firmen konnten nicht geladen werden, Nummern sind deshalb gerade nicht verfügbar.', 'Noch einmal laden', 'reload'); $('nummernSub').textContent = 'Nummern konnten nicht geladen werden.'; return; }
       const zeilen = [];
       for (const t of tenants) for (const n of t.numbers) zeilen.push({ t, n });
       zeilen.sort((a, b) => a.n.phone_number.localeCompare(b.n.phone_number));
       $('nummernSub').textContent = plural(zeilen.length, 'Nummer', 'Nummern') + ' · ' + plural(tenants.filter((t) => !t.numbers.length).length, 'Firma', 'Firmen') + ' ohne Nummer';
       if (!zeilen.length) { box.innerHTML = leer('Noch keine Nummer zugewiesen. Ohne Nummer nimmt kein Assistent Anrufe an.', 'Nummer zuweisen', 'nummer'); return; }
-      box.innerHTML = `<table id="nummernTabelle"><thead><tr><th class="l">Nummer</th><th class="l">Firma</th><th class="l">Abteilung</th><th class="l">Art</th><th></th></tr></thead><tbody>`
+      box.innerHTML = `<table id="nummernTabelle"><thead><tr><th class="l">Nummer</th><th class="l">Firma</th><th class="l">Abteilung</th><th class="l">Art</th><th><span class="sr-only">Aktion</span></th></tr></thead><tbody>`
         + zeilen.map(({ t, n }) => `<tr><td class="l"><code>${esc(n.phone_number)}</code></td><td class="l"><button class="zeilenlink" type="button" data-firma-geh="${esc(t.id)}">${esc(t.name)}</button></td>`
           + `<td class="l">${esc(ABTEILUNG[n.department] || n.department || '–')}</td><td class="l">${n.inbound ? '<span class="tag tag--ein">eingehend</span>' : '<span class="tag">eigene</span>'}</td>`
           + `<td class="aktion">${n.inbound ? '' : `<button class="btn btn--ghost" type="button" data-unassign="${esc(n.phone_number)}" data-name="${esc(t.name)}">Lösen</button>`}</td></tr>`).join('')
@@ -803,6 +970,7 @@
     // ---- Anbieter & Stimmen (Gruppierung der Firmenliste) ----
     function renderAnbieter() {
       const box = $('anbieterBox');
+      if (tenantsFehler) { box.innerHTML = '<div class="panel">' + leer('Firmen konnten nicht geladen werden, die Anbieter-Zuordnung ist deshalb gerade nicht verfügbar.', 'Noch einmal laden', 'reload') + '</div>'; return; }
       if (!tenants.length) { box.innerHTML = '<div class="panel">' + leer('Noch keine Firmen, also auch keine Anbieter-Zuordnung.', 'Erste Firma anlegen', 'neu') + '</div>'; return; }
       box.innerHTML = Object.entries(ANBIETER).map(([key, name]) => {
         const liste = tenants.filter((t) => (t.voiceProvider || 'openai') === key);
@@ -825,9 +993,11 @@
         const d = await res.json();
         box.innerHTML = `<dt>Backend</dt><dd>${esc(API)}</dd><dt>Status</dt><dd class="${d.ok ? 'plus' : 'minus'}">${d.ok ? 'erreichbar' : 'gestört'}</dd>`
           + `<dt>Dienst</dt><dd>${esc(d.service || '–')}</dd><dt>Läuft seit</dt><dd>${d.uptimeSeconds != null ? dauer(d.uptimeSeconds) : '–'}</dd>`
-          + `<dt>Serverzeit</dt><dd>${d.time ? new Date(d.time).toLocaleString('de-DE') : '–'}</dd>`;
+          + `<dt>Serverzeit</dt><dd>${datumZeit(d.time ? new Date(d.time).getTime() : null)}</dd>`;
       } catch (e) {
-        box.innerHTML = `<dt>Backend</dt><dd>${esc(API)}</dd><dt>Status</dt><dd class="minus">nicht erreichbar</dd><dt>Fehler</dt><dd>${esc(e.message)}</dd>`;
+        // e.message ist hier die rohe, englische Browser-Fehlermeldung (z. B. „Failed to fetch");
+        // die rohe Meldung bleibt als title für die Fehlersuche erhalten, aber unübersetzt steht sie nicht auf der Seite.
+        box.innerHTML = `<dt>Backend</dt><dd>${esc(API)}</dd><dt>Status</dt><dd class="minus">nicht erreichbar</dd><dt>Fehler</dt><dd title="${esc(e.message)}">Keine Verbindung zum Server</dd>`;
       }
       renderSitzung();
     }
@@ -835,12 +1005,13 @@
       if (!sitzung) return;
       $('sitzungFakten').innerHTML = `<dt>Angemeldet als</dt><dd>${esc(sitzung.user.email)}</dd><dt>Rolle</dt><dd>Plattform-Administrator</dd>`
         + `<dt>Daten geladen</dt><dd>${geladenUm ? geladenUm.toLocaleTimeString('de-DE') + ' Uhr' : '–'}</dd>`
-        + `<dt>Sitzung läuft ab</dt><dd>${sitzung.expires_at ? new Date(sitzung.expires_at * 1000).toLocaleString('de-DE') : '–'}</dd>`;
+        + `<dt>Sitzung läuft ab</dt><dd>${datumZeit(sitzung.expires_at ? sitzung.expires_at * 1000 : null)}</dd>`;
     }
     $('systemReload').onclick = ladeSystem;
 
-    // Escape schließt das Detail-Blatt auf dem Handy
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail')) document.body.classList.remove('zeigt-detail'); });
+    // Escape schließt das Detail-Blatt auf dem Handy – nur wenn nicht gerade ein Dialog darüber offen ist,
+    // sonst soll Escape erst den Dialog schließen (ein Druck = eine Ebene).
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail') && !document.querySelector('dialog[open]')) schliesseDetailBlatt(); });
 
     // ---- Start ----
     sb.auth.getSession().then(({ data }) => { data.session ? enter(data.session) : showLogin(); });

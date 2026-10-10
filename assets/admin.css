@@ -16,6 +16,11 @@
      nur 4,25:1, #5f6b7d schafft überall mindestens 4,8:1. */
   --ink-faint: #5f6b7d;
   --accent-ink: var(--marke-tief);
+  /* Für Flächen mit weißer Schrift (Primärknopf, Avatar) getrennt von --accent:
+     im Dunkelmodus ist --marke bewusst heller, damit er als Text/Link auf
+     dunklem Grund trägt — als Knopf-Fläche unter weißer Schrift reicht das
+     nicht (siehe Override unten). Im Hellmodus identisch mit --accent. */
+  --accent-auf-weiss: var(--accent);
   --accent-3: var(--weh);
   --white: #fff;
   --dark: var(--dunkel);
@@ -30,6 +35,34 @@
   --gut-text: #0f6b3a;
   --weh-text: #b91c1c;
 }
+/* ── Dunkelmodus ──────────────────────────────────────────────────────────
+   Gleiches Muster und gleiche Werte wie app.html (dort :root[data-theme="dark"]
+   in einem <style>-Block): nur die Grundwerte umstellen, alles andere hängt
+   über die Aliase daran. data-theme setzt ein Kopf-Skript in admin.html schon
+   vor dem ersten Zeichnen, aus demselben localStorage-Schlüssel wie dort. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --flaeche-0: #0d1424; --flaeche-1: #141c2e; --flaeche-2: #1b2438; --flaeche-tint: #182240; --flaeche-tint-2: #223060;
+  --text-1: #e9eef7; --text-2: #b7c2d4; --text-3: #8f9cb3; --text-4: #6f7c94;
+  --marke: #6b9bff; --marke-tief: #9dbcff; --marke-hell: #a9c8ff; --marke-zart: #182240;
+  /* Weiß auf #6b9bff schafft nur 2,7:1 (verfehlt AA). Für Knopf-Fläche und
+     Avatar das kräftigere Hellmodus-Blau wiederverwenden: Weiß darauf 5,12:1. */
+  --accent-auf-weiss: #1f5eff;
+  --gut: #3ccf9a; --gut-zart: #123329; --weh: #ff8a80;
+  --linie: #26324a; --linie-stark: #37455f; --linie-dunkel: #37455f;
+  --dunkel: #26324a; --auf-dunkel: #b7c2d4;
+  --white: #141c2e;
+  /* #5f6b7d kommt auf der dunklen Fläche #141c2e nur auf ~2,9:1, #94a1b7 schafft genug Kontrast. */
+  --ink-faint: #94a1b7;
+  --gut-text: #4bd8a4; --weh-text: #ff8a80;
+  --hoch-1: 0 1px 1px rgba(0,0,0,.25), 0 2px 5px -1px rgba(0,0,0,.3);
+  --hoch-2: 0 2px 5px -1px rgba(0,0,0,.3), 0 12px 24px -8px rgba(0,0,0,.5);
+  --hoch-3: 0 4px 8px -2px rgba(0,0,0,.35), 0 30px 60px -20px rgba(0,0,0,.6);
+}
+:root[data-theme="dark"] .tag--rest { color: #fdba74; background: #3a2410; border-color: #5a3a1a; }
+:root[data-theme="dark"] .tag--test, :root[data-theme="dark"] .tag--unbek { color: #fbbf24; background: #3a2c0c; border-color: #5a4a1a; }
+:root[data-theme="dark"] .warn { color: #fdba74; background: #3a2410; border-color: #5a3a1a; }
+:root[data-theme="dark"] .skelett__zeile { background: linear-gradient(90deg, var(--paper-2) 25%, var(--flaeche-1) 50%, var(--paper-2) 75%); background-size: 200% 100%; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
 body { font-family: var(--font); color: var(--ink); background: var(--paper-2); line-height: 1.5; font-size: 14px; -webkit-font-smoothing: antialiased; }
@@ -56,8 +89,10 @@ input::placeholder { color: var(--text-4); }
   font-size: 14px; padding: 0 16px; min-height: 40px; border-radius: var(--rund-voll); border: 1px solid transparent; cursor: pointer;
   white-space: nowrap; transition: transform .15s, box-shadow .15s, background .15s, border-color .15s; }
 .btn svg { width: 16px; height: 16px; flex: none; }
-.btn--primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
-.btn--primary:hover { transform: translateY(-1px); }
+/* Elektroblau als einziger Akzent, kein Verlauf: der helle Verlaufsrand auf
+   --accent-2 kam bei weißer Schrift nur auf ~2:1 Kontrast (WCAG AA verlangt 4,5:1). */
+.btn--primary { color: #fff; background: var(--accent-auf-weiss); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+.btn--primary:hover { transform: translateY(-1px); background: var(--accent-ink); }
 .btn--ghost { color: var(--ink); background: var(--white); border-color: var(--line); box-shadow: var(--shadow-sm); }
 .btn--ghost:hover { border-color: var(--linie-stark); }
 .btn--danger { color: var(--weh-text); background: var(--white); border-color: color-mix(in srgb, var(--weh) 45%, var(--line)); }
@@ -79,7 +114,7 @@ input::placeholder { color: var(--text-4); }
 .side { background: var(--white); border-right: 1px solid var(--line); padding: 18px 12px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
 .side .brand { display: flex; align-items: center; gap: 9px; padding: 4px 10px 16px; color: var(--ink); font-weight: 700; font-size: 17px; }
 .side .brand svg { width: 24px; height: 24px; }
-.pill { font-size: 10.5px; font-weight: 700; color: var(--accent-ink); background: var(--marke-zart); padding: 2px 8px; border-radius: var(--rund-voll); letter-spacing: .04em; }
+.pill { font-size: 11px; font-weight: 700; color: var(--accent-ink); background: var(--marke-zart); padding: 2px 8px; border-radius: var(--rund-voll); letter-spacing: .04em; }
 .side nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .nav-item { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: 0;
   border-radius: var(--r); padding: 10px 12px; min-height: 42px; cursor: pointer; color: var(--ink-soft); font: inherit; font-weight: 500; font-size: 14px; transition: background .14s, color .14s; }
@@ -89,9 +124,12 @@ input::placeholder { color: var(--text-4); }
 .nav-item svg { width: 18px; height: 18px; flex: none; opacity: .8; }
 .nav-item.active svg { opacity: 1; }
 .nav-item .zahl { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--ink-faint); background: var(--paper-2); border-radius: var(--rund-voll); padding: 1px 8px; }
+.nav-item .zahl:empty { display: none; }  /* ohne Zahl (vor dem Laden, oder Ladefehler) keinen leeren Strich zeigen */
 .nav-item.active .zahl { background: var(--white); color: var(--accent-ink); }
+/* Für Screenreader sichtbaren Text in sonst leeren Spaltenköpfen (z. B. die Aktionsspalte der Nummern-Tabelle) */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .side .foot { border-top: 1px solid var(--line); padding-top: 12px; display: flex; align-items: center; gap: 8px; }
-.side__avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.side__avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; background: var(--accent-auf-weiss); }
 .side__email { flex: 1; min-width: 0; font-size: 12.5px; color: var(--ink-faint); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .side__abmelden { flex: none; }
 .main { padding: 26px 32px 80px; min-width: 0; max-width: 1280px; width: 100%; }
@@ -107,6 +145,7 @@ input::placeholder { color: var(--text-4); }
 .db-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
 .db-kpi { background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; box-shadow: var(--shadow-sm); min-width: 0; text-align: left; font: inherit; color: var(--ink); }
 button.db-kpi { cursor: pointer; } button.db-kpi:hover { border-color: var(--accent); }
+.db-kpi .k, .db-kpi .v, .db-kpi .d { display: block; }  /* in den Kachel-Knöpfen stehen hier span statt div, <button> erlaubt kein div */
 .db-kpi .k { font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
 .db-kpi .v { font-size: 24px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin: 3px 0 1px; font-family: var(--serif); }
 .db-kpi .d { font-size: 12px; color: var(--ink-faint); }
@@ -128,6 +167,7 @@ button.db-kpi { cursor: pointer; } button.db-kpi:hover { border-color: var(--acc
 .chip:hover { border-color: var(--accent); }
 .chip.aktiv { border-color: var(--accent); color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 10%, var(--white)); }
 .chip small { font-weight: 600; color: var(--ink-faint); } .chip.aktiv small { color: var(--accent-ink); }
+.chip:disabled { opacity: .5; cursor: default; border-color: var(--line); color: var(--ink-faint); background: var(--white); }
 .suche { width: auto; min-width: 240px; min-height: 40px; padding: 0 12px 0 34px; border-radius: var(--r); font-size: 13.5px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6b7d' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: 11px center; background-size: 15px; }
@@ -170,7 +210,7 @@ button.db-kpi { cursor: pointer; } button.db-kpi:hover { border-color: var(--acc
 .detail__zu { display: none; }
 .db-fakten { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; font-size: 13.5px; }
 .db-fakten dt { color: var(--ink-faint); } .db-fakten dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
-.db-fakten dd small { font-weight: 500; color: var(--ink-faint); }
+.db-fakten dd small { font-size: 12.5px; font-weight: 500; color: var(--ink-faint); }  /* ohne eigene Größe erbte <small> die Browser-Skalierung "smaller" auf ~11,25px */
 .detail__block { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; }
 .detail__block h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .detail__block h3 .btn { font-size: 13px; min-height: 40px; }
@@ -189,16 +229,21 @@ button.db-kpi { cursor: pointer; } button.db-kpi:hover { border-color: var(--acc
 .tabelle th, .tabelle td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 .tabelle th { font-size: 11.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; background: var(--paper); }
 .tabelle th.l, .tabelle td.l { text-align: left; }
-.tabelle th[data-sort] { cursor: pointer; user-select: none; min-height: 40px; height: 40px; }
-.tabelle th[data-sort]:hover { color: var(--ink); }
-.tabelle th[data-sort]::after { content: ''; display: inline-block; width: 0; height: 0; margin-left: 5px; vertical-align: 1px; border: 4px solid transparent; border-top-color: var(--linie-stark); border-bottom: 0; opacity: .8; }
-.tabelle th.auf::after { border-top: 0; border-bottom: 4px solid var(--accent-ink); }
-.tabelle th.ab::after { border-top-color: var(--accent-ink); }
+/* Sortierung sitzt auf einem echten <button> im th (columnheader bleibt gültig, anders als
+   zuvor th[role="button"], das aria-sort ungültig machte und nicht nativ fokussierbar war). */
+.tabelle th.sortierbar { padding: 0; }
+.tabelle .sortknopf { display: block; width: 100%; font: inherit; font-size: 11.5px; font-weight: 700; color: inherit; text-transform: uppercase; letter-spacing: .04em;
+  background: none; border: 0; padding: 9px 12px; min-height: 40px; cursor: pointer; text-align: inherit; }
+.tabelle th.l .sortknopf { text-align: left; }
+.tabelle .sortknopf:hover { color: var(--ink); }
+.tabelle .sortknopf::after { content: ''; display: inline-block; width: 0; height: 0; margin-left: 5px; vertical-align: 1px; border: 4px solid transparent; border-top-color: var(--linie-stark); border-bottom: 0; opacity: .8; }
+.tabelle th.auf .sortknopf::after { border-top: 0; border-bottom: 4px solid var(--accent-ink); }
+.tabelle th.ab .sortknopf::after { border-top-color: var(--accent-ink); }
 .tabelle tbody tr:hover { background: var(--paper); }
 .tabelle tfoot td { font-weight: 700; border-bottom: none; border-top: 2px solid var(--ink); }
 .tabelle td.neg { color: var(--weh-text); font-weight: 700; }
 .tabelle td.pos { color: var(--gut-text); font-weight: 700; }
-.tabelle td .btn { min-height: 36px; font-size: 13px; }
+.tabelle td .btn { min-height: 40px; font-size: 13px; }
 .tabelle td.aktion { padding-top: 4px; padding-bottom: 4px; }
 .tabelle .zeilenlink { font: inherit; background: none; border: 0; padding: 0 4px; margin: 0 -4px; min-height: 40px; color: var(--ink); font-weight: 600; cursor: pointer; text-align: left; border-radius: var(--r-sm); display: inline-flex; align-items: center; }
 .tabelle .zeilenlink:hover { color: var(--accent-ink); }
@@ -287,9 +332,19 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offs
   .detail__zu { display: inline-flex; margin-bottom: 8px; }
   /* Klickziele auf dem Handy 44 px */
   .btn, .chip, input, select, .nav-item, .firma__kopf, .num, .anb-zeile { min-height: 44px; }
+  .btn--sym { min-width: 44px; }
+  .tabelle td .btn { min-height: 44px; }   /* gleiche Spezifität wie die Grundregel oben, gewinnt hier per Reihenfolge */
+  .detail__block h3 .btn { min-height: 44px; }   /* gleiche Spezifität wie die Grundregel oben, gewinnt hier per Reihenfolge */
   .db-kpi .v { font-size: 21px; }
   .pagehead { font-size: 23px; }
   .dlg { padding: 20px 18px; }
   .radio { grid-template-columns: 1fr; }
+  /* Margen/Nummern-Tabellen sind breiter als der Bildschirm: erste Spalte beim Wischen sichtbar
+     halten und am rechten Rand andeuten, dass noch mehr Spalten folgen (Kosten, Umsatz, Marge …). */
+  .tabelle { position: relative; }
+  .tabelle::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 22px; pointer-events: none; background: linear-gradient(to right, transparent, var(--white)); }
+  .tabelle th:first-child, .tabelle td:first-child { position: sticky; left: 0; z-index: 1; }
+  .tabelle td:first-child { background: var(--white); }
+  .tabelle tbody tr:hover td:first-child { background: var(--paper); }
 }
 @media (prefers-reduced-motion: reduce) { .lv-detail, .toast, .btn { transition: none !important; } }
