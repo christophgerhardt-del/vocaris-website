@@ -1134,6 +1134,14 @@
     /* Balkenzeilen sind hier Klickziele: 40 px hoch, der Balken sitzt unten in der Zeile. */
     #sec-auswertung .db-thema[role=button] { min-height: 40px; display: flex; flex-direction: column; justify-content: center; border-radius: 8px; padding: 0 6px; margin: 0 -6px; }
     #sec-auswertung .db-thema[role=button]:hover { background: var(--paper-2); }
+    /* Rückruf-Erfolg: neun oder zehn Kennzahlen stehen breit in fünf Spalten statt 4 + 4 + 1;
+       auf schmalen Breiten nimmt eine allein übrig gebliebene Kennzahl die ganze Zeile. */
+    @media (min-width: 1280px) { #dbKpis[data-n="9"], #dbKpis[data-n="10"], #awKpis[data-n="9"], #awKpis[data-n="10"] { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    @media (max-width: 1100px) { #dbKpis > .db-kpi:last-child:nth-child(odd), #awKpis > .db-kpi:last-child:nth-child(odd) { grid-column: span 2; } }
+    .lv-chip small.ueber-text { color: #c2410c; } :root[data-theme="dark"] .lv-chip small.ueber-text { color: #fb923c; }
+    .aw-rr-hinweis { font-size: 12.5px; margin: 10px 0 0; text-align: left; padding: 0; }
+    #awRrChart .c { white-space: nowrap; }
+    #awRrChart.dicht .col { min-width: 0; } /* Beschriftung jeder fünften Säule darf überstehen, statt die Säule zu verbreitern */
     #sec-auswertung .db-legende span[role=button] { display: inline-flex; align-items: center; min-height: 40px; padding: 0 8px; border-radius: 8px; }
     #sec-auswertung .db-legende span[role=button]:hover { background: var(--paper-2); }
     #sec-auswertung .db-stunden div { height: 32px; cursor: pointer; }
@@ -1858,6 +1866,7 @@
           </div>
           <div class="lv-filter">
             <div class="lv-chips" id="mgDringend"><button class="lv-chip aktiv" type="button" data-dringend="">Alle</button><button class="lv-chip" type="button" data-dringend="hoch">🔴 dringend</button><button class="lv-chip" type="button" data-dringend="mittel">🟠 mittel</button><button class="lv-chip" type="button" data-dringend="niedrig">⚪ niedrig</button></div>
+            <button class="lv-chip" type="button" id="mgUeber" aria-pressed="false" data-tip="Offene Nachrichten, die seit mehr als 24 Stunden warten. Sie zählen beim Rückruf-Erfolg als liegengeblieben.">Länger als 24 h offen</button>
             <select id="mgKategorie" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <span class="muted" id="mgAnzahl"></span>
           </div>
@@ -1948,6 +1957,17 @@
               <div class="db-stunden aw-stunden" id="awStunden"></div>
               <div class="db-panelkopf" style="margin-top:6px"><h3 style="font-size:14px">Gesprächsdauer</h3><span class="muted">zum Filtern anklicken</span></div>
               <div class="aw-dauer" id="awDauer"></div>
+            </div>
+            <div class="panel db-6" id="awRrPanel">
+              <div class="db-panelkopf"><h3 id="awRrTitel">Rückruf-Erfolg je Tag</h3><span class="muted" id="awRrSub">Anteil der Nachrichten, in 24 h erledigt</span></div>
+              <div id="awRrChart" class="statchart"></div>
+              <p class="muted aw-rr-hinweis" id="awRrHinweis"></p>
+              <div class="db-panelkopf" style="margin-top:14px"><h3 style="font-size:14px">Bis erledigt</h3><span class="muted" id="awRrDauerSub"></span></div>
+              <div id="awRrDauer" style="display:grid;gap:8px"></div>
+            </div>
+            <div class="panel db-6" id="awRrDauerPanel">
+              <div class="db-panelkopf"><h3>Je Dringlichkeit</h3><span class="muted">in 24 h erledigt</span></div>
+              <div id="awRrDring" style="display:grid;gap:8px"></div>
             </div>
             <div class="panel db-4"><div class="db-panelkopf"><h3>Themen</h3><span class="muted">Klick öffnet die Anrufe</span></div><div id="awThemen" style="display:grid;gap:8px"></div></div>
             <div class="panel db-4"><div class="db-panelkopf"><h3>Stimmung</h3><span class="muted">Klick öffnet die Anrufe</span></div><div id="awStimmung"></div></div>
@@ -2223,7 +2243,7 @@
               <div class="panel" id="asBericht" data-astab="hinweise">
                 <h3>Wochenbericht</h3>
                 <label style="margin-top:0;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asWeekly" style="width:auto;margin:0"><span>Montags eine Mail mit den Zahlen der Woche an den Inhaber</span></label>
-                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Anrufe, Minuten, Nachrichten, Themen und Stimmung der vergangenen Woche, verglichen mit der Woche davor.</p>
+                <p class="muted" style="margin-top:4px;text-align:left;padding:0">Anrufe, Minuten, Nachrichten, Rückruf-Erfolg (in 24 Stunden erledigt), Themen und Stimmung der vergangenen Woche. Anrufe, Nachrichten und Rückruf-Erfolg stehen neben der Woche davor; was länger als 24 Stunden offen ist, ist direkt verlinkt.</p>
               </div>
             </div>
             <div class="as-seite">
@@ -3375,6 +3395,7 @@
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function' && (!guestDatenZeit || Date.now() - guestDatenZeit > 60000)) loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten && Date.now() - dbDatenZeit > 60000) ladeDashboard();
+        else if (b.dataset.target === 'sec-overview' && tenant && dbRueckrufVeraltet) ladeRueckrufKennzahl(); // Nachrichten wurden inzwischen erledigt oder sind neu
         if (typeof renderLiveWidget === 'function' && liveCalls.size) renderLiveWidget();
         if (typeof syncTabbar === 'function') syncTabbar(b.dataset.target);
         if (b.dataset.target === 'sec-live' && typeof liveBesucht === 'function' && tenant) { liveBesucht(); renderLive(); }
@@ -6725,6 +6746,7 @@
           if (p.eventType === 'DELETE') { if (p.old?.id) mgItems.delete(p.old.id); }
           else if (p.new?.id) { const neu = !mgItems.has(p.new.id); mgItems.set(p.new.id, Object.assign(mgItems.get(p.new.id) || {}, p.new)); if (neu && p.eventType === 'INSERT') toast('Neue Nachricht' + (p.new.caller_name ? ' von ' + p.new.caller_name : '') + '.'); }
           renderNachrichten();
+          rrNachAenderung(); // Rückruf-Erfolg auf Dashboard/Auswertung entprellt nachziehen
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets', filter: 'tenant_id=eq.' + tenantId }, (p) => {
           // Selbst angelegte Vorgänge (aus Anruf/Nachricht) haben schon ihren Toast mit Öffnen-Link – der darf nicht überschrieben werden.
@@ -7693,6 +7715,121 @@
     const fmtDauer = (s) => { const g = Math.round(s); return g >= 60 ? Math.floor(g / 60) + ':' + String(g % 60).padStart(2, '0') + ' Min' : g + ' s'; };
     const kopf = (titel, ziel, extra) => '<div class="db-panelkopf"><h3>' + titel + '</h3><span class="db-kopfrechts">' + (extra || '') + (ziel ? '<a href="#" data-geh="' + ziel + '">Alle</a>' : '') + '</span></div>';
     const leerText = (t) => '<p class="muted" style="font-size:13px">' + t + '</p>';
+
+    // ---- Rückruf-Erfolg ----
+    // Anteil der Nachrichten, die innerhalb von 24 Stunden als erledigt markiert wurden. Gerechnet
+    // wird in der Datenbank (nachrichten_erfolg), damit Kundenbereich, App, Wochenbericht und API
+    // dieselbe Zahl zeigen. „Entschieden“ (basis) ist eine Nachricht, wenn sie in der Frist erledigt
+    // wurde oder ihre 24 Stunden um sind; jüngere offene zählen noch nicht (laufend). Unter fünf
+    // entschiedenen zeigen wir „3 von 4“ statt Prozent und keinen Vergleich.
+    const RR_FRIST_MS = 24 * 3600e3, RR_MINDEST = 5;
+    const RR_DRING = [['hoch', 'dringend', 'hoch'], ['normal', 'mittel', 'mittel'], ['niedrig', 'niedrig', 'niedrig'], ['ohne', 'ohne Angabe', null]]; // Schlüssel der Datenbank, Anzeige, Filter in „Nachrichten“
+    const rrZahl = (x) => { const n = Number(x); return Number.isFinite(n) ? n : 0; };
+    const rrOderNull = (x) => (x === null || x === undefined || !Number.isFinite(Number(x)) ? null : Number(x));
+    /** Antwort der Datenbank in eine feste Form bringen (fehlende Schlüssel = 0). */
+    function rrNormal(d) {
+      if (!d || typeof d !== 'object') return null;
+      const je = {}; for (const [key] of RR_DRING) { const e = d.je_dringlichkeit?.[key]; if (e) je[key] = { basis: rrZahl(e.basis), in_frist: rrZahl(e.in_frist) }; }
+      const dk = d.dauerklassen || {};
+      return {
+        nachrichten: rrZahl(d.nachrichten), basis: rrZahl(d.basis), in_frist: rrZahl(d.in_frist), laufend: rrZahl(d.laufend),
+        quote: rrOderNull(d.quote), erledigt: rrZahl(d.erledigt), median_min: rrOderNull(d.median_min), je_dringlichkeit: je,
+        dauerklassen: { bis_1h: rrZahl(dk.bis_1h), bis_4h: rrZahl(dk.bis_4h), bis_24h: rrZahl(dk.bis_24h), ueber_24h: rrZahl(dk.ueber_24h) },
+        offen_ueber_frist: rrZahl(d.offen_ueber_frist), aeltestes_offen: d.aeltestes_offen || null, unvollstaendig: d.unvollstaendig === true,
+        verlauf: Array.isArray(d.verlauf) ? d.verlauf.map((v) => ({ ab: String(v?.ab || '').slice(0, 10), basis: rrZahl(v?.basis), in_frist: rrZahl(v?.in_frist) })) : null,
+      };
+    }
+    /** Kennzahl für [von, bis) der eigenen Firma; einheit 'tag' | 'woche' liefert zusätzlich den Verlauf. */
+    async function rrLaden(von, bis, einheit) {
+      try {
+        const { data, error, status } = await sb.rpc('nachrichten_erfolg', { t: tenant.id, von: von.toISOString(), bis: bis.toISOString(), einheit: einheit || null });
+        if (error) return { fehler: { code: error.code, message: error.message, status } };
+        const k = rrNormal(data); return k ? { k } : { fehler: { message: 'leere Antwort' } };
+      } catch (e) { return { fehler: e }; }
+    }
+    // Funktion noch nicht eingespielt (PostgREST meldet 404 / PGRST202): Kachel zeigt „noch nicht verfügbar“ statt eines Fehlers.
+    const rrFehlt = (f) => f?.code === 'PGRST202' || f?.status === 404 || /could not find the function/i.test(f?.message || '');
+    const rrAussagekraeftig = (k) => !!k && !k.unvollstaendig && k.quote !== null && k.basis >= RR_MINDEST;
+    const rrQuoteText = (k) => (!k || k.unvollstaendig || !k.basis || k.quote === null) ? '–' : k.basis < RR_MINDEST ? k.in_frist + ' von ' + k.basis : Math.round(k.quote * 100) + ' %';
+    /** '45 Min.', '3 Std. 10 Min.', '2 Tage 4 Std.' (wie im Wochenbericht) */
+    function rrDauerText(min) {
+      if (min === null || min === undefined || !Number.isFinite(min)) return '–';
+      const m = Math.max(0, Math.round(min));
+      if (m < 1) return 'unter 1 Min.';
+      if (m < 60) return m + ' Min.';
+      if (m < 1440) { const h = Math.floor(m / 60), r = m % 60; return r ? h + ' Std. ' + r + ' Min.' : h + ' Std.'; }
+      const t = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
+      return t + (t === 1 ? ' Tag' : ' Tage') + (h ? ' ' + h + ' Std.' : '');
+    }
+    /** Vergleich in Prozentpunkten, nur wenn beide Zeiträume aussagekräftig sind. */
+    function rrTrend(jetzt, vorher, bezug) {
+      if (!rrAussagekraeftig(jetzt) || !rrAussagekraeftig(vorher)) return null;
+      const d = Math.round(jetzt.quote * 100) - Math.round(vorher.quote * 100);
+      if (!d) return { text: 'gleich wie in ' + bezug, klasse: 'x' };
+      return { text: (d > 0 ? '+' : '') + d + (Math.abs(d) === 1 ? ' Prozentpunkt' : ' Prozentpunkte') + ' gegenüber ' + bezug, klasse: d > 0 ? 'plus' : 'minus' };
+    }
+    function rrTip(k) {
+      if (!k) return 'Anteil der Nachrichten, die innerhalb von 24 Stunden als erledigt markiert wurden.';
+      if (k.unvollstaendig) return 'Ältere erledigte Nachrichten sind nach deiner Aufbewahrungsfrist schon gelöscht. Für diesen Zeitraum gibt es deshalb keine verlässliche Quote.';
+      const t = ['Anteil der Nachrichten, die innerhalb von 24 Stunden als erledigt markiert wurden.'];
+      if (k.basis) t.push(k.in_frist + ' von ' + k.basis + ' in der Frist erledigt.');
+      if (k.erledigt && k.median_min !== null) t.push('Bis erledigt im Median: ' + rrDauerText(k.median_min) + '.');
+      if (k.laufend) t.push(k.laufend === 1 ? '1 Nachricht ist jünger als 24 Stunden und zählt noch nicht.' : k.laufend + ' Nachrichten sind jünger als 24 Stunden und zählen noch nicht.');
+      return t.join(' ');
+    }
+
+    // Dashboard-Kachel: eigener Ladeweg neben ladeDashboard(), damit eine fehlende oder gestörte
+    // Kennzahl nur diese Kachel trifft. Laufzähler gegen Wettläufe beim Zeitraumwechsel.
+    let dbRueckruf = null, dbRueckrufGen = 0, dbRueckrufVeraltet = false, rrTimer = null;
+    async function ladeRueckrufKennzahl() {
+      if (!tenant) return;
+      const gen = ++dbRueckrufGen, fuer = tenant.id, tage = dbTage; dbRueckrufVeraltet = false;
+      const jetzt = new Date(), start = new Date(jetzt.getTime() - tage * 864e5), davor = new Date(jetzt.getTime() - 2 * tage * 864e5);
+      const [a, b] = await Promise.all([rrLaden(start, jetzt), rrLaden(davor, start)]);
+      if (gen !== dbRueckrufGen || !tenant || tenant.id !== fuer) return;
+      if (a.fehler) {
+        // Bei einem Fehler den alten Stand desselben Zeitraums stehen lassen, sonst „–“.
+        if (!(dbRueckruf && dbRueckruf.fuer === fuer && dbRueckruf.tage === tage && dbRueckruf.jetzt)) dbRueckruf = { fuer, tage, jetzt: null, vorher: null };
+        dbRueckruf.fehler = a.fehler;
+      } else dbRueckruf = { fuer, tage, jetzt: a.k, vorher: b.fehler ? null : b.k, fehler: null };
+      zeichneRueckruf();
+    }
+    function zeichneRueckruf() {
+      const v = q('dbRueckruf'); if (v === dbLeer) return; // Kachel nicht auf dem Dashboard
+      const sub = q('dbRueckrufSub'), off = q('dbRueckrufOffen'), kachel = v.closest('.db-kpi') || dbLeer;
+      sub.className = 'd'; off.className = 'd';
+      // Beim Zeitraumwechsel bleibt der alte Stand stehen, bis der neue da ist (wie die übrigen Kacheln).
+      const r = dbRueckruf && tenant && dbRueckruf.fuer === tenant.id ? dbRueckruf : null;
+      const k = r?.jetzt;
+      kachel.dataset.tip = rrTip(k);
+      if (!k) {
+        v.textContent = '–'; off.innerHTML = '&nbsp;';
+        sub.textContent = !r?.fehler ? 'in 24 h erledigt' : rrFehlt(r.fehler) ? 'noch nicht verfügbar' : 'gerade nicht abrufbar';
+        return;
+      }
+      v.textContent = rrQuoteText(k);
+      const tr = rrTrend(k, r.vorher, 'den ' + r.tage + ' Tagen davor');
+      if (k.unvollstaendig) sub.textContent = 'Zeitraum länger als die Aufbewahrung';
+      else if (!k.basis) sub.textContent = k.laufend ? 'Nachrichten noch in der 24-Stunden-Frist' : 'keine Nachrichten im Zeitraum';
+      else if (tr) { sub.textContent = tr.text; sub.classList.add(tr.klasse); }
+      else sub.textContent = 'in 24 h erledigt';
+      if (k.offen_ueber_frist) { off.textContent = k.offen_ueber_frist + ' offen seit über 24 h'; off.classList.add('minus'); } else off.textContent = 'nichts überfällig';
+    }
+    /** Antippen der Kachel: Gibt es Überfällige, die Arbeitsliste „Länger als 24 h offen“, sonst die offenen Nachrichten. */
+    function rrZuNachrichten() {
+      if ((dbRueckruf?.jetzt?.offen_ueber_frist || 0) > 0 || [...mgItems.values()].some(mgUeberfaellig)) mgUeberfaelligZeigen();
+      else mgFilterSetzen({ status: 'new' });
+    }
+    /** Nach einer Änderung an Nachrichten (Echtzeit): Kennzahl entprellt neu holen, nur wo sie gerade zu sehen ist. */
+    function rrNachAenderung() {
+      clearTimeout(rrTimer);
+      rrTimer = setTimeout(() => {
+        if (!tenant) return;
+        if (!q('sec-overview').classList.contains('hidden')) ladeRueckrufKennzahl(); else dbRueckrufVeraltet = true;
+        if (!q('sec-auswertung').classList.contains('hidden')) ladeAwRueckruf();
+      }, 1500);
+    }
+
     const DB_WIDGETS = [
       // Kennzahlen
       { id: 'anrufe', art: 'kpi', titel: 'Anrufe', std: true, ziel: 'sec-live', html: () => '<div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div>' },
@@ -7700,6 +7837,7 @@
       { id: 'dauer', art: 'kpi', titel: 'Ø Gesprächsdauer', std: true, ziel: 'sec-live', html: () => '<div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div>' },
       { id: 'minuten', art: 'kpi', titel: 'Minuten im Monat', std: true, html: () => '<div class="k">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div>' },
       { id: 'nachrichten', art: 'kpi', titel: 'Nachrichten', std: true, ziel: 'sec-messages', html: () => '<div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div>' },
+      { id: 'rueckruf', art: 'kpi', titel: 'Rückruf-Erfolg', std: true, ziel: 'sec-messages', nachGeh: () => rrZuNachrichten(), html: () => '<div class="k">Rückruf-Erfolg</div><div class="v" id="dbRueckruf">–</div><div class="d" id="dbRueckrufSub">in 24 h erledigt</div><div class="d" id="dbRueckrufOffen">&nbsp;</div>' },
       { id: 'offen', art: 'kpi', titel: 'Offene Vorgänge', std: true, ziel: 'sec-tickets', html: () => '<div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div>' },
       { id: 'fragen', art: 'kpi', titel: 'Offene Fragen', std: true, ziel: 'sec-gaps', html: () => '<div class="k">Offene Fragen</div><div class="v" id="ovGaps">–</div><div class="d">warten auf eine Antwort</div>' },
       { id: 'termine', art: 'kpi', titel: 'Termine', std: true, ziel: 'sec-booking', html: () => '<div class="k">Termine</div><div class="v" id="dbTermine">–</div><div class="d" id="dbTermineSub">&nbsp;</div>' },
@@ -7721,7 +7859,7 @@
       { id: 'notizen', art: 'panel', titel: 'Merkzettel', std: false, groesse: 4, html: () => '<h3>Merkzettel</h3><textarea id="dbNotizen" class="db-notizen" placeholder="Kurze Notizen für dich, z. B. was heute noch zu erledigen ist. Wird automatisch gespeichert."></textarea>' },
     ];
     // Kacheln mit Ziel-Bereich, den die Kuratierung gerade ausblendet (z. B. Termine beim Restaurant), gehören nicht in die Standardauswahl.
-    const DB_STD = () => ({ v: 1, reihenfolge: DB_WIDGETS.filter((w) => w.std && (!w.ziel || navSichtbar(navItem(w.ziel)))).map((w) => w.id), groesse: {}, notizen: '' });
+    const DB_STD = () => ({ v: 2, reihenfolge: DB_WIDGETS.filter((w) => w.std && (!w.ziel || navSichtbar(navItem(w.ziel)))).map((w) => w.id), groesse: {}, notizen: '' });
     const dbWidget = (id) => DB_WIDGETS.find((w) => w.id === id);
     const dbSchluessel = () => 'vocaris.dashboard.' + tenant.id;
     const groesseLabel = (g) => ({ 4: '⅓', 6: '½', 8: '⅔', 12: '1/1' })[g] || '½';
@@ -7734,6 +7872,13 @@
       dbLayout.reihenfolge = dbLayout.reihenfolge.filter((id, i, a) => dbWidget(id) && a.indexOf(id) === i);
       dbLayout.groesse = dbLayout.groesse || {}; dbLayout.notizen = dbLayout.notizen || '';
       dbLayoutFuer = tenant.id;
+      // Layout-Version 2 (Okt. 2026): Bestandslayouts bekommen die Kachel „Rückruf-Erfolg“ einmalig hinter
+      // „Nachrichten“. Wer sie danach entfernt, bekommt sie nicht wieder.
+      if ((Number(dbLayout.v) || 1) < 2) {
+        const r = dbLayout.reihenfolge;
+        if (!r.includes('rueckruf') && navSichtbar(navItem('sec-messages'))) { const i = r.indexOf('nachrichten'); if (i >= 0) r.splice(i + 1, 0, 'rueckruf'); else r.push('rueckruf'); }
+        dbLayout.v = 2; dbLayoutSpeichern();
+      }
     }
     function dbLayoutSpeichern() {
       dbLayout.stand = Date.now();
@@ -7757,7 +7902,7 @@
         if (dbEdit) { el.draggable = true; el.insertAdjacentHTML('afterbegin', werkzeuge(w)); }
         (w.art === 'kpi' ? kp : gr).append(el);
       }
-      kp.classList.toggle('hidden', !kp.children.length);
+      kp.classList.toggle('hidden', !kp.children.length); kp.dataset.n = kp.children.length;
       q('sec-overview').classList.toggle('db-edit', dbEdit);
       q('dbAnpassen').textContent = dbEdit ? 'Fertig' : 'Anpassen';
       q('dbAnpassen').classList.toggle('btn--primary', dbEdit); q('dbAnpassen').classList.toggle('btn--ghost', !dbEdit);
@@ -7765,7 +7910,7 @@
       // Auswahl zum Hinzufügen
       const fehlen = DB_WIDGETS.filter((w) => !dbLayout.reihenfolge.includes(w.id));
       q('dbHinzu').innerHTML = fehlen.length ? fehlen.map((w) => '<button type="button" data-hinzu="' + w.id + '">+ ' + w.titel + (w.art === 'kpi' ? ' <small>Kennzahl</small>' : '') + '</button>').join('') : '<span class="muted">Alle Kacheln sind auf dem Dashboard.</span>';
-      if (dbDaten) zeichneDashboard();
+      if (dbDaten) zeichneDashboard(); else zeichneRueckruf();
     }
 
     function dbVerschieben(id, richtung) {
@@ -7794,7 +7939,11 @@
           dbLayoutSpeichern(); renderDashboardLayout(); return;
         }
         const g = e.target.closest('[data-geh]');
-        if (g && !(dbEdit && g.matches('.db-kpi'))) { e.preventDefault(); geh(g.dataset.geh); }
+        if (g && !(dbEdit && g.matches('.db-kpi'))) {
+          e.preventDefault(); tip.hidden = true; tipTouchZiel = null; // kein Hinweis, der nach dem Antippen über dem neuen Bereich stehen bleibt
+          geh(g.dataset.geh);
+          if (g.dataset.widget && navSichtbar(navItem(g.dataset.geh))) dbWidget(g.dataset.widget)?.nachGeh?.();
+        }
       });
       // Einblendung beim Überfahren (Tagesbalken, Zeitskala)
       const tip = document.createElement('div'); tip.className = 'db-tip'; tip.hidden = true; document.body.append(tip);
@@ -7845,6 +7994,7 @@
       // Laufzähler gegen Wettläufe: wird der Zeitraum (7/14/30 Tage) erneut gewechselt, bevor diese
       // Antwort da ist, darf sie die inzwischen aktiven Zahlen nicht mehr überschreiben.
       const dbGen = ++dbLadeGen;
+      ladeRueckrufKennzahl(); // eigener Weg, ein Fehler dort trifft nur die Kachel „Rückruf-Erfolg“
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - dbTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * dbTage * 864e5);
       const heute0 = new Date(jetzt); heute0.setHours(0, 0, 0, 0);
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
@@ -8011,6 +8161,7 @@
       chk.nummer = nums.length > 0; chk.wissen = dbDaten.kbEchtN ?? chk.wissen; if (c.length) chk.testanruf = true;
       checklisteZeichnen();
       q('dbStart').classList.toggle('hidden', (c.length > 0 && nums.length > 0) || !q('dbCheckliste').classList.contains('hidden'));
+      zeichneRueckruf();
     }
 
     // ---- Auswertung ----
@@ -8024,6 +8175,7 @@
       // Laufzähler gegen Wettläufe: wird der Zeitraum erneut gewechselt, bevor diese Antwort da ist,
       // darf sie das inzwischen aktive Ergebnis nicht mehr überschreiben (gleiches Muster wie deptLadeGen).
       const meinLauf = ++awLaufId;
+      ladeAwRueckruf(); // eigener Weg wie auf dem Dashboard: ein Fehler dort trifft nur die Rückruf-Teile
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - awTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * awTage * 864e5);
       const ergebnisse = await Promise.all([
         alleZeilen((a, z) => sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).range(a, z)),
@@ -8073,18 +8225,25 @@
       const avg = dauern.length ? dauern.reduce((a, b) => a + b, 0) / dauern.length : 0;
       const eigene = gef.filter((x) => x.mode === 'bridge' || x.mode === 'browser').length; const assistent = gef.length - eigene;
       const delta = davorN === null || awFilter ? '' : ((gef.length - davorN >= 0 ? '+' : '') + (gef.length - davorN) + ' gegenüber den ' + awTage + ' Tagen davor');
+      // Rückruf-Erfolg (eigener Ladeweg, gilt unabhängig vom Anruf-Filter)
+      const rr = awRrAktuell(), rrK = rr?.jetzt || null, rrTr = rrK ? rrTrend(rrK, rr.vorher, 'den ' + rr.tage + ' Tagen davor') : null;
+      const rrSub = !rrK ? (!rr ? 'wird geladen …' : rr.fehler && rrFehlt(rr.fehler) ? 'noch nicht verfügbar' : 'gerade nicht abrufbar')
+        : rrK.unvollstaendig ? 'Zeitraum länger als die Aufbewahrung' : !rrK.basis ? (rrK.laufend ? 'Nachrichten noch in der 24-Stunden-Frist' : 'keine Nachrichten im Zeitraum')
+        : rrTr ? rrTr.text : 'in 24 h erledigt' + (rrK.erledigt && rrK.median_min !== null ? ' · Median ' + rrDauerText(rrK.median_min) : '');
       const kacheln = [
         ['Anrufe', gef.length, delta || ('in ' + awTage + ' Tagen'), 'sec-live', davorN !== null && !awFilter ? (gef.length - davorN > 0 ? 'plus' : gef.length - davorN < 0 ? 'minus' : '') : ''],
         ['Minuten', minuten, 'Gesprächszeit gesamt', 'sec-live'],
         ['Ø Dauer', avg ? fmtDauer(avg) : '–', dauern.length ? 'längster ' + fmtDauer(Math.max(...dauern)) : 'noch keine Gespräche', null],
         ['Nachrichten', msgN, 'vom Assistenten aufgenommen', 'sec-messages'],
+        ...(navSichtbar(navItem('sec-messages')) ? [['Rückruf-Erfolg', rrQuoteText(rrK), rrSub, 'sec-messages', rrTr && !rrK?.unvollstaendig ? rrTr.klasse : '', rrZuNachrichten, rrTip(rrK)]] : []),
         ['Termine', termineN, 'im Zeitraum gebucht', 'sec-booking'],
         ['Offene Fragen', gapsN, 'ohne Antwort in der Wissensdatenbank', 'sec-gaps'],
         ['Anteil Assistent', gef.length ? Math.round(assistent / gef.length * 100) + ' %' : '–', assistent + ' vom Assistenten geführt', 'sec-live'],
         ['Eigene Anrufe', eigene, 'im Browser oder am Telefon', 'sec-outbound'],
       ];
       const kp = $('awKpis'); kp.innerHTML = '';
-      kacheln.forEach(([k, v, d, ziel, cls]) => { const el = document.createElement('div'); el.className = 'db-kpi' + (ziel ? ' klick' : ''); el.innerHTML = '<div class="k"></div><div class="v"></div><div class="d' + (cls ? ' ' + cls : '') + '"></div>'; el.querySelector('.k').textContent = k; el.querySelector('.v').textContent = v; el.querySelector('.d').textContent = d; if (ziel) { el.setAttribute('role', 'button'); el.tabIndex = 0; el.onclick = () => geh(ziel); el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); geh(ziel); } }; } kp.append(el); });
+      kacheln.forEach(([k, v, d, ziel, cls, nach, tipp]) => { const el = document.createElement('div'); el.className = 'db-kpi' + (ziel ? ' klick' : ''); el.innerHTML = '<div class="k"></div><div class="v"></div><div class="d' + (cls ? ' ' + cls : '') + '"></div>'; el.querySelector('.k').textContent = k; el.querySelector('.v').textContent = v; el.querySelector('.d').textContent = d; if (tipp) el.dataset.tip = tipp; if (ziel) { const los = () => { if (tipp) tipWeg(); geh(ziel); if (nach && navSichtbar(navItem(ziel))) nach(); }; el.setAttribute('role', 'button'); el.tabIndex = 0; el.onclick = los; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); los(); } }; } kp.append(el); });
+      kp.dataset.n = kp.children.length;
       // Wochentage (Mo–So)
       const wtage = new Array(7).fill(0); ausser('wochentag').forEach((x) => wtage[new Date(x.started_at).getDay()]++);
       const wmax = Math.max(1, ...wtage); const wt = $('awWochentag'); wt.innerHTML = '';
@@ -8123,6 +8282,96 @@
         topNr.forEach(([nr, e]) => { const name = typeof ktName === 'function' ? ktName(nr) : ''; const tr = document.createElement('tr'); tr.setAttribute('role', 'button'); tr.tabIndex = 0; tr.dataset.tip = 'Öffnet „Eingehend“ mit dieser Nummer'; tr.innerHTML = '<td></td><td class="z"></td><td class="z"></td>'; tr.children[0].innerHTML = name ? '<b></b><br><span class="nr"></span>' : '<span class="nr"></span>'; if (name) tr.querySelector('b').textContent = name; tr.querySelector('.nr').textContent = fmtNr(nr); tr.querySelector('.nr').className = 'nr'; tr.children[1].textContent = e.n; tr.children[2].textContent = new Date(e.letzter).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); tr.onclick = () => awNachEingehend({ suche: nr, zeitraum: 0 }); tr.onkeydown = (ev) => { if (ev.key === 'Enter') tr.onclick(); }; body.append(tr); });
       }
       $('awSub').textContent = c.length ? c.length + (c.length === 1 ? ' Anruf' : ' Anrufe') + ' in den letzten ' + awTage + ' Tagen.' : 'Noch keine Anrufe in den letzten ' + awTage + ' Tagen.';
+      zeichneAwRueckruf();
+    }
+
+    // Rückruf-Erfolg in der Auswertung: Verlauf je Tag (bis 30 Tage) bzw. je Woche (90 Tage),
+    // Dauer bis erledigt und Quote je Dringlichkeit. Die Datumswerte (ab) sind Berliner
+    // Kalendertage vom Server und werden ohne Zeitzonenumrechnung beschriftet.
+    let awRueckruf = null, awRrGen = 0;
+    const awRrAktuell = () => (awRueckruf && tenant && awRueckruf.fuer === tenant.id ? awRueckruf : null);
+    // Einblendung schließen, bevor ein Klick in einen anderen Bereich führt (sonst bleibt sie nach dem Antippen dort stehen).
+    const tipWeg = () => { const t = document.querySelector('.db-tip'); if (t) t.hidden = true; };
+    async function ladeAwRueckruf() {
+      if (!tenant || !$('awRrChart')) return;
+      const gen = ++awRrGen, fuer = tenant.id, tage = awTage, einheit = tage <= 30 ? 'tag' : 'woche';
+      const jetzt = new Date(), start = new Date(jetzt.getTime() - tage * 864e5), davor = new Date(jetzt.getTime() - 2 * tage * 864e5);
+      const [a, b] = await Promise.all([rrLaden(start, jetzt, einheit), rrLaden(davor, start)]);
+      if (gen !== awRrGen || !tenant || tenant.id !== fuer) return;
+      if (a.fehler) {
+        if (!(awRueckruf && awRueckruf.fuer === fuer && awRueckruf.tage === tage && awRueckruf.jetzt)) awRueckruf = { fuer, tage, einheit, jetzt: null, vorher: null };
+        awRueckruf.fehler = a.fehler;
+      } else awRueckruf = { fuer, tage, einheit, jetzt: a.k, vorher: b.fehler ? null : b.k, fehler: null };
+      if (awDaten) zeichneAuswertung(); else zeichneAwRueckruf();
+    }
+    const rrDatum = (ab) => { const [y, m, d] = String(ab).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); }; // Kalendertag, keine Zeitzone
+    function zeichneAwRueckruf() {
+      const ch = $('awRrChart'); if (!ch) return;
+      const sichtbar = navSichtbar(navItem('sec-messages'));
+      $('awRrPanel').classList.toggle('hidden', !sichtbar); $('awRrDauerPanel').classList.toggle('hidden', !sichtbar);
+      if (!sichtbar) return;
+      const rr = awRrAktuell(), k = rr?.jetzt || null, woche = (rr?.einheit || (awTage <= 30 ? 'tag' : 'woche')) === 'woche';
+      $('awRrTitel').textContent = woche ? 'Rückruf-Erfolg je Woche' : 'Rückruf-Erfolg je Tag';
+      const hinweis = [];
+      ch.innerHTML = ''; ch.classList.remove('dicht');
+      if (!k) {
+        $('awRrSub').textContent = 'Anteil der Nachrichten, in 24 h erledigt';
+        ch.innerHTML = leerText(!rr ? 'Wird geladen …' : rrFehlt(rr.fehler) ? 'Der Rückruf-Erfolg ist noch nicht verfügbar.' : 'Der Rückruf-Erfolg ist gerade nicht abrufbar. ↻ lädt neu.');
+      } else if (k.unvollstaendig) {
+        $('awRrSub').textContent = 'für diesen Zeitraum nicht berechenbar';
+        ch.innerHTML = leerText('Ältere erledigte Nachrichten sind nach deiner Aufbewahrungsfrist schon gelöscht. Wähle einen kürzeren Zeitraum.');
+      } else {
+        $('awRrSub').textContent = k.basis ? (k.basis < RR_MINDEST ? k.in_frist + ' von ' + k.basis + ' in 24 h erledigt' : Math.round(k.quote * 100) + ' % in 24 h · ' + k.in_frist + ' von ' + k.basis) : 'noch keine entschiedenen Nachrichten';
+        const v = k.verlauf || []; const dicht = v.length > 14; ch.classList.toggle('dicht', dicht);
+        const wd = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']; let labMonat = -1;
+        v.forEach((p, i) => {
+          const d = rrDatum(p.ab), quote = p.basis ? p.in_frist / p.basis : null;
+          const hh = quote ? Math.max(3, Math.round(quote * 66)) : 3;
+          let lab = woche ? d.getDate() + '.' + (d.getMonth() + 1) + '.' : wd[d.getDay()];
+          if (dicht) { lab = ''; if (i % 5 === 0 || i === v.length - 1) { const mitMonat = d.getMonth() !== labMonat; labMonat = d.getMonth(); lab = d.getDate() + '.' + (mitMonat ? (d.getMonth() + 1) + '.' : ''); } }
+          const wann = (woche ? 'Woche ab ' : '') + d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
+          const col = document.createElement('div'); col.className = 'col';
+          col.dataset.tip = wann + ' · ' + (p.basis ? p.in_frist + ' von ' + p.basis + ' in 24 h erledigt (' + Math.round(quote * 100) + ' %)' : 'keine entschiedenen Nachrichten');
+          col.innerHTML = '<div class="c">' + (!dicht && p.basis ? p.in_frist + '/' + p.basis : '') + '</div><div class="bar' + (p.basis ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div>';
+          ch.append(col);
+        });
+        if (!v.length) ch.innerHTML = leerText('Noch keine Nachrichten im Zeitraum.');
+        if (k.laufend) hinweis.push(k.laufend === 1 ? 'Dazu 1 Nachricht jünger als 24 Stunden, sie zählt noch nicht.' : 'Dazu ' + k.laufend + ' Nachrichten jünger als 24 Stunden, sie zählen noch nicht.');
+      }
+      if (awFilter) hinweis.push('Unabhängig vom Anruf-Filter.');
+      $('awRrHinweis').textContent = hinweis.join(' '); $('awRrHinweis').classList.toggle('hidden', !hinweis.length);
+      // Bis erledigt + je Dringlichkeit
+      const du = $('awRrDauer'), dr = $('awRrDring'); du.innerHTML = ''; dr.innerHTML = '';
+      const zeile = (label, wert, breite, klick, tipp) => {
+        const el = document.createElement('div'); el.className = 'db-thema';
+        el.innerHTML = '<div class="n"><span></span><span></span></div><div class="b"><span style="width:' + Math.round(Math.max(0, Math.min(1, breite)) * 100) + '%"></span></div>';
+        el.querySelector('.n span').textContent = label; el.querySelector('.n span:last-child').textContent = wert;
+        if (tipp) el.dataset.tip = tipp;
+        if (klick) { el.setAttribute('role', 'button'); el.tabIndex = 0; el.style.cursor = 'pointer'; el.onclick = () => { tipWeg(); klick(); }; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); klick(); } }; }
+        return el;
+      };
+      if (!k || k.unvollstaendig) { $('awRrDauerSub').textContent = ''; du.innerHTML = leerText(k ? 'Für diesen Zeitraum nicht berechenbar.' : '–'); }
+      else {
+        $('awRrDauerSub').textContent = k.erledigt && k.median_min !== null ? 'Median ' + rrDauerText(k.median_min) : 'noch nichts erledigt';
+        const dk = k.dauerklassen, klassen = [['unter 1 Std.', dk.bis_1h], ['1 bis 4 Std.', dk.bis_4h], ['4 bis 24 Std.', dk.bis_24h], ['über 24 Std.', dk.ueber_24h]];
+        const dmax = Math.max(1, ...klassen.map((x) => x[1]));
+        klassen.forEach(([l, n]) => du.append(zeile(l, n, n / dmax, null, n + (n === 1 ? ' Nachricht' : ' Nachrichten') + ' nach ' + l.replace('unter', 'weniger als') + ' erledigt')));
+      }
+      const je = k && !k.unvollstaendig ? k.je_dringlichkeit : {};
+      const zeilenDring = RR_DRING.filter(([key]) => je[key]);
+      if (!zeilenDring.length) dr.innerHTML = leerText(k && !k.unvollstaendig ? 'Noch keine entschiedenen Nachrichten im Zeitraum.' : '–');
+      zeilenDring.forEach(([key, label, filter]) => {
+        const e = je[key];
+        const wert = e.basis ? (e.basis < RR_MINDEST ? e.in_frist + ' von ' + e.basis : Math.round(e.in_frist / e.basis * 100) + ' % (' + e.in_frist + ' von ' + e.basis + ')') : '–';
+        const klick = filter ? () => { geh('sec-messages'); if (navSichtbar(navItem('sec-messages'))) mgFilterSetzen({ status: '', dringend: filter }); } : null;
+        dr.append(zeile(label, wert, e.basis ? e.in_frist / e.basis : 0, klick, (e.basis ? e.in_frist + ' von ' + e.basis + ' in 24 h erledigt' : 'noch keine entschiedenen') + (filter ? ' · Klick öffnet die Nachrichten mit Dringlichkeit ' + label : ' · ohne eingeschätzte Dringlichkeit')));
+      });
+      // Arbeitsliste: jetzt offen und älter als 24 Stunden (unabhängig vom Zeitraum)
+      const ueN = k ? k.offen_ueber_frist : [...mgItems.values()].filter(mgUeberfaellig).length;
+      if (ueN) {
+        const z = zeile('Jetzt länger als 24 h offen', ueN, 0, () => { geh('sec-messages'); if (navSichtbar(navItem('sec-messages'))) mgUeberfaelligZeigen(); }, 'Öffnet die Nachrichten mit dem Filter „Länger als 24 h offen“');
+        z.querySelector('.b').remove(); z.querySelector('.n').classList.add('ueber-text'); z.style.marginTop = '6px'; dr.append(z);
+      }
     }
     (function auswertungWiring() {
       if (!$('awZeitraum')) return;
@@ -8138,10 +8387,41 @@
     // kommen per Echtzeit-Ereignis herein.
     const mgItems = new Map();
     let mgAuswahl = null, mgSuche = '', mgStatus = 'new', mgDringend = '', mgKategorie = '', mgSuchTimer = null, mgNotizTimer = null, mgGeladen = 0, mgAlle = false;
+    let mgUeber = false, mgStandFuer = null; // Filter „Länger als 24 h offen“; für welche Firma die Liste geladen ist
     const MG_SEITE = 200;
     const MG_DRING = { hoch: ['#dc2626', 'dringend'], mittel: ['#f59e0b', 'mittel'], niedrig: ['#94a3b8', 'niedrig'] };
     const mgDringKey = (u) => { const v = String(u || '').toLowerCase(); if (/hoch|high|dringend|urgent/.test(v)) return 'hoch'; if (/niedrig|low|gering/.test(v)) return 'niedrig'; return v ? 'mittel' : ''; };
-    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; renderNachrichten(); }
+    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); }
+    // Rückruf-Erfolg: offen und älter als 24 Stunden = überfällig (gleiche Grenze wie nachrichten_erfolg).
+    const mgUeberfaellig = (m) => (m.status || 'new') === 'new' && Date.now() - new Date(m.created_at).getTime() >= RR_FRIST_MS;
+    // '40 Std.' bzw. '4 Tage' (mit seit: '4 Tagen')
+    const mgAlterText = (m, seit) => { const h = Math.max(0, Math.floor((Date.now() - new Date(m.created_at).getTime()) / 3600e3)); return h < 48 ? h + ' Std.' : Math.floor(h / 24) + (seit ? ' Tagen' : ' Tage'); };
+    function mgUeberKnopf() { const b = $('mgUeber'); if (b) { b.classList.toggle('aktiv', mgUeber); b.setAttribute('aria-pressed', String(mgUeber)); } }
+    /** Filter von außen setzen (Dashboard, Auswertung, Sprungadresse); Suche und Kategorie fallen weg. */
+    function mgFilterSetzen(f) {
+      mgStatus = f.status ?? mgStatus; mgDringend = f.dringend || ''; mgKategorie = ''; mgUeber = !!f.ueber; mgSuche = ''; mgAuswahl = null;
+      if ($('mgSuche')) $('mgSuche').value = '';
+      document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.status === mgStatus))));
+      document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.dringend || '') === mgDringend))));
+      mgUeberKnopf(); renderNachrichten();
+    }
+    /** Alle Überfälligen nachladen (älteste zuerst, höchstens 500): Die Liste hält sonst nur die neuesten 200. */
+    async function mgUeberfaelligeNachladen() {
+      if (!tenant) return;
+      const fuer = tenant.id;
+      const { data, error } = await sb.from('messages').select('*').eq('tenant_id', fuer).eq('status', 'new').lte('created_at', new Date(Date.now() - RR_FRIST_MS).toISOString()).order('created_at', { ascending: true }).limit(500);
+      if (error || !tenant || tenant.id !== fuer || !data?.length) return;
+      data.forEach((m) => mgItems.set(m.id, Object.assign(mgItems.get(m.id) || {}, m)));
+      renderNachrichten();
+    }
+    /** Arbeitsliste „Länger als 24 h offen“ zeigen und die älteste Nachricht auswählen. */
+    async function mgUeberfaelligZeigen() {
+      mgFilterSetzen({ status: 'new', ueber: true });
+      await mgUeberfaelligeNachladen();
+      if (!mgUeber) return; // inzwischen von Hand umgeschaltet
+      const liste = mgGefiltert();
+      if (liste.length && window.innerWidth > 900) { mgAuswahl = liste[liste.length - 1].id; renderNachrichten(); setTimeout(() => document.querySelector('.mg-zeile.aktiv')?.scrollIntoView({ block: 'nearest' }), 50); }
+    }
     async function mgLaden(mehr) {
       if (!tenant) return;
       if (!mehr) { mgGeladen = 0; mgAlle = false; }
@@ -8155,11 +8435,13 @@
       (data || []).forEach((m) => mgItems.set(m.id, m));
       mgGeladen += (data || []).length; if ((data || []).length < MG_SEITE) mgAlle = true;
       renderNachrichten();
+      if (!mehr && mgUeber) mgUeberfaelligeNachladen();
     }
     function mgGefiltert(ausser) {
       const s = mgSuche.trim().toLowerCase();
       return [...mgItems.values()].filter((m) => {
-        if (ausser !== 'status' && mgStatus && (m.status || 'new') !== mgStatus) return false;
+        if (ausser !== 'status' && ausser !== 'ueber' && mgStatus && (m.status || 'new') !== mgStatus) return false; // Zähler „Länger als 24 h offen“ gilt unabhängig vom Status-Schalter
+        if (ausser !== 'ueber' && mgUeber && !mgUeberfaellig(m)) return false;
         if (ausser !== 'dringend' && mgDringend && mgDringKey(m.urgency) !== mgDringend) return false;
         if (ausser !== 'kategorie' && mgKategorie && m.category !== mgKategorie) return false;
         if (s && ![m.caller_name, m.caller_number, m.callback_number, m.summary, m.category, m.note].some((v) => (v || '').toLowerCase().includes(s))) return false;
@@ -8172,9 +8454,11 @@
       const alle = [...mgItems.values()];
       const offen = alle.filter((m) => (m.status || 'new') === 'new').length;
       const badge = $('msgBadge'); if (badge) { badge.textContent = offen || ''; badge.classList.toggle('hidden', !offen); }
-      $('mgSub').textContent = offen ? (offen === 1 ? 'Eine offene Nachricht.' : offen + ' offene Nachrichten.') : 'Alles erledigt. Neue Rückrufe und Anliegen erscheinen hier sofort.';
+      const ueberN = alle.filter(mgUeberfaellig).length;
+      $('mgSub').textContent = offen ? (offen === 1 ? 'Eine offene Nachricht' : offen + ' offene Nachrichten') + (ueberN ? ', davon ' + ueberN + ' länger als 24 Stunden.' : '.') : 'Alles erledigt. Neue Rückrufe und Anliegen erscheinen hier sofort.';
       const bs = mgGefiltert('status'); const stN = { '': bs.length, new: 0, done: 0 }; bs.forEach((m) => { stN[m.status || 'new']++; }); mgZaehler('#mgStatus [data-status]', 'status', stN);
       const bd = mgGefiltert('dringend'); const dN = { '': bd.length, hoch: 0, mittel: 0, niedrig: 0 }; bd.forEach((m) => { const k = mgDringKey(m.urgency); if (k) dN[k]++; }); mgZaehler('#mgDringend .lv-chip', 'dringend', dN);
+      const ub = $('mgUeber'); if (ub) { let z = ub.querySelector('small'); if (!z) { z = document.createElement('small'); ub.append(z); } const n = mgGefiltert('ueber').filter(mgUeberfaellig).length; z.textContent = ' ' + n; z.classList.toggle('ueber-text', n > 0); }
       const bk = mgGefiltert('kategorie'); const kN = {}; bk.forEach((m) => { if (m.category) kN[m.category] = (kN[m.category] || 0) + 1; });
       const kats = [...new Set(alle.map((m) => m.category).filter(Boolean))].sort((a, b) => (kN[b] || 0) - (kN[a] || 0) || a.localeCompare(b, 'de'));
       const sel = $('mgKategorie'); const cur = mgKategorie; sel.innerHTML = '<option value="">Alle Kategorien</option>';
@@ -8202,6 +8486,7 @@
       if (m.category) { const tp = z.querySelector('.call-topic'); tp.innerHTML = markierenMit(m.category, mgSuche); tp.classList.remove('hidden'); }
       z.querySelector('.lv-text').innerHTML = markierenMit(m.summary || 'ohne Zusammenfassung', mgSuche); if (m.summary && m.summary.length > 70) z.querySelector('.lv-text').dataset.tip = m.summary;
       const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(m.created_at); r[1].textContent = erledigt ? 'erledigt' : (m.caller_name ? fmtNr(m.callback_number || m.caller_number || '') : '');
+      if (!erledigt && mgUeberfaellig(m)) { r[1].textContent = mgAlterText(m) + ' offen'; r[1].classList.add('ueber-text'); r[1].dataset.tip = 'Länger als 24 Stunden offen'; }
       z.onclick = () => { mgAuswahl = m.id; renderNachrichten(); };
       z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', m.id === mgAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
@@ -8243,7 +8528,11 @@
       if (nr) chip(fmtNr(nr), 'Rückrufnummer · Klick kopiert sie', async () => { try { await navigator.clipboard.writeText(nr); toast('Nummer kopiert.'); } catch { toast(nr); } });
       if (dk) chip(MG_DRING[dk][1], 'Dringlichkeit, vom Assistenten eingeschätzt · Klick filtert die Liste', () => { mgDringend = mgDringend === dk ? '' : dk; document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.dringend || '') === mgDringend)))); renderNachrichten(); });
       if (m.category) chip(m.category, 'Kategorie · Klick filtert die Liste', () => { mgKategorie = mgKategorie === m.category ? '' : m.category; renderNachrichten(); });
-      if (erledigt) chip('erledigt' + (m.done_at ? ' am ' + new Date(m.done_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''));
+      if (erledigt) {
+        const nachMin = m.done_at ? (new Date(m.done_at) - new Date(m.created_at)) / 60000 : null;
+        chip('erledigt' + (m.done_at ? ' am ' + new Date(m.done_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' · nach ' + rrDauerText(nachMin) : ''), nachMin === null ? '' : nachMin <= 1440 ? 'Innerhalb von 24 Stunden erledigt: zählt beim Rückruf-Erfolg' : 'Erst nach Ablauf der 24 Stunden erledigt');
+      } else if (mgUeberfaellig(m)) { chip('offen seit ' + mgAlterText(m, true), 'Länger als 24 Stunden offen: zählt beim Rückruf-Erfolg als nicht rechtzeitig erledigt'); meta.lastElementChild.classList.add('ueber'); }
+      else { const rest = Math.max(1, Math.ceil((RR_FRIST_MS - (Date.now() - new Date(m.created_at).getTime())) / 3600e3)); chip('noch ' + rest + ' Std. in der 24-h-Frist', 'Bis dahin erledigt, zählt die Nachricht beim Rückruf-Erfolg als rechtzeitig'); }
       const eb = d.querySelector('[data-erledigt]'); eb.textContent = erledigt ? 'Wieder öffnen' : 'Erledigt'; eb.className = 'btn sm ' + (erledigt ? 'btn--ghost' : 'btn--primary'); eb.dataset.tip = erledigt ? 'Zurück in „Offen“' : 'Als erledigt markieren (Taste E)';
       eb.onclick = async () => { if (await mgAendern(m, erledigt ? { status: 'new', done_at: null } : { status: 'done', done_at: new Date().toISOString() })) { toast(erledigt ? 'Wieder geöffnet.' : 'Erledigt.'); renderNachrichten(); } };
       const zs = d.querySelector('[data-zusammenfassung]'); zs.innerHTML = m.summary ? markierenMit(m.summary, mgSuche) : '<span class="muted">Keine Zusammenfassung.</span>';
@@ -8280,7 +8569,7 @@
     async function nachrichtOeffnen(id) {
       if (!mgItems.has(id)) { const { data } = await sb.from('messages').select('*').eq('id', id).maybeSingle(); if (data) mgItems.set(id, data); }
       mgAuswahl = id;
-      if (mgItems.has(id) && !mgGefiltert().some((x) => x.id === id)) { mgStatus = ''; mgDringend = ''; mgKategorie = ''; mgSuche = ''; $('mgSuche').value = ''; document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.status === '')))); document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', !b.dataset.dringend)))); }
+      if (mgItems.has(id) && !mgGefiltert().some((x) => x.id === id)) { mgStatus = ''; mgDringend = ''; mgKategorie = ''; mgSuche = ''; $('mgSuche').value = ''; mgUeber = false; mgUeberKnopf(); document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.status === '')))); document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', !b.dataset.dringend)))); }
       renderNachrichten();
       setTimeout(() => document.querySelector('.mg-zeile[data-msg-id="' + id + '"]')?.scrollIntoView({ block: 'nearest' }), 50);
     }
@@ -8288,13 +8577,36 @@
       const s = $('mgSuche'); if (!s) return;
       if ($('mgCsv')) $('mgCsv').onclick = () => {
         const liste = mgGefiltert(); if (!liste.length) { toast('Keine Nachrichten in der Auswahl.', 'err'); return; }
-        const zeilen = [['Datum', 'Name', 'Nummer', 'Kategorie', 'Dringlichkeit', 'Status', 'Zusammenfassung', 'Notiz', 'Erledigt am']];
-        liste.forEach((m) => zeilen.push([csvZeit(m.created_at), m.caller_name || '', m.callback_number || m.caller_number || '', m.category || '', m.urgency || '', m.status === 'done' ? 'erledigt' : 'offen', m.summary || '', m.note || '', csvZeit(m.done_at)]));
+        const zeilen = [['Datum', 'Name', 'Nummer', 'Kategorie', 'Dringlichkeit', 'Status', 'Zusammenfassung', 'Notiz', 'Erledigt am', 'Erledigt nach (Std.)']];
+        const nachStd = (m) => m.status === 'done' && m.done_at ? (Math.max(0, new Date(m.done_at) - new Date(m.created_at)) / 3600e3).toLocaleString('de-DE', { maximumFractionDigits: 1 }) : '';
+        liste.forEach((m) => zeilen.push([csvZeit(m.created_at), m.caller_name || '', m.callback_number || m.caller_number || '', m.category || '', m.urgency || '', m.status === 'done' ? 'erledigt' : 'offen', m.summary || '', m.note || '', csvZeit(m.done_at), nachStd(m)]));
         csvHerunterladen(zeilen, 'nachrichten'); toast(liste.length + (liste.length === 1 ? ' Nachricht' : ' Nachrichten') + ' exportiert.');
       };
       s.oninput = () => { clearTimeout(mgSuchTimer); mgSuchTimer = setTimeout(() => { mgSuche = s.value; renderNachrichten(); }, 150); };
       document.querySelectorAll('#mgStatus [data-status]').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgStatus [data-status]').forEach((x) => x.setAttribute('aria-pressed', String(x.classList.toggle('active', x === b)))); mgStatus = b.dataset.status; renderNachrichten(); });
       document.querySelectorAll('#mgDringend .lv-chip').forEach((b) => b.onclick = () => { document.querySelectorAll('#mgDringend .lv-chip').forEach((x) => x.setAttribute('aria-pressed', String(x.classList.toggle('aktiv', x === b)))); mgDringend = b.dataset.dringend || ''; renderNachrichten(); });
+      if ($('mgUeber')) $('mgUeber').onclick = () => {
+        mgUeber = !mgUeber;
+        // Überfällig heißt offen: unter „Erledigt“ bliebe die Liste leer.
+        if (mgUeber && mgStatus === 'done') { mgStatus = 'new'; document.querySelectorAll('#mgStatus [data-status]').forEach((x) => x.setAttribute('aria-pressed', String(x.classList.toggle('active', x.dataset.status === 'new')))); }
+        mgUeberKnopf(); renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen();
+      };
+      // Sprungadresse aus dem Wochenbericht: app.html#nachrichten/ueberfaellig öffnet die Nachrichten mit
+      // dem Filter „Länger als 24 h offen“. Wartet, bis Firma und Nachrichtenliste geladen sind (auch über
+      // eine Anmeldung hinweg), und räumt die Adresse danach auf.
+      const ankerPasst = () => /^#nachrichten\/ueberfaellig\b/.test(location.hash);
+      let ankerUhr = null;
+      const ankerLos = () => {
+        clearInterval(ankerUhr); const bis = Date.now() + 15 * 60000;
+        ankerUhr = setInterval(() => {
+          if (Date.now() > bis) { clearInterval(ankerUhr); return; }
+          if (!tenant || mgStandFuer !== tenant.id) return;
+          clearInterval(ankerUhr); history.replaceState(null, '', location.pathname + location.search);
+          geh('sec-messages'); if (navSichtbar(navItem('sec-messages'))) mgUeberfaelligZeigen();
+        }, 300);
+      };
+      if (ankerPasst()) ankerLos();
+      window.addEventListener('hashchange', () => { if (ankerPasst()) ankerLos(); });
       $('mgKategorie').onchange = () => { mgKategorie = $('mgKategorie').value; renderNachrichten(); };
       $('mgMehr').onclick = () => mgLaden(true); $('mgNeu').onclick = () => mgLaden();
       document.addEventListener('keydown', (e) => {
@@ -10118,8 +10430,8 @@
     // Zweitnamen, unter denen jemand einen Bereich suchen könnte
     const BEREICH_WORTE = {
       'sec-overview': 'dashboard übersicht start', 'sec-live': 'eingehend anrufe live testanruf', 'sec-outbound': 'ausgehend anrufen wählen rückruf',
-      'sec-kontakte': 'telefonbuch kontakte adressen', 'sec-messages': 'nachrichten rückrufwunsch', 'sec-tickets': 'vorgänge tickets aufgaben',
-      'sec-auswertung': 'auswertung statistik zahlen bericht', 'sec-kb': 'wissensdatenbank wissen einträge faq', 'sec-gaps': 'offene fragen unbeantwortet',
+      'sec-kontakte': 'telefonbuch kontakte adressen', 'sec-messages': 'nachrichten rückrufwunsch rückruf-erfolg überfällig liegengeblieben', 'sec-tickets': 'vorgänge tickets aufgaben',
+      'sec-auswertung': 'auswertung statistik zahlen bericht rückruf-erfolg quote', 'sec-kb': 'wissensdatenbank wissen einträge faq', 'sec-gaps': 'offene fragen unbeantwortet',
       'sec-assistant': 'assistent begrüßung stimme öffnungszeiten regeln persona', 'sec-number': 'telefonnummer rufnummer sperrliste sperren',
       'sec-team': 'zugänge team mitarbeiter einladen benutzer', 'sec-webhooks': 'schnittstellen benachrichtigungen slack e-mail sms webhook api crm ticketsystem',
       'sec-booking': 'termine kalender buchung', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
@@ -10270,13 +10582,13 @@
 
     // ---- Hilfe je Bereich: kleines „?" neben der Überschrift ----
     const HILFE = {
-      'sec-overview': ['Anrufe, Nachrichten und Vorgänge der letzten Tage auf einen Blick. <b>7 / 14 / 30 Tage</b> wählt den Zeitraum, <b>↻</b> lädt die Zahlen neu.', '<b>Anpassen</b> lässt dich Kacheln verschieben, entfernen oder hinzufügen. Kacheln mit Zahlen sind klickbar und führen in den passenden Bereich.'],
+      'sec-overview': ['Anrufe, Nachrichten und Vorgänge der letzten Tage auf einen Blick. <b>7 / 14 / 30 Tage</b> wählt den Zeitraum, <b>↻</b> lädt die Zahlen neu.', '<b>Anpassen</b> lässt dich Kacheln verschieben, entfernen oder hinzufügen. Kacheln mit Zahlen sind klickbar und führen in den passenden Bereich. <b>Rückruf-Erfolg</b> zeigt, wie viele Nachrichten innerhalb von 24 Stunden erledigt wurden; ein Klick öffnet, was länger liegt.'],
       'sec-live': ['Alle eingehenden Anrufe mit Mitschrift, Zusammenfassung und Stimmung; laufende Gespräche stehen oben in Echtzeit.', 'Suche, Zeitraum und Stimmung grenzen die Liste ein. Im Detail ergänzt du Notiz und Tags, antwortest per SMS oder planst einen Rückruf. <b>CSV</b> lädt die aktuelle Auswahl herunter.'],
       'sec-outbound': ['Anrufe, die du über Vocaris führst: selbst im Browser, am eigenen Telefon (Vocaris verbindet) oder durch den Assistenten mit einem Auftrag.', 'Nummer eintippen, Weg wählen, <b>Anrufen</b>. Geplante Rückrufe stehen darunter und lassen sich absagen.'],
       'sec-kontakte': ['Das Telefonbuch ordnet Nummern Namen und Firmen zu. Die Namen erscheinen dann bei Anrufen, Nachrichten und in der Auswertung.', '<b>Neuer Kontakt</b> legt einen Eintrag an; ein Klick auf eine Zeile öffnet ihn zum Bearbeiten.'],
-      'sec-messages': ['Nachrichten, die der Assistent aufgenommen hat: Rückrufwünsche, Anliegen, Dringlichkeit.', '<b>Neu / Erledigt</b> und die Chips filtern die Liste. Im Detail markierst du als erledigt, rufst zurück oder schreibst eine Notiz. <b>CSV</b> exportiert die Auswahl.'],
+      'sec-messages': ['Nachrichten, die der Assistent aufgenommen hat: Rückrufwünsche, Anliegen, Dringlichkeit.', '<b>Offen / Erledigt</b> und die Chips filtern die Liste; <b>Länger als 24 h offen</b> zeigt, was beim Rückruf-Erfolg als liegengeblieben zählt. Im Detail markierst du als erledigt, rufst zurück oder schreibst eine Notiz. <b>CSV</b> exportiert die Auswahl.'],
       'sec-tickets': ['Jede Nachricht wird ein Vorgang mit Nummer, Frist und Zuständigkeit. <b>+ Vorgang</b> legt einen von Hand an, <b>Liste / Spalten</b> wechselt die Ansicht.', 'Im Detail änderst du Status (Taste <b>A</b> = in Arbeit, <b>E</b> = erledigt), Priorität und Zuständige und siehst den Verlauf.'],
-      'sec-auswertung': ['Zahlen zu Anrufen im gewählten Zeitraum: Aufkommen, Dauer, Stimmung, Themen und häufigste Anrufer.', 'Balken und Zeilen sind klickbar: Sie filtern die Auswertung oder öffnen <b>Eingehend</b> mit dem passenden Filter.'],
+      'sec-auswertung': ['Zahlen zu Anrufen im gewählten Zeitraum: Aufkommen, Dauer, Stimmung, Themen und häufigste Anrufer. Dazu der Rückruf-Erfolg: wie viele Nachrichten innerhalb von 24 Stunden erledigt wurden, je Tag oder Woche und je Dringlichkeit.', 'Balken und Zeilen sind klickbar: Sie filtern die Auswertung oder öffnen <b>Eingehend</b> mit dem passenden Filter.'],
       'sec-kb': ['Was der Assistent am Telefon wissen soll: Öffnungszeiten, Preise, Abläufe, Ansprechpartner. <b>+ Eintrag</b> legt einen an; Titel und Text änderst du direkt im Detail.', 'Einträge unter <b>Allgemein</b> gelten für alle Abteilungen. Der Wissens-Assistent unten rechts hilft beim Befüllen aus Dokumenten.'],
       'sec-gaps': ['Fragen von Anrufern, die der Assistent nicht beantworten konnte.', 'Antwort eintippen und <b>Speichern</b>: Sie landet in der Wissensdatenbank und gilt ab dem nächsten Anruf. <b>Verwerfen</b> entfernt Fragen, die nicht passen.'],
       'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten & Ausnahmen, Stimme & Sprache, Erreichbarkeit, Datenschutz & Berichte. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> zeigt deine Nummer zum Anrufen; das Gespräch erscheint sofort unter Eingehend.'],
