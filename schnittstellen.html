@@ -98,7 +98,7 @@
     <div class="kopfzeile" data-zeig>
       <span class="vorzeile">Nach Art</span>
       <h2 id="systeme-titel">Was wohin geht.</h2>
-      <p class="lede">Sechs Gruppen. Eingebaute Funktionen brauchen keine Einrichtung, native Anbindungen einen Zugang zum jeweiligen System.</p>
+      <p class="lede">Sieben Gruppen. Eingebaute Funktionen brauchen keine Einrichtung, native Anbindungen einen Zugang zum jeweiligen System.</p>
     </div>
 
     <div class="filter filter--fest" data-filter="#gruppen" role="group" aria-label="Schnittstellen nach Art filtern">
@@ -107,9 +107,10 @@
       <button type="button" class="chip" data-zeigt="crm" aria-pressed="false">CRM</button>
       <button type="button" class="chip" data-zeigt="kalender" aria-pressed="false">Kalender</button>
       <button type="button" class="chip" data-zeigt="team" aria-pressed="false">Benachrichtigungen</button>
+      <button type="button" class="chip" data-zeigt="kanaele" aria-pressed="false">WhatsApp</button>
       <button type="button" class="chip" data-zeigt="sprache" aria-pressed="false">Sprachmodelle</button>
       <button type="button" class="chip" data-zeigt="automatisierung" aria-pressed="false">Automatisierung</button>
-      <span class="filter__zahl" data-filter-zahl data-alle="32 Anbindungen in sechs Gruppen">32 Anbindungen in sechs Gruppen</span>
+      <span class="filter__zahl" data-filter-zahl data-alle="34 Anbindungen in sieben Gruppen">34 Anbindungen in sieben Gruppen</span>
     </div>
 
     <div id="gruppen" style="display:grid;gap:var(--r10)">
@@ -174,6 +175,18 @@
           <div class="kachel karte" id="teams"><span class="wortmarke"><i>T</i>Microsoft Teams</span><span class="pille pille--grau">nativ</span><p>Karte in einen Kanal.</p></div>
           <div class="kachel karte" id="telegram"><span class="wortmarke"><i>T</i>Telegram</span><span class="pille pille--grau">nativ</span><p>Nachricht an einen Bot-Chat.</p></div>
           <div class="kachel karte" id="sms-anrufer"><span class="wortmarke"><i>S</i>SMS an Anrufer</span><span class="pille pille--grau">nativ</span><p>Bestätigung von Termin oder Reservierung direkt aufs Handy des Anrufers.</p></div>
+        </div>
+      </div>
+
+      <div data-gruppe="kanaele" id="kanaele">
+        <div class="kopfzeile" data-zeig>
+          <span class="vorzeile">Zweiter Kanal</span>
+          <h2>WhatsApp: derselbe Assistent im Chat.</h2>
+          <p class="lede">Kunden schreiben, statt anzurufen. Der Assistent antwortet mit demselben Wissen und denselben Regeln wie am Telefon und gibt ans Team, was ein Mensch klären soll.</p>
+        </div>
+        <div class="karten" data-staffel>
+          <div class="kachel karte" id="whatsapp"><span class="wortmarke"><i>W</i>WhatsApp Business</span><span class="pille">im Pilotbetrieb</span><p>Verbindung über die offizielle WhatsApp-Business-Plattform von Meta. Der Assistent beantwortet Fragen aus Ihrer Wissensbasis, bucht Termine und Tische und versteht Sprachnachrichten. Antworten sind nach den Regeln von WhatsApp bis 24 Stunden nach der letzten Kundennachricht möglich. Wer „STOP“ schreibt, bekommt keine Nachrichten mehr.</p></div>
+          <div class="kachel karte" id="whatsapp-team"><span class="wortmarke wortmarke--eigen"><i>V</i>Übergabe ans Team</span><span class="pille">eingebaut</span><p>Was der Assistent nicht lösen kann, wird eine Nachricht mit Vorgang, Mitteilung, E-Mail, Slack oder CRM-Eintrag wie nach einem Anruf. Im Kundenbereich übernimmt Ihr Team die Unterhaltung und schreibt direkt im Chat weiter, der Assistent pausiert so lange. Webhook und <a href="api.html#ep-messages">API</a> kennzeichnen den Kanal.</p></div>
         </div>
       </div>
 

@@ -9,7 +9,7 @@
 - [Vergleich](https://vocaris.eu/vergleich.html): Anrufbeantworter, Telefonservice, Telefonanlage und KI-Assistent im Vergleich
 - [KI-Modelle](https://vocaris.eu/ki-modelle.html): die fünf Sprachwege, darunter ein rein europäischer
 - [Sicherheit](https://vocaris.eu/sicherheit.html): Datenhaltung, Verschlüsselung, Auftragsverarbeitung
-- [Schnittstellen](https://vocaris.eu/schnittstellen.html): Kalender, CRM, Ticketsysteme, Slack, Teams, Webhooks
+- [Schnittstellen](https://vocaris.eu/schnittstellen.html): Kalender, CRM, Ticketsysteme, Slack, Teams, Webhooks, WhatsApp (im Pilotbetrieb: derselbe Assistent beantwortet WhatsApp-Nachrichten)
 - [Kalender-Anbindung](https://vocaris.eu/kalender.html): was Vocaris mit Google-, Outlook- und Apple-Kalendern tut (nur frei/belegt lesen, gebuchte Termine eintragen, Google Limited Use)
 - [API](https://vocaris.eu/api.html): öffentliche Schnittstelle und Webhook-Ereignisse
 
