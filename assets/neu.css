@@ -163,6 +163,15 @@ body.menue-offen{overflow:hidden}
 .held__fakten{display:flex;flex-wrap:wrap;gap:var(--r1) var(--r3);margin:0;padding:0;list-style:none;font-size:14px;color:var(--nacht-text)}
 .held__fakten li{display:inline-flex;align-items:center;gap:8px}
 .held__fakten svg{width:16px;height:16px;color:#8ab8ff}
+.held__app{display:flex;align-items:center;gap:var(--r2);margin-top:var(--r3)}
+.held__app p{margin:0;font-size:14px;line-height:1.45;color:var(--nacht-text);max-width:38ch}
+
+/* App-Store-Abzeichen (offizielles Apple-Badge, unverändert) */
+.appabzeichen{display:inline-block;flex:none;line-height:0;border-radius:9px}
+.appabzeichen img{display:block;height:40px;width:auto}
+.held__app .appabzeichen img{height:48px}
+.appabzeichen:focus-visible{outline:2px solid var(--akzent);outline-offset:3px}
+.held .appabzeichen:focus-visible{outline-color:#fff}
 
 /* Anruf-Simulator */
 .sim{background:var(--flaeche-1);color:var(--text-1);border-radius:var(--rund-xl);box-shadow:var(--schatten-tief);overflow:hidden;display:flex;flex-direction:column;min-height:560px}
@@ -435,6 +444,8 @@ html.js [data-staffel].da>*{opacity:1;transform:none}
   .held .lede{font-size:16px}
   .held .knopfzeile{margin-top:var(--r3);gap:10px}
   .held .knopfzeile .knopf{flex:1 1 auto}
+  .held__app{gap:12px}
+  .held__app .appabzeichen img{height:44px}
   .sim{min-height:0;border-radius:var(--rund-l)}
   .sim__lauf{min-height:190px;max-height:320px;padding-bottom:12px}
   .sim__blase p{font-size:14.5px;padding:9px 12px}
