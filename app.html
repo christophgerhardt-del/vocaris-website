@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-10-13T11:01" />
+  <meta name="vocaris-stand" content="2026-10-13T13:57" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -1325,6 +1325,54 @@
     @media (prefers-reduced-motion: reduce) { .wapp-tippt span { animation: none; } }
     @media (max-width: 1000px) { .wapp-einr { grid-template-columns: 1fr; } }
     @media (max-width: 900px) { .wapp-verlauf { max-height: 52vh; min-height: 160px; } .lv-zeigt-detail .lv-detail .wapp-verlauf { max-height: 52vh; } }
+    /* ---- Abo & Rechnungen (nur im Browser; in der iOS-App bleibt alles zu Preis und Bezahlen weg) ---- */
+    #navAbo[hidden] { display: none; }
+    .abo-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-color: #f0b37e; background: #fff7ed; color: #7c2d12; }
+    .abo-banner.hidden { display: none; }
+    .abo-banner p { margin: 0; flex: 1 1 260px; font-size: 14px; line-height: 1.5; }
+    .abo-banner b { color: inherit; }
+    .abo-banner .btn { margin: 0; }
+    .abo-banner__zu { min-width: 36px; min-height: 36px; border: 0; background: none; border-radius: var(--r-sm); color: inherit; cursor: pointer; font-size: 18px; line-height: 1; }
+    .abo-banner__zu:hover { background: rgba(124, 45, 18, .08); }
+    :root[data-theme="dark"] .abo-banner { background: #3a2410; border-color: #5a3a1a; color: #fdba74; }
+    :root[data-theme="dark"] .abo-banner__zu:hover { background: rgba(253, 186, 116, .12); }
+    #dbMinutenTitel { overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+    .abo-kpis .db-kpi .v small { font-size: 14px; font-weight: 500; color: var(--ink-faint); letter-spacing: 0; margin-left: 4px; }
+    .abo-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--paper-2); color: var(--ink-soft); }
+    .abo-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .abo-status[data-art="gut"] { background: color-mix(in srgb, var(--ok) 14%, var(--white)); color: #0f6b3a; }
+    .abo-status[data-art="warn"] { background: #fff7ed; color: #9a3412; }
+    :root[data-theme="dark"] .abo-status[data-art="gut"] { background: #123329; color: #6fe0b3; }
+    :root[data-theme="dark"] .abo-status[data-art="warn"] { background: #3a2410; color: #fdba74; }
+    .abo-split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); gap: 14px; align-items: start; }
+    .abo-split > div { min-width: 0; }
+    .abo-split .panel { margin-bottom: 14px; }
+    .abo-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 18px; margin: 0; font-size: 14px; }
+    .abo-dl dt { color: var(--ink-faint); }
+    .abo-dl dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+    .abo-dl dd small { color: var(--ink-faint); font-size: 12.5px; }
+    .abo-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .abo-knoepfe .btn { margin: 0; }
+    .abo-hinweis { margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-faint); text-align: left; }
+    .abo-hinweis a { color: var(--accent); }
+    .abo-geplant { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: color-mix(in srgb, var(--accent) 8%, var(--white)); font-size: 13.5px; color: var(--ink); }
+    .abo-geplant .btn { margin: 0 0 0 auto; }
+    .abo-tarife { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .abo-tarif { position: relative; display: grid; gap: 4px; align-content: start; text-align: left; font: inherit; color: var(--ink); padding: 12px 12px 12px 40px; border: 1px solid var(--line-lav, var(--line)); border-radius: var(--r); background: var(--white); cursor: pointer; }
+    .abo-tarif:hover { border-color: var(--accent); }
+    .abo-tarif input { position: absolute; left: 12px; top: 13px; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+    .abo-tarif.gewaehlt { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+    .abo-tarif.aktuell { cursor: default; }
+    .abo-tarif b { font-size: 14px; }
+    .abo-tarif span { font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; }
+    .abo-tarif em { font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-ink, var(--accent)); }
+    .abo-wahl__fuss { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .abo-wahl__fuss p { margin: 0; flex: 1 1 240px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+    .abo-wahl__fuss .btn { margin: 0; }
+    .abo-imp { border-style: dashed; font-size: 13.5px; color: var(--ink-soft); }
+    .abo-imp.hidden { display: none; }
+    @media (max-width: 1000px) { .abo-split { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .abo-tarife { grid-template-columns: 1fr; } .abo-geplant .btn { margin-left: 0; } }
   </style>
   <!-- Dunkelmodus so früh wie möglich setzen, damit beim Laden nichts hell aufblitzt.
        Gemerkt wird die Wahl (hell/dunkel/system) in localStorage; „system" folgt prefers-color-scheme. -->
@@ -1626,6 +1674,7 @@
         <button class="nav-item hidden" data-target="sec-floorplan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Tischplan</button>
         <button class="nav-item hidden" data-target="sec-guests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Gäste</button>
         <button class="nav-item" data-target="sec-webhooks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Schnittstellen</button>
+        <button class="nav-item" data-target="sec-abo" id="navAbo" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>Abo &amp; Rechnungen</button>
       </nav>
       <!-- Handy: der Avatar oben rechts öffnet das „Mehr"-Blatt mit dem Konto -->
       <button class="side__avatarknopf" id="kontoAvatarHandy" type="button" aria-label="Menü: weitere Bereiche und Konto"><span class="side__avatar" id="userAvatarHandy">·</span></button>
@@ -1671,6 +1720,8 @@
       </div>
 
       <div id="content" class="hidden">
+        <!-- Zahlung fehlgeschlagen (nur Browser, nie in der iOS-App): siehe aboBanner() -->
+        <div class="panel abo-banner hidden" id="aboBanner" role="status"></div>
         <!-- Übersicht -->
         <section id="sec-overview" class="section">
           <div class="db-kopf">
@@ -2684,7 +2735,8 @@
           </div>
           <div class="panel hidden" id="numAddPanel">
             <h3>Neue Nummer hinzufügen</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Such dir eine freie Rufnummer und ordne sie einer Abteilung zu. Sie wird automatisch mit deinem Assistenten verbunden.</p>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:12px">Such dir eine freie Rufnummer und ordne sie einer Abteilung zu. Sobald sie eingerichtet ist, ist sie mit deinem Assistenten verbunden.</p>
+            <p class="muted" id="numPreisHinweis" style="text-align:left;padding:0;margin:-6px 0 12px;font-size:13px">Eine Rufnummer ist im Tarif enthalten, jede weitere kostet 5 € im Monat.</p>
             <div class="if-grid">
               <label>Land<input id="numCountry" value="DE" maxlength="2" style="text-transform:uppercase"></label>
               <label>Vorwahl (optional)<input id="numArea" placeholder="z. B. 89" inputmode="numeric"></label>
@@ -2757,6 +2809,23 @@
           </div>
 
           <div class="panel lv-liste" id="tmListe"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
+        </section>
+
+        <!-- Abo & Rechnungen: nur im Browser, nur für Inhaber und Admins (siehe aboLaden) -->
+        <section id="sec-abo" class="section hidden">
+          <div class="db-kopf">
+            <div>
+              <h1 class="pagehead">Abo &amp; Rechnungen</h1>
+              <h2 class="vh">Inhalt</h2>
+              <p class="pagesub" id="aboSub">Dein Tarif, die Minuten im laufenden Abrechnungszeitraum und deine Rechnungen.</p>
+            </div>
+            <div class="db-aktionen">
+              <span class="muted" id="aboStand" style="font-size:12.5px"></span>
+              <button class="btn btn--ghost sm" type="button" id="aboNeu" title="Neu laden" aria-label="Abo neu laden">↻</button>
+            </div>
+          </div>
+          <div class="panel abo-imp hidden" id="aboImp">Du siehst diese Firma im Betreibermodus. Zahlungsart, Tarif und Kündigung ändert nur die Firma selbst, deshalb sind die Knöpfe hier gesperrt.</div>
+          <div id="aboInhalt"><div class="panel"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div></div>
         </section>
 
         <section id="sec-floorplan" class="section hidden">
@@ -3246,6 +3315,9 @@
     // (kein ?imp=) nutzen unverändert den Standard-Storage.
     const IMP_HASH = new URLSearchParams(location.search).get('imp');
     const IMP_NAME = new URLSearchParams(location.search).get('impname') || '';
+    // Läuft die Seite in der iOS-App (WKWebView)? Nur dort gibt es diesen Nachrichtenkanal (WebSitzung.swift).
+    // Apple-Regel: In der App nichts zu Preisen, Buchung, Rechnungen oder Bezahlen außerhalb der App zeigen.
+    const IN_IOS_APP = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.vocarisSitzung);
     // Kommt jemand über einen Einladungslink, steht das im Hash – nur bis Supabase ihn gleich verbraucht.
     const EINGELADEN = location.hash.indexOf('type=invite') >= 0;
     let eingeladenBehandelt = false;
@@ -3307,7 +3379,7 @@
     }
     const TITLES = { 'sec-overview': 'Dashboard', 'sec-messages': 'Nachrichten', 'sec-whatsapp': 'WhatsApp', 'sec-tickets': 'Vorgänge', 'sec-auswertung': 'Auswertung',
       'sec-kb': 'Wissensdatenbank', 'sec-assistant': 'Assistent', 'sec-number': 'Telefonnummer',
-      'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste' };
+      'sec-webhooks': 'Schnittstellen', 'sec-booking': 'Termine', 'sec-restaurant': 'Reservierungen', 'sec-floorplan': 'Tischplan', 'sec-guests': 'Gäste', 'sec-abo': 'Abo & Rechnungen' };
 
     let toastUhr = null;
     /** Kurze Rueckmeldung unten. Gibt das Element zurueck, damit man etwas anhaengen kann. */
@@ -3529,7 +3601,7 @@
         // Tischplan: volle Breite + erst rendern, wenn sichtbar (sonst clientWidth = 0).
         const onPlan = b.dataset.target === 'sec-floorplan';
         document.querySelector('.main')?.classList.toggle('main--wide', onPlan);
-        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-whatsapp', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(b.dataset.target));
+        document.querySelector('.main')?.classList.toggle('main--dashboard', ['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-whatsapp', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests', 'sec-abo'].includes(b.dataset.target));
         if (onPlan && typeof renderRsPlan === 'function') renderRsPlan();
         if (b.dataset.target === 'sec-guests' && typeof loadGuests === 'function' && (!guestDatenZeit || Date.now() - guestDatenZeit > 60000)) loadGuests();
         if (b.dataset.target === 'sec-overview' && typeof ladeDashboard === 'function' && dbDaten && Date.now() - dbDatenZeit > 60000) ladeDashboard();
@@ -3541,6 +3613,7 @@
         if (b.dataset.target === 'sec-auswertung' && typeof ladeAuswertung === 'function' && tenant) ladeAuswertung();
         if (b.dataset.target === 'sec-kontakte' && typeof ladeKontakte === 'function' && tenant) ladeKontakte();
         if (b.dataset.target === 'sec-whatsapp' && typeof wappBetreten === 'function' && tenant) wappBetreten();
+        if (b.dataset.target === 'sec-abo' && typeof aboBetreten === 'function' && tenant) aboBetreten();
         if (b.dataset.target === 'sec-team' && typeof ladeZugaenge === 'function' && tenant) ladeZugaenge();
         // Einmal beim ersten Bereichswechsel: die eigene Stufe holen, damit Mitarbeiter die Einstellungen gar nicht erst sehen.
         else if (tmMeineStufe == null && typeof ladeZugaenge === 'function' && tenant && Date.now() - tmZugaengeVersuch > 60000) ladeZugaenge();
@@ -3914,6 +3987,7 @@
       tenant = null; liveCalls.clear(); mgItems.clear();
       tkAlle = []; kbItems = []; gapItems = []; dbLayout = null;
       if (typeof wappZuruecksetzen === 'function') wappZuruecksetzen();
+      if (typeof aboZuruecksetzen === 'function') aboZuruecksetzen();
     }
     async function showApp(session) {
       $('authView').classList.add('hidden'); $('shell').classList.remove('hidden');
@@ -3993,7 +4067,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
-      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-whatsapp', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
+      if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-whatsapp', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests', 'sec-abo'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
       const nowIso = new Date().toISOString();
@@ -4047,8 +4121,8 @@
 
       // Übersicht
       $('ovSub').textContent = tenant.name;
-      // Frischer Mandant (Standardname, kein Wissen) → Einrichtungs-Assistent anbieten.
-      if (!wizShown && (!tenant.name || tenant.name === 'Mein Unternehmen') && (kbCount ?? 0) === 0) { wizShown = true; setTimeout(openWizard, 500); }
+      // Frischer Mandant (Standardname, kein Wissen) oder gerade online gebucht (einrichtung_offen) → Einrichtungs-Assistent anbieten.
+      if (!wizShown && (((!tenant.name || tenant.name === 'Mein Unternehmen') && (kbCount ?? 0) === 0) || tenant.einrichtung_offen === true)) { wizShown = true; setTimeout(openWizard, 500); }
 
       // Badge an der Navigation
       const badge = $('gapBadge');
@@ -4077,6 +4151,7 @@
       loadRestaurant();
       waRestore();
       wappStatusLaden(); // WhatsApp-Bereich nur, wenn der Server ihn für die Firma freigibt
+      aboLaden(); // Abo & Rechnungen und die Minutenkachel, sobald der Server /api/abo kennt
       await Promise.all([deptP, liveP]);
       chk.testanruf = liveCalls.size > 0;
       checklisteZeichnen();
@@ -4207,6 +4282,7 @@
     (function nummerWiring() {
       const k = $('numAddKnopf'); if (!k) return;
       k.onclick = () => { $('numAddPanel').classList.toggle('hidden'); if (!$('numAddPanel').classList.contains('hidden')) $('numArea')?.focus(); };
+      if ($('numPreisHinweis')) $('numPreisHinweis').hidden = IN_IOS_APP; // Apple-Regel: in der App keine Preise
       $('sec-number').addEventListener('click', (e) => { const g = e.target.closest('[data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
       $('blockAnonym').onclick = () => sperren('anonym', 'Unterdrückte Rufnummern');
       $('blockSuche').oninput = () => renderBlockList();
@@ -4228,14 +4304,16 @@
         if (!list.length) { hint.textContent = 'Keine freien Nummern gefunden. Versuch es ohne Vorwahl oder mit einem anderen Land.'; return; }
         hint.textContent = list.length + ' freie Nummer(n) gefunden:';
         out.innerHTML = '';
+        // Preis für den Kunden statt Einkaufspreis beim Telefonie-Anbieter; in der iOS-App gar keiner (Apple-Regel)
+        const eigene = (firmenNummern || []).filter((x) => !x.tenant_id || x.tenant_id === tenant?.id).length;
+        const preis = IN_IOS_APP ? '' : eigene ? '5 € im Monat' : 'im Tarif enthalten';
         list.forEach((n) => {
-          const cost = n.monthlyCost ? (n.monthlyCost + ' ' + (n.currency || '') + '/Mon.') : '';
           const row = document.createElement('div'); row.className = 'numcard'; row.style.marginBottom = '10px';
           row.innerHTML =
-            '<div class="numhead"><span class="bignum"><span>' + n.phoneNumber + '</span></span>' +
-            (cost ? '<span class="muted" style="font-size:13px">' + cost + '</span>' : '') +
+            '<div class="numhead"><span class="bignum"><span>' + esc(n.phoneNumber) + '</span></span>' +
+            (preis ? '<span class="muted" style="font-size:13px">' + preis + '</span>' : '') +
             (n.regulatoryRequired ? '<span class="dept-badge support">Nachweis nötig</span>' : '') + '</div>' +
-            '<button class="btn btn--primary sm" type="button" style="margin-top:12px">Diese Nummer buchen</button>';
+            '<button class="btn btn--primary sm" type="button" style="margin-top:12px">Diese Nummer wählen</button>';
           row.querySelector('button').onclick = () => numOrder(n.phoneNumber, row.querySelector('button'));
           out.append(row);
         });
@@ -4245,19 +4323,23 @@
     }
     async function numOrder(phoneNumber, btn) {
       const dep = $('numDept').value;
-      if (!confirm('Nummer ' + phoneNumber + ' für die Abteilung „' + (DEPT_LABEL[dep] || 'Allgemein') + '“ buchen? Es können laufende Kosten beim Anbieter entstehen.')) return;
-      btn.disabled = true; btn.textContent = 'Wird gebucht …';
+      const eigene = (firmenNummern || []).filter((x) => !x.tenant_id || x.tenant_id === tenant?.id).length;
+      const kosten = IN_IOS_APP ? '' : eigene ? ' Jede weitere Nummer kostet 5 € im Monat.' : ' Eine Nummer ist im Tarif enthalten.';
+      if (!confirm('Nummer ' + phoneNumber + ' für die Abteilung „' + (DEPT_LABEL[dep] || 'Allgemein') + '“ bestellen?' + kosten)) return;
+      btn.disabled = true; btn.textContent = 'Wird bestellt …';
       try {
         const res = await apiFetch('/api/numbers/order', { method: 'POST', headers: numAuth(), body: JSON.stringify({ phoneNumber, department: dep }) });
         const d = await res.json();
         if (!res.ok) throw new Error(d.error || 'Bestellung fehlgeschlagen.');
-        toast(d.message || 'Nummer gebucht.');
-        $('numHint').textContent = d.message || 'Nummer gebucht.';
+        // NUMMERN_AUTOMATISCH=aus: Der Server kauft nicht selbst, sondern legt uns eine Aufgabe an (status „angefragt“).
+        const angefragt = d.status === 'angefragt' || d.assigned === false;
+        toast(d.message || (angefragt ? 'Danke, wir richten die Nummer für dich ein.' : 'Nummer bestellt.'), '', 5000);
+        $('numHint').textContent = d.message || (angefragt ? 'Danke, wir richten die Nummer für dich ein und melden uns per Mail.' : 'Nummer bestellt.');
         $('numResults').innerHTML = '';
-        loadAll();
+        if (!angefragt) loadAll();
       } catch (e) {
-        toast(e.message || 'Bestellung fehlgeschlagen.');
-        btn.disabled = false; btn.textContent = 'Diese Nummer buchen';
+        toast(e.message || 'Bestellung fehlgeschlagen.', 'err');
+        btn.disabled = false; btn.textContent = 'Diese Nummer wählen';
       }
     }
     $('numSearchBtn')?.addEventListener('click', numSearch);
@@ -7431,9 +7513,16 @@
       'Restaurant': 'Restaurant', 'Kanzlei (Anwalt/Steuer)': 'Kanzlei',
       'Friseur / Kosmetik': 'Friseur & Beauty', 'Autowerkstatt': 'Autowerkstatt',
     };
+    // Branche aus der Online-Buchung (tenants.branche, Seitennamen der Website) → Vorlage im Assistenten
+    const WIZ_BRANCHE = { arztpraxen: 'Arzt-/Zahnarztpraxis', handwerk: 'Handwerk / Sanitär & Heizung', restaurants: 'Restaurant', kanzlei: 'Kanzlei (Anwalt/Steuer)', friseur: 'Friseur / Kosmetik', autowerkstatt: 'Autowerkstatt' };
+    const WIZ_SCHRITTE = ['Branche & Name', 'Begrüßung & Ton', 'Wissen', 'Deine Nummer'];
     let wiz = {}, wizShown = false, wizFalleLoesen = null;
     function openWizard() {
-      wiz = { step: 0, branch: null, name: (tenant && tenant.name && tenant.name !== 'Mein Unternehmen') ? tenant.name : '', greeting: '', tone: 'sie_freundlich', applyKb: true };
+      // Eine eigene Begrüßung (etwa die aus der Buchung: „<Firma>, guten Tag! …“) bleibt, statt von einer Vorlage mit „…“ überschrieben zu werden.
+      const vorhanden = currentDept === 'general' ? ($('greeting')?.value || '').trim() : '';
+      wiz = { step: 0, branch: null, name: (tenant && tenant.name && tenant.name !== 'Mein Unternehmen') ? tenant.name : '', greeting: '', tone: 'sie_freundlich', applyKb: true, vorhanden: begruessungAngepasst(vorhanden) ? vorhanden : '' };
+      const vorwahl = WIZ_BRANCHE[tenant?.branche];
+      if (vorwahl && PERSONA_PRESETS[vorwahl]) { wiz.branch = vorwahl; wiz.greeting = wiz.vorhanden || PERSONA_PRESETS[vorwahl].greeting || ''; wiz.tone = PERSONA_PRESETS[vorwahl].tone || 'sie_freundlich'; }
       $('wizModal').classList.remove('hidden');
       wizFalleLoesen = fokusFalle($('wizModal'), closeWizard);
       renderWiz(true);
@@ -7442,15 +7531,17 @@
     function closeWizard() {
       $('wizModal').classList.add('hidden');
       if (wizFalleLoesen) { const f = wizFalleLoesen; wizFalleLoesen = null; f(); }
+      // Nach einer Online-Buchung öffnet der Assistent einmal von selbst; wer ihn schließt, bekommt ihn nicht bei jedem Laden wieder
+      // (die Checkliste auf dem Dashboard bietet ihn weiter an).
+      if (tenant?.einrichtung_offen === true) { tenant.einrichtung_offen = false; sb.from('tenants').update({ einrichtung_offen: false }).eq('id', tenant.id).then(() => {}, () => {}); }
     }
     // fokusTitel: true bei Öffnen/Schrittwechsel, damit Screenreader den neuen Schritt mitbekommen und
     // der Fokus nicht wie zuvor hinter dem Dialog hängen bleibt; bei bloßer Auswahl (z. B. Branchen-Chip)
     // bleibt der Fokus bewusst auf dem geklickten Element stehen.
     function renderWiz(fokusTitel) {
       const b = $('wizBody'); b.innerHTML = '';
-      const titles = ['Branche & Name', 'Begrüßung & Ton', 'Wissen & Fertig'];
-      const h = document.createElement('h3'); h.id = 'wizModalTitel'; h.tabIndex = -1; h.textContent = 'Einrichtungs-Assistent · Schritt ' + (wiz.step + 1) + ' von 3';
-      const sub = document.createElement('p'); sub.className = 'muted'; sub.style.margin = '2px 0 16px'; sub.textContent = titles[wiz.step];
+      const h = document.createElement('h3'); h.id = 'wizModalTitel'; h.tabIndex = -1; h.textContent = 'Einrichtungs-Assistent · Schritt ' + (wiz.step + 1) + ' von ' + WIZ_SCHRITTE.length;
+      const sub = document.createElement('p'); sub.className = 'muted'; sub.style.margin = '2px 0 16px'; sub.textContent = WIZ_SCHRITTE[wiz.step];
       b.append(h, sub);
       if (wiz.step === 0) {
         const ln = document.createElement('label'); ln.htmlFor = 'wizName'; ln.textContent = 'Name deines Unternehmens';
@@ -7459,7 +7550,7 @@
         const chips = document.createElement('div'); chips.className = 'branch-chips';
         Object.keys(PERSONA_PRESETS).forEach((name) => {
           const c = document.createElement('button'); c.type = 'button'; c.className = 'branch-chip' + (wiz.branch === name ? ' active' : ''); c.textContent = name;
-          c.onclick = () => { wiz.branch = name; const p = PERSONA_PRESETS[name]; wiz.greeting = p.greeting || ''; wiz.tone = p.tone || 'sie_freundlich'; renderWiz(); };
+          c.onclick = () => { wiz.branch = name; const p = PERSONA_PRESETS[name]; wiz.greeting = wiz.vorhanden || p.greeting || ''; wiz.tone = p.tone || 'sie_freundlich'; renderWiz(); };
           chips.append(c);
         });
         b.append(ln, inp, lb, chips);
@@ -7471,20 +7562,31 @@
         [['sie_formell', 'Sie – förmlich'], ['sie_freundlich', 'Sie – freundlich'], ['du_locker', 'Du – locker']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === wiz.tone) o.selected = true; sel.append(o); });
         sel.onchange = () => wiz.tone = sel.value;
         b.append(lg, tg, lt, sel);
-      } else {
+      } else if (wiz.step === 2) {
         const kbKey = wiz.branch ? (BRANCH_KB[wiz.branch] || 'Allgemein') : 'Allgemein';
         const n = (TEMPLATES[kbKey] || []).length;
         const chk = document.createElement('label'); chk.className = 'chk'; chk.style.display = 'flex'; chk.style.gap = '8px'; chk.style.alignItems = 'flex-start';
         const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wiz.applyKb; cb.onchange = () => wiz.applyKb = cb.checked;
         const sp = document.createElement('span'); sp.innerHTML = '<b>' + n + ' Wissens-Vorlagen</b> für „' + kbKey + '“ in „Allgemein“ übernehmen (danach anpassbar).';
         chk.append(cb, sp);
+        b.append(chk);
+      } else {
+        // Letzter Schritt: Nummer. Ohne Nummer richtet sie der Betreiber ein (Online-Buchung: Aufgabe „Rufnummer einrichten“).
+        const eigene = (firmenNummern || []).filter((x) => !x.tenant_id || x.tenant_id === tenant?.id);
+        const box = document.createElement('div'); box.className = 'panel'; box.style.margin = '0';
+        if (eigene.length) {
+          box.innerHTML = '<p class="muted" style="text-align:left;padding:0;margin:0 0 6px">Deine Vocaris-Nummer</p><div class="bignum"><span></span></div><p class="muted" style="text-align:left;padding:0;margin:10px 0 0">Ruf sie nach dem Speichern an und hör dir deinen Assistenten an, oder starte unter <b>Eingehend</b> einen Testanruf.</p>';
+          box.querySelector('.bignum span').textContent = eigene.map((x) => fmtNr(x.phone_number)).join(', ');
+        } else {
+          box.innerHTML = '<p style="margin:0 0 6px"><b>Deine Rufnummer richten wir für dich ein.</b></p><p class="muted" style="text-align:left;padding:0;margin:0">Sobald sie bereit ist, bekommst du eine Mail. Bis dahin kannst du Wissen und Begrüßung vorbereiten. Deine bisherige Nummer kannst du später einfach auf die Vocaris-Nummer weiterleiten.</p>';
+        }
         const note = document.createElement('p'); note.className = 'muted'; note.style.marginTop = '14px';
         note.textContent = 'Mit „Fertig“ werden Name, Persona (Begrüßung, Ton, Öffnungszeiten, Verhalten) und – falls gewählt – die Wissens-Einträge gespeichert.';
-        b.append(chk, note);
+        b.append(box, note);
       }
       const row = document.createElement('div'); row.className = 'stack'; row.style.marginTop = '18px';
       if (wiz.step > 0) { const back = document.createElement('button'); back.className = 'btn btn--ghost'; back.textContent = 'Zurück'; back.onclick = () => { wiz.step--; renderWiz(true); }; row.append(back); }
-      if (wiz.step < 2) { const next = document.createElement('button'); next.className = 'btn btn--primary'; next.textContent = 'Weiter'; next.onclick = () => { if (wiz.step === 0 && !wiz.branch) { toast('Bitte eine Branche wählen.', 'err'); return; } wiz.step++; renderWiz(true); }; row.append(next); }
+      if (wiz.step < WIZ_SCHRITTE.length - 1) { const next = document.createElement('button'); next.className = 'btn btn--primary'; next.textContent = 'Weiter'; next.onclick = () => { if (wiz.step === 0 && !wiz.branch) { toast('Bitte eine Branche wählen.', 'err'); return; } wiz.step++; renderWiz(true); }; row.append(next); }
       else { const fin = document.createElement('button'); fin.className = 'btn btn--primary'; fin.textContent = 'Fertig 🎉'; fin.onclick = finishWiz; row.append(fin); }
       const cancel = document.createElement('button'); cancel.className = 'btn btn--ghost'; cancel.textContent = 'Abbrechen'; cancel.onclick = closeWizard; row.append(cancel);
       b.append(row);
@@ -7496,7 +7598,8 @@
       const name = (wiz.name || '').trim() || 'Mein Unternehmen';
       const kbKey = wiz.branch ? (BRANCH_KB[wiz.branch] || 'Allgemein') : 'Allgemein';
       try {
-        await sb.from('tenants').update({ name }).eq('id', tenant.id);
+        await sb.from('tenants').update(Object.assign({ name }, Object.prototype.hasOwnProperty.call(tenant, 'einrichtung_offen') ? { einrichtung_offen: false } : {})).eq('id', tenant.id);
+        if (tenant.einrichtung_offen === true) tenant.einrichtung_offen = false;
         await sb.from('assistant_config').upsert({
           tenant_id: tenant.id, department: 'general',
           greeting: (wiz.greeting || '').trim(), role_description: p.role || '', tone: wiz.tone,
@@ -7991,7 +8094,7 @@
       { id: 'anrufe', art: 'kpi', titel: 'Anrufe', std: true, ziel: 'sec-live', html: () => '<div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div>' },
       { id: 'heute', art: 'kpi', titel: 'Anrufe heute', std: true, ziel: 'sec-live', html: () => '<div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d">Anrufe seit Mitternacht</div>' },
       { id: 'dauer', art: 'kpi', titel: 'Ø Gesprächsdauer', std: true, ziel: 'sec-live', html: () => '<div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div>' },
-      { id: 'minuten', art: 'kpi', titel: 'Minuten im Monat', std: true, html: () => '<div class="k">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div>' },
+      { id: 'minuten', art: 'kpi', titel: 'Minuten im Monat', std: true, html: () => '<div class="k" id="dbMinutenTitel">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div>' },
       { id: 'nachrichten', art: 'kpi', titel: 'Nachrichten', std: true, ziel: 'sec-messages', html: () => '<div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div>' },
       { id: 'rueckruf', art: 'kpi', titel: 'Rückruf-Erfolg', std: true, ziel: 'sec-messages', nachGeh: () => rrZuNachrichten(), html: () => '<div class="k">Rückruf-Erfolg</div><div class="v" id="dbRueckruf">–</div><div class="d" id="dbRueckrufSub">in 24 h erledigt</div><div class="d" id="dbRueckrufOffen">&nbsp;</div>' },
       { id: 'offen', art: 'kpi', titel: 'Offene Vorgänge', std: true, ziel: 'sec-tickets', html: () => '<div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div>' },
@@ -8218,12 +8321,8 @@
       const avg = mitDauer.length ? mitDauer.reduce((a, b) => a + b, 0) / mitDauer.length : 0;
       q('dbDauer').textContent = avg ? fmtDauer(avg) : '–';
       q('dbDauerSub').textContent = mitDauer.length ? 'längster ' + fmtDauer(Math.max(...mitDauer)) : 'noch keine Gespräche';
-      const minuten = monat.reduce((a, x) => a + dauerVon(x), 0) / 60;
-      q('dbMinuten').textContent = Math.round(minuten);
+      // Minuten und Tarif setzt minutenKachel() weiter unten (mit /api/abo wie auf der Rechnung, sonst selbst gezählt)
       const plan = String(sub?.plan || 'trial').toLowerCase(); const inkl = PLAN_MINUTEN[plan];
-      const balken = q('dbMinutenBalken');
-      if (inkl) { const qq = Math.min(100, minuten / inkl * 100); balken.style.width = qq + '%'; balken.classList.toggle('warn', qq > 90); q('dbMinutenSub').textContent = Math.round(minuten) + ' von ' + inkl + ' Minuten im Tarif ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
-      else { balken.style.width = '0%'; q('dbMinutenSub').textContent = plan === 'trial' ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '') : 'Tarif ' + plan; }
       q('ovMsg').textContent = msgN;
       q('dbOffen').textContent = kz.offen ?? 0; const ue = q('dbUeber'); ue.className = 'd' + (kz.ueberfaellig ? ' minus' : ''); ue.textContent = kz.ueberfaellig ? kz.ueberfaellig + ' überfällig' : 'nichts überfällig';
       q('ovGaps').textContent = gapsN;
@@ -8269,8 +8368,9 @@
         ['KI und Stimme', anbieter + stimme + '<a href="#" data-geh="sec-assistant">ändern</a>'],
         ['Sprache', (cfg?.language || 'de') === 'en' ? 'Englisch' : 'Deutsch'],
         ['Wissen', kbN + ' Einträge<a href="#" data-geh="sec-kb">pflegen</a>'],
-        ['Tarif', inkl ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' · ' + inkl + ' Min' : (plan === 'trial' ? 'Testphase' : plan)],
+        ['Tarif', '<span id="dbFaktTarif">' + esc(inkl ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' · ' + inkl + ' Min' : (plan === 'trial' ? 'Testphase' : plan)) + '</span>'],
       ].map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
+      minutenKachel(); // setzt auch die Tarifzeile, sobald /api/abo geantwortet hat
       // Letzte Anrufe (mit Filter aus Diagramm, Uhrzeit, Thema, Stimmung, Wochentag)
       const la = q('dbAnrufeListe'); la.innerHTML = '';
       let liste = c;
@@ -8793,6 +8893,285 @@
         const i = liste.findIndex((x) => x.id === mgAuswahl); const j = Math.min(liste.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)));
         mgAuswahl = liste[j].id; renderNachrichten(); document.querySelector('.mg-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
       });
+    })();
+
+    // ---- Abo & Rechnungen ----
+    // Tarif, Minuten im Abrechnungszeitraum, Kundenportal, Tarifwechsel und Abo-Abschluss (Server
+    // ki-anruf, abo-routen.ts). GET /api/abo liefert jeder Firma Tarif und Minuten; Beträge (betraege)
+    // nur Inhabern und Admins. Solange der Server die Route nicht kennt (oder ohne Migration 503 sagt),
+    // bleibt alles wie bisher: kein Menüpunkt, die Minutenkachel zählt selbst.
+    // Apple-Regel: In der iOS-App (IN_IOS_APP) gibt es weder Menüpunkt noch Zahlungshinweis noch
+    // Beträge; die Minutenkachel zeigt dort nur „x von y Minuten“, ohne Verweis.
+    // var statt let: der erste Bereichswechsel läuft beim Start, bevor das Skript hier angekommen ist.
+    var aboStand = null, aboFuer = null, aboStandZeit = 0, aboLaeuft = null, aboModus = null, aboModusFuer = null;
+    var aboWahl = null, aboWechselOffen = false, aboNachladen = 0, aboGen = 0;
+    var aboRueck = /^#abo(\b|$)/.test(location.hash); // Rückkehr aus Kundenportal oder Zahlungsseite
+    var ABO_TARIFE = { klein: { name: 'Klein', grund: 49, inkl: 250, mehr: 0.19 }, standard: { name: 'Standard', grund: 99, inkl: 700, mehr: 0.15 }, gross: { name: 'Groß', grund: 249, inkl: 2000, mehr: 0.11 } };
+    var ABO_STATUS = { active: ['Aktiv', 'gut'], trialing: ['Testphase', ''], past_due: ['Zahlung offen', 'warn'], unpaid: ['Unbezahlt', 'warn'], incomplete: ['Zahlung ausstehend', 'warn'], incomplete_expired: ['Abgebrochen', ''], canceled: ['Beendet', ''], paused: ['Pausiert', ''] };
+    var ABO_QUELLE = { buchung: 'online gebucht', umstellung: 'im Kundenbereich abgeschlossen', manuell: 'mit uns vereinbart' };
+    function aboEur(n) { return Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }); }
+    function aboDatum(iso) { return iso ? new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–'; }
+    function aboZahl(n) { return Number(n || 0).toLocaleString('de-DE'); }
+    function aboAktuell() { return aboStand && tenant && aboFuer === tenant.id ? aboStand : null; }
+    /** Testansicht wie auf der Website (?buchen=test, Merker in sessionStorage derselben Herkunft). */
+    function aboTestAnsicht() {
+      if (new URLSearchParams(location.search).get('buchen') === 'test') { try { sessionStorage.setItem('vocaris.buchenTest', '1'); } catch (_) { /* nur die Adresse */ } return true; }
+      try { return sessionStorage.getItem('vocaris.buchenTest') === '1'; } catch (_) { return false; }
+    }
+    /** Abo abschließen gibt es nur, wenn der Server es anbietet und die Buchung offen ist (an) – im Testbetrieb nur in der Testansicht. */
+    function aboUmstellungZeigen(a) { return !!a?.umstellung_moeglich && (aboModus === 'an' || (aboModus === 'test' && aboTestAnsicht())); }
+    function aboSichtbar(a) {
+      if (IN_IOS_APP || !a || !a.verwaltbar) return false;
+      return !!a.stripe || aboUmstellungZeigen(a) || ['buchung', 'umstellung'].includes(a.quelle);
+    }
+    /** Aufruf an /api/abo… mit Login und Firma. Wirft nur bei Netzfehlern (apiFetch). */
+    async function aboApi(pfad, methode, body) {
+      const fuer = tenant.id;
+      const r = await apiFetch('/api/abo' + pfad + '?tenant_id=' + encodeURIComponent(fuer), { method: methode || 'GET', headers: numAuth(), body: methode && methode !== 'GET' ? JSON.stringify(Object.assign({ tenant_id: fuer }, body || {})) : undefined });
+      const j = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, j: j || {}, fuer };
+    }
+
+    /**
+     * Stand holen. Ein laufender Abruf wird geteilt, damit Start, Bereichswechsel und Rücksprung nicht
+     * doppelt fragen; frisch = true (nach einer Änderung) fragt neu, und nur die jüngste Antwort zählt.
+     */
+    function aboLaden(frisch) {
+      if (!tenant) return Promise.resolve();
+      if (!frisch && aboLaeuft && aboLaeuft.fuer === tenant.id) return aboLaeuft.p;
+      const fuer = tenant.id, gen = ++aboGen;
+      const p = (async () => {
+        let j = null, erreicht = true;
+        try {
+          // Bewusst ohne apiFetch: Ist der Server kurz weg oder kennt er /api/abo noch nicht, erscheint kein Störungsbalken.
+          const r = await fetch(API + '/api/abo?tenant_id=' + encodeURIComponent(fuer), { headers: numAuth(), cache: 'no-store' });
+          j = r.ok ? await r.json().catch(() => null) : null;
+        } catch (_) { erreicht = false; }
+        if (!tenant || tenant.id !== fuer || gen !== aboGen) return;
+        if (!erreicht && aboStand && aboFuer === fuer) return; // alten Stand behalten
+        aboStand = j && typeof j === 'object' && j.minuten && j.periode ? j : null;
+        aboFuer = fuer; aboStandZeit = Date.now();
+        // Abo abschließen: Ob die Buchung offen ist (an/test), sagt nur /api/buchen/info. Nur fragen, wenn es darauf ankommt.
+        if (aboStand?.umstellung_moeglich && !IN_IOS_APP && aboModusFuer !== fuer) {
+          try { const r = await fetch(API + '/api/buchen/info', { cache: 'no-store' }); const i = r.ok ? await r.json().catch(() => null) : null; aboModus = i?.buchung || 'aus'; } catch (_) { aboModus = 'aus'; }
+          aboModusFuer = fuer;
+        }
+        aboNachZeichnen();
+      })().finally(() => { if (aboLaeuft?.p === p) aboLaeuft = null; });
+      aboLaeuft = { fuer, p };
+      return p;
+    }
+    function aboNachZeichnen() {
+      aboSichtbarkeit(); aboBanner(); minutenKachel();
+      if (!$('sec-abo')?.classList.contains('hidden')) aboZeichnen();
+      const a = aboAktuell();
+      if (aboRueck && a) {
+        // Zurück aus Kundenportal oder Zahlungsseite (app.html#abo): Bereich öffnen, Anker entfernen.
+        aboRueck = false;
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* ohne Verlauf */ }
+        if (aboSichtbar(a)) geh('sec-abo');
+        // Nach einem Abschluss braucht das Ereignis von Stripe einen Moment: ein paarmal nachfragen.
+        if (!a.stripe) aboNachladen = 5;
+      }
+      if (aboNachladen > 0 && a && !a.stripe) { aboNachladen--; setTimeout(() => { aboLaden(); }, 3000); }
+      else if (a?.stripe) aboNachladen = 0;
+    }
+    function aboSichtbarkeit() {
+      const nb = $('navAbo'); if (!nb) return;
+      const an = aboSichtbar(aboAktuell());
+      nb.hidden = !an;
+      if (!an && nb.classList.contains('active')) geh('sec-overview');
+    }
+    function aboZuruecksetzen() {
+      aboGen++; aboStand = null; aboFuer = null; aboStandZeit = 0; aboModus = null; aboModusFuer = null; aboWahl = null; aboWechselOffen = false; aboNachladen = 0;
+      const nb = $('navAbo'); if (nb) nb.hidden = true;
+      const bn = $('aboBanner'); if (bn) { bn.classList.add('hidden'); bn.innerHTML = ''; }
+    }
+    function aboBetreten() {
+      if (!tenant) return;
+      aboZeichnen();
+      if (!aboAktuell() || Date.now() - aboStandZeit > 30000) aboLaden();
+    }
+
+    /** Hinweis oben, wenn die letzte Zahlung fehlgeschlagen ist. Nur im Browser; je Sitzung wegklickbar. */
+    function aboBanner() {
+      const el = $('aboBanner'); if (!el) return;
+      const a = aboAktuell();
+      const schluessel = 'vocaris.aboHinweis.zu.' + (tenant?.id || '');
+      let zu = false; try { zu = !!a && sessionStorage.getItem(schluessel) === a.status; } catch (_) { /* dann zeigen */ }
+      const zeigen = !IN_IOS_APP && !!a && ['past_due', 'unpaid'].includes(a.status) && !zu;
+      el.classList.toggle('hidden', !zeigen);
+      if (!zeigen) { el.innerHTML = ''; return; }
+      el.innerHTML = '<p><b>Die letzte Zahlung für dein Vocaris-Abo ist fehlgeschlagen.</b> '
+        + (a.verwaltbar ? 'Bitte prüf deine Zahlungsart im Kundenportal.' : 'Bitte gib dem Inhaber oder einem Admin Bescheid.') + '</p>'
+        + (a.verwaltbar && !IMP_HASH ? '<button class="btn btn--primary sm" type="button" data-abo-portal>Zahlungsart prüfen</button>' : '')
+        + '<button class="abo-banner__zu" type="button" aria-label="Hinweis ausblenden" title="Für diese Sitzung ausblenden">×</button>';
+      el.querySelector('[data-abo-portal]')?.addEventListener('click', (e) => aboPortal(e.currentTarget));
+      el.querySelector('.abo-banner__zu').onclick = () => { try { sessionStorage.setItem(schluessel, a.status); } catch (_) { /* nur jetzt */ } el.classList.add('hidden'); };
+    }
+
+    /**
+     * Minutenkachel auf dem Dashboard und die Tarifzeile darunter. Mit /api/abo: Abrechnungszeitraum
+     * und die Minuten, die auch abgerechnet werden (Protokoll nutzung_anrufe, auf volle Minuten
+     * abgerundet). Ohne: wie bisher der Kalendermonat, aber nur mit gemessener Gesprächsdauer.
+     */
+    function minutenKachel() {
+      if (!dbDaten || !tenant) return;
+      const a = aboAktuell(), sub = dbDaten.sub;
+      const balken = q('dbMinutenBalken'), kachel = document.querySelector('#dbKpis [data-widget="minuten"]');
+      let genutzt, inkl, tarifName, art = 'monat';
+      if (a) {
+        genutzt = Number(a.minuten.genutzt) || 0; inkl = a.minuten.inklusive || 0; art = a.periode?.art || 'monat';
+        tarifName = a.tarif_name || (a.tarif === 'trial' ? '' : a.tarif || '');
+      } else {
+        const sek = (dbDaten.monat || []).reduce((s, x) => s + Math.min(3600, Math.max(0, Number(x.duration_seconds) || 0)), 0);
+        genutzt = Math.floor(sek / 60);
+        const plan = String(sub?.plan || 'trial').toLowerCase(); inkl = PLAN_MINUTEN[plan] || 0;
+        tarifName = inkl ? (ABO_TARIFE[plan === 'groß' ? 'gross' : plan]?.name || plan) : (plan === 'trial' ? '' : plan);
+      }
+      const testphase = a ? a.tarif === 'trial' || (!a.tarif && sub?.plan === 'trial') : String(sub?.plan || 'trial').toLowerCase() === 'trial';
+      q('dbMinutenTitel').textContent = art === 'abrechnung' ? 'Minuten im Abrechnungszeitraum' : 'Minuten diesen Monat';
+      q('dbMinuten').textContent = aboZahl(genutzt);
+      let text;
+      if (inkl) { const qq = Math.min(100, genutzt / inkl * 100); balken.style.width = qq + '%'; balken.classList.toggle('warn', qq > 90); text = aboZahl(genutzt) + ' von ' + aboZahl(inkl) + ' Minuten im Tarif ' + tarifName; }
+      else { balken.style.width = '0%'; balken.classList.remove('warn'); text = testphase ? 'Testphase' + (sub?.trial_ends_at ? ' bis ' + new Date(sub.trial_ends_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '') : (tarifName ? 'Tarif ' + tarifName : 'ohne Tarif'); }
+      if (a && art === 'abrechnung' && a.periode?.bis) text += ' · bis ' + new Date(a.periode.bis).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+      // Beträge nur im Browser und nur, wenn der Server sie liefert (Inhaber/Admin)
+      if (!IN_IOS_APP && a?.betraege && a.minuten.mehr > 0) text += ' · ' + aboZahl(a.minuten.mehr) + ' Mehrminuten, ca. ' + aboEur(a.betraege.mehrkosten) + ' netto';
+      q('dbMinutenSub').textContent = text;
+      // Kachel führt zu „Abo & Rechnungen“, wenn es den Bereich gibt (nie in der App)
+      if (kachel && !dbEdit) {
+        const ziel = navSichtbar(navItem('sec-abo'));
+        kachel.classList.toggle('klick', ziel);
+        if (ziel) { kachel.dataset.geh = 'sec-abo'; kachel.setAttribute('role', 'button'); kachel.tabIndex = 0; kachel.dataset.tip = 'Abo & Rechnungen öffnen'; }
+        else { delete kachel.dataset.geh; kachel.removeAttribute('role'); kachel.removeAttribute('tabindex'); delete kachel.dataset.tip; }
+      }
+      const ft = document.getElementById('dbFaktTarif');
+      if (ft && a) ft.textContent = (a.tarif_name ? a.tarif_name + (a.minuten.inklusive ? ' · ' + aboZahl(a.minuten.inklusive) + ' Min' : '') : (a.tarif === 'trial' || !a.tarif ? 'Testphase' : a.tarif)) + (a.kuendigung_zum ? ' · gekündigt zum ' + aboDatum(a.kuendigung_zum) : '');
+    }
+
+    /** Tarifkarten zum Wählen (Funkfelder: Tastatur und Vorleser funktionieren von selbst). */
+    function aboTarifKarten(name, aktuell, gewaehlt) {
+      return '<div class="abo-tarife" role="radiogroup" aria-label="Tarif">' + Object.entries(ABO_TARIFE).map(([k, t]) => {
+        const ist = k === aktuell;
+        return '<label class="abo-tarif' + (k === gewaehlt ? ' gewaehlt' : '') + (ist ? ' aktuell' : '') + '"><input type="radio" name="' + name + '" value="' + k + '"' + (k === gewaehlt ? ' checked' : '') + '>'
+          + (ist ? '<em>dein Tarif</em>' : '') + '<b>' + esc(t.name) + ' · ' + aboEur(t.grund).replace(',00', '') + '</b>'
+          + '<span>' + aboZahl(t.inkl) + ' Minuten inklusive, danach ' + aboEur(t.mehr) + ' je Minute</span></label>';
+      }).join('') + '</div>';
+    }
+
+    function aboZeichnen() {
+      const box = $('aboInhalt'); if (!box || !tenant) return;
+      $('aboImp')?.classList.toggle('hidden', !IMP_HASH);
+      const a = aboAktuell();
+      if (!a) { box.innerHTML = '<div class="panel">' + skelettHtml(3) + '</div>'; $('aboStand').textContent = ''; return; }
+      $('aboStand').textContent = 'Stand ' + new Date(aboStandZeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const b = a.betraege || null, t = ABO_TARIFE[a.tarif] || null;
+      const st = ABO_STATUS[a.status] || [a.status || 'ohne Abo', ''];
+      const laeuft = !!a.stripe, gekuendigt = !!a.kuendigung_zum, gesperrt = !!IMP_HASH;
+      const inkl = a.minuten.inklusive || 0, genutzt = Number(a.minuten.genutzt) || 0;
+      const umstellung = !laeuft && aboUmstellungZeigen(a);
+      const eigeneNummern = (firmenNummern || []).filter((n) => !n.tenant_id || n.tenant_id === tenant.id).length;
+      const zeitraum = a.periode.art === 'abrechnung' ? aboDatum(a.periode.von) + ' bis ' + aboDatum(a.periode.bis) : 'Kalendermonat ' + new Date(a.periode.von).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+      $('aboSub').textContent = laeuft ? 'Abrechnungszeitraum ' + zeitraum + '. Rechnungen, Zahlungsart und Kündigung im Kundenportal von Stripe.' : 'Dein Tarif und die Minuten im ' + (a.periode.art === 'abrechnung' ? 'Abrechnungszeitraum' : 'laufenden Monat') + '.';
+      const kpi = (k, v, d) => '<div class="db-kpi"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="d">' + d + '</div></div>';
+      let html = '<div class="db-kpis abo-kpis">';
+      html += kpi('Tarif', esc(a.tarif_name || (a.tarif === 'trial' ? 'Testphase' : a.tarif || '–')), '<span class="abo-status" data-art="' + st[1] + '">' + esc(st[0]) + '</span>' + (gekuendigt ? ' gekündigt zum ' + aboDatum(a.kuendigung_zum) : ''));
+      html += kpi('Minuten', aboZahl(genutzt) + (inkl ? '<small>von ' + aboZahl(inkl) + '</small>' : ''),
+        (inkl ? '<div class="db-balken"><span class="' + (genutzt / inkl > 0.9 ? 'warn' : '') + '" style="width:' + Math.min(100, genutzt / inkl * 100).toFixed(1) + '%"></span></div>' : '')
+        + (a.minuten.mehr ? aboZahl(a.minuten.mehr) + ' Mehrminuten' : inkl ? 'noch ' + aboZahl(Math.max(0, inkl - genutzt)) + ' im Kontingent' : 'im ' + (a.periode.art === 'abrechnung' ? 'Abrechnungszeitraum' : 'Monat')));
+      if (b) html += kpi('Voraussichtlich dazu', aboEur((b.mehrkosten || 0) + (b.zusatznummern_gesamt || 0)), 'netto, mit der nächsten Rechnung');
+      html += kpi('Rufnummern', aboZahl(eigeneNummern), 'eine inklusive' + (a.zusatznummern ? ' · ' + aboZahl(a.zusatznummern) + ' weitere' + (b ? ' je ' + aboEur(b.zusatznummer) : '') : ''));
+      html += '</div><div class="abo-split"><div>';
+
+      if (laeuft || ['buchung', 'umstellung'].includes(a.quelle)) {
+        html += '<div class="panel"><div class="db-panelkopf"><h3 style="margin:0">Dein Abo</h3><span class="abo-status" data-art="' + st[1] + '">' + esc(st[0]) + '</span></div><dl class="abo-dl" style="margin-top:12px">';
+        html += '<dt>Tarif</dt><dd>' + esc(a.tarif_name || a.tarif || '–') + (b?.grundpreis != null ? ' <small>· ' + aboEur(b.grundpreis) + ' im Monat, netto</small>' : '') + '</dd>';
+        if (inkl) html += '<dt>Kontingent</dt><dd>' + aboZahl(inkl) + ' Minuten' + (b?.mehrminute != null ? ' <small>· danach ' + aboEur(b.mehrminute) + ' je Minute</small>' : '') + '</dd>';
+        html += '<dt>Zeitraum</dt><dd>' + esc(zeitraum) + '</dd>';
+        if (b && a.minuten.mehr) html += '<dt>Mehrminuten</dt><dd>' + aboZahl(a.minuten.mehr) + ' <small>· ' + aboEur(b.mehrkosten) + ' netto</small></dd>';
+        if (a.zusatznummern) html += '<dt>Weitere Nummern</dt><dd>' + aboZahl(a.zusatznummern) + (b ? ' <small>· ' + aboEur(b.zusatznummern_gesamt) + ' im Monat</small>' : '') + '</dd>';
+        if (laeuft && !gekuendigt) html += '<dt>Nächste Rechnung</dt><dd>' + aboDatum(a.periode.bis) + '</dd>';
+        if (gekuendigt) html += '<dt>Endet am</dt><dd>' + aboDatum(a.kuendigung_zum) + '</dd>';
+        if (a.quelle && ABO_QUELLE[a.quelle]) html += '<dt>Abgeschlossen</dt><dd>' + esc(ABO_QUELLE[a.quelle]) + '</dd>';
+        html += '</dl>';
+        if (a.tarif_geplant?.ab) html += '<div class="abo-geplant"><span>Ab ' + aboDatum(a.tarif_geplant.ab) + ' gilt der Tarif <b>' + esc(a.tarif_geplant.name || a.tarif_geplant.tarif) + '</b>.</span><button class="btn btn--ghost sm" type="button" data-abo-zurueck' + (gesperrt ? ' disabled' : '') + '>Wechsel zurücknehmen</button></div>';
+        html += '<div class="abo-knoepfe"><button class="btn btn--primary" type="button" data-abo-portal' + (gesperrt ? ' disabled' : '') + '>Rechnungen und Zahlungsart</button>';
+        if (laeuft && !gekuendigt && ['active', 'trialing', 'past_due'].includes(a.status)) html += '<button class="btn btn--ghost" type="button" data-abo-wechseln aria-expanded="' + aboWechselOffen + '"' + (gesperrt ? ' disabled' : '') + '>Tarif wechseln</button>';
+        if (laeuft) html += '<button class="btn btn--ghost" type="button" data-abo-portal' + (gesperrt ? ' disabled' : '') + '>' + (gekuendigt ? 'Kündigung zurücknehmen' : 'Abo kündigen') + '</button>';
+        html += '</div><p class="abo-hinweis">' + (gekuendigt ? 'Bis zum ' + aboDatum(a.kuendigung_zum) + ' läuft alles weiter wie bisher. Zurücknehmen geht im Kundenportal.' : 'Kündigen geht jederzeit zum Ende des laufenden Abrechnungszeitraums. Rechnungen schickt dir Stripe zusätzlich per E-Mail.') + '</p></div>';
+        if (aboWechselOffen && laeuft) {
+          const ziel = aboWahl && aboWahl !== a.tarif ? ABO_TARIFE[aboWahl] : null;
+          html += '<div class="panel" id="aboWechselPanel"><h3 style="margin:0">Tarif wechseln</h3><p class="abo-hinweis" style="margin-top:6px">Der neue Tarif gilt ab dem nächsten Abrechnungszeitraum (' + aboDatum(a.periode.bis) + '). Bis dahin bleiben Tarif und Kontingent wie bisher, es wird nichts anteilig verrechnet.</p>'
+            + aboTarifKarten('aboWechselTarif', a.tarif, aboWahl || a.tarif)
+            + '<div class="abo-wahl__fuss"><p>' + (ziel ? 'Ab ' + aboDatum(a.periode.bis) + ': ' + esc(ziel.name) + ' für ' + aboEur(ziel.grund) + ' im Monat, ' + aboZahl(ziel.inkl) + ' Minuten inklusive.' : 'Wähl einen anderen Tarif.') + '</p>'
+            + '<button class="btn btn--ghost" type="button" data-abo-wechseln-zu>Abbrechen</button><button class="btn btn--primary" type="button" data-abo-wechsel-ok' + (ziel && !gesperrt ? '' : ' disabled') + '>Wechsel planen</button></div></div>';
+        }
+      }
+      if (umstellung) {
+        const wahl = aboWahl || (ABO_TARIFE[a.tarif] ? a.tarif : 'standard');
+        const z = ABO_TARIFE[wahl];
+        html += '<div class="panel"><h3 style="margin:0">Abo abschließen</h3><p class="abo-hinweis" style="margin-top:6px">Für deine Firma läuft noch kein Abo über das Kundenportal. Wähl einen Tarif; bezahlt wird sicher über unseren Zahlungsdienstleister Stripe, dort gibst du Rechnungsadresse, USt-ID und Zahlungsart an.' + (aboModus === 'test' ? ' <b>Testmodus:</b> Es wird nichts berechnet.' : '') + '</p>'
+          + aboTarifKarten('aboNeuTarif', null, wahl)
+          + '<div class="abo-wahl__fuss"><p>' + esc(z.name) + ': ' + aboEur(z.grund) + ' im Monat netto, ' + aboZahl(z.inkl) + ' Minuten inklusive, monatlich kündbar.</p>'
+          + '<button class="btn btn--primary" type="button" data-abo-abschluss' + (gesperrt ? ' disabled' : '') + '>Zahlungspflichtig abschließen</button></div></div>';
+      }
+      html += '</div><div>';
+      html += '<div class="panel"><h3 style="margin:0">Gut zu wissen</h3><dl class="abo-dl" style="margin-top:12px">'
+        + '<dt>Minuten</dt><dd>Gezählt wird jede Sekunde eines Gesprächs, am Ende des Zeitraums wird auf volle Minuten abgerundet. Abgewiesene Anrufe von gesperrten Nummern zählen nicht.</dd>'
+        + '<dt>Kontingent</dt><dd>Ist es aufgebraucht, nimmt der Assistent weiter an. Jede weitere Minute kommt zum Minutenpreis auf die nächste Rechnung.</dd>'
+        + '<dt>Nummern</dt><dd>Eine Rufnummer ist im Tarif enthalten, jede weitere kostet ' + aboEur(b?.zusatznummer ?? 5) + ' im Monat.</dd>'
+        + '<dt>Preise</dt><dd>Alle Beträge netto, zuzüglich Umsatzsteuer.</dd>'
+        + '</dl></div></div></div>';
+      box.innerHTML = html;
+      // Verdrahten
+      box.querySelectorAll('[data-abo-portal]').forEach((k) => { k.onclick = () => aboPortal(k); });
+      const w = box.querySelector('[data-abo-wechseln]'); if (w) w.onclick = () => { aboWechselOffen = !aboWechselOffen; aboWahl = null; aboZeichnen(); if (aboWechselOffen) $('aboWechselPanel')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+      const wz = box.querySelector('[data-abo-wechseln-zu]'); if (wz) wz.onclick = () => { aboWechselOffen = false; aboWahl = null; aboZeichnen(); };
+      box.querySelectorAll('input[name="aboWechselTarif"], input[name="aboNeuTarif"]').forEach((r) => { r.onchange = () => { aboWahl = r.value; aboZeichnen(); box.querySelector('input[name="' + r.name + '"][value="' + r.value + '"]')?.focus(); }; });
+      const ok = box.querySelector('[data-abo-wechsel-ok]'); if (ok) ok.onclick = () => aboTarifSetzen(aboWahl, ok);
+      const zr = box.querySelector('[data-abo-zurueck]'); if (zr) zr.onclick = () => aboTarifSetzen(a.tarif, zr);
+      const ab = box.querySelector('[data-abo-abschluss]'); if (ab) ab.onclick = () => aboAbschliessen(aboWahl || (ABO_TARIFE[a.tarif] ? a.tarif : 'standard'), ab);
+    }
+
+    function aboKnopfLaeuft(k, an) { if (!k) return; k.disabled = an; if (an) k.setAttribute('aria-busy', 'true'); else k.removeAttribute('aria-busy'); }
+    async function aboPortal(k) {
+      if (IMP_HASH) { toast('Im Betreibermodus gesperrt: Zahlungsart und Kündigung ändert nur die Firma selbst.', 'err'); return; }
+      aboKnopfLaeuft(k, true);
+      try {
+        const r = await aboApi('/portal', 'POST');
+        if (r.ok && /^https:\/\/billing\.stripe\.com\//.test(r.j.url || '')) { location.href = r.j.url; return; }
+        toast(r.j.error || 'Das Kundenportal ließ sich gerade nicht öffnen.', 'err');
+      } catch (e) { toast(e.message, 'err'); }
+      aboKnopfLaeuft(k, false);
+    }
+    async function aboTarifSetzen(tarif, k) {
+      if (IMP_HASH || !ABO_TARIFE[tarif]) return;
+      aboKnopfLaeuft(k, true);
+      try {
+        const r = await aboApi('/tarif', 'POST', { tarif });
+        if (r.ok) {
+          toast(r.j.wirksam_ab ? 'Tarifwechsel geplant: ' + ABO_TARIFE[tarif].name + ' ab ' + aboDatum(r.j.wirksam_ab) + '.' : 'Der geplante Tarifwechsel ist zurückgenommen.');
+          aboWechselOffen = false; aboWahl = null; await aboLaden(true); return;
+        }
+        toast(r.j.error || 'Der Tarif ließ sich gerade nicht ändern.', 'err');
+      } catch (e) { toast(e.message, 'err'); }
+      aboKnopfLaeuft(k, false);
+    }
+    async function aboAbschliessen(tarif, k) {
+      if (IMP_HASH || !ABO_TARIFE[tarif]) return;
+      aboKnopfLaeuft(k, true);
+      try {
+        const r = await aboApi('/checkout', 'POST', Object.assign({ tarif }, aboModus === 'test' ? { test: true } : {}));
+        if (r.ok && /^https:\/\/checkout\.stripe\.com\//.test(r.j.url || '')) { location.href = r.j.url; return; }
+        toast(r.j.error || 'Die Zahlungsseite ließ sich gerade nicht öffnen.', 'err');
+      } catch (e) { toast(e.message, 'err'); }
+      aboKnopfLaeuft(k, false);
+    }
+    (function aboVerdrahten() {
+      $('aboNeu')?.addEventListener('click', () => { aboLaden(true); });
+      // Anker #abo (z. B. Lesezeichen oder Rücksprung bei schon geladener Seite)
+      window.addEventListener('hashchange', () => { if (/^#abo(\b|$)/.test(location.hash)) { aboRueck = true; aboLaden(); } });
     })();
 
     // ---- WhatsApp: zweiter Kanal ----
@@ -11374,6 +11753,7 @@
       'sec-assistant': 'assistent begrüßung stimme öffnungszeiten regeln persona', 'sec-number': 'telefonnummer rufnummer sperrliste sperren',
       'sec-team': 'zugänge team mitarbeiter einladen benutzer', 'sec-webhooks': 'schnittstellen benachrichtigungen slack e-mail sms webhook api crm ticketsystem',
       'sec-booking': 'termine kalender buchung kalender verbinden google outlook microsoft apple icloud', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
+      'sec-abo': 'abo rechnungen rechnung tarif tarifwechsel zahlung zahlungsart kündigen kündigung minuten verbrauch kontingent stripe',
     };
     let suTreffer = [], suIndex = 0, suServer = { anrufe: [], wissen: [] }, suServerFuer = '', suServerTimer = null;
     const suNorm = (s) => String(s ?? '').toLowerCase();
@@ -11541,6 +11921,7 @@
       'sec-floorplan': ['Tische und Bereiche zeichnen: Im Bearbeitungsmodus ziehst du Tische, legst Plätze fest und fasst sie zusammen.', 'Live zeigt der Plan, welche Tische frei, reserviert oder besetzt sind.'],
       'sec-restaurant': ['Reservierungen am Telefon und online: Öffnungs- und Sitzzeiten, Kapazität, Bestätigungen und Warteliste.', 'Die Tagesansicht zeigt, wer wann kommt. Status änderst du mit <b>Eingetroffen</b>, <b>Abschließen</b> oder <b>No-Show</b>.'],
       'sec-guests': ['Gästeprofile aus Reservierungen: Besuche, No-Shows, Notizen und Tags. Ein Klick auf einen Gast öffnet das Profil.', 'Newsletter gehen nur an Gäste mit Einwilligung.'],
+      'sec-abo': ['Dein Tarif, die Minuten im laufenden Abrechnungszeitraum und was voraussichtlich dazukommt. Gezählt wird jede Sekunde eines Gesprächs; am Ende des Zeitraums wird auf volle Minuten abgerundet.', '<b>Rechnungen und Zahlungsart</b> öffnet das Kundenportal unseres Zahlungsdienstleisters Stripe; dort lädst du Rechnungen herunter, änderst die Zahlungsart oder kündigst. <b>Tarif wechseln</b> gilt ab dem nächsten Abrechnungszeitraum.'],
     };
     function hilfeSchliessen() { document.querySelectorAll('.hilfe__panel:not([hidden])').forEach((p) => { p.hidden = true; document.getElementById(p.dataset.knopf)?.setAttribute('aria-expanded', 'false'); }); }
     (function hilfeEinbauen() {

@@ -383,3 +383,103 @@
   .recht__text h3{scroll-margin-top:130px}
   .doku__inhalt>section,.ep{scroll-margin-top:130px}
 }
+
+/* ── 16. Online buchen (buchen.html, Schalter auf preise.html) ───────────── */
+.buchen{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:var(--r5);align-items:start}
+.buchen__form{display:grid;gap:var(--r4);min-width:0}
+.buchen__schritt{border:0;margin:0;padding:0;display:grid;gap:var(--r2);min-width:0}
+.buchen__schritt legend{display:flex;align-items:center;gap:12px;padding:0;margin-bottom:var(--r2);font-family:var(--disp);font-weight:600;font-size:clamp(21px,2vw,25px);letter-spacing:-.01em;color:var(--text-1)}
+.buchen__nr{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--akzent-zart);color:var(--akzent);font-family:var(--sans);font-size:14px;font-weight:700}
+.buchen-tarife{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--r2)}
+.buchen-tarif{position:relative;display:grid;gap:6px;align-content:start;padding:var(--r3) var(--r3) var(--r3) calc(var(--r3) + 30px);border:1px solid var(--linie-stark);border-radius:var(--rund-l);background:var(--flaeche-1);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.buchen-tarif:hover{border-color:var(--akzent)}
+.buchen-tarif input{position:absolute;left:var(--r3);top:calc(var(--r3) + 1px);width:20px;height:20px;margin:0;accent-color:var(--akzent)}
+.buchen-tarif input:focus-visible{outline:3px solid var(--akzent-ring);outline-offset:2px}
+.buchen-tarif.gewaehlt{border-color:var(--akzent);box-shadow:0 0 0 3px var(--akzent-zart)}
+.buchen-tarif__name{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);line-height:22px}
+.buchen-tarif__preis{font-family:var(--disp);font-weight:600;font-size:34px;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--text-1)}
+.buchen-tarif__preis small{font-family:var(--sans);font-size:14px;font-weight:400;color:var(--text-3);letter-spacing:0;margin-left:6px;white-space:nowrap;display:inline-block}
+.buchen-tarif__inkl{font-size:14px;color:var(--text-2);line-height:1.45}
+.buchen-tarif__inkl b{color:var(--text-1);font-weight:600}
+.buchen-tarif__fuer{font-size:13px;color:var(--text-3);line-height:1.45;padding-top:6px;margin-top:2px;border-top:1px solid var(--linie)}
+.buchen__form .feld input:not([type=checkbox]):not([type=radio]),.buchen__form .feld select{height:50px;width:100%;padding:0 var(--r2);border:1px solid var(--linie-stark);border-radius:var(--rund);background:var(--flaeche-1);color:var(--text-1);font:inherit;font-size:16px;transition:border-color .15s,box-shadow .15s}
+.buchen__form .feld select{appearance:none;-webkit-appearance:none;padding-right:44px;background:var(--flaeche-1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23697386' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 14px center/18px no-repeat}
+.buchen__form .feld input:focus,.buchen__form .feld select:focus{outline:none;border-color:var(--akzent);box-shadow:0 0 0 4px var(--akzent-ring)}
+.buchen__form [aria-invalid=true]{border-color:#b5362e!important}
+.buchen__form .zustimmung[aria-invalid=true],.buchen__form input[type=checkbox][aria-invalid=true]{outline:2px solid #b5362e;outline-offset:2px}
+.buchen-klein{font-size:13px;color:var(--text-3);line-height:1.45}
+.buchen-klein a{color:var(--akzent)}
+.buchen-feldfehler{margin:0;color:#b5362e;font-size:13.5px;line-height:1.4}
+.buchen-feldfehler:empty{display:none}
+.buchen-haken{display:grid;gap:10px}
+.buchen-haken .zustimmung{font-size:15px;color:var(--text-2)}
+.buchen-haken .zustimmung a{color:var(--akzent);text-decoration:underline;text-underline-offset:2px}
+.buchen-honig{position:absolute!important;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.buchen-hinweis{display:flex;gap:12px;align-items:flex-start;padding:14px var(--r2);border-radius:var(--rund);background:var(--flaeche-tint);color:var(--text-2);font-size:14.5px;line-height:1.5}
+.buchen-hinweis svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--akzent)}
+.buchen-hinweis b{color:var(--text-1)}
+.buchen-hinweis--test{background:var(--flaeche-2)}
+.buchen-summe{position:sticky;top:96px;display:grid;gap:var(--r2);padding:var(--r3)}
+.buchen-summe h2{font-size:20px}
+.buchen-summe h3{font-size:16px;margin-top:var(--r1)}
+.buchen-summe__tarif{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:var(--r2);border-bottom:1px solid var(--linie)}
+.buchen-summe__tarif span{font-weight:600;color:var(--text-1)}
+.buchen-summe__tarif b{font-family:var(--disp);font-weight:600;font-size:30px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.buchen-summe__tarif b small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--text-3);letter-spacing:0;margin-left:5px}
+.buchen-summe__liste{display:grid;gap:0;margin:0;font-size:14px}
+.buchen-summe__liste>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--linie)}
+.buchen-summe__liste dt{color:var(--text-3)}
+.buchen-summe__liste dd{margin:0;text-align:right;color:var(--text-1);font-weight:500}
+.buchen-summe__heute{font-size:14px;color:var(--text-2);line-height:1.5}
+.buchen-summe__heute b{color:var(--text-1)}
+.buchen-summe__knopf{width:100%;min-height:54px;font-size:16px}
+.buchen-summe__knopf[aria-busy=true]{cursor:progress}
+.buchen-summe__stripe{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text-3);line-height:1.45}
+.buchen-summe__stripe svg{flex:none;width:16px;height:16px;margin-top:1px}
+.buchen-summe .formfehler{font-size:14px;line-height:1.45}
+.buchen-summe .formfehler a{color:var(--akzent);text-decoration:underline}
+.buchen-schritte{margin:0;padding:0;list-style:none;counter-reset:schritt;display:grid;gap:10px;font-size:14px;color:var(--text-2);line-height:1.45}
+.buchen-schritte li{counter-increment:schritt;position:relative;padding-left:34px;min-height:24px}
+.buchen-schritte li::before{content:counter(schritt);position:absolute;left:0;top:-1px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--flaeche-2);color:var(--text-1);font-size:12.5px;font-weight:700}
+.buchen-schritte b{color:var(--text-1);font-weight:600}
+.buchen-schritte--gross{font-size:15.5px;gap:14px;margin:var(--r3) 0}
+.buchen-laden{display:flex;align-items:center;gap:12px;min-height:200px;justify-content:center;color:var(--text-3);font-size:15px}
+.buchen-kreis{flex:none;width:22px;height:22px;border-radius:50%;border:3px solid var(--akzent-zart);border-top-color:var(--akzent);animation:buchenDreh .8s linear infinite}
+@keyframes buchenDreh{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.buchen-kreis{animation-duration:2.4s}}
+.buchen-bald,.buchen-status{max-width:760px;padding:var(--r5)}
+.buchen-bald h2{margin-top:var(--r1);font-size:clamp(26px,3vw,36px)}
+.buchen-bald .lede{margin-top:var(--r2)}
+.buchen-knoepfe{display:flex;flex-wrap:wrap;align-items:center;gap:var(--r2);margin-top:var(--r3)}
+.buchen-status__kopf{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--r2);align-items:start}
+.buchen-status__kopf h2{font-size:clamp(24px,2.8vw,32px);outline:none}
+.buchen-status__kopf .lede{margin-top:var(--r1);font-size:16.5px}
+.buchen-status__kopf .buchen-kreis{width:34px;height:34px;margin-top:4px}
+.buchen-status__icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--flaeche-2);color:var(--text-2)}
+.buchen-status__icon svg{width:20px;height:20px}
+.buchen-status__kopf--ok .buchen-status__icon{background:var(--gut-zart);color:var(--gut-lesbar)}
+.buchen-status .buchen-klein{margin-top:var(--r2)}
+.buchen-erneut{margin-top:var(--r3);padding:var(--r3);border-radius:var(--rund-l);background:var(--flaeche-0);border:1px solid var(--linie)}
+.buchen-erneut p{color:var(--text-2);font-size:15px}
+.buchen-erneut .buchen-knoepfe{margin-top:var(--r2)}
+@media (max-width:1100px){
+  .buchen{grid-template-columns:minmax(0,1fr) 320px;gap:var(--r4)}
+  .buchen-tarife{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:900px){
+  .buchen{grid-template-columns:minmax(0,1fr)}
+  .buchen-summe{position:static}
+}
+@media (max-width:640px){
+  .buchen-tarif{padding:var(--r2) var(--r2) var(--r2) calc(var(--r2) + 30px)}
+  .buchen-tarif input{left:var(--r2);top:calc(var(--r2) + 1px)}
+  .buchen-tarif__preis{font-size:30px}
+  .buchen-bald,.buchen-status{padding:var(--r3)}
+  .buchen-status__kopf{grid-template-columns:minmax(0,1fr)}
+  .buchen-summe{padding:var(--r2)}
+  .buchen-knoepfe .knopf{width:100%}
+}
+
+/* Schalter auf preise.html: Knöpfe „Jetzt buchen“ (erst mit ?buchen=test sichtbar) */
+.tarif__knoepfe{display:grid;gap:10px}
+.ergebnis [data-buchen-rechner]{justify-self:start}

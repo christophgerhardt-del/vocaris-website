@@ -8,7 +8,8 @@
    [data-datenweg] Datenweg-Grafik · [data-probe] Antwortzeit ·
    [data-doku] Kopieren, curl/JavaScript · .seitennav Scrollspy ·
    [data-suche] FAQ-Suche · [data-demoform] Demo-Anfrage ·
-   [data-nf-suche] Seitensuche der 404 · CTA-Leiste auf Seiten ohne Held.
+   [data-nf-suche] Seitensuche der 404 · CTA-Leiste auf Seiten ohne Held ·
+   [data-buchen] Knöpfe „Jetzt buchen“ (bis zum Start nur mit ?buchen=test).
    ══════════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -75,6 +76,8 @@
       aus('zeilen').innerHTML = z.map(function (x) { return '<div><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('');
       aus('fuss').textContent = 'Schätzung auf Basis Ihrer Angaben, netto zuzüglich Umsatzsteuer. Bei ' + de(anrufe) + ' Anrufen sind das rund ' + eur(gesamt / anrufe) + ' € je Anruf. Den verbindlichen Preis nennen wir im Angebot.';
       $$('[data-tarif-karte]').forEach(function (k) { k.classList.toggle('tarif--hl', k.getAttribute('data-tarif-karte') === beste.t.id); });
+      var bk = $('[data-buchen-rechner]');
+      if (bk) { bk.textContent = 'Tarif ' + beste.t.name + ' buchen'; bk.href = 'buchen.html?tarif=' + beste.t.id + (/buchen=test/.test(bk.getAttribute('href')) ? '&buchen=test' : ''); }
     }
     [eAnrufe, eDauer, eSms].forEach(function (e) { fuellung(e); e.addEventListener('input', function () { fuellung(e); rechne(true); }); });
     rechne(false);
@@ -319,5 +322,18 @@
     addEventListener('resize', setzen);
   }
 
-  filter(); preisrechner(); tarifschalter(); vergleich(); datenweg(); probe(); doku(); seitennav(); fragenSuche(); demoformular(); nichtGefunden(); ctaleiste();
+  /* ── 13. Online buchen: Knöpfe „Jetzt buchen“ ───────────────────────────
+     Bis zum Start nur mit ?buchen=test (Merker in sessionStorage, damit er beim
+     Weiterklicken bleibt). Die Sperre liegt im Server (BUCHUNG=aus|test|an);
+     hier wird nur eingeblendet. „Angebot anfragen“ tritt dann zurück. */
+  function buchenSchalter() {
+    var knoepfe = $$('[data-buchen]'); if (!knoepfe.length) return;
+    var test = new URLSearchParams(location.search).get('buchen') === 'test', an = test;
+    try { if (test) sessionStorage.setItem('vocaris.buchenTest', '1'); an = an || sessionStorage.getItem('vocaris.buchenTest') === '1'; } catch (e) { /* ohne Speicher zählt nur die Adresse */ }
+    if (!an) return;
+    knoepfe.forEach(function (k) { k.hidden = false; var h = k.getAttribute('href') || ''; if (!/buchen=test/.test(h)) k.setAttribute('href', h + (h.indexOf('?') > -1 ? '&' : '?') + 'buchen=test'); });
+    $$('[data-angebot]').forEach(function (a) { a.classList.add('knopf--leise'); });
+  }
+
+  filter(); preisrechner(); tarifschalter(); vergleich(); datenweg(); probe(); doku(); seitennav(); fragenSuche(); demoformular(); nichtGefunden(); ctaleiste(); buchenSchalter();
 })();

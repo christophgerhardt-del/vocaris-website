@@ -125,6 +125,7 @@
         <div class="ergebnis__gross"><span class="ergebnis__kicker">Ihr günstigster Tarif</span><div class="ergebnis__tarif" data-aus="tarif">Tarif Standard</div><b style="margin-top:var(--r2)"><span data-aus="summe">99</span> €<small>im Monat, netto</small></b></div>
         <div class="ergebnis__zeilen" data-aus="zeilen"></div>
         <p class="ergebnis__hinweis" data-aus="fuss"></p>
+        <a class="knopf" href="buchen.html?tarif=standard" data-buchen data-buchen-rechner hidden>Tarif Standard buchen</a>
         <a class="knopf knopf--leise" href="demo.html">Unverbindliches Angebot</a>
       </div>
       <p class="rechner__hinweis">Rechnung: Grundpreis des Tarifs plus Minuten über dem Kontingent zum Minutenpreis des Tarifs, dazu SMS zu 0,09 €. Netto zuzüglich Umsatzsteuer.</p>
@@ -154,7 +155,7 @@
         <div class="tarif__inkl"><b>250 Gesprächsminuten</b> inklusive<span data-jahr>, 3.000 im Jahr</span><br>danach 0,19 € je Minute</div>
         <div class="tarif__rahmen">rund 150 bis 250 Anrufe im Monat</div>
         <div class="tarif__fuer">Einzelpraxen, kleine Salons, Betriebe mit ruhigem Telefon</div>
-        <a class="knopf knopf--leise" href="demo.html">Angebot anfragen</a>
+        <div class="tarif__knoepfe"><a class="knopf" href="buchen.html?tarif=klein" data-buchen hidden>Jetzt buchen</a><a class="knopf knopf--leise" data-angebot href="demo.html">Angebot anfragen</a></div>
       </div>
       <div class="kachel tarif tarif--hl" data-tarif-karte="standard">
         <div class="tarif__name">Standard</div>
@@ -162,7 +163,7 @@
         <div class="tarif__inkl"><b>700 Gesprächsminuten</b> inklusive<span data-jahr>, 8.400 im Jahr</span><br>danach 0,15 € je Minute</div>
         <div class="tarif__rahmen">rund 450 bis 700 Anrufe im Monat</div>
         <div class="tarif__fuer">Restaurants, Werkstätten, Praxen mit vollem Wartezimmer</div>
-        <a class="knopf" href="demo.html">Angebot anfragen</a>
+        <div class="tarif__knoepfe"><a class="knopf" href="buchen.html?tarif=standard" data-buchen hidden>Jetzt buchen</a><a class="knopf" data-angebot href="demo.html">Angebot anfragen</a></div>
       </div>
       <div class="kachel tarif" data-tarif-karte="gross">
         <div class="tarif__name">Groß</div>
@@ -170,7 +171,7 @@
         <div class="tarif__inkl"><b>2.000 Gesprächsminuten</b> inklusive<span data-jahr>, 24.000 im Jahr</span><br>danach 0,11 € je Minute</div>
         <div class="tarif__rahmen">rund 1.300 bis 2.000 Anrufe im Monat</div>
         <div class="tarif__fuer">Hausverwaltungen, Pflegedienste, Betriebe mit mehreren Standorten</div>
-        <a class="knopf knopf--leise" href="demo.html">Angebot anfragen</a>
+        <div class="tarif__knoepfe"><a class="knopf" href="buchen.html?tarif=gross" data-buchen hidden>Jetzt buchen</a><a class="knopf knopf--leise" data-angebot href="demo.html">Angebot anfragen</a></div>
       </div>
     </div>
     <p class="hinweis" style="margin-top:var(--r3)" data-zeig><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Alle Preise netto zuzüglich Umsatzsteuer. Der Jahresüberblick ist die Summe von zwölf Monaten, abgerechnet wird monatlich und gekündigt werden kann monatlich; einen Jahresrabatt gibt es nicht. Die markierte Karte ist der Tarif, den der Rechner oben für Ihre Werte ermittelt.</span></p>
