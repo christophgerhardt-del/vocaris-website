@@ -3737,10 +3737,24 @@
     };
     // Beim Weitertippen gilt der vorige Fehler nicht mehr als aktuell.
     ['pwNew', 'pwNew2'].forEach((id) => $(id).addEventListener('input', () => pwFeldFehler(false)));
+    // Sprungadresse (z. B. #nachrichten/ueberfaellig aus dem Wochenbericht) über Google-Anmeldung und
+    // Passwort-Link retten: beide kommen ohne #… zurück, der Passwort-Link oft in einem neuen Tab.
+    // Gemerkt wird nur der Anker, höchstens 30 Minuten; die Nachrichten holen ihn beim Laden ab.
+    const SPRUNG_KEY = 'vocaris.sprung';
+    function sprungMerken() {
+      try { if (/^#nachrichten\/ueberfaellig\b/.test(location.hash)) localStorage.setItem(SPRUNG_KEY, JSON.stringify({ h: location.hash, t: Date.now() })); } catch (_) { /* ohne Speicher kein Rücksprung */ }
+    }
+    function sprungHolen() {
+      try {
+        const j = JSON.parse(localStorage.getItem(SPRUNG_KEY) || 'null'); localStorage.removeItem(SPRUNG_KEY);
+        return j && typeof j.h === 'string' && Date.now() - Number(j.t) < 30 * 60000 ? j.h : null;
+      } catch (_) { return null; }
+    }
     $('forgotPw').onclick = async (e) => {
       e.preventDefault();
       const email = $('email').value.trim();
       if (!email) { $('authMsg').textContent = 'Bitte zuerst deine E-Mail-Adresse oben eingeben.'; return; }
+      sprungMerken();
       const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
       $('authMsg').textContent = error
         ? fehlerText(error)
@@ -3753,6 +3767,7 @@
     if (!SSO_GOOGLE_AKTIV) { $('ssoGoogle').classList.add('hidden'); $('ssoGoogle').previousElementSibling.classList.add('hidden'); $('ssoGoogle').nextElementSibling.classList.add('hidden'); }
     $('ssoGoogle').onclick = async () => {
       $('authMsg').textContent = '';
+      sprungMerken();
       const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
       if (error) $('authMsg').textContent = fehlerText(error);
     };
@@ -7741,9 +7756,9 @@
     // ---- Rückruf-Erfolg ----
     // Anteil der Nachrichten, die innerhalb von 24 Stunden als erledigt markiert wurden. Gerechnet
     // wird in der Datenbank (nachrichten_erfolg), damit Kundenbereich, App, Wochenbericht und API
-    // dieselbe Zahl zeigen. „Entschieden“ (basis) ist eine Nachricht, wenn sie in der Frist erledigt
-    // wurde oder ihre 24 Stunden um sind; jüngere offene zählen noch nicht (laufend). Unter fünf
-    // entschiedenen zeigen wir „3 von 4“ statt Prozent und keinen Vergleich.
+    // dieselbe Zahl zeigen. „Entschieden“ (basis) ist eine Nachricht, wenn ihre 24 Stunden um sind;
+    // jüngere zählen noch nicht (laufend), auch wenn sie schon erledigt sind. Gelöschte zählen weiter
+    // (geloescht). Unter fünf entschiedenen zeigen wir „3 von 4“ statt Prozent und keinen Vergleich.
     const RR_FRIST_MS = 24 * 3600e3, RR_MINDEST = 5;
     const RR_DRING = [['hoch', 'dringend', 'hoch'], ['normal', 'mittel', 'mittel'], ['niedrig', 'niedrig', 'niedrig'], ['ohne', 'ohne Angabe', null]]; // Schlüssel der Datenbank, Anzeige, Filter in „Nachrichten“
     const rrZahl = (x) => { const n = Number(x); return Number.isFinite(n) ? n : 0; };
@@ -7754,11 +7769,11 @@
       const je = {}; for (const [key] of RR_DRING) { const e = d.je_dringlichkeit?.[key]; if (e) je[key] = { basis: rrZahl(e.basis), in_frist: rrZahl(e.in_frist) }; }
       const dk = d.dauerklassen || {};
       return {
-        nachrichten: rrZahl(d.nachrichten), basis: rrZahl(d.basis), in_frist: rrZahl(d.in_frist), laufend: rrZahl(d.laufend),
+        von: d.von || null, nachrichten: rrZahl(d.nachrichten), basis: rrZahl(d.basis), in_frist: rrZahl(d.in_frist), laufend: rrZahl(d.laufend), geloescht: rrZahl(d.geloescht),
         quote: rrOderNull(d.quote), erledigt: rrZahl(d.erledigt), median_min: rrOderNull(d.median_min), je_dringlichkeit: je,
         dauerklassen: { bis_1h: rrZahl(dk.bis_1h), bis_4h: rrZahl(dk.bis_4h), bis_24h: rrZahl(dk.bis_24h), ueber_24h: rrZahl(dk.ueber_24h) },
         offen_ueber_frist: rrZahl(d.offen_ueber_frist), aeltestes_offen: d.aeltestes_offen || null, unvollstaendig: d.unvollstaendig === true,
-        verlauf: Array.isArray(d.verlauf) ? d.verlauf.map((v) => ({ ab: String(v?.ab || '').slice(0, 10), basis: rrZahl(v?.basis), in_frist: rrZahl(v?.in_frist) })) : null,
+        verlauf: Array.isArray(d.verlauf) ? d.verlauf.map((v) => ({ ab: String(v?.ab || '').slice(0, 10), basis: rrZahl(v?.basis), in_frist: rrZahl(v?.in_frist), laufend: rrZahl(v?.laufend) })) : null,
       };
     }
     /** Kennzahl für [von, bis) der eigenen Firma; einheit 'tag' | 'woche' liefert zusätzlich den Verlauf. */
@@ -7797,6 +7812,7 @@
       if (k.basis) t.push(k.in_frist + ' von ' + k.basis + ' in der Frist erledigt.');
       if (k.erledigt && k.median_min !== null) t.push('Bis erledigt im Median: ' + rrDauerText(k.median_min) + '.');
       if (k.laufend) t.push(k.laufend === 1 ? '1 Nachricht ist jünger als 24 Stunden und zählt noch nicht.' : k.laufend + ' Nachrichten sind jünger als 24 Stunden und zählen noch nicht.');
+      if (k.geloescht) t.push(k.geloescht === 1 ? '1 gelöschte Nachricht zählt weiter mit.' : k.geloescht + ' gelöschte Nachrichten zählen weiter mit.');
       return t.join(' ');
     }
 
@@ -8317,8 +8333,11 @@
     async function ladeAwRueckruf() {
       if (!tenant || !$('awRrChart')) return;
       const gen = ++awRrGen, fuer = tenant.id, tage = awTage, einheit = tage <= 30 ? 'tag' : 'woche';
-      const jetzt = new Date(), start = new Date(jetzt.getTime() - tage * 864e5), davor = new Date(jetzt.getTime() - 2 * tage * 864e5);
-      const [a, b] = await Promise.all([rrLaden(start, jetzt, einheit), rrLaden(davor, start)]);
+      const jetzt = new Date(), start = new Date(jetzt.getTime() - tage * 864e5);
+      // Mit Verlauf beginnt der Zeitraum am ersten vollen Tag bzw. Montag (k.von); der Vergleich schließt daran an.
+      const a = await rrLaden(start, jetzt, einheit);
+      const ab = a.k?.von ? new Date(a.k.von) : start, beginn = Number.isNaN(ab.getTime()) ? start : ab;
+      const b = a.fehler ? { fehler: a.fehler } : await rrLaden(new Date(beginn.getTime() - (jetzt - beginn)), beginn);
       if (gen !== awRrGen || !tenant || tenant.id !== fuer) return;
       if (a.fehler) {
         if (!(awRueckruf && awRueckruf.fuer === fuer && awRueckruf.tage === tage && awRueckruf.jetzt)) awRueckruf = { fuer, tage, einheit, jetzt: null, vorher: null };
@@ -8353,7 +8372,8 @@
           if (dicht) { lab = ''; if (i % 5 === 0 || i === v.length - 1) { const mitMonat = d.getMonth() !== labMonat; labMonat = d.getMonth(); lab = d.getDate() + '.' + (mitMonat ? (d.getMonth() + 1) + '.' : ''); } }
           const wann = (woche ? 'Woche ab ' : '') + d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
           const col = document.createElement('div'); col.className = 'col';
-          col.dataset.tip = wann + ' · ' + (p.basis ? p.in_frist + ' von ' + p.basis + ' in 24 h erledigt (' + Math.round(quote * 100) + ' %)' : 'keine entschiedenen Nachrichten');
+          col.dataset.tip = wann + ' · ' + (p.basis ? p.in_frist + ' von ' + p.basis + ' in 24 h erledigt (' + Math.round(quote * 100) + ' %)' : 'keine entschiedenen Nachrichten')
+            + (p.laufend ? ' · ' + p.laufend + (p.laufend === 1 ? ' Nachricht zählt' : ' Nachrichten zählen') + ' noch nicht (jünger als 24 h)' : '');
           col.innerHTML = '<div class="c">' + (!dicht && p.basis ? p.in_frist + '/' + p.basis : '') + '</div><div class="bar' + (p.basis ? '' : ' zero') + '" style="height:' + hh + 'px"></div><div class="l">' + lab + '</div>';
           ch.append(col);
         });
@@ -8526,10 +8546,12 @@
       });
       return z;
     }
+    // done_at setzt die Datenbank (Trigger, Serverzeit); die Gerätezeit geht nur noch mit, solange die
+    // Migration 20261013_rueckruf_erfolg nicht eingespielt ist. Angezeigt wird, was zurückkommt.
     async function mgAendern(m, patch) {
-      const { error } = await sb.from('messages').update(patch).eq('id', m.id);
+      const { data, error } = await sb.from('messages').update(patch).eq('id', m.id).select('status, done_at').maybeSingle();
       if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return false; }
-      Object.assign(m, patch); return true;
+      Object.assign(m, patch, data || {}); return true;
     }
     function renderNachrichtDetail() {
       const d = $('mgDetail'); const m = mgAuswahl ? mgItems.get(mgAuswahl) : null;
@@ -8615,7 +8637,8 @@
       };
       // Sprungadresse aus dem Wochenbericht: app.html#nachrichten/ueberfaellig öffnet die Nachrichten mit
       // dem Filter „Länger als 24 h offen“. Wartet, bis Firma und Nachrichtenliste geladen sind (auch über
-      // eine Anmeldung hinweg), und räumt die Adresse danach auf.
+      // eine Anmeldung hinweg), und räumt die Adresse danach auf. Nach Google-Anmeldung oder Passwort-Link
+      // fehlt der Anker in der Adresse; dann gilt der vorher gemerkte (sprungMerken).
       const ankerPasst = () => /^#nachrichten\/ueberfaellig\b/.test(location.hash);
       let ankerUhr = null;
       const ankerLos = () => {
@@ -8623,11 +8646,12 @@
         ankerUhr = setInterval(() => {
           if (Date.now() > bis) { clearInterval(ankerUhr); return; }
           if (!tenant || mgStandFuer !== tenant.id) return;
-          clearInterval(ankerUhr); history.replaceState(null, '', location.pathname + location.search);
+          clearInterval(ankerUhr); if (ankerPasst()) history.replaceState(null, '', location.pathname + location.search);
           geh('sec-messages'); if (navSichtbar(navItem('sec-messages'))) mgUeberfaelligZeigen();
         }, 300);
       };
-      if (ankerPasst()) ankerLos();
+      const gemerkt = sprungHolen();
+      if (ankerPasst() || gemerkt) ankerLos();
       window.addEventListener('hashchange', () => { if (ankerPasst()) ankerLos(); });
       $('mgKategorie').onchange = () => { mgKategorie = $('mgKategorie').value; renderNachrichten(); };
       $('mgMehr').onclick = () => mgLaden(true); $('mgNeu').onclick = () => mgLaden();
