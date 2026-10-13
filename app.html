@@ -326,6 +326,19 @@
     .stat .k { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 3px; }
     .stat .v { font-size: 23px; font-weight: 600; font-family: var(--serif); line-height: 1.1; }
     .statusdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #28c76f; margin-right: 7px; }
+    .statusdot--fehler { background: #dc2626; }
+    /* Kalender verbinden (Termine): Kopfzeile, Hinweise, Störung (auch über der Wochenansicht) */
+    .kal-zeile { display: flex; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; }
+    .kal-konto { font-size: 13px; overflow-wrap: anywhere; }
+    .kal-hinweis { margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-faint); text-align: left; }
+    .kal-hinweis--vorab { margin: 0; }
+    .kal-hinweis a { color: var(--accent); }
+    .kal-knoepfe { margin-top: 12px; }
+    .kal-apple { margin-top: 12px; }
+    .kal-stoerung { margin: 10px 0 0; padding: 8px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; background: #ffedd5; color: #9a3412; text-align: left; }
+    #calWeek > .kal-stoerung { margin: 0 0 10px; }
+    .kal-meldung { display: block; margin-top: 2px; font-size: 12px; opacity: .85; overflow-wrap: anywhere; }
+    :root[data-theme="dark"] .kal-stoerung { background: #3a2410; color: #fdba74; }
     /* Gradient-Begrüßungskarte (Übersicht) */
     .hero-card { position: relative; overflow: hidden; border-radius: var(--r); padding: 28px 30px; margin-bottom: 18px;
       color: #fff; background: linear-gradient(135deg, #1f5eff 0%, #3d8bff 55%, #0a2fd0 100%); box-shadow: var(--shadow); }
@@ -2370,7 +2383,7 @@
 
           <div class="panel">
             <h3>Kalender verbinden</h3>
-            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Verbinde Google oder Outlook: der Assistent sieht dann deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein. Apple-Kalender gehen über den Link „Öffentlicher Kalender“ aus der Kalender-App (nur lesen).</p>
+            <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Mit verbundenem Kalender sieht der Assistent deine belegten Zeiten (keine Doppelbuchung) und trägt neue Termine direkt ein. Apple-Kalender gehen über den Link „Öffentlicher Kalender“ aus der Kalender-App (nur lesen).</p>
             <div id="bkCal"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
           </div>
 
@@ -3121,6 +3134,16 @@
     // Kommt jemand über einen Einladungslink, steht das im Hash – nur bis Supabase ihn gleich verbraucht.
     const EINGELADEN = location.hash.indexOf('type=invite') >= 0;
     let eingeladenBehandelt = false;
+    // Rücksprung von Google/Microsoft nach „Kalender verbinden“: Code und State stehen im Fragment
+    // (#cal=fertig&code=…&state=…, Fehler als #cal=err&grund=…). Sofort aus der Adresszeile nehmen,
+    // noch bevor Supabase das Fragment liest, und nur im Speicher halten, bis die Anmeldung steht
+    // (kalenderRuecksprung() schließt dann mit /api/calendar/finish ab).
+    const KAL_RUECK = (() => {
+      if (!/^#cal=/.test(location.hash)) return null;
+      const p = new URLSearchParams(location.hash.slice(1));
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* ohne Verlauf (Vorschau) */ }
+      return { cal: p.get('cal') || '', code: p.get('code') || '', state: p.get('state') || '', grund: p.get('grund') || '' };
+    })();
     const sb = createClient(
       'https://nocsjyzmnskbyccrjayx.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vY3NqeXptbnNrYnljY3JqYXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDI4ODgsImV4cCI6MjA5NzI3ODg4OH0.RnIq-jbr6JKz_Z3etwc2rX1O6RXh5cidwm9mkRFrnw4',
@@ -3771,8 +3794,7 @@
       const boot = $('boot'); if (!tenant) boot.classList.remove('hidden');
       await loadAll();
       boot.classList.add('hidden');
-      if (location.hash.indexOf('cal=ok') >= 0) { toast('Kalender verbunden.'); history.replaceState(null, '', 'app.html'); }
-      else if (location.hash.indexOf('cal=err') >= 0) { toast('Kalender-Verbindung fehlgeschlagen.', 'err'); history.replaceState(null, '', 'app.html'); }
+      kalenderRuecksprung();
     }
 
     // ---- Stimmen (mit Hörbeispiel) ----
@@ -9902,14 +9924,15 @@
       const starts = new Date(date + 'T' + time + ':00');
       const mins = Math.max(5, parseInt($('bkSlot').value) || 30);
       const ends = new Date(starts.getTime() + mins * 60000);
-      const { error } = await sb.from('appointments').insert({
+      const { data: neu, error } = await sb.from('appointments').insert({
         tenant_id: tenant.id, starts_at: starts.toISOString(), ends_at: ends.toISOString(),
         customer_name: $('bkNewName').value.trim() || null, notes: $('bkNewNote').value.trim() || null,
         source: 'dashboard',
-      });
+      }).select('id').single();
       if (error) return toast('Fehler: ' + fehlerText(error), 'err');
       $('bkNewName').value = ''; $('bkNewNote').value = '';
       toast('Termin eingetragen.'); loadAll();
+      kalenderTermin(neu?.id, 'eintragen'); // wie beim Assistenten: auch in Google/Outlook
     };
     function renderAppointments(items) {
       const el = $('bkList');
@@ -9927,63 +9950,169 @@
           if (!confirm('Diesen Termin absagen?')) return;
           if (!(await schreiben(sb.from('appointments').update({ status: 'cancelled' }).eq('id', a.id)))) return;
           toast('Termin abgesagt.'); loadAll();
+          kalenderTermin(a.id, 'absagen'); // Eintrag im verbundenen Kalender entfernen
         };
         row.append(c); div.append(h, p, row); el.append(div);
       }
     }
 
-    // ---- Kalender (Google / Outlook) ----
+    // ---- Kalender (Google / Outlook / Apple) ----
+    // Der Server sagt im Status, welche Anbieter er anbietet (anbieter.google/.microsoft, hängt an
+    // seiner Einrichtung) und ob dieser Login verbinden darf (darf_verwalten: Inhaber und Admins).
+    // Ältere Server kennen beide Felder nicht: dann gilt der alte Stand (nur Google, Recht aus der
+    // eigenen Stufe). Verbinden läuft in zwei Schritten: connect → Anmeldung beim Anbieter →
+    // Rücksprung mit Code im Fragment → finish (kalenderRuecksprung()).
+    const KAL_NAME = { google: 'Google Kalender', microsoft: 'Outlook / Microsoft 365', apple: 'Apple-Kalender (iCloud-Link)' };
+    const KAL_GRUND = {
+      abgelehnt: 'Du hast den Zugriff nicht erlaubt. Der Kalender ist nicht verbunden.',
+      bereiche: 'Bitte noch einmal verbinden und beide Häkchen setzen: Verfügbarkeit ansehen und Termine eintragen.',
+      abgelaufen: 'Das hat zu lange gedauert. Bitte noch einmal verbinden.',
+      fremd: 'Diese Verbindung wurde mit einem anderen Login gestartet. Bitte hier noch einmal verbinden.',
+      admin: 'Dein Microsoft-Konto braucht eine Freigabe durch eure IT. Schreib uns, wir schicken den Link.',
+      rechte: 'Den Kalender verbinden Inhaber und Admins.',
+      anbieter: 'Der Kalenderanbieter hat die Verbindung nicht bestätigt. Bitte noch einmal verbinden.',
+      datenbank: 'Die Verbindung konnte nicht gespeichert werden. Bitte noch einmal verbinden.',
+    };
+    let kalStatus = null; // letzte Status-Antwort (für Termine eintragen/absagen und die Wochenansicht)
+    /** POST an /api/calendar/<path>. Wirft nie: Antwort des Servers plus _ok/_status, bei Netzfehler
+     *  { _ok: false, _status: 0, error }. Die Firma geht als tenant_id mit; bei finish ergibt sie sich
+     *  aus dem State, bei termin aus dem Termin. */
     async function calApi(path, body) {
-      const res = await fetch(API + '/api/calendar/' + path, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
-        body: JSON.stringify(body || {}),
-      });
-      return res.json();
+      const firma = path !== 'finish' && path !== 'termin' && tenant ? { tenant_id: tenant.id } : {};
+      let res;
+      try {
+        res = await fetch(API + '/api/calendar/' + path, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify(Object.assign(firma, body || {})),
+        });
+      } catch (_) { return { _ok: false, _status: 0, error: 'Server gerade nicht erreichbar. Bitte gleich noch einmal versuchen.' }; }
+      const j = await res.json().catch(() => ({}));
+      const r = (j && typeof j === 'object' && !Array.isArray(j)) ? j : {};
+      r._ok = res.ok; r._status = res.status;
+      if (!res.ok && !r.error) r.error = res.status === 429 ? 'Zu viele Anfragen. Bitte kurz warten.' : 'Der Kalender-Dienst antwortet gerade nicht.';
+      return r;
     }
     async function loadCalendarStatus() {
-      const el = $('bkCal'); if (!el) return;
-      try { renderCalendar(await calApi('status')); }
-      catch { el.innerHTML = '<span class="muted">Status nicht verfügbar.</span>'; }
+      const el = $('bkCal'); if (!el || !tenant) return;
+      const fuer = tenant.id;
+      const s = await calApi('status');
+      if (!tenant || tenant.id !== fuer) return; // inzwischen Firma gewechselt
+      if (!s._ok) { kalStatus = null; el.innerHTML = s._status === 403 ? '<p class="kal-hinweis">' + esc(s.error || 'Kein Zugriff auf den Kalender dieser Firma.') + '</p>' : fehlerZustand(loadCalendarStatus); return; }
+      kalStatus = s;
+      renderCalendar(s);
+    }
+    function kalHinweis(text) { const p = document.createElement('p'); p.className = 'kal-hinweis'; p.textContent = text; return p; }
+    /** Knopf „Mit Google/Outlook verbinden“: holt die Anmelde-Adresse und springt zum Anbieter. */
+    function kalKnopf(provider, label, art) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + art; b.textContent = label;
+      b.onclick = async () => {
+        b.disabled = true;
+        const r = await calApi('connect', { provider });
+        if (r._ok && /^https:\/\//.test(r.url || '')) { window.location.assign(r.url); return; }
+        toast(KAL_GRUND[r.grund] || r.error || 'Verbinden ist gerade nicht möglich.', 'err', 6000);
+        b.disabled = false;
+      };
+      return b;
+    }
+    /** Eingabe für den Apple-Link („Öffentlicher Kalender“): nur lesen, kein Anmelden. */
+    function kalAppleFeld(el, leise) {
+      const ap = document.createElement('div'); ap.className = 'grid2 kal-apple';
+      ap.innerHTML = '<div style="flex:4"><input id="bkApple" inputmode="url" placeholder="webcal://p…-caldav.icloud.com/published/…" autocomplete="off" spellcheck="false" aria-label="Link „Öffentlicher Kalender“ aus der Apple-Kalender-App" /></div>'
+        + '<div><button type="button" class="btn ' + (leise ? 'btn--ghost' : 'btn--primary') + '" id="bkAppleBtn" style="width:100%">Apple-Link verbinden</button></div>';
+      el.append(ap);
+      const knopf = $('bkAppleBtn'), feld = $('bkApple');
+      knopf.onclick = async () => {
+        const url = feld.value.trim();
+        if (!url) { toast('Bitte den Link aus der Kalender-App einfügen.', 'err'); feld.focus(); return; }
+        knopf.disabled = true;
+        const r = await calApi('apple', { url });
+        if (r._ok && r.ok) { toast('Apple-Kalender verbunden, ' + (r.termine ?? 0) + ' Termine in den nächsten Wochen gefunden.', '', 4000); loadCalendarStatus(); renderWeek(); }
+        else { toast(KAL_GRUND[r.grund] || r.error || 'Verbinden fehlgeschlagen.', 'err', 6000); knopf.disabled = false; }
+      };
+      feld.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); knopf.click(); } };
     }
     function renderCalendar(s) {
-      const el = $('bkCal'); el.innerHTML = '';
-      if (s && s.connected) {
-        const name = s.provider === 'google' ? 'Google Calendar' : s.provider === 'apple' ? 'Apple-Kalender (iCloud-Link)' : 'Outlook / Microsoft 365';
-        const row = document.createElement('div'); row.className = 'stack'; row.style.alignItems = 'center';
-        const txt = document.createElement('span');
-        txt.innerHTML = '<span class="statusdot"></span><b>' + name + '</b> verbunden';
-        if (s.email) { const e = document.createElement('span'); e.className = 'muted'; e.textContent = ' · ' + s.email; txt.append(e); }
-        const btn = document.createElement('button'); btn.className = 'btn btn--danger sm'; btn.textContent = 'Trennen';
-        btn.onclick = async () => { btn.disabled = true; await calApi('disconnect'); toast('Kalender getrennt.'); loadCalendarStatus(); };
-        row.append(txt, btn); el.append(row);
-      } else {
-        const row = document.createElement('div'); row.className = 'stack';
-        [['google', 'Mit Google verbinden'], ['microsoft', 'Mit Outlook verbinden']].forEach(([p, label]) => {
-          const b = document.createElement('button'); b.className = 'btn btn--primary'; b.textContent = label;
-          b.onclick = async () => {
-            b.disabled = true;
-            const r = await calApi('connect', { provider: p });
-            if (r.url) window.location = r.url;
-            else { toast(r.error || 'Nicht verfügbar.', 'err'); b.disabled = false; }
-          };
-          row.append(b);
-        });
-        el.append(row);
-        // Apple: kein Anmelden, nur ein Link. Kalender-App → Kalender rechtsklicken →
-        // Freigabeeinstellungen → „Öffentlicher Kalender" → Link kopieren.
-        const ap = document.createElement('div'); ap.className = 'grid2'; ap.style.marginTop = '10px';
-        ap.innerHTML = '<div style="flex:4"><input id="bkApple" placeholder="webcal://p…-caldav.icloud.com/published/…" autocomplete="off" /></div><div><button class="btn btn--primary" id="bkAppleBtn" style="width:100%">Apple-Link verbinden</button></div>';
-        el.append(ap);
-        $('bkAppleBtn').onclick = async () => {
-          const url = $('bkApple').value.trim();
-          if (!url) { toast('Bitte den Link aus der Kalender-App einfügen.', 'err'); return; }
-          $('bkAppleBtn').disabled = true;
-          const r = await calApi('apple', { url });
-          if (r.ok) { toast('Apple-Kalender verbunden, ' + (r.termine ?? 0) + ' Termine in den nächsten Wochen gefunden.'); loadCalendarStatus(); }
-          else { toast(r.error || 'Verbinden fehlgeschlagen.', 'err'); $('bkAppleBtn').disabled = false; }
+      const el = $('bkCal'); if (!el) return;
+      el.innerHTML = '';
+      const anbieter = s.anbieter || { google: true, microsoft: false }; // älterer Server: nur Google
+      const darf = typeof s.darf_verwalten === 'boolean' ? s.darf_verwalten : tmMeineStufe !== 'member';
+      if (s.connected) {
+        const fehler = s.status === 'fehler';
+        const kopf = document.createElement('div'); kopf.className = 'kal-zeile';
+        const name = document.createElement('span');
+        name.innerHTML = '<span class="statusdot' + (fehler ? ' statusdot--fehler' : '') + '" aria-hidden="true"></span><b></b> ' + (fehler ? 'unterbrochen' : 'verbunden');
+        name.querySelector('b').textContent = KAL_NAME[s.provider] || 'Kalender';
+        kopf.append(name);
+        if (s.email) { const e = document.createElement('span'); e.className = 'muted kal-konto'; e.textContent = s.email; kopf.append(e); }
+        el.append(kopf);
+        if (fehler) {
+          const h = document.createElement('p'); h.className = 'kal-stoerung';
+          h.textContent = (s.provider === 'apple' ? 'Der Kalender-Link antwortet nicht. Bitte prüfen oder einen neuen Link einfügen.' : 'Verbindung unterbrochen. Bitte neu verbinden.')
+            + ' Bis dahin sieht der Assistent keine belegten Zeiten; neue Termine bekommen einen Prüfvermerk.';
+          if (s.letzter_fehler) { const m = document.createElement('span'); m.className = 'kal-meldung'; m.textContent = 'Meldung: ' + s.letzter_fehler; h.append(m); }
+          el.append(h);
+        } else if (s.letzter_erfolg) el.append(kalHinweis('Zuletzt abgefragt: ' + lvWann(s.letzter_erfolg) + ' Uhr'));
+        if (!darf) { el.append(kalHinweis('Verbinden und trennen können Inhaber und Admins.')); return; }
+        const row = document.createElement('div'); row.className = 'stack kal-knoepfe';
+        if (fehler && (s.provider === 'google' || s.provider === 'microsoft') && anbieter[s.provider]) row.append(kalKnopf(s.provider, 'Neu verbinden', 'btn--primary sm'));
+        const t = document.createElement('button'); t.type = 'button'; t.className = 'btn btn--danger sm'; t.textContent = 'Trennen';
+        t.onclick = async () => {
+          if (!confirm('Kalender trennen? Der Assistent sieht dann keine belegten Zeiten mehr und trägt keine Termine mehr ein.')) return;
+          t.disabled = true;
+          const r = await calApi('disconnect');
+          if (!r._ok) { toast(r.error || 'Trennen fehlgeschlagen.', 'err'); t.disabled = false; return; }
+          toast(r.widerrufen ? 'Kalender getrennt, Zugriff bei Google widerrufen.' : 'Kalender getrennt.', '', 4000);
+          loadCalendarStatus(); renderWeek();
         };
+        row.append(t); el.append(row);
+        if (fehler && s.provider === 'apple') kalAppleFeld(el, false);
+        return;
       }
+      if (!darf) { el.append(kalHinweis('Den Kalender verbinden Inhaber und Admins.')); return; }
+      const oauth = ['google', 'microsoft'].filter((p) => anbieter[p]);
+      if (oauth.length) {
+        // Hinweis vor dem Verbinden (Googles „in-product disclosure“): was Vocaris mit dem Kalender tut.
+        const h = document.createElement('p'); h.className = 'kal-hinweis kal-hinweis--vorab';
+        h.innerHTML = 'Vocaris liest nur belegte Zeiten und trägt Termine ein, die der Assistent bucht oder du hier anlegst. <a href="kalender.html" target="_blank" rel="noopener">Mehr dazu</a>';
+        el.append(h);
+        const row = document.createElement('div'); row.className = 'stack kal-knoepfe';
+        oauth.forEach((p) => row.append(kalKnopf(p, p === 'google' ? 'Mit Google verbinden' : 'Mit Outlook verbinden', 'btn--primary')));
+        el.append(row);
+      } else el.append(kalHinweis('Google und Outlook lassen sich gerade nicht verbinden. Den Apple-Kalender bindest du per Link an, alle Termine bekommst du über das Kalender-Abo.'));
+      kalAppleFeld(el, oauth.length > 0);
+    }
+    /** Termin im Kundenbereich angelegt oder abgesagt: im verbundenen Google-/Outlook-Kalender
+     *  nachziehen. Läuft nach der Meldung im Hintergrund; ein Fehler bekommt nur einen Hinweis. */
+    async function kalenderTermin(id, aktion) {
+      const s = kalStatus;
+      if (!id || !s || !s.anbieter || !s.connected || s.provider === 'apple') return; // nichts zu tun (oder älterer Server)
+      const r = await calApi('termin', { appointment_id: id, aktion });
+      if (r._ok && r.ergebnis === 'entfernt') toast('Termin abgesagt und aus dem Kalender entfernt.');
+      else if (r._ok && r.ergebnis === 'eingetragen') toast('Termin eingetragen, auch im verbundenen Kalender.');
+      else if (r._status === 502 || r._status === 0) toast(aktion === 'absagen'
+        ? 'Termin abgesagt. Aus dem verbundenen Kalender ließ er sich gerade nicht entfernen, bitte dort löschen.'
+        : 'Termin eingetragen. In den verbundenen Kalender ging er gerade nicht, bitte dort nachtragen.', 'err', 7000);
+    }
+    /** Nach der Rückkehr vom Anbieter (siehe KAL_RUECK): Verbindung abschließen oder Grund melden. */
+    let kalRueckErledigt = false;
+    async function kalenderRuecksprung() {
+      const r = KAL_RUECK; if (!r || kalRueckErledigt) return; kalRueckErledigt = true;
+      const zuTerminen = () => { if (module.termine) geh('sec-booking'); };
+      if (r.cal === 'ok') { toast('Kalender verbunden.'); return; } // älterer Server tauschte selbst
+      if (r.cal === 'admin-ok') { zuTerminen(); toast('Freigabe erteilt. Jetzt kannst du Outlook verbinden.', '', 6000); return; }
+      if (r.cal === 'err') { zuTerminen(); toast(KAL_GRUND[r.grund] || 'Kalender-Verbindung fehlgeschlagen.', 'err', 7000); return; }
+      if (r.cal !== 'fertig' || !r.code || !r.state) return;
+      zuTerminen();
+      const el = $('bkCal'); if (el) el.innerHTML = '<p class="kal-hinweis" role="status">Kalender wird verbunden …</p>';
+      const j = await calApi('finish', { code: r.code, state: r.state });
+      r.code = ''; r.state = ''; // Code gilt nur einmal
+      if (j._ok && j.ok) {
+        const andere = tenant && j.tenant_id && j.tenant_id !== tenant.id;
+        toast(andere ? 'Kalender verbunden, bei der Firma, in der du das Verbinden gestartet hast.' : (KAL_NAME[j.provider] || 'Kalender') + ' verbunden.', '', 4000);
+        renderWeek();
+      } else toast((j.grund !== 'anbieter' && KAL_GRUND[j.grund]) || j.error || 'Kalender-Verbindung fehlgeschlagen.', 'err', 7000);
+      loadCalendarStatus();
     }
 
     // ---- Wochen-Kalender ----
@@ -10006,7 +10135,7 @@
       const last = new Date(end); last.setDate(last.getDate() - 1);
       $('calTitle').textContent = fmt(start) + ' – ' + fmt(last) + ' ' + start.getFullYear();
 
-      let appts = [], busy = [], blocks = [], recurring = [];
+      let appts = [], busy = [], blocks = [], recurring = [], kalAus = false;
       try {
         const [r1, r2, r3, r4] = await Promise.all([
           sb.from('appointments').select('*').eq('tenant_id', tenant.id).eq('status', 'booked')
@@ -10017,6 +10146,8 @@
           sb.from('recurring_blocks').select('*').eq('tenant_id', tenant.id),
         ]);
         appts = r1.data || []; busy = (r2 && r2.busy) || []; blocks = r3.data || []; recurring = r4.data || [];
+        // ok:false = verbundener Kalender gerade nicht erreichbar → belegte Zeiten fehlen, das muss man sehen
+        kalAus = !!r2 && (r2.ok === false || (!r2._ok && r2._status !== 401 && !!kalStatus?.connected));
       } catch { /* offline/Fehler → leer */ }
 
       const days = []; for (let i = 0; i < 7; i++) { const d = new Date(start); d.setDate(d.getDate() + i); days.push(d); }
@@ -10033,7 +10164,8 @@
       // tabindex: das Raster ist bei engem Platz vertikal scrollbar (max-height, overflow-y:auto),
       // hat aber keine fokussierbaren Kinder, die es sonst in den Fokus holen würden – ohne eigenes
       // tabindex kommen Tastaturnutzer nicht an den abgeschnittenen, unteren Teil heran.
-      el.innerHTML = head + `<div class="cal__grid" tabindex="0" aria-label="Kalenderraster, zum Scrollen fokussieren">${axis}${cols}</div>`;
+      el.innerHTML = (kalAus ? '<p class="kal-stoerung" role="status">Kalender gerade nicht erreichbar: belegte Zeiten aus deinem Kalender fehlen in dieser Ansicht.</p>' : '')
+        + head + `<div class="cal__grid" tabindex="0" aria-label="Kalenderraster, zum Scrollen fokussieren">${axis}${cols}</div>`;
 
       const colEls = el.querySelectorAll('.cal__col');
       const dayIndex = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return Math.round((x.getTime() - start.getTime()) / 86400000); };
@@ -10118,6 +10250,7 @@
           if (!confirm('Termin am ' + s.toLocaleString('de-DE') + ' absagen?')) return;
           if (!(await schreiben(sb.from('appointments').update({ status: 'cancelled' }).eq('id', a.id)))) return;
           toast('Termin abgesagt.'); renderWeek(); loadAll();
+          kalenderTermin(a.id, 'absagen');
         };
         ev.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ev.onclick(); } };
       });
@@ -10434,7 +10567,7 @@
       'sec-auswertung': 'auswertung statistik zahlen bericht rückruf-erfolg quote', 'sec-kb': 'wissensdatenbank wissen einträge faq', 'sec-gaps': 'offene fragen unbeantwortet',
       'sec-assistant': 'assistent begrüßung stimme öffnungszeiten regeln persona', 'sec-number': 'telefonnummer rufnummer sperrliste sperren',
       'sec-team': 'zugänge team mitarbeiter einladen benutzer', 'sec-webhooks': 'schnittstellen benachrichtigungen slack e-mail sms webhook api crm ticketsystem',
-      'sec-booking': 'termine kalender buchung', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
+      'sec-booking': 'termine kalender buchung kalender verbinden google outlook microsoft apple icloud', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
     };
     let suTreffer = [], suIndex = 0, suServer = { anrufe: [], wissen: [] }, suServerFuer = '', suServerTimer = null;
     const suNorm = (s) => String(s ?? '').toLowerCase();
