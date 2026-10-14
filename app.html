@@ -2904,7 +2904,7 @@
     // genau in der Spätschicht zu falschen „Heute"-Werten führt.
     const lokalDatum = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const heuteLokal = () => lokalDatum(new Date());
-    let tenant = null, accessToken = null, realtimeChannel = null, realtimeTenantId = null, appUserId = null, bookingToken = '', calStart = null, bizHours = {};
+    let tenant = null, accessToken = null, realtimeChannel = null, realtimeRsChannel = null, realtimeTenantId = null, appUserId = null, bookingToken = '', calStart = null, bizHours = {};
     // Welche Module sind eingeschaltet? Steuert die Sichtbarkeit der Bereiche.
     let module = { termine: false, reservierung: false };
     let currentDept = 'general';
@@ -3503,6 +3503,7 @@
       // Mandanten-gebundenen Zustand abräumen, damit nach einem Kontowechsel kein alter
       // Echtzeit-Kanal oder alte Listen/Layouts aus der vorigen Sitzung stehen bleiben.
       if (realtimeChannel) { try { sb.removeChannel(realtimeChannel); } catch (_) {} realtimeChannel = null; realtimeTenantId = null; }
+      if (realtimeRsChannel) { try { sb.removeChannel(realtimeRsChannel); } catch (_) {} realtimeRsChannel = null; }
       tenant = null; liveCalls.clear(); mgItems.clear();
       tkAlle = []; kbItems = []; gapItems = []; dbLayout = null;
     }
@@ -5618,7 +5619,9 @@
     // Der Server schickt beide Richtungen als μ-law, so wie sie über die
     // Leitung gehen. Wir rechnen sie hier um und spielen sie ab. Es geht nichts
     // zurück: wer mithört, ist nicht in der Leitung und kann nichts stören.
-    let mhLaeuft = null, mhWs = null, mhCtx = null, mhZeit = 0;
+    // mhZeit je Spur: Anrufer und Assistent kommen als getrennte Stücke und müssen übereinander
+    // laufen, nicht hintereinander (sonst abwechselnd 20 ms je Seite, abgehackt und immer später).
+    let mhLaeuft = null, mhWs = null, mhCtx = null, mhZeit = {};
 
     /** Umrechnungstabelle μ-law → PCM, einmal aufgebaut. */
     const MULAW = (() => {
@@ -5639,7 +5642,7 @@
         mhCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 8000 });
         if (mhCtx.state === 'suspended') mhCtx.resume();
       } catch { toast('Ton lässt sich hier nicht abspielen.', 'err'); return; }
-      mhZeit = 0;
+      mhZeit = {};
       mhWs = new WebSocket(API.replace(/^http/, 'ws') + '/media-mithoeren?call_id=' + encodeURIComponent(callId) + '&token=' + encodeURIComponent(accessToken));
       mhWs.onmessage = (e) => {
         let d; try { d = JSON.parse(e.data); } catch { return; }
@@ -5649,11 +5652,18 @@
         const puffer = mhCtx.createBuffer(1, roh.length, 8000);
         const kanal = puffer.getChannelData(0);
         for (let i = 0; i < roh.length; i++) kanal[i] = MULAW[roh.charCodeAt(i)];
+        // Jede Spur (inbound/outbound) hat ihre eigene Zeitleiste; beide laufen gleichzeitig und
+        // WebAudio mischt sie. Innerhalb einer Spur Stücke lückenlos hintereinanderlegen.
+        const spur = d.spur === 'outbound' ? 'outbound' : 'inbound';
+        const jetzt = mhCtx.currentTime;
+        let t = mhZeit[spur] || 0;
+        // Leergelaufen (Netz-Aussetzer, Gesprächspause): mit 150 ms Vorlauf neu ansetzen.
+        if (t < jetzt + 0.02) t = jetzt + 0.15;
+        // Zu weit voraus (Stau nach einem Aussetzer): Stück auslassen, damit die Verzögerung nicht wächst.
+        if (t > jetzt + 0.6) return;
         const q = mhCtx.createBufferSource(); q.buffer = puffer; q.connect(mhCtx.destination);
-        // Stücke hintereinanderlegen, sonst überlappen sie und es knackt.
-        mhZeit = Math.max(mhZeit, mhCtx.currentTime + 0.08);
-        q.start(mhZeit);
-        mhZeit += puffer.duration;
+        q.start(t);
+        mhZeit[spur] = t + puffer.duration;
       };
       mhWs.onclose = () => { if (mhLaeuft) { mhLaeuft = null; renderLive(); } };
       mhWs.onerror = () => toast('Mithören abgebrochen.', 'err');
@@ -6424,6 +6434,7 @@
         if (realtimeTenantId === tenantId) return;
         // Anderer Mandant als beim letzten Mal (Kontowechsel ohne Neuladen) – alten Kanal abmelden.
         try { sb.removeChannel(realtimeChannel); } catch (_) {}
+        if (realtimeRsChannel) { try { sb.removeChannel(realtimeRsChannel); } catch (_) {} realtimeRsChannel = null; }
         realtimeChannel = null; realtimeTenantId = null;
       }
       if (accessToken) sb.realtime.setAuth(accessToken);
@@ -6457,14 +6468,23 @@
           const g = p.new; if (!g || g.status !== 'open' || gapItems.some((x) => x.id === g.id)) return;
           gapItems.unshift(g); toast('Neue offene Frage: ' + (g.question || '').slice(0, 70)); renderFragen(); if (typeof renderWissen === 'function') renderWissen();
         })
-        // Tischplan/Belegung ohne dieses Abo: ein zweites offenes Gerät (z. B. Empfang + Service)
-        // sieht eine hier gerade angelegte/geänderte Reservierung sonst dauerhaft nicht, auch nicht
-        // nach einem Bereichswechsel (renderRsPlan() zeichnet nur aus dem Speicher, kein Serverabruf).
+        .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Live-Kanal:', status, err && err.message || '');
+        });
+      // Tischplan/Belegung ohne dieses Abo: ein zweites offenes Gerät (z. B. Empfang + Service)
+      // sieht eine hier gerade angelegte/geänderte Reservierung sonst dauerhaft nicht, auch nicht
+      // nach einem Bereichswechsel (renderRsPlan() zeichnet nur aus dem Speicher, kein Serverabruf).
+      // EIGENER Kanal: Lehnt Realtime ein Abo ab (z. B. Tabelle nicht in der Publikation), scheitert
+      // der ganze Kanal. Bis 14.10.2026 hing reservations im Live-Kanal und hat so Anrufe, Mitschrift,
+      // Nachrichten und Vorgänge bei allen Firmen lahmgelegt.
+      realtimeRsChannel = sb.channel('live-rs-' + tenantId)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: 'tenant_id=eq.' + tenantId }, () => {
           if (!tenant || !$('rsPlanDate')) return;
           clearTimeout(rsBelegungTimer); rsBelegungTimer = setTimeout(() => loadDayOccupancy($('rsPlanDate').value), 400);
         })
-        .subscribe();
+        .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Reservierungs-Kanal:', status, err && err.message || '');
+        });
     }
 
     // ---- Assistent: Vorschau, Ungespeichert-Anzeige, Abschnitts-Sprünge ----
