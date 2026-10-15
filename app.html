@@ -1403,6 +1403,24 @@
       #sec-tickets .lv-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
       #sec-tickets .lv-filter > * { flex: none; }
     }
+    /* Stimmung und Priorität: Farbpunkt + Text statt Emoji */
+    [data-stimmung="positiv"] { --punkt: #16a34a; } [data-stimmung="neutral"] { --punkt: #94a3b8; } [data-stimmung="negativ"] { --punkt: #dc2626; }
+    [data-tkprio="high"] { --punkt: #dc2626; } [data-tkprio="normal"] { --punkt: #3d8bff; } [data-tkprio="low"] { --punkt: #94a3b8; }
+    .mit-punkt::before, .lv-chips .lv-chip[data-stimmung]:not([data-stimmung=""])::before, .lv-chips .lv-chip[data-tkprio]:not([data-tkprio=""])::before {
+      content: ''; display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--punkt, var(--ink-faint)); margin-right: 6px; vertical-align: 1px; }
+    /* Restaurant: Bausteine wie im übrigen Kundenbereich (zarte Status-Abzeichen, Regler in Elektroblau) */
+    .res-chip { display: inline-flex; align-items: center; padding: 1px 9px; margin-left: 8px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; vertical-align: 2px;
+      border: 1px solid var(--line); background: var(--paper-2); color: var(--ink-soft); }
+    .res-chip[data-status="booked"] { background: #ecfdf3; border-color: #bbf7d0; color: #166534; }
+    .res-chip[data-status="seated"], .res-chip[data-status="stamm"] { background: var(--marke-zart); border-color: #c7d7fe; color: var(--accent-ink); }
+    .res-chip[data-status="no_show"] { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
+    :root[data-theme="dark"] .res-chip[data-status="booked"] { background: #123329; border-color: #1d4d3d; color: #6fe0b3; }
+    :root[data-theme="dark"] .res-chip[data-status="seated"], :root[data-theme="dark"] .res-chip[data-status="stamm"] { background: #1c2a4d; border-color: #2a3d6e; color: #9dbcff; }
+    :root[data-theme="dark"] .res-chip[data-status="no_show"] { background: #3f1a1a; border-color: #5a2a2a; color: #fca5a5; }
+    .res-notiztext { margin-top: 4px; font-size: 13px; color: var(--ink); }
+    .res-notiztext span { color: var(--ink-faint); font-weight: 600; margin-right: 2px; }
+    .shell input[type=range] { accent-color: var(--accent); }
+    #rsAreaTabs .deptseg { white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -1589,7 +1607,7 @@
           </div>
           <div id="lvActive"></div>
           <div class="lv-filter">
-            <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
+            <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">negativ</button></div>
             <select id="lvThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="lv-chips" id="lvTagFilter"></span>
             <span class="muted" id="lvAnzahl"></span>
@@ -1725,7 +1743,7 @@
           <div id="obActive"></div>
           <div class="lv-filter">
             <div class="lv-chips" id="obArt"><button class="lv-chip aktiv" type="button" data-art="">Alle Arten</button><button class="lv-chip" type="button" data-art="bridge">Am Telefon</button><button class="lv-chip" type="button" data-art="browser">Im Browser</button><button class="lv-chip" type="button" data-art="assistant">Assistent</button></div>
-            <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
+            <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">negativ</button></div>
             <select id="obThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="lv-chips" id="obTagFilter"></span>
             <span class="muted" id="obAnzahl"></span>
@@ -1843,7 +1861,7 @@
             <div class="db-kpi klick" data-tkstat="erledigt" role="button" tabindex="0"><div class="k">Erledigt, 30 Tage</div><div class="v" id="tkStErl">–</div><div class="d">Ø Erledigung in <b id="tkStDauer">–</b></div></div>
           </div>
           <div class="lv-filter">
-            <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">🔴 hoch</button><button class="lv-chip" type="button" data-tkprio="normal">🔵 normal</button><button class="lv-chip" type="button" data-tkprio="low">⚪ niedrig</button></div>
+            <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">hoch</button><button class="lv-chip" type="button" data-tkprio="normal">normal</button><button class="lv-chip" type="button" data-tkprio="low">niedrig</button></div>
             <select id="tkWer" aria-label="Zuständigkeit filtern" class="lv-select"><option value="">Alle Zuständigen</option></select>
             <select id="tkKat" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <span class="muted" id="tkAnzahl"></span>
@@ -2572,7 +2590,7 @@
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-            <div id="rsAreaTabs" class="branch-chips" style="margin:0"></div>
+            <div id="rsAreaTabs" class="deptbar" role="group" aria-label="Bereich" style="margin:0"></div>
           </div>
           <div id="rsAreaManage" class="panel hidden" style="margin:0 0 10px">
             <h3 style="margin:0 0 8px">Bereiche verwalten</h3>
@@ -4198,7 +4216,7 @@
       wrap.innerHTML = '';
       areas.forEach((a) => {
         const b = document.createElement('button');
-        b.type = 'button'; b.className = 'chip' + (a === rsArea ? ' active' : ''); b.setAttribute('aria-pressed', String(a === rsArea));
+        b.type = 'button'; b.className = 'deptseg' + (a === rsArea ? ' active' : ''); b.setAttribute('aria-pressed', String(a === rsArea));
         const n = rsTablesData.filter((t) => (t.area || 'innen') === a).length;
         b.textContent = areaName(a) + ' (' + n + ')';
         b.onclick = () => { rsArea = a; renderAreaTabs(); renderRsPlan(); };
@@ -4716,20 +4734,20 @@
       const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       const div = document.createElement('div'); div.className = 'item';
       const st = r.status || 'booked';
-      const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
+      const badge = '<span class="res-chip" data-status="' + st + '">' + (RES_STATUS[st] || st) + '</span>';
       const visits = guestVisitCount(r.customer_phone);
-      const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:var(--accent-ink);background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
+      const regular = visits > 0 ? '<span class="res-chip" data-status="stamm">Stammgast (' + (visits + 1) + '×)</span>' : '';
       // No-Show-Historie: Gäste mit früheren No-Shows markieren (ab 2× = Wiederholungstäter, kräftiger).
       const ns = guestNoShowCount(r.customer_phone);
       const repeat = ns >= 2;
-      const nsBadge = ns > 0 ? '<span data-tip="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
+      const nsBadge = ns > 0 ? '<span class="res-chip" data-status="no_show" data-tip="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen.">' + (repeat ? 'Wiederholt · ' : '') + ns + '× No-Show</span>' : '';
       // h3 statt h4: dies ist die erste Überschrift nach dem Bereichs-h1/h2 (siehe .item__titel oben).
       const h = document.createElement('h3'); h.className = 'item__titel';
       h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
       p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
-      if (r.notes) { const n = document.createElement('p'); n.style.cssText = 'margin-top:4px;color:var(--accent-ink);font-weight:600;font-size:13px'; n.textContent = '📝 ' + r.notes; div.append(n); }
+      if (r.notes) { const n = document.createElement('p'); n.className = 'res-notiztext'; n.innerHTML = '<span>Notiz</span> '; n.append(r.notes); div.append(n); }
       const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
       const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
       if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
@@ -4783,16 +4801,13 @@
       // No-Show-Risiko: heutige, noch offene Gäste mit früheren No-Shows
       const risky = items.filter((r) => r.status === 'booked' && guestNoShowCount(r.customer_phone) > 0).length;
       const tile = (label, value, sub, accent) =>
-        '<div style="background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px 14px">' +
-        '<div style="font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint)">' + label + '</div>' +
-        '<div style="font-size:22px;font-weight:800;color:' + (accent || 'var(--ink)') + ';margin-top:2px;line-height:1.15">' + value + '</div>' +
-        (sub ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">' + sub + '</div>' : '') + '</div>';
+        '<div class="db-kpi"><div class="k">' + label + '</div><div class="v"' + (accent ? ' style="color:' + accent + '"' : '') + '>' + value + '</div>' + (sub ? '<div class="d">' + sub + '</div>' : '') + '</div>';
       host.innerHTML =
         tile('Gäste', covers, items.length + ' Reservierung' + (items.length === 1 ? '' : 'en')) +
-        tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + esc(upcoming.customer_name) : '')) : 'keine offene', upcoming ? '#2563eb' : null) +
+        tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + esc(upcoming.customer_name) : '')) : 'keine offene', upcoming ? 'var(--accent-ink)' : null) +
         tile('Stoßzeit', peakLbl, peakH != null ? (peakC + ' Gäste') : '') +
         tile('Am Tisch / fertig', seated + ' / ' + done, 'gerade / abgeschlossen') +
-        tile('No-Show-Risiko', risky, risky ? 'Gäste mit früheren No-Shows' : 'unauffällig', risky ? '#c0392b' : '#3f7d63');
+        tile('No-Show-Risiko', risky, risky ? 'Gäste mit früheren No-Shows' : 'unauffällig', risky ? '#c0392b' : null);
       host.classList.remove('hidden');
     }
     let rsDayView = 'list';
@@ -5455,7 +5470,7 @@
     const fmtSeit = (iso) => { const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
     const lvDauer = (c) => c.duration_seconds || (c.ended_at ? Math.round((new Date(c.ended_at) - new Date(c.started_at)) / 1000) : 0);
     const lvWann = (iso) => { const d = new Date(iso); const h0 = lvHeute0(); const uhr = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); if (d >= h0) return 'Heute ' + uhr; if (d >= new Date(h0.getTime() - 864e5)) return 'Gestern ' + uhr; return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + uhr; };
-    const LV_STIMMUNG = { positiv: ['#16a34a', '🙂 positiv'], neutral: ['#94a3b8', '😐 neutral'], negativ: ['#dc2626', '🙁 negativ'] };
+    const LV_STIMMUNG = { positiv: ['#16a34a', 'positiv'], neutral: ['#94a3b8', 'neutral'], negativ: ['#dc2626', 'negativ'] };
     // Der Server speichert sentiment teils englisch (positive/negative); die Oberfläche rechnet durchgängig mit positiv/neutral/negativ.
     const stimmungKey = (s) => ({ positive: 'positiv', negative: 'negativ' }[s] || s);
     const stimmungNorm = (rows) => { for (const r of (rows || [])) r.sentiment = stimmungKey(r.sentiment); return rows || []; };
@@ -5570,7 +5585,7 @@
       const z = document.createElement('div'); z.className = 'lv-zeile' + (c.id === LV.auswahl ? ' aktiv' : '') + (live ? ' live' : ''); z.dataset.callId = c.id;
       const st = LV_STIMMUNG[c.sentiment];
       z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic hidden"></span><span class="lv-live hidden">● Live</span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
-      const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1].slice(2); } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
+      const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1]; } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
       const name = typeof ktName === 'function' ? ktName(c.caller_number) : '';
       z.querySelector('b').innerHTML = markieren(name || fmtNr(c.caller_number));
       if (name) z.querySelector('b').dataset.tip = fmtNr(c.caller_number);
@@ -5731,6 +5746,7 @@
       chip(new Date(c.started_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
       if (!live) chip(lvDauer(c) ? 'Dauer ' + fmtDauer(lvDauer(c)) : 'Dauer unbekannt');
       if (st) chip(st[1], 'Stimmung, automatisch ausgewertet · Klick filtert die Liste', () => { A.stimmung = A.stimmung === c.sentiment ? '' : c.sentiment; document.querySelectorAll('#' + A.p + 'Stimmung .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.stimmung || '') === A.stimmung)))); renderLive(); });
+      if (st) { const sp = meta.lastElementChild; sp?.classList.add('mit-punkt'); sp?.style.setProperty('--punkt', st[0]); }
       if (c.topic) chip(c.topic, 'Thema, automatisch erkannt · Klick filtert die Liste', () => { A.thema = A.thema === c.topic ? '' : c.topic; renderLive(); });
       if (c.status && !live && c.status !== 'ended') chip(c.status);
       if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.innerHTML = markieren(c.summary); z.classList.remove('hidden'); }
@@ -7897,9 +7913,9 @@
       q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" title="Filter entfernen">' + esc(dbFilter.label) + ' · ' + liste.length + ' ×</button>' : '';
       const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
-      liste.slice(0, dbFilter ? 8 : 5).forEach((x) => { const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
-        const z = zeile((ktName(x.caller_number) || fmtNr(x.caller_number)) + (x.topic ? ' · ' + x.topic : ''), lvWann(x.started_at) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
-        z.onclick = () => liveOeffnen(x.id); la.append(z); });
+      liste.slice(0, dbFilter ? 8 : 5).forEach((x) => {
+        const z = zeile((ktName(x.caller_number) || fmtNr(x.caller_number)) + (x.topic ? ' · ' + x.topic : ''), lvWann(x.started_at) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
+        z.onclick = () => liveOeffnen(x.id); la.append(z); const sp = LV_STIMMUNG[x.sentiment]; if (sp) { z.querySelector('.z').classList.add('mit-punkt'); z.querySelector('.z').style.setProperty('--punkt', sp[0]); } });
       if (liste.length > (dbFilter ? 8 : 5)) { const m = document.createElement('a'); m.href = '#'; m.dataset.geh = 'sec-live'; m.className = 'db-mehr'; m.textContent = 'Alle ' + liste.length + ' Anrufe ansehen'; la.append(m); }
       // Offene Vorgänge
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
