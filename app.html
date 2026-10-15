@@ -1260,6 +1260,8 @@
       body:has(.verbindung.sichtbar) .side { top: var(--vb-h, 62px); }
       body:has(.verbindung.sichtbar) .main { padding-top: 16px; }
     }
+    /* Eingehend: Hinweis, wenn nur die neuesten Anrufe geladen sind */
+    .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -3959,8 +3961,8 @@
       if (rsGuestVisitsLoaded) return;
       rsGuestVisitsLoaded = true; rsGuestVisits = {}; rsGuestNoShows = {};
       const todayStart = new Date(heuteLokal() + 'T00:00:00').toISOString();
-      const { data } = await sb.from('reservations').select('customer_phone, status')
-        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed', 'no_show']).lt('starts_at', todayStart).limit(2000);
+      const { data } = await alleZeilen((a, z) => sb.from('reservations').select('customer_phone, status')
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed', 'no_show']).lt('starts_at', todayStart).order('starts_at', { ascending: false }).range(a, z));
       for (const r of data || []) {
         const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9); if (k.length < 6) continue;
         if (r.status === 'no_show') rsGuestNoShows[k] = (rsGuestNoShows[k] || 0) + 1;
@@ -4645,10 +4647,10 @@
       const list = $('guestList'); if (!list) return;
       backToGuestList();
       list.innerHTML = '<span class="muted">Wird geladen …</span>';
-      const { data: res, error } = await sb.from('reservations')
+      const { data: res, error } = await alleZeilen((a, z) => sb.from('reservations')
         .select('customer_name, customer_phone, customer_email, starts_at, status, notes')
         .eq('tenant_id', tenant.id).not('customer_phone', 'is', null)
-        .order('starts_at', { ascending: false }).limit(4000);
+        .order('starts_at', { ascending: false }).range(a, z));
       if (error) { toast('Fehler beim Laden der Gäste: ' + fehlerText(error), 'err'); list.innerHTML = fehlerZustand(loadGuests); return; }
       const byKey = {};
       const now = Date.now();
@@ -4867,8 +4869,8 @@
     async function renderAnalytics() {
       const box = $('rsAnalytics'); box.innerHTML = '<span class="muted">Werte werden berechnet …</span>';
       const since = new Date(Date.now() - 30 * 86400000).toISOString();
-      const { data } = await sb.from('reservations').select('starts_at, party_size, status, source')
-        .eq('tenant_id', tenant.id).gte('starts_at', since).limit(5000);
+      const { data } = await alleZeilen((a, z) => sb.from('reservations').select('starts_at, party_size, status, source')
+        .eq('tenant_id', tenant.id).gte('starts_at', since).order('starts_at').range(a, z));
       const rows = data || [];
       const done = rows.filter((r) => r.status !== 'cancelled');
       const noShow = rows.filter((r) => r.status === 'no_show').length;
@@ -7591,9 +7593,9 @@
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
       const in7 = new Date(jetzt.getTime() + 7 * 864e5);
       const ergebnisse = await Promise.all([
-        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(3000),
+        alleZeilen((a, z) => sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).range(a, z)),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
-        sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).limit(5000),
+        alleZeilen((a, z) => sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).order('started_at').range(a, z)),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
         sb.rpc('tickets_kennzahlen', { t: tenant.id }),
         sb.from('tickets').select('id, number, title, priority, due_at, caller_name, status').eq('tenant_id', tenant.id).neq('status', 'done').order('due_at', { ascending: true }).limit(5),
@@ -7767,7 +7769,7 @@
       const meinLauf = ++awLaufId;
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - awTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * awTage * 864e5);
       const ergebnisse = await Promise.all([
-        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(5000),
+        alleZeilen((a, z) => sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).range(a, z)),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
         sb.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'booked').gte('created_at', start.toISOString()),
@@ -8954,7 +8956,7 @@
     async function loadTickets() {
       if (!tenant) return;
       const [{ data: items, error }, { data: kz }] = await Promise.all([
-        sb.from('tickets').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(500),
+        ticketsVollstaendigLaden(), // alle offenen (seitenweise) + die 300 zuletzt erledigten statt der 500 neuesten
         sb.rpc('tickets_kennzahlen', { t: tenant.id }),
       ]);
       if (error) { toast('Fehler beim Laden der Vorgänge: ' + fehlerText(error), 'err'); const ul = $('tkListe'); if (ul && !tkAlle.length) ul.innerHTML = fehlerZustand(loadTickets); return; }
@@ -10249,6 +10251,74 @@
       new MutationObserver(setzen).observe(v, { attributes: true, attributeFilter: ['class'] });
       window.addEventListener('resize', setzen); setzen();
     })();
+
+    // ---- Daten vollständig laden statt still zu kürzen ----
+    // Die Datenbank liefert höchstens 1.000 Zeilen je Abfrage; .limit(3000/5000) wurde dadurch still zu 1.000.
+    // alleZeilen holt seitenweise, bis eine Seite nicht mehr voll ist (Obergrenze max, dann gekuerzt: true).
+    const DB_SEITE = 1000;
+    async function alleZeilen(bauer, max = 20000) {
+      const alle = [];
+      for (let von = 0; von < max; von += DB_SEITE) {
+        const bis = Math.min(von + DB_SEITE, max) - 1;
+        const { data, error } = await bauer(von, bis);
+        if (error) return { data: alle.length ? alle : null, error };
+        alle.push(...(data || []));
+        if (!data || data.length < bis - von + 1) return { data: alle, error: null, gekuerzt: false };
+      }
+      return { data: alle, error: null, gekuerzt: true };
+    }
+    /** Vorgänge: alle nicht erledigten (seitenweise) und die 300 zuletzt erledigten. Bisher die 500 neuesten insgesamt –
+     *  ältere offene Vorgänge fehlten dann in der Liste, obwohl Kachel und Badge sie zählten. */
+    async function ticketsVollstaendigLaden() {
+      const [offen, erledigt] = await Promise.all([
+        alleZeilen((a, z) => sb.from('tickets').select('*').eq('tenant_id', tenant.id).neq('status', 'done').order('created_at', { ascending: false }).range(a, z)),
+        sb.from('tickets').select('*').eq('tenant_id', tenant.id).eq('status', 'done').order('closed_at', { ascending: false, nullsFirst: false }).limit(300),
+      ]);
+      const error = offen.error || erledigt.error;
+      if (error) return { data: null, error };
+      return { data: [...(offen.data || []), ...(erledigt.data || [])].sort((x, y) => new Date(y.created_at) - new Date(x.created_at)), error: null };
+    }
+    // Eingehend/Ausgehend: Die Liste lud die 100 neuesten Anrufe und filterte nur darin – bei viel Betrieb fehlte in
+    // „7 Tage“ schon die Vorwoche. Jetzt wird der gewählte Zeitraum vollständig nachgeladen (höchstens 1.000 Anrufe).
+    const LV_MAX = 1000;
+    let lvGekuerzt = false, lvNachladenLaeuft = null;
+    async function lvZeitraumVollstaendig() {
+      if (!tenant || lvAlleGeladen) { lvGekuerzt = false; return; }
+      const A = Object.values(LV_ANSICHTEN).find((v) => !$(v.sec)?.classList.contains('hidden')) || LV_ANSICHTEN.ein;
+      const grenze = A.zeitraum === 0 ? -Infinity : A.zeitraum === 1 ? lvHeute0().getTime() : Date.now() - A.zeitraum * 864e5;
+      let aeltester = Infinity; for (const x of liveCalls.values()) { const t = new Date(x.call.started_at).getTime(); if (t < aeltester) aeltester = t; }
+      if (aeltester <= grenze) { lvGekuerzt = false; renderLive(); return; } // alles aus dem Zeitraum ist schon da
+      if (lvGeladen >= LV_MAX) { lvGekuerzt = true; renderLive(); return; }
+      if (lvNachladenLaeuft) return lvNachladenLaeuft;
+      const gen = lvLadeGen, von = lvGeladen;
+      lvNachladenLaeuft = (async () => {
+        let q = sb.from('calls').select('*').eq('tenant_id', tenant.id).order('started_at', { ascending: false });
+        if (grenze > -Infinity) q = q.gte('started_at', new Date(grenze).toISOString());
+        const { data, error } = await q.range(von, LV_MAX - 1);
+        if (gen !== lvLadeGen || error || lvGeladen !== von) return; // inzwischen neu geladen oder Fehler – Liste bleibt, wie sie ist
+        for (const c of stimmungNorm(data)) { if (!liveCalls.has(c.id)) liveCalls.set(c.id, { call: c, turns: [], geladen: false }); lvTagsVon(c).forEach((t) => lvAlleTags.add(t)); }
+        lvGeladen = von + (data || []).length;
+        // Mit Zeitgrenze heißt eine nicht volle Seite nur: im Zeitraum ist alles da. Ohne Grenze („Alle“): wirklich alles.
+        if (grenze === -Infinity && (data || []).length < LV_MAX - von) lvAlleGeladen = true;
+        lvGekuerzt = lvGeladen >= LV_MAX && !lvAlleGeladen;
+        renderLive();
+      })().finally(() => { lvNachladenLaeuft = null; });
+      return lvNachladenLaeuft;
+    }
+    {
+      const loadLiveRoh = loadLive;
+      loadLive = async function (mehr) { await loadLiveRoh(mehr); if (!mehr) await lvZeitraumVollstaendig(); };
+      const lvZeichnenRoh = lvZeichnen;
+      lvZeichnen = function () {
+        lvZeichnenRoh();
+        if (!lvGekuerzt || lvAlleGeladen) return;
+        const st = lvEl('Streifen'); if (!st) return;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'lv-streifen__mehr'; b.textContent = 'nur die neuesten ' + lvGeladen.toLocaleString('de-DE') + ' · ältere laden';
+        b.onclick = () => loadLive(true);
+        st.append(' · ', b);
+      };
+      for (const A of Object.values(LV_ANSICHTEN)) document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((b) => b.addEventListener('click', () => { lvZeitraumVollstaendig(); }));
+    }
 
     boot();
   </script>
