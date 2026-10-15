@@ -1268,6 +1268,15 @@
     .lv-entstanden[hidden] { display: none; }
     .lv-entstanden button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 8%, var(--white)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-radius: 999px; padding: 3px 10px; min-height: 28px; cursor: pointer; }
     .lv-entstanden button:hover { border-color: var(--accent); }
+    /* Reservierung: Notiz direkt bearbeiten */
+    .res-notiz { margin-top: 8px; display: grid; gap: 6px; }
+    .res-notiz textarea { width: 100%; min-height: 56px; font: inherit; font-size: 14px; }
+    .res-notiz .stack { margin: 0; }
+    /* Assistent: Fehlerzustände (Sonderhinweis „bis“ vor „ab“, Weiterleitung ohne Zeiten, ungültige Nummer) */
+    .as-hinweisstatus[data-art="fehler"] { background: #fef2f2; color: #b91c1c; }
+    :root[data-theme="dark"] .as-hinweisstatus[data-art="fehler"] { background: #3a1616; color: #fca5a5; }
+    .as-hinweisstatus[hidden] { display: none; }
+    #sec-assistant [aria-invalid="true"] { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220, 38, 38, .15); }
     .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   </style>
 </head>
@@ -4008,10 +4017,14 @@
       return ids.size;
     }
     const RES_STATUS = { booked: 'Reserviert', seated: 'Am Tisch', no_show: 'No-Show', cancelled: 'Storniert', completed: 'Abgeschlossen' };
-    async function setResStatus(id, status) {
+    async function setResStatus(id, status, ohneRueckgaengig) {
+      // Vorigen Status merken: ein Fehlklick (Eingetroffen, No-Show, Storniert) lässt sich im Hinweis zurücknehmen.
+      const alt = ohneRueckgaengig ? null : (await sb.from('reservations').select('status').eq('id', id).maybeSingle()).data?.status;
       if (!(await schreiben(sb.from('reservations').update({ status }).eq('id', id)))) return;
       rsGuestVisitsLoaded = false; // Stammgast-/No-Show-Zähler bei nächster Anzeige neu laden, Status hat sich geändert
-      toast(RES_STATUS[status] ? (RES_STATUS[status] + '.') : 'Aktualisiert.'); loadRestaurant();
+      const t = toast(RES_STATUS[status] ? (RES_STATUS[status] + '.') : 'Aktualisiert.', '', alt && alt !== status ? 7000 : 2600);
+      if (alt && alt !== status) { const a = document.createElement('a'); a.href = '#'; a.className = 'toast__link'; a.textContent = 'Rückgängig'; a.onclick = (e) => { e.preventDefault(); t.className = 'toast'; setResStatus(id, alt, true); }; t.append(' ', a); }
+      loadRestaurant();
     }
     const AREA_LABEL = { innen: 'Drinnen', draussen: 'Draußen', bar: 'Bar' };
     function areaName(a) { return AREA_LABEL[a] || (a ? a.charAt(0).toUpperCase() + a.slice(1) : 'Bereich'); }
@@ -4509,7 +4522,7 @@
           const stcol = STATUS_COLOR[r.status] || '#888';
           div.innerHTML = '<h4 style="margin:0">' + esc(r.name || 'Ohne Namen') + ' · ' + (r.party || '?') + 'P <span style="font-size:11px;color:#fff;background:' + stcol + ';border-radius:999px;padding:2px 8px;margin-left:6px">' + esc(RES_STATUS[r.status] || r.status) + '</span></h4><p style="margin:4px 0 0">' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes()) + ' Uhr</p>';
           const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
-          const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { await setResStatus(r.id, s); closeTableModal(); }; return b; };
+          const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { if (s === 'no_show' && !confirm('Als No-Show markieren? Der Gast gilt dann als nicht erschienen.')) return; await setResStatus(r.id, s); closeTableModal(); }; return b; };
           if (r.status === 'booked') bar.append(mk('Eingetroffen', 'seated'));
           if (r.status === 'seated') bar.append(mk('Abschließen', 'completed'));
           if (r.status === 'booked') bar.append(mk('No-Show', 'no_show'));
@@ -4568,7 +4581,7 @@
       // No-Show-Historie: Gäste mit früheren No-Shows markieren (ab 2× = Wiederholungstäter, kräftiger).
       const ns = guestNoShowCount(r.customer_phone);
       const repeat = ns >= 2;
-      const nsBadge = ns > 0 ? '<span title="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
+      const nsBadge = ns > 0 ? '<span data-tip="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
       // h3 statt h4: dies ist die erste Überschrift nach dem Bereichs-h1/h2 (siehe .item__titel oben).
       const h = document.createElement('h3'); h.className = 'item__titel';
       h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
@@ -4580,8 +4593,10 @@
       const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
       if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
       if (st === 'seated') bar.append(mkBtn('Abschließen', () => setResStatus(r.id, 'completed')));
-      if (st === 'booked') bar.append(mkBtn('No-Show', () => setResStatus(r.id, 'no_show')));
+      if (st === 'booked') bar.append(mkBtn('No-Show', () => { if (confirm('Als No-Show markieren? Der Gast gilt dann als nicht erschienen.')) setResStatus(r.id, 'no_show'); }));
       if (st === 'booked' || st === 'seated') bar.append(mkBtn('Stornieren', () => { if (confirm('Reservierung stornieren?')) setResStatus(r.id, 'cancelled'); }));
+      if (st === 'seated' || st === 'no_show' || st === 'cancelled') bar.append(mkBtn('Zurück auf Reserviert', () => setResStatus(r.id, 'booked')));
+      bar.append(mkBtn(r.notes ? 'Notiz ändern' : 'Notiz', () => resNotizBearbeiten(r, div)));
       div.append(bar);
       return div;
     }
@@ -4592,8 +4607,9 @@
     let rsTagesPromise = null;
     function rsTagesLaden(date) {
       if (!rsTagesPromise) rsTagesPromise = (async () => {
-        const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+        const { data: res, error } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
           .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
+        if (error) { rsTagesPromise = null; return { items: [], jt: [], fehler: error }; } // nicht als „0 Reservierungen“ ausgeben
         const items = res || [];
         const ids = items.map((r) => r.id);
         let jt = [];
@@ -4607,7 +4623,8 @@
       const host = $('rsDayKpis'); if (!host) return;
       const date = $('rsDayDate').value; if (!date) { host.classList.add('hidden'); return; }
       await ensureGuestVisits();
-      const { items: tagesRes } = await rsTagesLaden(date);
+      const { items: tagesRes, fehler } = await rsTagesLaden(date);
+      if (fehler) return; // Kennzahlen stehen lassen statt auf 0 zu springen; die Liste zeigt den Fehler
       const items = tagesRes.filter((r) => r.status !== 'cancelled');
       if (!items.length) { host.innerHTML = ''; host.classList.add('hidden'); return; }
       const active = items.filter((r) => r.status !== 'no_show');
@@ -4916,7 +4933,8 @@
       const date = $('rsDayDate').value; if (!date) return;
       await ensureGuestVisits();
       const q = ($('rsDaySearch').value || '').trim().toLowerCase();
-      const { items: res, jt } = await rsTagesLaden(date);
+      const { items: res, jt, fehler } = await rsTagesLaden(date);
+      if (fehler) { toast('Reservierungen konnten nicht geladen werden: ' + fehlerText(fehler), 'err'); const sm0 = $('rsDaySummary'); if (sm0) sm0.textContent = 'Nicht geladen'; $('rsDayList').innerHTML = fehlerZustand(refreshDay); return; }
       const map = {}; for (const j of jt) (map[j.reservation_id] ||= []).push(j.table_id);
       let items = res.filter((r) => r.status !== 'cancelled');
       if (q) items = items.filter((r) => (r.customer_name || '').toLowerCase().includes(q));
@@ -6544,7 +6562,7 @@
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
         ['Stimme', stimme ? stimme.name : stimmenName($('voiceId').value)],
         ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeTranscript')?.checked === false ? ' · ohne Mitschrift' : '') + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
-        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') + (($('asZiele')?.querySelectorAll('.as-feldzeile').length || 0) ? ' · ' + $('asZiele').querySelectorAll('.as-feldzeile').length + ' Ziele nach Thema' : '') : 'aus'],
+        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') + (($('asZiele')?.querySelectorAll('.as-feldzeile').length || 0) ? ' · ' + $('asZiele').querySelectorAll('.as-feldzeile').length + ($('asZiele').querySelectorAll('.as-feldzeile').length === 1 ? ' Ziel' : ' Ziele') + ' nach Thema' : '') : 'aus'],
       ];
       if ($('asStilWert')) {
         fakten.push(['Stil', { knapp: 'knapp', normal: 'normal', ausfuehrlich: 'ausführlich' }[$('asStilWert').value] || 'normal']);
@@ -7393,7 +7411,14 @@
         }
       } else {
         d.querySelector('[data-antwortText]').innerHTML = g.answer ? markierenMit(g.answer, gapSuche) : '<span class="muted">Ohne Antwort verworfen.</span>';
-        knopf('Wieder öffnen', 'btn--primary', async () => { const { error } = await sb.from('knowledge_gaps').update({ status: 'open', answer: null, answered_at: null }).eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); g.status = 'open'; g.answer = null; gapItems.unshift(g); gapStatus = 'open'; gapAuswahl = g.id; document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.gapstatus === 'open')))); toast('Wieder offen.'); renderFragen(); });
+        knopf('Wieder öffnen', 'btn--primary', async () => {
+          // Die Antwort steht als Eintrag im Wissen – wieder öffnen ohne Aufräumen ließe den Assistenten weiter die alte Antwort sagen.
+          const { data: kbE } = g.answer ? await sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).eq('department', g.department || 'general').eq('title', g.question).limit(1) : { data: [] };
+          if (kbE?.length && confirm('Wissenseintrag „' + kuerzen(g.question, 60) + '“ auch entfernen?\n\nOK: Eintrag löschen, der Assistent kennt die Antwort dann nicht mehr.\nAbbrechen: Eintrag bleibt, nur die Frage wird wieder geöffnet.')) {
+            if (!(await schreibenGeprueft(sb.from('knowledge_base').delete().eq('id', kbE[0].id).select('id')))) return;
+            kbItems = kbItems.filter((x) => x.id !== kbE[0].id); renderWissen();
+          }
+          const { error } = await sb.from('knowledge_gaps').update({ status: 'open', answer: null, answered_at: null }).eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); g.status = 'open'; g.answer = null; gapItems.unshift(g); gapStatus = 'open'; gapAuswahl = g.id; document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.gapstatus === 'open')))); toast('Wieder offen.'); renderFragen(); });
         if (g.answer) knopf('In der Wissensdatenbank suchen', '', () => { geh('sec-kb'); kbSuche = g.question.slice(0, 40); if ($('kbSuche')) $('kbSuche').value = kbSuche; renderWissen(); });
         const del = knopf('Löschen', '', async () => { if (!confirm('Diese Frage endgültig löschen?')) return; const { error } = await sb.from('knowledge_gaps').delete().eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); gapAuswahl = null; toast('Gelöscht.'); renderFragen(); }); del.style.marginLeft = 'auto';
       }
@@ -7402,7 +7427,12 @@
       if (!answer) return toast('Bitte eine Antwort eingeben.', 'err');
       if (btn) btn.disabled = true;
       const dep = g.department || 'general';
-      const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
+      // Gibt es den Eintrag schon (z. B. Frage wieder geöffnet und neu beantwortet), wird er geändert statt verdoppelt.
+      const { data: vorhanden } = await sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).eq('department', dep).eq('title', g.question).limit(1);
+      const ins = vorhanden?.length
+        ? await sb.from('knowledge_base').update({ content: answer }).eq('id', vorhanden[0].id).select().maybeSingle()
+        : await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
+      if (vorhanden?.length && ins.data) kbItems = kbItems.filter((x) => x.id !== ins.data.id);
       if (ins.error) { if (btn) btn.disabled = false; return toast('Fehler: ' + fehlerText(ins.error), 'err'); }
       const jetzt = new Date().toISOString();
       if (!(await schreiben(sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: jetzt }).eq('id', g.id)))) { if (btn) btn.disabled = false; return; }
@@ -10507,6 +10537,123 @@
       } finally { routerAktiv = false; }
     }
     window.addEventListener('popstate', () => { adresseAnwenden('zurueck'); });
+
+    // ---- Reservierungen: Notiz direkt an der Reservierung ----
+    function resNotizBearbeiten(r, karte) {
+      if (karte.querySelector('.res-notiz')) return;
+      const box = document.createElement('div'); box.className = 'res-notiz';
+      box.innerHTML = '<textarea rows="2" aria-label="Notiz zur Reservierung" placeholder="z. B. Kinderstuhl, Allergie, Fensterplatz"></textarea><div class="stack"><button class="btn btn--primary sm" type="button">Speichern</button><button class="btn btn--ghost sm" type="button">Abbrechen</button></div>';
+      const ta = box.querySelector('textarea'); ta.value = r.notes || '';
+      const [sp, ab] = box.querySelectorAll('button');
+      ab.onclick = () => box.remove();
+      sp.onclick = async () => {
+        sp.disabled = true;
+        const ok = await schreibenGeprueft(sb.from('reservations').update({ notes: ta.value.trim() || null }).eq('id', r.id).select('id'), 'Notiz gespeichert.');
+        sp.disabled = false; if (ok) { box.remove(); loadRestaurant(); }
+      };
+      ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sp.click(); if (e.key === 'Escape') ab.click(); };
+      karte.append(box); ta.focus();
+    }
+
+    // ---- Assistent: ungültige Eingaben abfangen, Vorlagen nicht still übernehmen ----
+    /** Nummernfelder normalisieren (0170… → +49170…) und prüfen; Fehler rot markieren. Gibt die Liste der Probleme zurück. */
+    function asEingabenPruefen() {
+      const fehler = [];
+      const nrFeld = (el, name) => {
+        if (!el) return; const v = el.value.trim();
+        if (!v) { el.removeAttribute('aria-invalid'); return; }
+        const n = ktNormal(v);
+        if (/^\+\d{7,15}$/.test(n)) { if (n !== v) el.value = n; el.removeAttribute('aria-invalid'); return; }
+        el.setAttribute('aria-invalid', 'true'); fehler.push(name);
+      };
+      nrFeld($('fwdNumber'), 'Weiterleitungsnummer');
+      nrFeld($('asAgentNummer'), 'eigene Rufnummer');
+      $('asZiele')?.querySelectorAll('.as-feldzeile').forEach((z) => nrFeld(z.querySelector('[data-number]'), 'Ziel „' + (z.querySelector('[data-name]').value.trim() || z.querySelector('[data-topic]').value.trim() || 'ohne Namen') + '“'));
+      $('asTasten')?.querySelectorAll('.as-feldzeile').forEach((z) => nrFeld(z.querySelector('[data-number]'), 'Taste ' + z.querySelector('[data-digit]').value));
+      const von = $('asNoticeFrom')?.value, bis = $('asNoticeUntil')?.value;
+      if (von && bis && bis < von) { $('asNoticeUntil').setAttribute('aria-invalid', 'true'); fehler.push('Sonderhinweis („bis“ liegt vor „ab“)'); }
+      else $('asNoticeUntil')?.removeAttribute('aria-invalid');
+      return fehler;
+    }
+    {
+      const knopf = $('saveBtn'), roh = knopf?.onclick;
+      if (knopf && typeof roh === 'function') knopf.onclick = async function (e) {
+        const fehler = asEingabenPruefen();
+        if (fehler.length) {
+          toast('Nicht gespeichert – bitte prüfen: ' + fehler.join(', ') + '.', 'err', 7000);
+          const erstes = document.querySelector('#sec-assistant [aria-invalid="true"]');
+          const panel = erstes?.closest('.panel[data-astab]'); if (panel) asReiterZeigen(panel.dataset.astab);
+          erstes?.focus();
+          return;
+        }
+        return roh.call(this, e);
+      };
+    }
+    // Sonderhinweis mit „bis“ vor „ab“ gilt nie – das sagt die Statuszeile jetzt, statt „gilt ab …“ zu melden.
+    {
+      const roh = asHinweisStatus;
+      asHinweisStatus = function () {
+        const art = roh();
+        const von = $('asNoticeFrom')?.value, bis = $('asNoticeUntil')?.value, el = $('asNoticeStatus');
+        if (el && $('asNoticeText')?.value.trim() && von && bis && bis < von) { el.textContent = '„bis“ liegt vor „ab“ – so gilt der Hinweis nie. Bitte das Datum prüfen.'; el.dataset.art = 'fehler'; return 'fehler'; }
+        return art;
+      };
+    }
+    // Weiterleitung „nur während der Öffnungszeiten“ ohne eingetragene Zeiten: leitet nie weiter – Hinweis darunter.
+    function asWeiterleitungHinweis() {
+      const sel = $('fwdHours'); if (!sel) return;
+      let h = $('asFwdHinweis');
+      if (!h) { h = document.createElement('p'); h.id = 'asFwdHinweis'; h.className = 'as-hinweisstatus'; h.dataset.art = 'fehler'; h.setAttribute('aria-live', 'polite'); sel.closest('div')?.append(h); }
+      const ohneZeiten = !Object.values(readHours()).some((iv) => iv && iv.length);
+      const zeigen = $('fwdEnabled')?.checked && sel.value === 'true' && ohneZeiten;
+      h.hidden = !zeigen; h.textContent = zeigen ? 'Es sind keine Öffnungszeiten eingetragen – so wird nie weitergeleitet. Zeiten unter „Zeiten“ eintragen oder „Immer“ wählen.' : '';
+    }
+    $('sec-assistant')?.addEventListener('input', asWeiterleitungHinweis);
+    $('sec-assistant')?.addEventListener('change', asWeiterleitungHinweis);
+    { const roh = loadDept; loadDept = async function (...a) { const r = await roh.apply(this, a); asWeiterleitungHinweis(); return r; }; }
+    // Branchen-Vorlage: erst fragen, Öffnungszeiten nur ohne eigene Zeiten übernehmen, danach „ungespeichert“ anzeigen.
+    {
+      const roh = applyPreset;
+      applyPreset = function (name) {
+        if (!PERSONA_PRESETS[name]) return;
+        if (!confirm('Vorlage „' + name + '“ übernehmen?\n\nErsetzt Rolle, Ton, Verhalten, Grenzen und Verabschiedung. Öffnungszeiten nur, wenn noch keine eingetragen sind.')) return;
+        const zeiten = readHours(); const hatZeiten = Object.values(zeiten).some((iv) => iv && iv.length);
+        roh(name);
+        if (hatZeiten) renderHours(zeiten);
+        asSetzeDirty(true); asVorschau(); asWeiterleitungHinweis();
+      };
+    }
+
+    // ---- Offene Frage → Gespräch (zeitlich zugeordnet, bis die Frage die Anruf-Kennung mitbringt) ----
+    const frageAnrufCache = new Map();
+    async function anrufZurFrage(g) {
+      if (frageAnrufCache.has(g.id)) return frageAnrufCache.get(g.id);
+      const t = new Date(g.created_at).getTime();
+      const passt = (c) => { const s = new Date(c.started_at).getTime(); const e = c.ended_at ? new Date(c.ended_at).getTime() : s + 20 * 60000; return s <= t && t <= e + 2 * 60000; };
+      let treffer = [...liveCalls.values()].map((x) => x.call).filter(passt);
+      if (!treffer.length) {
+        const { data } = await sb.from('calls').select('id, started_at, ended_at').eq('tenant_id', tenant.id).lte('started_at', new Date(t).toISOString()).gte('started_at', new Date(t - 3 * 3600e3).toISOString()).limit(50);
+        treffer = (data || []).filter(passt);
+      }
+      const c = treffer.length === 1 ? treffer[0] : null;
+      frageAnrufCache.set(g.id, c); return c;
+    }
+    {
+      const roh = renderFrageDetail;
+      renderFrageDetail = function () {
+        roh();
+        const quelle = gapStatus === 'open' ? gapItems : (gapBeantwortet || []); const g = gapAuswahl ? quelle.find((x) => x.id === gapAuswahl) : null;
+        if (!g || !tenant) return;
+        anrufZurFrage(g).then((c) => {
+          const akt = $('gapDetail')?.querySelector('[data-aktionen]');
+          if (!c || gapAuswahl !== g.id || !akt || akt.querySelector('[data-gespraech]')) return;
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--ghost sm'; b.dataset.gespraech = '1';
+          b.textContent = 'Gespräch öffnen'; b.dataset.tip = 'Zeitlich zugeordnet: Anruf vom ' + new Date(c.started_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+          b.onclick = () => liveOeffnen(c.id);
+          const rechts = [...akt.children].find((x) => x.style.marginLeft === 'auto'); akt.insertBefore(b, rechts || null);
+        }).catch(() => { /* ohne Knopf weiter */ });
+      };
+    }
 
     boot();
   </script>
