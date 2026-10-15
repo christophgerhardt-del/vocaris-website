@@ -10197,7 +10197,7 @@
     // ---- Abmelden räumt vollständig auf ----
     // Nach dem Abmelden blieben Teile der vorigen Firma im Speicher (Stufe, Gäste, Tags, Filter). Neu laden
     // ist der einzige Weg, der garantiert nichts übersieht. Betreiber-Ansicht (?imp) geht zurück zum Super-Dashboard.
-    let uiAngemeldet = false, uiSelbstAbgemeldet = false;
+    let uiAngemeldet = false, uiSelbstAbgemeldet = false, uiStartGeroutet = false;
     $('logoutBtn').addEventListener('click', () => { uiSelbstAbgemeldet = true; }, true);
     sb.auth.onAuthStateChange((event, session) => {
       if (session) { uiAngemeldet = true; return; }
@@ -10229,6 +10229,9 @@
         }
         const erg = await loadAllRoh.apply(this, args);
         if (stufeP) await Promise.race([stufeP, new Promise((r) => setTimeout(r, 2500))]);
+        // Beim ersten Laden der Adresse folgen (#vorgaenge/26 …), noch hinter dem Startbild – ohne Umweg übers Dashboard.
+        // Die Adresse selbst wird dabei nie umgeschrieben (Anmelde-Token, Kalender-Rücksprung, fremde Anker bleiben).
+        if (!uiStartGeroutet && tenant) { uiStartGeroutet = true; try { await Promise.race([adresseAnwenden('start'), new Promise((r) => setTimeout(r, 4000))]); } catch { /* Dashboard bleibt */ } }
         return erg;
       };
     }
@@ -10428,6 +10431,82 @@
         return ok;
       };
     }
+
+    // ---- Bereich in der Adresse: Neuladen, Zurück und Direktlinks ----
+    // #vorgaenge/26, #eingehend/<id>, #nachrichten/<id>, #assistent/zeiten … Bereichswechsel legen einen Verlaufseintrag
+    // an (Zurück geht einen Schritt zurück), die Auswahl im Bereich ersetzt ihn nur. Adressen mit „=“ (Anmelde-Token,
+    // #cal=…) und unbekannte Anker (z. B. #abo) bleiben unangetastet.
+    const BEREICH_ZU_KURZ = { 'sec-overview': 'dashboard', 'sec-live': 'eingehend', 'sec-outbound': 'ausgehend', 'sec-kontakte': 'telefonbuch', 'sec-messages': 'nachrichten', 'sec-tickets': 'vorgaenge', 'sec-auswertung': 'auswertung', 'sec-kb': 'wissen', 'sec-gaps': 'fragen', 'sec-assistant': 'assistent', 'sec-number': 'nummer', 'sec-team': 'zugaenge', 'sec-booking': 'termine', 'sec-restaurant': 'reservierungen', 'sec-floorplan': 'tischplan', 'sec-guests': 'gaeste', 'sec-webhooks': 'schnittstellen' };
+    const KURZ_ZU_BEREICH = Object.assign(Object.fromEntries(Object.entries(BEREICH_ZU_KURZ).map(([b, k]) => [k, b])), { benachrichtigungen: 'sec-webhooks' });
+    const IST_UUID = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+    let routerAktiv = false;
+    function adresseLesen(h = location.hash) {
+      let roh = String(h || '').replace(/^#/, ''); try { roh = decodeURIComponent(roh); } catch { return null; }
+      if (!roh) return { target: 'sec-overview', sub: '', leer: true };
+      if (roh.includes('=')) return null;
+      const [kurz, sub = '', rest] = roh.split('/');
+      const target = KURZ_ZU_BEREICH[kurz.toLowerCase()]; if (!target || rest !== undefined) return null;
+      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages'].includes(target) && IST_UUID(sub))) return null;
+      return { target, sub };
+    }
+    function adresseFuer(target) {
+      const kurz = BEREICH_ZU_KURZ[target]; if (!kurz) return null;
+      let sub = '';
+      if (target === 'sec-tickets' && tkAuswahl) sub = String(tkAlle.find((x) => x.id === tkAuswahl)?.number || '');
+      else if (target === 'sec-live') sub = LV_ANSICHTEN.ein.auswahl || '';
+      else if (target === 'sec-outbound') sub = LV_ANSICHTEN.aus.auswahl || '';
+      else if (target === 'sec-messages') sub = mgAuswahl || '';
+      else if (target === 'sec-assistant') sub = document.querySelector('#asReiter [data-astab].active')?.dataset.astab || '';
+      return '#' + kurz + (sub ? '/' + sub : '');
+    }
+    function adresseSetzen(target, art) {
+      const h = adresseFuer(target);
+      const url = h ? location.pathname + location.search + h : location.pathname + location.search; // unbekannter Bereich: ohne Anker
+      if (url === location.pathname + location.search + location.hash) return;
+      try { history[art === 'push' ? 'pushState' : 'replaceState'](null, '', url); } catch { /* ohne Verlauf (z. B. Datei-URL) */ }
+    }
+    /** Auswahl im Bereich hat sich geändert: Adresse ersetzen, aber nur, wenn sie schon zu diesem Bereich gehört. */
+    function adresseDetail(target) {
+      if (routerAktiv || !target || !navItem(target)?.classList.contains('active')) return;
+      if (adresseLesen()?.target !== target && location.hash) return; // Bereichswechsel läuft gerade, die Adresse setzt der Wechsel
+      if (!location.hash) return;
+      adresseSetzen(target, 'replace');
+    }
+    document.querySelectorAll('.nav-item').forEach((b) => {
+      const roh = b.onclick; if (typeof roh !== 'function') return;
+      b.onclick = async function (e) {
+        const vorher = document.querySelector('.nav-item.active');
+        const erg = await roh.call(this, e);
+        if (!routerAktiv && b.classList.contains('active')) adresseSetzen(b.dataset.target, vorher === b ? 'replace' : 'push');
+        return erg;
+      };
+    });
+    {
+      const renderTicketDetailRoh = renderTicketDetail; renderTicketDetail = function () { renderTicketDetailRoh(); adresseDetail('sec-tickets'); };
+      const renderLiveDetailRoh = renderLiveDetail; renderLiveDetail = function () { renderLiveDetailRoh(); adresseDetail(LV.sec); };
+      const renderNachrichtDetailRoh = renderNachrichtDetail; renderNachrichtDetail = function () { renderNachrichtDetailRoh(); adresseDetail('sec-messages'); };
+    }
+    /** Adresse anwenden (Start, Zurück/Vor): Bereich öffnen und die Auswahl darin. */
+    async function adresseAnwenden(art) {
+      const z = adresseLesen();
+      if (!z || !tenant || (z.leer && art === 'start')) return;
+      const b = navItem(z.target); if (!navSichtbar(b)) return;
+      routerAktiv = true;
+      try {
+        if (!b.classList.contains('active')) await b.onclick();
+        if (!b.classList.contains('active')) { routerAktiv = false; const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt) adresseSetzen(akt, 'replace'); return; } // Ungespeichert-Dialog: stehen geblieben
+        if (!z.sub) return;
+        if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
+        else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
+        else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
+        else if (z.target === 'sec-tickets') {
+          let t = tkAlle.find((x) => String(x.number) === z.sub);
+          if (!t) { const { data } = await sb.from('tickets').select('id').eq('tenant_id', tenant.id).eq('number', Number(z.sub)).maybeSingle(); t = data; }
+          if (t) await vorgangOeffnen(t.id); else toast('Vorgang #' + z.sub + ' gibt es nicht (mehr).', 'err');
+        }
+      } finally { routerAktiv = false; }
+    }
+    window.addEventListener('popstate', () => { adresseAnwenden('zurueck'); });
 
     boot();
   </script>
