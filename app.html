@@ -1290,6 +1290,26 @@
     /* Ausgehend: geplante Anrufe kompakt */
     .gp-leer { margin: 0; font-size: 13.5px; color: var(--ink-soft); text-align: left; padding: 2px 0; }
     .gp-link { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--accent-ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    /* Hauptknöpfe flach und lesbar (Weiß auf Elektroblau ≥ 4,5:1, hell und dunkel), ohne Verlauf und Glow */
+    .btn--primary, .wa-launcher { background: #1f5eff; box-shadow: none; }
+    .btn--primary:hover, .wa-launcher:hover { background: #1a4fe0; box-shadow: none; transform: none; }
+    :root[data-theme="dark"] .cal__ev:not(.busy):not(.manual) { background: #1f5eff; }
+    .btn--danger { color: #c0392b; border-color: #c0392b; }
+    :root[data-theme="dark"] .btn--danger { color: #f87171; border-color: #f87171; }
+    /* Handy: der Wissens-Assistent-Knopf verdeckt den schwebenden „Anrufen“-Knopf nicht */
+    body:has(#callBtnSchwebend:not(.hidden)) .wa-launcher { display: none; }
+    /* Überfällige Frist auch hell erkennbar (die graue Zeitangabe der Zeile gewann bisher) */
+    .db-zeile .t.ueber-text { color: #c2410c; font-weight: 600; }
+    :root[data-theme="dark"] .db-zeile .t.ueber-text { color: #fb923c; }
+    /* Konto-Menü: Ton und Hinweise bei Anrufen */
+    .konto__meldungen { display: grid; gap: 2px; padding: 4px 0; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+    .konto__schalter { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 0 10px; margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); cursor: pointer; }
+    .konto__schalter input { width: auto; margin: 0; accent-color: var(--accent); }
+    .konto__hinweise { text-align: left; min-height: 40px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 13.5px; color: var(--accent-ink); cursor: pointer; border-radius: var(--r-sm); }
+    .konto__hinweise:hover:not(:disabled) { background: var(--paper-2); }
+    .konto__hinweise:disabled { color: var(--ink-faint); cursor: default; }
+    .mehr__meldungen { border-bottom: 0; }
+    .mehr__meldungen .konto__schalter, .mehr__meldungen .konto__hinweise { min-height: 44px; }
     .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   </style>
 </head>
@@ -3579,8 +3599,7 @@
       $('userAvatar').textContent = (mail.trim().charAt(0) || '?').toUpperCase();
       $('userAvatarHandy').textContent = $('userAvatar').textContent; $('kontoMail').textContent = mail;
       accessToken = session?.access_token ?? null;
-      // Benachrichtigungs-Erlaubnis (für Anruf-Hinweise) einmalig anfragen.
-      if ('Notification' in window && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (_) {} }
+      // Anruf-Hinweise erst auf Klick erlauben lassen (Konto-Menü) – Browser verweigern Anfragen ohne Geste.
       const boot = $('boot'); if (!tenant) boot.classList.remove('hidden');
       await loadAll();
       boot.classList.add('hidden');
@@ -7790,7 +7809,7 @@
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
       if (!offene.length) lv.innerHTML = leerText('Keine offenen Vorgänge.');
       offene.forEach((t) => { const ueber = t.due_at && new Date(t.due_at) < jetzt;
-        const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
+        const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (ueber ? 'überfällig · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
         if (ueber) z.querySelector('.t').classList.add('ueber-text');
         z.onclick = () => { geh('sec-tickets'); vorgangOeffnen(t.id); }; lv.append(z); });
       // Themen (klickbar)
@@ -10854,6 +10873,47 @@
         const erg = roh.call(this, e);
         if (!obWaehlEntschieden && tenant && b.classList.contains('active')) { obWaehlEntschieden = true; if ([...liveCalls.values()].some((x) => callRichtung(x.call) === 'out')) $('obWaehl')?.classList.add('hidden'); }
         return erg;
+      };
+    }
+
+    // ---- Konto-Menü: Ton und Hinweise bei Anrufen selbst einstellen ----
+    // Bisher fragte die Seite beim Laden ungefragt nach Mitteilungen (Safari verweigert das ohne Klick) und der Klingelton
+    // ließ sich nicht abstellen. Jetzt: Schalter „Ton“ und ein Knopf, der die Erlaubnis im Klick anfragt.
+    const TON_KEY = 'vocaris.ton';
+    const tonAn = () => { try { return localStorage.getItem(TON_KEY) !== 'aus'; } catch { return true; } };
+    { const roh = ringTone; ringTone = function () { if (!tonAn()) return; return roh(); }; }
+    function hinweisStand() { if (!('Notification' in window)) return 'fehlt'; return Notification.permission; }
+    function meldungenBauen(klasse) {
+      const wrap = document.createElement('div'); wrap.className = 'konto__meldungen ' + (klasse || '');
+      const ton = document.createElement('label'); ton.className = 'konto__schalter';
+      ton.innerHTML = '<input type="checkbox"><span>Ton bei eingehenden Anrufen</span>';
+      const cb = ton.querySelector('input'); cb.checked = tonAn();
+      cb.onchange = () => { try { localStorage.setItem(TON_KEY, cb.checked ? 'an' : 'aus'); } catch { /* nur für diese Sitzung */ } document.querySelectorAll('.konto__schalter input').forEach((x) => { x.checked = cb.checked; }); };
+      ton.addEventListener('click', (e) => e.stopPropagation()); // Menü bleibt beim Umschalten offen
+      const hw = document.createElement('button'); hw.type = 'button'; hw.className = 'konto__hinweise';
+      const zeichnen = () => {
+        const st = hinweisStand();
+        hw.textContent = st === 'granted' ? 'Hinweise bei Anrufen: an' : st === 'denied' ? 'Hinweise blockiert' : st === 'fehlt' ? 'Hinweise: in diesem Browser nicht möglich' : 'Hinweise bei Anrufen einschalten';
+        hw.dataset.tip = st === 'denied' ? 'Im Browser blockiert: über das Schloss links neben der Adresse „Mitteilungen“ erlauben, dann neu laden.' : st === 'granted' ? 'Bei einem Anruf erscheint ein Hinweis, auch wenn der Tab im Hintergrund ist.' : 'Zeigt bei jedem Anruf einen Hinweis, auch wenn der Tab im Hintergrund ist.';
+        hw.disabled = st === 'granted' || st === 'fehlt';
+      };
+      hw.onclick = async (e) => {
+        e.stopPropagation();
+        if (hinweisStand() !== 'default') { toast(hw.dataset.tip, '', 6000); return; }
+        try { await Notification.requestPermission(); } catch { /* ältere Safari: Rückruf-Variante gibt es nicht mehr */ }
+        document.querySelectorAll('.konto__hinweise').forEach((x) => x._zeichnen?.());
+        toast(hinweisStand() === 'granted' ? 'Hinweise bei Anrufen sind eingeschaltet.' : 'Hinweise wurden nicht erlaubt.', hinweisStand() === 'granted' ? '' : 'err');
+      };
+      hw._zeichnen = zeichnen; zeichnen();
+      wrap.append(ton, hw); return wrap;
+    }
+    $('changePwBtn')?.before(meldungenBauen());
+    {
+      const roh = mehrBauen;
+      mehrBauen = function () {
+        roh();
+        const pw = [...($('mehrInhalt')?.querySelectorAll('.mehr__eintrag') || [])].find((b) => b.textContent.trim() === 'Passwort ändern');
+        if (pw) pw.before(meldungenBauen('mehr__meldungen'));
       };
     }
 
