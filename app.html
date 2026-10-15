@@ -1260,6 +1260,8 @@
       body:has(.verbindung.sichtbar) .side { top: var(--vb-h, 62px); }
       body:has(.verbindung.sichtbar) .main { padding-top: 16px; }
     }
+    /* Handy: Zeitraum-Leiste („14 Tage“) etwas enger, damit ↻ in derselben Zeile bleibt */
+    @media (max-width: 480px) { :is(#lvZeitraum, #obZeitraum, #awZeitraum) .deptseg { padding-left: 8px; padding-right: 8px; } }
     /* Eingehend: Hinweis, wenn nur die neuesten Anrufe geladen sind */
     /* Das hidden-Attribut muss auch bei Knöpfen mit eigener display-Regel wirken (Navigation für Mitarbeiter, Tab-Leiste, Knöpfe) */
     .nav-item[hidden], .tab-item[hidden], .btn[hidden] { display: none !important; }
@@ -1490,7 +1492,7 @@
             <div class="db-aktionen">
               <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="lvCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
-              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
             </div>
           </div>
@@ -1789,7 +1791,7 @@
               <p class="pagesub" id="awSub">Wann angerufen wird, worum es geht und wie die Gespräche laufen.</p>
             </div>
             <div class="db-aktionen">
-              <div class="deptbar" id="awZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
+              <div class="deptbar" id="awZeitraum"><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
               <span class="muted" id="awStand" style="font-size:12.5px"></span>
               <button class="btn btn--ghost sm" type="button" id="awNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--ghost sm" type="button" id="awAlleAnrufe" data-tip="Eingehend im selben Zeitraum, ohne weitere Filter">Alle Anrufe</button>
@@ -7880,7 +7882,7 @@
     /** Nach „Eingehend" springen und dort einen Filter setzen (Thema, Stimmung oder Suche). */
     function awNachEingehend(patch) {
       const A = LV_ANSICHTEN.ein;
-      A.zeitraum = [7, 14, 30].includes(awTage) ? awTage : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = ''; // 90 Tage gibt es in Eingehend nicht → Alle
+      A.zeitraum = [14, 30].includes(awTage) ? awTage : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = ''; // 90 Tage gibt es in Eingehend nicht → Alle
       Object.assign(A, patch);
       if ($('lvSuche')) $('lvSuche').value = A.suche;
       document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', Number(b.dataset.tage) === A.zeitraum))));
