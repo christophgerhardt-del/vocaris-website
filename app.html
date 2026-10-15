@@ -10769,12 +10769,15 @@
         // Klickbare Zellen und Symbolknöpfe ohne Text: die Einblendung ist zugleich ihr Name (z. B. Stunden im Dashboard)
         alle('[role=button][data-tip], button[data-tip]').forEach((el) => { if (nameFehlt(el) || (el.matches('[role=button]') && !el.getAttribute('aria-label') && (el.textContent || '').trim().length <= 2)) el.setAttribute('aria-label', el.dataset.tip); });
         // Scrollbarer Gesprächsverlauf: per Tastatur erreichbar
-        alle('.lv-transkript:not([tabindex])').forEach((el) => { el.tabIndex = 0; el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Gesprächsverlauf'); });
+        alle('.lv-transkript:not([tabindex]), #tkDetail .transcript:not([tabindex])').forEach((el) => { el.tabIndex = 0; el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Gesprächsverlauf'); });
+        alle('#bkApple:not([aria-label])').forEach((el) => el.setAttribute('aria-label', 'Apple-Kalender: veröffentlichter Link (webcal://…)'));
       };
       new MutationObserver((liste) => {
         for (const m of liste) { if (m.type === 'attributes') umstellen(m.target, true); else m.addedNodes.forEach(nachruesten); }
       }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
       nachruesten(document.body);
+      // Wochen-Pfeile im Kalender (Termine) ohne Namen
+      [['calPrev', 'Vorige Woche'], ['calNext', 'Nächste Woche']].forEach(([id, t]) => { const k = $(id); if (k && !k.getAttribute('aria-label')) { k.setAttribute('aria-label', t); k.dataset.tip = t; } });
       // Gekürzter Untertitel („…“): voller Text als Einblendung
       document.addEventListener('mouseover', (e) => {
         const ps = e.target.closest?.('.db-kopf .pagesub'); if (!ps) return;
