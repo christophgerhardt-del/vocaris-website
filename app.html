@@ -1277,6 +1277,19 @@
     :root[data-theme="dark"] .as-hinweisstatus[data-art="fehler"] { background: #3a1616; color: #fca5a5; }
     .as-hinweisstatus[hidden] { display: none; }
     #sec-assistant [aria-invalid="true"] { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220, 38, 38, .15); }
+    /* Testanruf-Dialog */
+    .ta-text { text-align: left; padding: 0; margin: 0 0 8px; }
+    .ta-nummer { display: block; font-size: 28px; font-weight: 700; letter-spacing: -.01em; color: var(--accent-ink); text-decoration: none; margin: 4px 0 12px; font-variant-numeric: tabular-nums; }
+    .ta-nummer:hover { text-decoration: underline; text-underline-offset: 4px; }
+    /* Restaurant: Benachrichtigungen ohne Entwickler-Schnittstellen (CRM, Ticketsystem, API, Webhook) */
+    #sec-webhooks.if-nur-benachrichtigung :is(#ifTabs, #ifStatus) :is([data-iftab="crm"], [data-iftab="ticket"], [data-iftab="api"], [data-iftab="webhook"]),
+    #sec-webhooks.if-nur-benachrichtigung :is([data-if="crm"], [data-if="ticket"], [data-if="api"], [data-if="webhook"]),
+    #sec-webhooks.if-nur-benachrichtigung .db-kopf .db-aktionen a { display: none !important; }
+    /* Assistent: die Seitenleiste nennt nur die Abschnitte des offenen Reiters */
+    .as-nav a.as-nav__fern { display: none; }
+    /* Ausgehend: geplante Anrufe kompakt */
+    .gp-leer { margin: 0; font-size: 13.5px; color: var(--ink-soft); text-align: left; padding: 2px 0; }
+    .gp-link { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--accent-ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
     .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   </style>
 </head>
@@ -1419,7 +1432,7 @@
               <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
               <span class="muted" id="dbStand" style="font-size:12.5px" title="Zuletzt aktualisiert" data-tip="Zuletzt aktualisiert – Zahlen werden beim Öffnen und mit ↻ neu geladen"></span>
               <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" title="Neu laden">↻</button>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
               <button class="btn btn--ghost sm" type="button" id="dbAnpassen">Anpassen</button>
             </div>
@@ -1457,7 +1470,7 @@
             <div class="db-aktionen">
               <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="lvCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
-              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
             </div>
           </div>
@@ -1489,7 +1502,7 @@
             <div class="db-aktionen">
               <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="obCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
-              <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--primary sm" type="button" id="obAnrufKnopf">Neuer Anruf</button>
             </div>
@@ -1756,10 +1769,10 @@
               <p class="pagesub" id="awSub">Wann angerufen wird, worum es geht und wie die Gespräche laufen.</p>
             </div>
             <div class="db-aktionen">
-              <div class="deptbar" id="awZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
+              <div class="deptbar" id="awZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
               <span class="muted" id="awStand" style="font-size:12.5px"></span>
               <button class="btn btn--ghost sm" type="button" id="awNeu" title="Neu laden" aria-label="Neu laden">↻</button>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Alle Anrufe</button>
+              <button class="btn btn--ghost sm" type="button" id="awAlleAnrufe" data-tip="Eingehend im selben Zeitraum, ohne weitere Filter">Alle Anrufe</button>
             </div>
           </div>
           <div class="aw-filterleiste" id="awFilterLeiste"></div>
@@ -1908,7 +1921,7 @@
                 <button class="deptseg" data-dept="support">Support</button>
               </div>
               <span class="lv-neu hidden" id="asDirty" data-tip="Es gibt Änderungen, die noch nicht gespeichert sind">ungespeichert</span>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
               <button id="saveBtn" class="btn btn--primary sm" data-tip="Strg+S">Speichern</button>
             </div>
           </div>
@@ -1917,10 +1930,10 @@
           <div class="deptbar as-reiter" id="asReiter" role="tablist" aria-label="Abschnitte des Assistenten">
             <button class="deptseg active" type="button" role="tab" data-astab="grund" aria-selected="true">Grundlagen</button>
             <button class="deptseg" type="button" role="tab" data-astab="verhalten" aria-selected="false">Verhalten</button>
-            <button class="deptseg" type="button" role="tab" data-astab="zeiten" aria-selected="false">Zeiten</button>
+            <button class="deptseg" type="button" role="tab" data-astab="zeiten" aria-selected="false">Zeiten &amp; Ausnahmen</button>
             <button class="deptseg" type="button" role="tab" data-astab="stimme" aria-selected="false">Stimme &amp; Sprache</button>
             <button class="deptseg" type="button" role="tab" data-astab="erreichbar" aria-selected="false">Erreichbarkeit</button>
-            <button class="deptseg" type="button" role="tab" data-astab="hinweise" aria-selected="false">Hinweise</button>
+            <button class="deptseg" type="button" role="tab" data-astab="hinweise" aria-selected="false">Datenschutz &amp; Berichte</button>
           </div>
           <div class="as-split">
             <div class="as-form">
@@ -1941,7 +1954,7 @@
               <div class="panel" id="asZeiten" data-astab="zeiten">
                 <h3>Öffnungszeiten</h3>
                 <div id="hoursGrid" class="hours"></div>
-                <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z. B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
+                <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z. B. für eine Mittagspause. Diese Zeiten nutzt der Assistent für „geöffnet“ und die Weiterleitung. Abweichende Zeiten einzelner Filialen gehören ins Wissen.</p>
                 <label for="location">Standort / Anfahrt <span class="muted">optional</span></label>
                 <input id="location" placeholder="z. B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
               </div>
@@ -1965,7 +1978,7 @@
                 <input id="asStilWert" type="hidden" value="normal" />
                 <p class="muted as-stil__erklaerung" id="asStilText" style="margin:8px 0 0;text-align:left;padding:0"></p>
               </div>
-              <div class="panel" id="asHinweis" data-astab="hinweise">
+              <div class="panel" id="asHinweis" data-astab="zeiten">
                 <h3>Sonderhinweis</h3>
                 <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Etwas, das der Assistent gerade jedem sagt, der anruft: Betriebsferien, Baustelle, Störung. Mit Datum gilt der Hinweis nur in dem Zeitraum.</p>
                 <label for="asNoticeText" style="margin-top:0">Hinweis</label>
@@ -2055,13 +2068,13 @@
                 <div class="as-vorschau" id="asVorschau"></div>
                 <dl class="db-fakten" id="asFakten"></dl>
                 <div class="stack" style="margin-top:12px">
-                  <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+                  <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
                   <button class="btn btn--ghost sm" type="button" id="asProbe">Probefrage</button>
                   <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen</button>
                 </div>
               </div>
               <div class="panel as-nav" id="asNav">
-                <h3>Abschnitte</h3>
+                <h3>In diesem Reiter</h3>
                 <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStil">Gesprächsstil</a><a href="#" data-as="asHinweis">Sonderhinweis</a><a href="#" data-as="asGlossar">Glossar</a><a href="#" data-as="asErfassung">Erfassungsfelder</a><a href="#" data-as="asStimme">Stimme &amp; Sprache</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asSelbst">Eigene Anrufe</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a><a href="#" data-as="asAufbewahrung">Aufbewahrung</a><a href="#" data-as="asBericht">Wochenbericht</a>
               </div>
             </div>
@@ -2353,8 +2366,8 @@
               <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z. B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
             </div>
             <div class="db-aktionen">
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
-              <button class="btn btn--primary sm" type="button" id="numAddKnopf">+ Neue Nummer</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" id="numAddKnopf">+ Weitere Nummer</button>
             </div>
           </div>
           <div class="panel hidden" id="numAddPanel">
@@ -2815,7 +2828,7 @@
     <!-- Chat-Widget: Wissens-Assistent -->
     <button id="waLauncher" class="wa-launcher" aria-label="Wissens-Assistent öffnen" aria-haspopup="dialog" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Assistent</span>
+      <span>Wissens-Assistent</span>
     </button>
     <div id="waPanel" class="wa-panel" role="dialog" aria-modal="true" aria-label="Wissens-Assistent" inert>
       <div class="wa-head">
@@ -2881,6 +2894,15 @@
         <button class="btn btn--ghost" type="button" id="asDialogVerwerfen">Verwerfen</button>
         <button class="btn btn--ghost" type="button" id="asDialogAbbrechen">Abbrechen</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Testanruf: eigene Nummer zum Anrufen, statt im Kreis zwischen Eingehend und Telefonnummer zu springen -->
+  <div id="taDialog" class="pwmodal hidden" role="dialog" aria-modal="true" aria-labelledby="taTitel">
+    <div class="pwmodal__card ta-karte" style="width:min(460px,94vw)">
+      <h3 id="taTitel">Testanruf</h3>
+      <div id="taInhalt"></div>
+      <div class="stack" style="margin-top:16px" id="taKnoepfe"></div>
     </div>
   </div>
 
@@ -3073,7 +3095,11 @@
      */
     const BRANCHEN_KURATIERUNG = {
       restaurant: {
-        bereicheAus: ['sec-webhooks', 'sec-booking'],
+        // „Schnittstellen“ bleibt sichtbar, heißt aber „Benachrichtigungen“ und zeigt nur Ereignisse und Kanäle
+        // (E-Mail, Slack, Teams, Telegram, SMS) – CRM, Ticketsystem, API und Webhook blendet die Klasse
+        // if-nur-benachrichtigung aus (siehe uiRunde-CSS).
+        bereicheAus: ['sec-booking'],
+        navTexte: { 'sec-webhooks': 'Benachrichtigungen' },
         // „Telefonnummer" bleibt sichtbar — ein Restaurant soll seine eigene
         // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
@@ -3444,7 +3470,7 @@
     document.addEventListener('click', (e) => {
       const b = e.target.closest('[data-leer]'); if (!b) return;
       const [art, ziel] = b.dataset.leer.split(':');
-      if (art === 'geh') geh(ziel); else if (art === 'klick') $(ziel)?.click(); else if (art === 'neu') FEHLER_NEU_LADEN[ziel]?.();
+      if (art === 'geh') geh(ziel); else if (art === 'klick') $(ziel)?.click(); else if (art === 'neu') FEHLER_NEU_LADEN[ziel]?.(); else if (art === 'testanruf') testanrufOeffnen();
     });
     // Skelett-Platzhalter statt „Lade …", solange eine Liste noch nicht da ist.
     const skelettHtml = (n = 4) => '<div class="skelett" aria-hidden="true">' + '<div class="skelett__zeile"></div>'.repeat(n) + '</div>';
@@ -3790,7 +3816,7 @@
         const label = inbound ? '<span class="dept-badge support">Empfangsnummer</span>' : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>';
         card.innerHTML = '<div class="numhead"><span class="bignum"><span></span></span>' + label + '</div>'
           + '<p class="muted" style="font-size:13px;margin-top:6px;text-align:left;padding:0">' + (inbound ? 'Unter dieser Nummer erreichen dich deine Anrufer.' : 'Anrufe auf dieser Nummer nimmt der Assistent' + (dep === 'general' ? '' : ' im Bereich „' + (DEPT_LABEL[dep] || dep) + '“') + ' entgegen.') + '</p>'
-          + '<div class="stack" style="margin-top:12px"><a class="btn btn--primary sm" href="tel:' + num + '">Anrufen</a><button class="btn btn--ghost sm" type="button" data-kopie>Kopieren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Anrufe ansehen</button></div>';
+          + '<div class="stack" style="margin-top:12px"><button class="btn btn--primary sm" type="button" data-testanruf>Testanruf</button><button class="btn btn--ghost sm" type="button" data-kopie>Kopieren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Anrufe ansehen</button></div>';
         card.querySelector('.bignum span').textContent = fmtNr(num);
         card.querySelector('[data-kopie]').onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Nummer kopiert.'); } catch { toast(num); } };
         wrap.append(card);
@@ -5279,8 +5305,8 @@
     // in liveCalls. LV zeigt auf die Ansicht, die gerade gezeichnet wird; lvEl
     // holt deren Element (lvListe bzw. obListe).
     const LV_ANSICHTEN = {
-      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
-      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
+      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 14, stimmung: '', thema: '', art: '', tag: '' },
+      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 14, stimmung: '', thema: '', art: '', tag: '' },
     };
     /** Alle Tags, die der Mandant schon benutzt hat – für die Vorschläge im Detail. */
     const lvAlleTags = new Set();
@@ -5558,7 +5584,7 @@
       const ul = lvEl('Liste'); ul.innerHTML = '';
       if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Anrufe für diese Auswahl.</p>'
         : (raus ? leerZustand('Noch kein ausgehender Anruf. Wähle eine Nummer, dann erscheint das Gespräch hier mit Mitschrift.', 'Neuer Anruf', 'klick:obAnrufKnopf')
-          : leerZustand('Noch keine Anrufe. Ruf deine Vocaris-Nummer an, dann erscheint das Gespräch hier mit Zusammenfassung und Verlauf.', 'Testanruf starten', 'geh:sec-number'));
+          : leerZustand('Noch keine Anrufe. Ruf deine Vocaris-Nummer an, dann erscheint das Gespräch hier mit Zusammenfassung und Verlauf.', 'Testanruf starten', 'testanruf'));
       let tagKey = null;
       liste.forEach((x) => { if (!callIsActive(x.call)) { const k = lvTagKey(x.call.started_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } } ul.append(lvZeile(x)); });
       lvEl('Mehr').classList.toggle('hidden', lvAlleGeladen);
@@ -7757,8 +7783,8 @@
       const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
       liste.slice(0, dbFilter ? 8 : 5).forEach((x) => { const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
-        const z = zeile((x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''), new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
-        z.title = 'Anruf öffnen'; z.onclick = () => liveOeffnen(x.id); la.append(z); });
+        const z = zeile((ktName(x.caller_number) || fmtNr(x.caller_number)) + (x.topic ? ' · ' + x.topic : ''), lvWann(x.started_at) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
+        z.onclick = () => liveOeffnen(x.id); la.append(z); });
       if (liste.length > (dbFilter ? 8 : 5)) { const m = document.createElement('a'); m.href = '#'; m.dataset.geh = 'sec-live'; m.className = 'db-mehr'; m.textContent = 'Alle ' + liste.length + ' Anrufe ansehen'; la.append(m); }
       // Offene Vorgänge
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
@@ -7802,7 +7828,7 @@
     // ohne Kosten: die gehören dem Betreiber. Wochentag, Stunde und Dauer
     // filtern innerhalb der Auswertung; Thema, Stimmung und Anrufer springen
     // nach „Eingehend" mit passendem Filter.
-    let awTage = 30, awDaten = null, awFilter = null, awLaufId = 0;
+    let awTage = 14, awDaten = null, awFilter = null, awLaufId = 0;
     async function ladeAuswertung() {
       if (!tenant) return;
       // Laufzähler gegen Wettläufe: wird der Zeitraum erneut gewechselt, bevor diese Antwort da ist,
@@ -7835,7 +7861,7 @@
     /** Nach „Eingehend" springen und dort einen Filter setzen (Thema, Stimmung oder Suche). */
     function awNachEingehend(patch) {
       const A = LV_ANSICHTEN.ein;
-      A.zeitraum = awTage === 7 ? 7 : awTage === 30 ? 30 : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = '';
+      A.zeitraum = [7, 14, 30].includes(awTage) ? awTage : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = ''; // 90 Tage gibt es in Eingehend nicht → Alle
       Object.assign(A, patch);
       if ($('lvSuche')) $('lvSuche').value = A.suche;
       document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', Number(b.dataset.tage) === A.zeitraum))));
@@ -8227,14 +8253,24 @@
       rrLaedt = false;
       if (rrNochmal) { rrNochmal = false; rueckrufeLaden(); }
     }
+    let rrAeltereOffen = false;
     function rueckrufeZeichnen(eintraege) {
       const liste = $('obGeplantListe'); liste.innerHTML = '';
-      // Abgesagte und Gestartete von früher nicht ewig zeigen: nur die letzten 7 Tage.
+      // Abgesagte und Gestartete von früher nicht ewig zeigen: nur die letzten 7 Tage – und nur auf Wunsch („Frühere anzeigen“).
       const grenze = Date.now() - 7 * 864e5;
-      const zeigen = eintraege.filter((e) => e.status === 'geplant' || new Date(e.scheduled_at).getTime() > grenze);
-      const offen = zeigen.filter((e) => e.status === 'geplant').length;
+      const alle = eintraege.filter((e) => e.status === 'geplant' || new Date(e.scheduled_at).getTime() > grenze);
+      const offen = alle.filter((e) => e.status === 'geplant').length, aeltere = alle.length - offen;
       $('obGeplantAnzahl').textContent = offen ? offen + (offen === 1 ? ' offen' : ' offen') : '';
-      if (!zeigen.length) { liste.innerHTML = leerZustand(assistentWegErlaubt() ? 'Noch kein Anruf geplant. Wähle beim Weg „Der Assistent“ die Option „Später anrufen“, dann ruft er zur Uhrzeit von selbst an.' : 'Noch kein Anruf geplant.', 'Anruf planen', 'klick:obPlanenKnopf'); return; }
+      const aelterKnopf = () => { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = rrAeltereOffen ? 'Frühere ausblenden' : 'Frühere anzeigen (' + aeltere + ')'; k.onclick = () => { rrAeltereOffen = !rrAeltereOffen; rueckrufeZeichnen(eintraege); }; return k; };
+      // Ohne geplante Anrufe nur eine Zeile statt eines großen Leer-Kastens – der Verlauf darunter bleibt im ersten Bild.
+      if (!offen) {
+        const p = document.createElement('p'); p.className = 'gp-leer'; p.textContent = 'Kein Anruf geplant.';
+        if (assistentWegErlaubt()) { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = 'Anruf planen'; k.dataset.tip = 'Der Assistent ruft zur gewählten Uhrzeit von selbst an'; k.onclick = () => rueckrufPlanenOeffnen('', '', ''); p.append(' ', k); }
+        if (aeltere) p.append(' · ', aelterKnopf());
+        liste.append(p);
+        if (!rrAeltereOffen || !aeltere) return;
+      }
+      const zeigen = rrAeltereOffen ? alle : alle.filter((e) => e.status === 'geplant');
       // Geplante zuerst (nächster oben), danach die erledigten, neueste oben.
       zeigen.sort((a, b) => { const ga = a.status === 'geplant', gb = b.status === 'geplant'; if (ga !== gb) return ga ? -1 : 1; const d = new Date(a.scheduled_at) - new Date(b.scheduled_at); return ga ? d : -d; });
       zeigen.forEach((e) => {
@@ -8258,6 +8294,7 @@
         }
         liste.append(z);
       });
+      if (offen && aeltere) { const p = document.createElement('p'); p.className = 'gp-leer'; p.append(aelterKnopf()); liste.append(p); }
     }
     /** Aus Anruf oder Nachricht heraus: Nummer und Auftrag vorfüllen und die Planung öffnen. */
     function rueckrufPlanenOeffnen(nr, name, auftrag) {
@@ -10046,7 +10083,7 @@
       'sec-auswertung': ['Zahlen zu Anrufen im gewählten Zeitraum: Aufkommen, Dauer, Stimmung, Themen und häufigste Anrufer.', 'Balken und Zeilen sind klickbar: Sie filtern die Auswertung oder öffnen <b>Eingehend</b> mit dem passenden Filter.'],
       'sec-kb': ['Was der Assistent am Telefon wissen soll: Öffnungszeiten, Preise, Abläufe, Ansprechpartner. <b>+ Eintrag</b> legt einen an; Titel und Text änderst du direkt im Detail.', 'Einträge unter <b>Allgemein</b> gelten für alle Abteilungen. Der Wissens-Assistent unten rechts hilft beim Befüllen aus Dokumenten.'],
       'sec-gaps': ['Fragen von Anrufern, die der Assistent nicht beantworten konnte.', 'Antwort eintippen und <b>Speichern</b>: Sie landet in der Wissensdatenbank und gilt ab dem nächsten Anruf. <b>Verwerfen</b> entfernt Fragen, die nicht passen.'],
-      'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten, Stimme & Sprache, Erreichbarkeit, Hinweise. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> führt zu Eingehend, wo du das Ergebnis sofort siehst.'],
+      'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten & Ausnahmen, Stimme & Sprache, Erreichbarkeit, Datenschutz & Berichte. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> zeigt deine Nummer zum Anrufen; das Gespräch erscheint sofort unter Eingehend.'],
       'sec-booking': ['Terminbuchung am Telefon: Dauer, Puffer, Vorlauf und Zeitfenster festlegen, Kalender verbinden.', 'Gebuchte Termine stehen in der Liste; der iCal-Link bringt sie in deinen Kalender.'],
       'sec-webhooks': ['Wohin Ereignisse gehen: E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten, Terminen, Fragen und Anrufen. Dazu CRM, Ticketsystem, API-Schlüssel und eigener Webhook.', '<b>Speichern</b> sichert Ereignisse und Kanäle, <b>Test senden</b> prüft alle aktiven Ziele.'],
       'sec-number': ['Deine Vocaris-Rufnummern mit Abteilung und Weiterleitung. Die Nummer richten wir für dich ein; hier siehst du den Stand.', 'Darunter die <b>Sperrliste</b>: Gesperrte Nummern nimmt der Assistent nicht mehr an.'],
@@ -10084,7 +10121,7 @@
         { ok: chk.begruessung, t: 'Begrüßung angepasst', s: 'So meldet sich der Assistent beim Abnehmen.', ziel: 'sec-assistant', danach: () => setTimeout(() => { asReiterZeigen('grund'); $('greeting')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('greeting')?.focus(); }, 150) },
         { ok: chk.wissen >= 5, t: 'Mindestens fünf Wissenseinträge', s: chk.wissen + ' von 5 · Öffnungszeiten, Preise, Abläufe', ziel: 'sec-kb' },
         { ok: chk.benachrichtigung, t: 'Benachrichtigung eingerichtet', s: 'E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten.', ziel: 'sec-webhooks', danach: () => document.querySelector('#ifTabs [data-iftab="benachrichtigungen"]')?.click() },
-        { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live' },
+        { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live', danach: () => testanrufOeffnen() },
       ];
       const fertig = schritte.filter((x) => x.ok).length;
       if (fertig === schritte.length) { box.classList.add('hidden'); return; }
@@ -10480,7 +10517,8 @@
       return { target, sub };
     }
     function adresseFuer(target) {
-      const kurz = BEREICH_ZU_KURZ[target]; if (!kurz) return null;
+      let kurz = BEREICH_ZU_KURZ[target]; if (!kurz) return null;
+      if (target === 'sec-webhooks' && $('sec-webhooks')?.classList.contains('if-nur-benachrichtigung')) kurz = 'benachrichtigungen';
       let sub = '';
       if (target === 'sec-tickets' && tkAuswahl) sub = String(tkAlle.find((x) => x.id === tkAuswahl)?.number || '');
       else if (target === 'sec-live') sub = LV_ANSICHTEN.ein.auswahl || '';
@@ -10652,6 +10690,170 @@
           b.onclick = () => liveOeffnen(c.id);
           const rechts = [...akt.children].find((x) => x.style.marginLeft === 'auto'); akt.insertBefore(b, rechts || null);
         }).catch(() => { /* ohne Knopf weiter */ });
+      };
+    }
+
+    // ---- Testanruf: ein Dialog mit der eigenen Nummer statt im Kreis zwischen Eingehend und Telefonnummer ----
+    let taFalleLoesen = null;
+    function testanrufSchliessen() { $('taDialog')?.classList.add('hidden'); if (taFalleLoesen) { const f = taFalleLoesen; taFalleLoesen = null; f(); } }
+    function testanrufOeffnen() {
+      const d = $('taDialog'); if (!d || !tenant) return;
+      const eigene = (firmenNummern || []).filter((n) => n.tenant_id === tenant.id || n.inbound_tenant_id === tenant.id)
+        .sort((a, b) => ((a.department || 'general') === 'general' ? 0 : 1) - ((b.department || 'general') === 'general' ? 0 : 1));
+      const inhalt = $('taInhalt'), kn = $('taKnoepfe'); inhalt.innerHTML = ''; kn.innerHTML = '';
+      const absatz = (html) => { const p = document.createElement('p'); p.className = 'muted ta-text'; p.innerHTML = html; inhalt.append(p); return p; };
+      const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + cls; b.textContent = text; b.onclick = fn; kn.append(b); return b; };
+      if (eigene.length) {
+        const nr = eigene[0].phone_number;
+        absatz('Ruf diese Nummer mit deinem Handy oder vom Festnetz an:');
+        const a = document.createElement('a'); a.className = 'ta-nummer'; a.href = 'tel:' + nr; a.textContent = fmtNr(nr); inhalt.append(a);
+        if (eigene.length > 1) absatz('Weitere: ' + eigene.slice(1).map((n) => escHtml(fmtNr(n.phone_number)) + ' (' + escHtml(DEPT_LABEL[n.department || 'general'] || n.department) + ')').join(', '));
+        absatz('Das Gespräch erscheint sofort unter <b>Eingehend</b> – mit Mitschrift und Zusammenfassung.');
+        knopf('Zu Eingehend', 'btn--primary', () => { testanrufSchliessen(); geh('sec-live'); window.scrollTo({ top: 0 }); });
+        knopf('Nummer kopieren', 'btn--ghost', async () => { try { await navigator.clipboard.writeText(nr); toast('Nummer kopiert.'); } catch { toast(nr); } });
+      } else {
+        absatz('Deine Nummer wird gerade eingerichtet – wir melden uns, sobald sie aktiv ist.');
+        absatz('Bis dahin kannst du dem Wissens-Assistenten Fragen stellen, so wie ein Anrufer es tun würde.');
+        knopf('Probefrage stellen', 'btn--primary', () => { testanrufSchliessen(); if (typeof waOpen === 'function') waOpen(true); });
+      }
+      knopf('Schließen', 'btn--ghost', testanrufSchliessen);
+      d.onclick = (e) => { if (!e.target.closest('.pwmodal__card')) testanrufSchliessen(); };
+      d.classList.remove('hidden');
+      taFalleLoesen = fokusFalle(d, testanrufSchliessen);
+      kn.querySelector('button')?.focus();
+    }
+    // Alle Testanruf-Knöpfe (Kopfzeilen, Nummernkarte, Schnellaktionen auf dem Dashboard) öffnen den Dialog.
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest?.('[data-testanruf], .db-aktionen-grid [data-geh="sec-live"]'); if (!b) return;
+      if (dbEdit && b.closest('#sec-overview [data-widget]')) return;
+      e.preventDefault(); e.stopPropagation(); testanrufOeffnen();
+    }, true);
+
+    // ---- Seitenleiste nach Alltag, Restaurant mit Reservierungen vorn, Benachrichtigungen statt Schnittstellen ----
+    const textTauschen = (el, text) => { if (!el) return; const n = [...el.childNodes].find((x) => x.nodeType === 3 && x.textContent.trim()); if (n) n.textContent = text; };
+    function navOrdnen() {
+      const nav = document.querySelector('.side nav'); if (!nav) return;
+      nav.querySelectorAll('.nav-group').forEach((g) => { if (g.textContent.trim() === 'Funktionen') g.textContent = 'Verwaltung'; });
+      const nachVorgaengen = [];
+      if (module.reservierung && navSichtbar(navItem('sec-restaurant'))) nachVorgaengen.push('sec-restaurant', 'sec-floorplan', 'sec-guests');
+      if (module.termine && navSichtbar(navItem('sec-booking'))) nachVorgaengen.push('sec-booking');
+      let anker = navItem('sec-tickets'); if (!anker) return;
+      for (const z of nachVorgaengen) { const el = navItem(z); if (el) { anker.after(el); anker = el; } }
+      // Was nicht nach oben gehört (Modul aus), bleibt bzw. kommt zurück in die Verwaltung.
+      const verw = navItem('sec-webhooks');
+      if (verw) for (const z of ['sec-booking', 'sec-restaurant', 'sec-floorplan', 'sec-guests']) if (!nachVorgaengen.includes(z) && navItem(z)) verw.before(navItem(z));
+      const tb = navItem('sec-kontakte'), aw = navItem('sec-auswertung'); if (tb && aw) aw.before(tb);
+    }
+    /** Handy: beim Restaurant zeigt der zweite Reiter der Tab-Leiste die Reservierungen statt „Eingehend“. */
+    function tabbarAnpassen(zustand) {
+      const t = document.querySelector('.tab-item[data-tab="sec-live"], .tab-item[data-orig-tab]'); if (!t) return;
+      if (!t.dataset.origTab) { t.dataset.origTab = t.dataset.tab; t.dataset.origHtml = t.innerHTML; }
+      const res = zustand.industry === 'restaurant' && module.reservierung && navSichtbar(navItem('sec-restaurant'));
+      if (res && t.dataset.tab !== 'sec-restaurant') { t.dataset.tab = 'sec-restaurant'; t.innerHTML = (navItem('sec-restaurant')?.querySelector('svg')?.outerHTML || '').replace('<svg ', '<svg aria-hidden="true" ') + 'Reservierungen'; }
+      else if (!res && t.dataset.tab !== t.dataset.origTab) { t.dataset.tab = t.dataset.origTab; t.innerHTML = t.dataset.origHtml; }
+      syncTabbar();
+    }
+    {
+      const roh = applyVisibility;
+      applyVisibility = function (zustand) {
+        roh(zustand);
+        const kur = BRANCHEN_KURATIERUNG[zustand.industry] || {};
+        for (const [ziel, text] of Object.entries(kur.navTexte || {})) { textTauschen(navItem(ziel), text); textTauschen($(ziel)?.querySelector('.pagehead'), text); }
+        const nurBenachrichtigung = zustand.industry === 'restaurant';
+        $('sec-webhooks')?.classList.toggle('if-nur-benachrichtigung', nurBenachrichtigung);
+        if (nurBenachrichtigung) { const ps = $('sec-webhooks')?.querySelector('.pagesub'); if (ps) ps.textContent = 'Wohin neue Nachrichten, offene Fragen und Anrufe gemeldet werden: E-Mail, Slack, Teams, Telegram oder SMS.'; }
+        // Ohne Assistenten-Weg (Restaurant: dort spricht immer ein Mensch) gibt es keine geplanten Anrufe.
+        $('obGeplant')?.classList.toggle('hidden', !assistentWegErlaubt());
+        navOrdnen(); tabbarAnpassen(zustand);
+      };
+      const rrRoh = rueckrufeLaden; rueckrufeLaden = function (...a) { if (!assistentWegErlaubt()) return; return rrRoh.apply(this, a); };
+    }
+
+    // ---- Abteilungs-Umschalter nur, wenn es mehr als eine Abteilung gibt ----
+    function abteilungenZeigen(nums) {
+      if ((BRANCHEN_KURATIERUNG[tenant?.industry]?.selektorenAus || []).includes('[data-deptbar]')) return; // Kuratierung blendet ohnehin aus
+      const mehrere = (nums || []).some((n) => (n.department || 'general') !== 'general');
+      const aus = !mehrere && currentDept === 'general';
+      document.querySelectorAll('[data-deptbar], .dept-hint').forEach((el) => el.classList.toggle('hidden', aus));
+      if ($('numSubtitle')) $('numSubtitle').textContent = mehrere ? 'Deine Vocaris-Nummern. Jede Nummer steuert ihre Abteilung an (Allgemein, Vertrieb, Support).' : 'Die Rufnummer, unter der dein Assistent erreichbar ist.';
+    }
+    { const roh = renderNumbers; renderNumbers = function (nums) { roh(nums); abteilungenZeigen(nums); }; }
+
+    // ---- Auswertung: „Alle Anrufe“ ohne Restfilter, im selben Zeitraum ----
+    if ($('awAlleAnrufe')) $('awAlleAnrufe').onclick = () => awNachEingehend({});
+
+    // ---- Dashboard: keine Kacheln für ausgeblendete Bereiche, Reservierungen fürs Restaurant ----
+    const dbKachelSichtbar = (id) => { const w = dbWidget(id); return !w || !w.ziel || navSichtbar(navItem(w.ziel)); };
+    if (dbWidget('terminliste')) dbWidget('terminliste').ziel = 'sec-booking';
+    DB_WIDGETS.splice(0, 0, { id: 'reservierungen', art: 'kpi', titel: 'Reservierungen heute', std: true, ziel: 'sec-restaurant', html: () => '<div class="k">Reservierungen heute</div><div class="v" id="dbResHeute">–</div><div class="d" id="dbResHeuteSub">&nbsp;</div>' });
+    DB_WIDGETS.splice(DB_WIDGETS.findIndex((w) => w.art === 'panel'), 0, { id: 'reservierungsliste', art: 'panel', titel: 'Nächste Reservierungen', std: true, groesse: 4, ziel: 'sec-restaurant', html: () => kopf('Nächste Reservierungen', 'sec-restaurant') + '<div id="dbResListe" class="db-liste"></div>' });
+    {
+      const roh = renderDashboardLayout;
+      renderDashboardLayout = function () {
+        if (!dbLayout) return roh();
+        const echt = dbLayout.reihenfolge; dbLayout.reihenfolge = echt.filter(dbKachelSichtbar); // gespeicherte Anordnung bleibt erhalten
+        try { roh(); } finally { dbLayout.reihenfolge = echt; }
+        q('dbHinzu').querySelectorAll?.('[data-hinzu]').forEach((b) => { if (!dbKachelSichtbar(b.dataset.hinzu)) b.remove(); });
+      };
+      const dvRoh = dbVerschieben;
+      dbVerschieben = function (id, richtung) { // über ausgeblendete Kacheln hinweg verschieben, sonst passiert sichtbar nichts
+        for (let i = 0; i < 40; i++) { const vor = dbLayout.reihenfolge.slice(); dvRoh(id, richtung); const j = dbLayout.reihenfolge.indexOf(id); if (vor.join() === dbLayout.reihenfolge.join() || dbKachelSichtbar(vor[j])) return; }
+      };
+      const llRoh = dbLayoutLaden;
+      dbLayoutLaden = async function (...a) {
+        await llRoh.apply(this, a);
+        // Restaurant mit Reservierungen: die beiden Kacheln einmalig in ein gespeichertes Layout aufnehmen (Merker res1).
+        if (tenant?.industry === 'restaurant' && module.reservierung && dbLayout && !dbLayout.res1) {
+          const r = dbLayout.reihenfolge; let neu = false;
+          if (!r.includes('reservierungen')) { r.unshift('reservierungen'); neu = true; }
+          if (!r.includes('reservierungsliste')) { const i = r.findIndex((id) => dbWidget(id)?.art === 'panel'); r.splice(i < 0 ? r.length : i, 0, 'reservierungsliste'); neu = true; }
+          dbLayout.res1 = true; if (neu) dbLayoutSpeichern();
+        }
+      };
+      const zdRoh = zeichneDashboard;
+      zeichneDashboard = function () { zdRoh(); dbResZeichnen(); };
+    }
+    let dbResDaten = null, dbResZeit = 0, dbResLaeuft = null;
+    async function dbResLaden() {
+      const h0 = new Date(); h0.setHours(0, 0, 0, 0);
+      const { data, error } = await sb.from('reservations').select('id, starts_at, party_size, customer_name, status, notes').eq('tenant_id', tenant.id)
+        .gte('starts_at', h0.toISOString()).lt('starts_at', new Date(h0.getTime() + 8 * 864e5).toISOString()).neq('status', 'cancelled').order('starts_at').limit(300);
+      if (error) return;
+      dbResDaten = { items: data || [], h0: h0.getTime() }; dbResZeit = Date.now();
+    }
+    function dbResZeichnen() {
+      if (!$('dbResHeute') && !$('dbResListe')) return;
+      if (!dbResDaten || Date.now() - dbResZeit > 60000) { if (!dbResLaeuft && tenant) dbResLaeuft = dbResLaden().finally(() => { dbResLaeuft = null; if (dbResDaten) dbResZeichnen(); }); if (!dbResDaten) return; }
+      const { items, h0 } = dbResDaten;
+      const heute = items.filter((r) => new Date(r.starts_at).getTime() < h0 + 864e5);
+      const gaeste = heute.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
+      const kommend = items.filter((r) => r.status === 'booked' && new Date(r.starts_at).getTime() >= Date.now() - 15 * 60000);
+      const naechste = kommend[0];
+      const uhr = (iso) => new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      if ($('dbResHeute')) { $('dbResHeute').textContent = heute.length; $('dbResHeuteSub').textContent = gaeste + (gaeste === 1 ? ' Gast' : ' Gäste') + (naechste && new Date(naechste.starts_at).getTime() < h0 + 864e5 ? ' · nächste ' + uhr(naechste.starts_at) + ' Uhr' : ''); }
+      const l = $('dbResListe'); if (!l) return;
+      l.innerHTML = '';
+      if (!kommend.length) { l.innerHTML = leerText('Keine offenen Reservierungen in den nächsten 7 Tagen.'); return; }
+      kommend.slice(0, 5).forEach((r) => {
+        const d = new Date(r.starts_at), tagNr = Math.floor((new Date(d).setHours(0, 0, 0, 0) - h0) / 864e5);
+        const wann = (tagNr === 0 ? 'Heute' : tagNr === 1 ? 'Morgen' : d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })) + ' ' + uhr(r.starts_at) + ' Uhr';
+        const z = zeile(r.customer_name || 'Ohne Namen', wann + ' · ' + (r.party_size || '?') + ' Pers.', r.notes || '');
+        z.onclick = () => { geh('sec-restaurant'); const tag = lokalDatum(new Date(r.starts_at)); if ($('rsDayDate') && $('rsDayDate').value !== tag) { $('rsDayDate').value = tag; refreshDay(); } };
+        l.append(z);
+      });
+    }
+
+    // ---- Ausgehend: Verlauf im ersten Bild ----
+    // Das Wählfeld startet zugeklappt, sobald es ausgehende Anrufe gibt; „Neuer Anruf“, Rückruf und Telefonbuch klappen es auf.
+    let obWaehlEntschieden = false;
+    {
+      const b = navItem('sec-outbound'), roh = b?.onclick;
+      if (b && typeof roh === 'function') b.onclick = function (e) {
+        // Erst wechseln (das zeigt das Wählfeld, siehe tnSichtbarkeit), dann gleich – noch vor Rückruf/Telefonbuch,
+        // die es danach wieder aufklappen – zuklappen. Nur beim ersten Besuch; danach gilt, was der Nutzer wählt.
+        const erg = roh.call(this, e);
+        if (!obWaehlEntschieden && tenant && b.classList.contains('active')) { obWaehlEntschieden = true; if ([...liveCalls.values()].some((x) => callRichtung(x.call) === 'out')) $('obWaehl')?.classList.add('hidden'); }
+        return erg;
       };
     }
 
