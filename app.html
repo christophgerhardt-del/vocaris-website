@@ -1313,6 +1313,61 @@
     .mehr__meldungen { border-bottom: 0; }
     .mehr__meldungen .konto__schalter, .mehr__meldungen .konto__hinweise { min-height: 44px; }
     .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    /* ---- Etappe 2: Einheitlichkeit ---- */
+    /* Auswahlfelder sehen in Safari wie in Chrome aus: eigener Pfeil statt der Systemdarstellung */
+    :root { --pfeil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235f6b7d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    :root[data-theme="dark"] { --pfeil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a1b7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    :is(.shell, .pwmodal, .login) select:not([multiple]) { -webkit-appearance: none; appearance: none; background-image: var(--pfeil); background-repeat: no-repeat; background-position: right 11px center; background-size: 11px 8px; padding-right: 32px; }
+    .shell .lv-select { max-width: 100%; text-overflow: ellipsis; }
+    /* Kopfzeilen bleiben einzeilig: der Titelblock gibt nach, der Untertitel kürzt mit „…“ (voller Text als Einblendung) */
+    .db-kopf > div:first-child { flex: 1 1 280px; min-width: 0; }
+    @media (min-width: 761px) { .db-kopf .pagesub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    .hilfe__knopf { margin-left: 2px; }
+    #sec-kb .db-aktionen .lv-suche { min-width: 0; width: 220px; }
+    /* Vorgang: Titel und Statusknöpfe teilen sich die Zeile nur, wenn Platz ist (bei 1024 px stand der Titel Wort für Wort untereinander) */
+    .lv-detailkopf > div:first-child { flex: 1 1 260px !important; min-width: 0; }
+    /* Ein Feld-Maß für Formulare: 15 px Schrift, 8 px Rundung, Höhe über die Klickziel-Regeln (40/36/44), Beschriftung 13/500.
+       Filterleisten (Pillen, Suche), Wählfeld und Chat-Eingabe behalten ihr eigenes Maß. */
+    .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select), textarea:not(.wa-input textarea)) { font-size: 15px; border-radius: 8px; }
+    .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select)) { padding-top: 7px; padding-bottom: 7px; padding-left: 12px; }
+    .shell textarea:not(.wa-input textarea) { padding: 9px 12px; line-height: 1.45; }
+    .shell label, .shell .tk-felder label { font-size: 13px; font-weight: 500; }
+    @media (pointer: coarse) {
+      .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select), textarea:not(.wa-input textarea)) { font-size: 16px; }
+    }
+    /* Dialoge und Suche im selben Maßstab wie die Oberfläche (ab 1100 px 0,8) */
+    @media (min-width: 1100px) {
+      body .pwmodal__card, body .suche__box { zoom: var(--app-zoom); }
+      body .suche__box { max-height: min(calc(70vh / var(--app-zoom)), 800px); }
+      body .pwmodal__card { max-height: calc(92vh / var(--app-zoom)); overflow-y: auto; }
+    }
+    /* Schnittstellen bei 768 px: Reiter scrollen statt über den Rand zu laufen, Ereignisse einspaltig */
+    #ifTabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    #ifTabs .deptseg { flex: none; white-space: nowrap; }
+    @media (max-width: 900px) { .if-grid { grid-template-columns: 1fr; } }
+    /* Geschlossenes Wissens-Assistent-Panel wirft keinen Schatten an den rechten Rand */
+    .wa-panel:not(.open) { box-shadow: none; visibility: hidden; transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s linear .28s; }
+    .wa-panel.open { visibility: visible; }
+    /* Anmeldung markentreu: flaches Nachtblau ohne Leuchtflecken, Hervorhebung in Hellblau, Fehler in Rot statt Koralle */
+    .login__brand { background: #08122e; }
+    .login__brand::before { content: none; }
+    .login__pitch h2 em { color: var(--marke-hell); }
+    .login__submit { box-shadow: none; }
+    .login__err { color: #b91c1c; }
+    :root[data-theme="dark"] .login__err { color: #fca5a5; }
+    /* Stundenachse lesbar (10 px auf dem Bildschirm statt 8) */
+    .db-stunden div span { font-size: 12.5px; bottom: -18px; }
+    .db-stunden { margin-bottom: 4px; }
+    /* Werkzeugknöpfe im Anpassen-Modus: 40 px (32 px auf dem Bildschirm) */
+    .shell .db-werk button, .shell .db-werk .griff { min-height: 40px; min-width: 40px; display: inline-grid; place-items: center; }
+    /* Schmale Listenspalte (z. B. 1024 px neben dem Detail): Zeit und Frist unter den Text statt daneben, der Titel bekommt die Breite */
+    .lv-liste { container-type: inline-size; }
+    @container (max-width: 340px) {
+      .lv-zeile { grid-template-columns: 10px minmax(0, 1fr); row-gap: 3px; }
+      .lv-zeile .lv-rechts { grid-column: 2; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: baseline; gap: 2px 10px; }
+    }
+    @media (min-width: 761px) and (max-width: 1100px) { .tk-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (min-width: 901px) and (max-width: 1099px) { .tk-felder { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body>
@@ -1490,7 +1545,7 @@
               <p class="pagesub" id="liveSub">Anrufe, die bei dir eingehen.</p>
             </div>
             <div class="db-aktionen">
-              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Text …" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="lvCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
@@ -1522,7 +1577,7 @@
               <p class="pagesub" id="obSub">Anrufe, die du über Vocaris führst.</p>
             </div>
             <div class="db-aktionen">
-              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Text …" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="obCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
