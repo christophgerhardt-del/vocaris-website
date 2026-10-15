@@ -1251,6 +1251,16 @@
       } catch (e) { /* ohne Speicher: hell */ }
     })();
   </script>
+  <!-- UI-Runde 15.10.2026: eigener Block, damit offene Zweige rebasebar bleiben -->
+  <style id="uiRunde">
+    /* Verbindungsbalken schiebt den Inhalt nach unten, statt Kopfzeile und ↻ zu verdecken (Höhe --vb-h per Skript) */
+    body:has(.verbindung.sichtbar) .main { padding-top: calc(30px + var(--vb-h, 62px) / var(--app-zoom, 1)); }
+    @media (max-width: 900px) {
+      body:has(.verbindung.sichtbar) .shell { padding-top: var(--vb-h, 62px); }
+      body:has(.verbindung.sichtbar) .side { top: var(--vb-h, 62px); }
+      body:has(.verbindung.sichtbar) .main { padding-top: 16px; }
+    }
+  </style>
 </head>
 <body>
   <!-- AUTH -->
@@ -3175,6 +3185,15 @@
       const meiner = document.querySelector('meta[name="vocaris-stand"]')?.content || '';
       if (!meiner) return;
       let gemeldet = false, zuletzt = 0;
+      // Der Stempel wird beim Ausliefern nicht zuverlässig gesetzt (stand wochenlang auf demselben Wert). Darum zählt
+      // zusätzlich die Dateigröße: die der geladenen Seite gegen die, die der Server jetzt für app.html meldet.
+      let basisGroesse = 0;
+      try { basisGroesse = performance.getEntriesByType('navigation')[0]?.decodedBodySize || 0; } catch { /* ältere Browser: erste Prüfung zählt */ }
+      const groesseVon = (r) => {
+        const cr = (r.headers.get('content-range') || '').match(/\/(\d+)\s*$/); if (cr && !r.headers.get('content-encoding')) return Number(cr[1]);
+        const et = (r.headers.get('etag') || '').match(/-([0-9a-f]+)"?\s*$/i); if (et) return parseInt(et[1], 16);
+        return r.status === 200 && !r.headers.get('content-encoding') ? Number(r.headers.get('content-length')) || 0 : 0;
+      };
       const pruefen = async () => {
         if (gemeldet || document.hidden) return;
         const jetzt = Date.now();
@@ -3186,7 +3205,9 @@
           if (!r.ok) return;
           const txt = (await r.text()).slice(0, 4000);
           const treffer = txt.match(/name="vocaris-stand" content="([^"]+)"/);
-          if (!treffer || treffer[1] === meiner) return;
+          const groesse = groesseVon(r); if (!basisGroesse) basisGroesse = groesse;
+          const andererStempel = !!treffer && treffer[1] !== meiner, andereGroesse = !!groesse && !!basisGroesse && groesse !== basisGroesse;
+          if (!andererStempel && !andereGroesse) return;
           gemeldet = true;
           const t = toast('Es gibt eine neuere Fassung. Zum Übernehmen neu laden.', '', 20000);
           const b = document.createElement('button');
@@ -6470,6 +6491,7 @@
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Live-Kanal:', status, err && err.message || '');
+          else if (status === 'SUBSCRIBED') echtzeitVerbunden('live'); // nach einer Lücke verpasste Ereignisse nachladen
         });
       // Tischplan/Belegung ohne dieses Abo: ein zweites offenes Gerät (z. B. Empfang + Service)
       // sieht eine hier gerade angelegte/geänderte Reservierung sonst dauerhaft nicht, auch nicht
@@ -6484,6 +6506,7 @@
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Reservierungs-Kanal:', status, err && err.message || '');
+          else if (status === 'SUBSCRIBED') echtzeitVerbunden('rs');
         });
     }
 
@@ -10041,6 +10064,8 @@
     const istNetzfehler = (e) => e && (e.name === 'TypeError' || /Load failed|Failed to fetch|NetworkError|network/i.test(e.message || ''));
     function verbindungsFetch(url, opts) {
       return fetch(url, opts).then((r) => {
+        // 401 von der Datenbank heißt: Anmeldung abgelaufen (nicht Netzfehler) – einmal erneuern, sonst neu anmelden.
+        if (r.status === 401 && String(url).includes('/rest/v1/')) sitzungPruefen();
         // Nur eine erfolgreiche REST-Antwort beweist, dass die Datenbank wieder da ist.
         // Andere Supabase-Aufrufe (z. B. Auth) können gelingen, während REST weiter gestört ist –
         // dann lieber über verbindungPruefen() an der echten Gegenstelle nachfragen statt sofort zu entwarnen.
@@ -10056,7 +10081,8 @@
       // Erst die Gegenstelle anpingen; nur wenn auch das scheitert, kommt der Balken.
       verbProbe = true;
       const ziel = quelle === 'api' ? API + '/health' : SB_URL + '/auth/v1/health';
-      fetch(ziel, { cache: 'no-store' }).then(() => {}, () => verbindungZeigen(quelle)).finally(() => { verbProbe = false; });
+      // /health des Servers schickt keinen CORS-Kopf: ohne no-cors scheitert der Abruf immer, auch wenn der Server läuft.
+      fetch(ziel, { cache: 'no-store', mode: quelle === 'api' ? 'no-cors' : 'cors' }).then(() => {}, () => verbindungZeigen(quelle)).finally(() => { verbProbe = false; });
     }
     function verbindungZeigen(quelle) {
       if (verbGestoert) return;
@@ -10070,7 +10096,7 @@
       verbLaeuft = true;
       try {
         // Es zählt, dass die Gegenstelle antwortet – der Status ist egal.
-        if (verbGestoert === 'api') await fetch(API + '/health', { cache: 'no-store' });
+        if (verbGestoert === 'api') await fetch(API + '/health', { cache: 'no-store', mode: 'no-cors' }); // opake Antwort genügt
         else await fetch(SB_URL + '/auth/v1/health', { cache: 'no-store' });
         verbindungWieder();
       } catch { /* weiter warten */ }
@@ -10081,8 +10107,9 @@
       const war = verbGestoert; verbGestoert = ''; clearInterval(verbUhr); verbUhr = null;
       $('verbindung').classList.remove('sichtbar');
       toast('Verbindung wieder da.');
-      // Nach einem Supabase-Ausfall die Daten frisch holen, damit nichts Altes stehen bleibt.
-      if (war === 'supabase' && tenant) loadAll().catch(() => { /* zeigt sich beim nächsten Aufruf */ });
+      // Nach einem Supabase-Ausfall die Listen frisch holen, damit nichts Altes stehen bleibt. Kein loadAll():
+      // das setzte Assistent und Wissen auf den Serverstand zurück und verwarf ungespeicherte Eingaben.
+      if (war === 'supabase' && tenant) datenNachladen(true);
     }
     $('verbindungNeu').onclick = async () => { const b = $('verbindungNeu'); b.setAttribute('aria-busy', 'true'); await verbindungPruefen(); b.removeAttribute('aria-busy'); };
     window.addEventListener('offline', () => verbindungZeigen('supabase'));
@@ -10103,6 +10130,125 @@
     }
     ['authBtn', 'pwSave', 'saveBtn', 'addKbBtn', 'callBtn', 'ktSpeichern', 'ktImportLos', 'ingestBtn', 'ingestTextBtn', 'whSave', 'whTest', 'crmAdd', 'tkAdd', 'tkTest', 'akCreate', 'tkNeuBtn', 'blockAdd', 'bkSave', 'bkAdd', 'bbAdd', 'rbAdd', 'guestSave', 'dbAktualisieren'].forEach(knopfSchuetzen);
 
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UI-Runde 15.10.2026 – eigener Block, damit offene Zweige (PR #35) rebasebar bleiben.
+    // Bestehende Funktionen werden hier eingewickelt statt an Ort und Stelle umgeschrieben.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // ---- Schreibende Server-Aufrufe nicht still wiederholen ----
+    // apiFetch versuchte jeden Aufruf bis zu dreimal. Bei POST/PATCH/DELETE heißt ein Netzfehler aber nicht,
+    // dass nichts passiert ist: Bestellung, Versand oder Anlegen liefen sonst doppelt. Wiederholt werden nur
+    // Lesezugriffe und Abrufe, die nichts ändern (Vorschläge, Datei lesen, Verfügbarkeit, Nummernsuche).
+    const API_WIEDERHOLBAR = /^\/api\/(gap-suggest|parse-file|kb-chat|restaurant\/availability|numbers\/search)$/;
+    {
+      const apiFetchRoh = apiFetch;
+      apiFetch = async function (path, opts, tries) {
+        const methode = String(opts?.method || 'GET').toUpperCase();
+        if (methode === 'GET' || methode === 'HEAD' || opts?.wiederholen || API_WIEDERHOLBAR.test(String(path).split('?')[0])) return apiFetchRoh(path, opts, tries);
+        try { return await fetch(API + path, opts); }
+        catch (e) {
+          verbindungGestoert('api');
+          throw new Error('Keine Antwort vom Server. Unklar, ob das ausgeführt wurde – bitte erst die Liste prüfen, bevor du es nochmal machst.');
+        }
+      };
+    }
+
+    // ---- Abgelaufene Anmeldung erkennen ----
+    // Ein abgelaufener Zugang sah bisher aus wie ein Netzfehler („Keine Verbindung zum Server“).
+    FEHLER_MUSTER.unshift([/JWT expired|PGRST30\d|not authenticated|Nicht angemeldet|invalid jwt/i, 'Deine Anmeldung ist abgelaufen – bitte neu anmelden.']);
+    let sitzungGeprueft = 0;
+    /** Nach einer 401 der Datenbank: einmal erneuern; klappt das nicht, sauber abmelden und das auf der Anmeldeseite sagen. */
+    async function sitzungPruefen() {
+      if (!appUserId || Date.now() - sitzungGeprueft < 30000) return;
+      sitzungGeprueft = Date.now();
+      try { const { data, error } = await sb.auth.refreshSession(); if (!error && data?.session) { accessToken = data.session.access_token; return; } } catch { /* unten abmelden */ }
+      try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* ohne Speicher kein Hinweis */ }
+      try { await sb.auth.signOut({ scope: 'local' }); } catch { /* der Seitenwechsel räumt trotzdem auf */ }
+    }
+    // Zugriffstoken für Server-Aufrufe (numAuth) frisch halten, wenn der Tab länger im Hintergrund lag.
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden || !appUserId) return;
+      try { const { data } = await sb.auth.getSession(); if (data?.session?.access_token) accessToken = data.session.access_token; } catch { /* nächster Versuch beim nächsten Wechsel */ }
+    });
+
+    // ---- Abmelden räumt vollständig auf ----
+    // Nach dem Abmelden blieben Teile der vorigen Firma im Speicher (Stufe, Gäste, Tags, Filter). Neu laden
+    // ist der einzige Weg, der garantiert nichts übersieht. Betreiber-Ansicht (?imp) geht zurück zum Super-Dashboard.
+    let uiAngemeldet = false, uiSelbstAbgemeldet = false;
+    $('logoutBtn').addEventListener('click', () => { uiSelbstAbgemeldet = true; }, true);
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session) { uiAngemeldet = true; return; }
+      if (event === 'SIGNED_OUT' && uiAngemeldet) {
+        uiAngemeldet = false;
+        if (!uiSelbstAbgemeldet) { try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* egal */ } }
+        setTimeout(() => {
+          if (IMP_HASH) location.replace('admin.html');
+          else if (uiSelbstAbgemeldet) location.replace(location.pathname + location.search);
+          else location.reload(); // abgelaufen: Adresse (Bereich) behalten, nach der Anmeldung geht es dort weiter
+        }, 0);
+        return;
+      }
+      let abgelaufen = false;
+      try { abgelaufen = sessionStorage.getItem('vocaris.abgelaufen') === '1'; sessionStorage.removeItem('vocaris.abgelaufen'); } catch { /* egal */ }
+      if (abgelaufen && $('authMsg')) $('authMsg').textContent = 'Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.';
+    });
+    // Rechte ab dem ersten Bild: Die eigene Stufe (Inhaber/Admin/Mitarbeiter) kam erst beim ersten Klick in der
+    // Navigation. Jetzt wird sie geholt, sobald die Firma feststeht, und das Dashboard erscheint erst danach.
+    {
+      const loadAllRoh = loadAll;
+      loadAll = async function (...args) {
+        let stufeP = null;
+        if (tmMeineStufe == null) {
+          stufeP = (async () => {
+            for (let i = 0; i < 80 && !tenant; i++) await new Promise((r) => setTimeout(r, 50));
+            if (tenant && tmMeineStufe == null) await ladeZugaenge();
+          })().catch(() => { /* Navigation bleibt wie bisher, der erste Klick holt die Stufe nach */ });
+        }
+        const erg = await loadAllRoh.apply(this, args);
+        if (stufeP) await Promise.race([stufeP, new Promise((r) => setTimeout(r, 2500))]);
+        return erg;
+      };
+    }
+
+    // ---- Nach einer Lücke (Netz, Echtzeit, Hintergrund) nur Listen nachladen ----
+    // Formulare (Assistent, Wissen, Antworten auf offene Fragen) bleiben unangetastet, solange jemand darin arbeitet.
+    let nachladenZuletzt = 0;
+    const uiTipptIn = (sel) => { const a = document.activeElement; return !!(a && a.closest?.(sel) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)); };
+    function datenNachladen(sofort) {
+      if (!tenant) return;
+      if (!sofort && Date.now() - nachladenZuletzt < 3000) return;
+      nachladenZuletzt = Date.now();
+      loadLive();
+      loadTickets();
+      mgLaden();
+      if (!uiTipptIn('#gapDetail') && !($('gapDetail')?.querySelector('[data-antwort]')?.value || '').trim()) loadGaps();
+      if (!$('sec-overview')?.classList.contains('hidden')) ladeDashboard(); else dbDatenZeit = 0;
+      if (module.reservierung && $('rsDayDate')) { refreshDay(); if ($('rsPlanDate')?.value) loadDayOccupancy($('rsPlanDate').value); }
+      if (!$('sec-kontakte')?.classList.contains('hidden')) ladeKontakte();
+      if (!asDirty && !uiTipptIn('#sec-kb') && !uiTipptIn('#sec-assistant')) loadDept();
+    }
+    // Echtzeit-Kanal neu verbunden: Ereignisse aus der Lücke sind verloren, also einmal nachladen.
+    const echtzeitVerbundenVorher = { live: false, rs: false };
+    function echtzeitVerbunden(kanal) {
+      if (!echtzeitVerbundenVorher[kanal]) { echtzeitVerbundenVorher[kanal] = true; return; } // erstes Abo: Daten sind frisch
+      if (kanal === 'rs') { clearTimeout(rsBelegungTimer); rsBelegungTimer = setTimeout(() => { if (tenant && $('rsPlanDate')) loadDayOccupancy($('rsPlanDate').value); }, 400); return; }
+      datenNachladen();
+    }
+    // Lange im Hintergrund (Laptop zu, Handy gesperrt): beim Zurückkommen frisch holen.
+    let uiVerstecktSeit = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { uiVerstecktSeit = Date.now(); return; }
+      if (uiVerstecktSeit && Date.now() - uiVerstecktSeit > 60000) datenNachladen();
+      uiVerstecktSeit = 0;
+    });
+    // Der Verbindungsbalken schiebt den Inhalt nach unten (CSS --vb-h), statt Kopfzeile und ↻ zu verdecken.
+    (function verbindungsHoehe() {
+      const v = $('verbindung'); if (!v) return;
+      const setzen = () => document.documentElement.style.setProperty('--vb-h', Math.ceil(v.getBoundingClientRect().height) + 'px');
+      new MutationObserver(setzen).observe(v, { attributes: true, attributeFilter: ['class'] });
+      window.addEventListener('resize', setzen); setzen();
+    })();
 
     boot();
   </script>
