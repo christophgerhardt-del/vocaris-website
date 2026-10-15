@@ -1421,6 +1421,14 @@
     .res-notiztext span { color: var(--ink-faint); font-weight: 600; margin-right: 2px; }
     .shell input[type=range] { accent-color: var(--accent); }
     #rsAreaTabs .deptseg { white-space: nowrap; }
+    /* Speicherstand unter Notizfeldern */
+    .speicherstatus { font-size: 12.5px; color: var(--ink-faint); margin-top: 4px; min-height: 18px; }
+    .speicherstatus[data-art="fehler"] { color: #b91c1c; }
+    :root[data-theme="dark"] .speicherstatus[data-art="fehler"] { color: #fca5a5; }
+    .speicherstatus__nochmal { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    /* Vorgänge: Anlagezeit klein unter der Frist */
+    .lv-rechts .tk-angelegt { font-size: 11.5px; color: var(--ink-faint); }
+    .lv-neu, .lv-art { white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -4745,7 +4753,7 @@
       const h = document.createElement('h3'); h.className = 'item__titel';
       h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
-      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
+      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone ? fmtNr(r.customer_phone) : null, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
       if (r.notes) { const n = document.createElement('p'); n.className = 'res-notiztext'; n.innerHTML = '<span>Notiz</span> '; n.append(r.notes); div.append(n); }
       const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
@@ -5455,8 +5463,23 @@
       browser: 'Ihr habt im Browser gesprochen',
       assistant: 'Der Assistent hat den Anruf geführt',
     };
-    // Ohne verlässliche Vorwahl-Tabelle nur die Ländervorwahl abtrennen statt eine falsche Dreiergruppe vorzutäuschen (z. B. München/Berlin mit zweistelliger Vorwahl).
-    const fmtNr = (n) => (n || 'Anrufer').replace(/^(\+\d{2})(\d+)$/, '$1 $2');
+    // Nummern so, wie man sie liest: deutsche national mit 0, Handy (015x/016x/017x) und die Großstadt-Vorwahlen 030/040/069/089
+    // abgesetzt, sonst ohne Gruppen (ohne Vorwahl-Tabelle keine falsche Gruppe vortäuschen); Ausland mit abgesetzter Ländervorwahl.
+    // Kopieren und tel:-Links nutzen weiter die Rohnummer.
+    const LAENDER_2 = new Set(['20', '27', '30', '31', '32', '33', '34', '36', '39', '40', '41', '43', '44', '45', '46', '47', '48', '49', '51', '52', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '64', '65', '66', '81', '82', '84', '86', '90', '91', '92', '93', '94', '95', '98']);
+    const fmtNr = (n) => {
+      const roh = String(n || '').trim(); if (!roh) return 'Anrufer';
+      const z = roh.replace(/[\s/().-]/g, '').replace(/^00/, '+');
+      const national = z.startsWith('+49') ? z.slice(3) : (/^0[1-9]/.test(z) ? z.slice(1) : null);
+      if (national !== null && /^\d{5,13}$/.test(national)) {
+        if (/^1[5-7]\d/.test(national)) return '0' + national.slice(0, 3) + ' ' + national.slice(3);
+        if (/^(30|40|69|89)/.test(national)) return '0' + national.slice(0, 2) + ' ' + national.slice(2);
+        return '0' + national;
+      }
+      const m = z.match(/^\+(\d+)$/); if (!m || m[1].length < 6) return roh;
+      const cc = /^[17]/.test(m[1]) ? 1 : LAENDER_2.has(m[1].slice(0, 2)) ? 2 : 3;
+      return '+' + m[1].slice(0, cc) + ' ' + m[1].slice(cc);
+    };
     const escHtml = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     /** Text als HTML mit hervorgehobenen Suchtreffern. */
     const markierenMit = (t, such) => { const raw = String(t ?? ''); const s = (such || '').trim(); if (!s) return escHtml(raw); const re = new RegExp('(' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'); return raw.split(re).map((teil, i) => i % 2 === 1 ? '<mark>' + escHtml(teil) + '</mark>' : escHtml(teil)).join(''); };
@@ -5542,7 +5565,7 @@
         if (ausser !== 'stimmung' && A.stimmung && c.sentiment !== A.stimmung) return false;
         if (ausser !== 'thema' && A.thema && c.topic !== A.thema) return false;
         if (ausser !== 'tag' && A.tag && !lvTagsVon(c).includes(A.tag)) return false;
-        if (s && ![c.caller_number, c.topic, c.summary, c.notes, ...lvTagsVon(c), ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        if (s && ![c.caller_number, c.caller_number ? fmtNr(c.caller_number) : '', c.caller_number ? fmtNr(c.caller_number).replace(/\s/g, '') : '', c.topic, c.summary, c.notes, ...lvTagsVon(c), ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
         return true;
       }).sort((a, b) => (callIsActive(b.call) - callIsActive(a.call)) || (new Date(b.call.started_at) - new Date(a.call.started_at)));
     }
@@ -5633,7 +5656,7 @@
       box.innerHTML = '<label for="' + uid + '" style="margin-top:0">Tags <span class="muted">Enter fügt hinzu · Klick auf einen Tag filtert die Liste</span></label>'
         + '<div class="lv-etiketten" data-tags></div>'
         + '<datalist id="' + uid + 'L"></datalist>'
-        + '<label for="' + uid + 'N">Notiz <span class="muted">wird beim Verlassen des Feldes gespeichert</span></label>'
+        + '<label for="' + uid + 'N">Notiz <span class="muted">wird automatisch gespeichert</span></label>'
         + '<textarea class="db-notizen" id="' + uid + 'N" data-notiz placeholder="Eigene Notiz zu diesem Anruf, z. B. was danach vereinbart wurde."></textarea>';
       const A = lvAnsichtVon(c);
       async function speichern(patch, meldung) {
@@ -5666,7 +5689,16 @@
       }
       zeichnen();
       const nt = box.querySelector('[data-notiz]'); nt.value = c.notes || '';
-      nt.onchange = async () => { const v = nt.value.trim() || null; if (v === (c.notes || null)) return; if (await speichern({ notes: v }, 'Notiz gespeichert.')) { const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; } };
+      let ntTimer = null;
+      const ntSpeichern = async () => {
+        clearTimeout(ntTimer); const v = nt.value.trim() || null; if (v === (c.notes || null)) return;
+        speicherStatus(nt, 'call:' + c.id, 'laeuft');
+        if (await speichern({ notes: v })) { speicherStatus(nt, 'call:' + c.id, 'ok'); const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; }
+        else speicherStatus(nt, 'call:' + c.id, 'fehler', ntSpeichern);
+      };
+      nt.oninput = () => { clearTimeout(ntTimer); ntTimer = setTimeout(ntSpeichern, 900); };
+      nt.onchange = ntSpeichern;
+      speicherStatus(nt, 'call:' + c.id);
       return box;
     }
     /** Beide Ansichten neu zeichnen – Daten und Filter hängen zusammen. */
@@ -9191,7 +9223,7 @@
         if (ausser !== 'heute' && tkNurHeute && !istHeuteFaellig(t)) return false;
         if (!s) return true;
         if (s.startsWith('#')) return String(t.number).startsWith(s.slice(1));
-        return [t.title, t.body, t.caller_name, t.caller_phone, t.category, t.assignee, '#' + t.number].some((x) => (x || '').toLowerCase().includes(s));
+        return [t.title, t.body, t.caller_name, t.caller_phone, t.caller_phone ? fmtNr(t.caller_phone).replace(/\s/g, '') : '', t.category, t.assignee, '#' + t.number].some((x) => (x || '').toLowerCase().includes(s));
       }).sort((a, b) => {
         // Offene: dringendste zuerst (überfällig, dann nächste Frist, ohne Frist zuletzt); Erledigte: zuletzt erledigt zuerst
         if (a.status === 'done' && b.status === 'done') return new Date(b.closed_at || b.updated_at) - new Date(a.closed_at || a.updated_at);
@@ -9245,7 +9277,7 @@
       if (t.body && t.body.length > 40) z.querySelector('.lv-text').dataset.tip = t.body.slice(0, 300);
       const r = z.querySelectorAll('.lv-rechts span');
       if (t.status === 'done') { r[0].textContent = 'erledigt'; r[1].textContent = lvWann(t.closed_at || t.updated_at); }
-      else { r[0].textContent = fmtFrist(t.due_at); r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].classList.add('ueber-text'); r[1].textContent = lvWann(t.created_at); }
+      else { const fr = fmtFrist(t.due_at); r[0].textContent = !t.due_at || ueber ? fr : (fr.startsWith('in ') ? 'fällig ' : 'Frist ') + fr; r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].classList.add('ueber-text'); r[1].textContent = 'angelegt ' + lvWann(t.created_at).replace(/^(Heute|Gestern)/, (w) => w.toLowerCase()); r[1].className = 'tk-angelegt'; }
       z.onclick = () => { tkAuswahl = t.id; renderTickets(); };
       z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', t.id === tkAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
@@ -9302,7 +9334,7 @@
         + '<div class="stack" style="margin-top:10px" data-aktionen></div><div data-rueckruf></div><div class="hidden tk-sms" data-smsbox><textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea><button class="btn sm" type="button" data-smssenden style="margin-top:6px">SMS senden</button></div>'
         + '<div data-transkript></div>'
         + '<div class="tk-verlauf" data-verlauf><label>Verlauf</label><p class="sys">wird geladen …</p></div>'
-        + '<div class="tk-notiz"><textarea rows="2" data-notiz aria-label="Notiz zum Vorgang" placeholder="Notiz hinzufügen … (Strg+Enter speichert)"></textarea><button class="btn sm" type="button" data-notizspeichern>Notiz speichern</button></div>';
+        + '<div class="tk-notiz"><textarea rows="2" data-notiz aria-label="Notiz zum Vorgang" placeholder="Notiz für den Verlauf … (Strg+Enter fügt hinzu)"></textarea><button class="btn sm" type="button" data-notizspeichern>Notiz hinzufügen</button></div>';
       d.dataset.ticketId = t.id;
       d.querySelector('.lv-zurueck').onclick = () => { tkAuswahl = null; renderTickets(); };
       // Titel umbenennen
@@ -9362,7 +9394,7 @@
       const entwurf = tkEntwuerfe.get(t.id);
       if (entwurf) { ta.value = entwurf.v; if (entwurf.fokus) { ta.focus(); try { ta.setSelectionRange(entwurf.s, entwurf.s); } catch { /* egal */ } } }
       ta.oninput = () => { if (ta.value.trim()) tkEntwuerfe.set(t.id, { v: ta.value, fokus: true, s: ta.selectionStart }); else tkEntwuerfe.delete(t.id); };
-      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: ($('userEmail')?.textContent || '').trim() || 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz gespeichert.'); tkNotizen.delete(t.id); renderTicketDetail(); };
+      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: ($('userEmail')?.textContent || '').trim() || 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz hinzugefügt.'); tkNotizen.delete(t.id); renderTicketDetail(); };
       d.querySelector('[data-notizspeichern]').onclick = notizSpeichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') notizSpeichern(); };
       // Verlauf + Gesprächsverlauf (zwischengespeichert)
       const meinId = t.id;
@@ -10776,6 +10808,44 @@
       const pruefen = () => sec.classList.toggle('lv-ganz-leer', !!liste.querySelector(':scope > .leer'));
       new MutationObserver(pruefen).observe(liste, { childList: true }); pruefen();
     });
+
+    // ---- Notizen: ein Speicherstatus für Anruf, Nachricht und Wissen ----
+    // „Speichert …“ → „Gespeichert · 12:31“ oder rot „Nicht gespeichert. Erneut versuchen“. Der Stand übersteht das Neuzeichnen
+    // des Details (Echtzeit-Echo), deshalb merkt ihn eine Tabelle je Eintrag.
+    const notizStand = new Map();
+    function speicherStatus(feld, schluessel, art, nochmal) {
+      if (art) notizStand.set(schluessel, { art, zeit: new Date(), nochmal });
+      const st = notizStand.get(schluessel); if (!feld || !st) return;
+      let el = feld.nextElementSibling?.classList.contains('speicherstatus') ? feld.nextElementSibling : null;
+      if (!el) { el = document.createElement('div'); el.className = 'speicherstatus'; el.setAttribute('role', 'status'); feld.after(el); }
+      el.dataset.art = st.art; el.textContent = '';
+      if (st.art === 'laeuft') el.textContent = 'Speichert …';
+      else if (st.art === 'ok') el.textContent = 'Gespeichert · ' + st.zeit.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      else { el.append('Nicht gespeichert. '); const b = document.createElement('button'); b.type = 'button'; b.className = 'speicherstatus__nochmal'; b.textContent = 'Erneut versuchen'; b.onclick = () => st.nochmal?.(); el.append(b); }
+    }
+    {
+      // Nachricht: die Notiz speichert schon automatisch (mgAendern mit note) – jetzt mit sichtbarem Stand
+      const mgAendernVorNotiz = mgAendern;
+      mgAendern = async function (m, patch) {
+        if (!patch || !('note' in patch)) return mgAendernVorNotiz(m, patch);
+        const feld = () => document.querySelector('#mgDetail[data-msg-id="' + m.id + '"] [data-notiz]');
+        speicherStatus(feld(), 'msg:' + m.id, 'laeuft');
+        const ok = await mgAendernVorNotiz(m, patch);
+        speicherStatus(feld(), 'msg:' + m.id, ok ? 'ok' : 'fehler', () => mgAendern(m, { note: feld()?.value.trim() || null }));
+        return ok;
+      };
+      const renderNachrichtDetailVorNotiz = renderNachrichtDetail;
+      renderNachrichtDetail = function () { renderNachrichtDetailVorNotiz(); if (mgAuswahl) speicherStatus($('mgDetail')?.querySelector('[data-notiz]'), 'msg:' + mgAuswahl); };
+      // Wissen: Inhalt speichert beim Verlassen des Feldes bzw. mit „Speichern“ – Stand unter dem Text
+      const kbUpdateVorStand = kbUpdate;
+      kbUpdate = async function (it, patch, meldung) {
+        const ok = await kbUpdateVorStand(it, patch, meldung);
+        if (patch && 'content' in patch) { notizStand.set('kb:' + it.id, { art: ok ? 'ok' : 'fehler', zeit: new Date(), nochmal: () => $('kbDetail')?.querySelector('[data-kopf] .btn--primary')?.click() }); speicherStatus($('kbDetail')?.querySelector('[data-f=content]'), 'kb:' + it.id); }
+        return ok;
+      };
+      const renderWissenDetailVorStand = renderWissenDetail;
+      renderWissenDetail = function () { renderWissenDetailVorStand(); if (kbAuswahl) speicherStatus($('kbDetail')?.querySelector('[data-f=content]'), 'kb:' + kbAuswahl); };
+    }
 
     // ---- Reservierungen: Notiz direkt an der Reservierung ----
     function resNotizBearbeiten(r, karte) {
