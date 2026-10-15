@@ -1303,6 +1303,28 @@
     /* Überfällige Frist auch hell erkennbar (die graue Zeitangabe der Zeile gewann bisher) */
     .db-zeile .t.ueber-text { color: #c2410c; font-weight: 600; }
     :root[data-theme="dark"] .db-zeile .t.ueber-text { color: #fb923c; }
+    /* Dashboard-Listen: die rechte Angabe (Zeit, Frist) drückt den Titel nie aus der Karte; auf dem Handy steht sie unter dem Titel */
+    .db-zeile { grid-template-columns: minmax(0, 1fr) auto; } .db-zeile b { min-width: 0; overflow-wrap: break-word; }
+    /* Reservierungs-Einstellungen nur lesen: Links kopieren geht trotzdem */
+    .nur-lesen :is(#rsCopyLink, #rsCopyKiosk, #rsPreviewRefresh) { pointer-events: auto; opacity: 1; }
+    details.nur-lesen > .nur-lesen-hinweis { margin-top: 8px; }
+    @media (max-width: 700px) {
+      /* Handy: Titel über die volle Breite (höchstens zwei Zeilen), darunter links der Text, rechts Zeit bzw. Frist */
+      .db-zeile { grid-template-areas: "b b" "z t"; }
+      .db-zeile b { grid-area: b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .db-zeile .t { grid-area: t; align-self: center; text-align: right; }
+      .db-zeile .z { grid-area: z; min-width: 0; }
+    }
+    @media (max-width: 700px) {
+      #rsDayKpis:not(.hidden) { display: flex !important; overflow-x: auto; gap: 8px !important; scrollbar-width: none; margin-top: 10px !important; }
+      #rsDayKpis::-webkit-scrollbar { display: none; }
+      #rsDayKpis .db-kpi { flex: none; display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; min-height: 0; }
+      #rsDayKpis .db-kpi .k { margin: 0; } #rsDayKpis .db-kpi .v { font-size: 18px; line-height: 1.2; } #rsDayKpis .db-kpi .d { display: none; }
+    }
+    /* Wissens-Assistent-Knopf: nur das Symbol, beim Überfahren bzw. Fokus mit Beschriftung */
+    .wa-launcher.klein { padding: 13px; }
+    .wa-launcher.klein span { display: none; }
+    @media (hover: hover) and (min-width: 601px) { .wa-launcher.klein:is(:hover, :focus-visible) { padding: 13px 18px; } .wa-launcher.klein:is(:hover, :focus-visible) span { display: inline; } }
     /* Konto-Menü: Ton und Hinweise bei Anrufen */
     .konto__meldungen { display: grid; gap: 2px; padding: 4px 0; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
     .konto__schalter { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 0 10px; margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); cursor: pointer; }
@@ -5695,7 +5717,7 @@
       let ntTimer = null;
       const ntSpeichern = async () => {
         clearTimeout(ntTimer); const v = nt.value.trim() || null; if (v === (c.notes || null)) return;
-        speicherStatus(nt, 'call:' + c.id, 'laeuft');
+        speicherStatus(nt, 'call:' + c.id, 'laeuft'); lvNotizEchoErwarten(c.id);
         if (await speichern({ notes: v })) { speicherStatus(nt, 'call:' + c.id, 'ok'); const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; }
         else speicherStatus(nt, 'call:' + c.id, 'fehler', ntSpeichern);
       };
@@ -6760,7 +6782,7 @@
       if ($('asStilWert')) {
         fakten.push(['Stil', { knapp: 'knapp', normal: 'normal', ausfuehrlich: 'ausführlich' }[$('asStilWert').value] || 'normal']);
         const art = typeof asHinweisStatus === 'function' ? asHinweisStatus() : 'aus';
-        fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade' }[art] || 'keiner']);
+        fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade', fehler: 'Datum prüfen' }[art] || 'keiner']);
         const nF = $('asFelder')?.querySelectorAll('.as-feldzeile').length || 0;
         if (nF) fakten.push(['Erfassung', nF + (nF === 1 ? ' Zusatzfeld' : ' Zusatzfelder')]);
         const nT = typeof asTastenLesen === 'function' ? asTastenLesen().length : 0;
@@ -7627,6 +7649,7 @@
         : await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
       if (vorhanden?.length && ins.data) kbItems = kbItems.filter((x) => x.id !== ins.data.id);
       if (ins.error) { if (btn) btn.disabled = false; return toast('Fehler: ' + fehlerText(ins.error), 'err'); }
+      if (!ins.data) { if (btn) btn.disabled = false; return toast('Dein Konto darf das Wissen nicht ändern – die Antwort ist nicht gespeichert.', 'err'); }
       const jetzt = new Date().toISOString();
       if (!(await schreiben(sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: jetzt }).eq('id', g.id)))) { if (btn) btn.disabled = false; return; }
       gapItems = gapItems.filter((x) => x.id !== g.id); g.status = 'answered'; g.answer = answer; g.answered_at = jetzt; if (gapBeantwortet) gapBeantwortet.unshift(g);
@@ -7957,8 +7980,8 @@
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
       if (!offene.length) lv.innerHTML = leerText('Keine offenen Vorgänge.');
       offene.forEach((t) => { const ueber = t.due_at && new Date(t.due_at) < jetzt;
-        const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (ueber ? 'überfällig · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
-        if (ueber) z.querySelector('.t').classList.add('ueber-text');
+        const fr = t.due_at ? fmtFrist(t.due_at) : ''; const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (!fr || ueber ? fr : (fr.startsWith('in ') ? 'fällig ' : 'Frist ') + fr), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
+        if (ueber) z.querySelector('.t').classList.add('ueber-text'); if (t.due_at) z.querySelector('.t').dataset.tip = 'Frist ' + fmtZeit(t.due_at);
         z.onclick = () => { geh('sec-tickets'); vorgangOeffnen(t.id); }; lv.append(z); });
       // Themen (klickbar)
       const themen = {}; ausser('thema').forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
@@ -9397,7 +9420,7 @@
       const entwurf = tkEntwuerfe.get(t.id);
       if (entwurf) { ta.value = entwurf.v; if (entwurf.fokus) { ta.focus(); try { ta.setSelectionRange(entwurf.s, entwurf.s); } catch { /* egal */ } } }
       ta.oninput = () => { if (ta.value.trim()) tkEntwuerfe.set(t.id, { v: ta.value, fokus: true, s: ta.selectionStart }); else tkEntwuerfe.delete(t.id); };
-      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: ($('userEmail')?.textContent || '').trim() || 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz hinzugefügt.'); tkNotizen.delete(t.id); renderTicketDetail(); };
+      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: IMP_HASH ? 'Vocaris-Support' : (($('userEmail')?.textContent || '').trim() || 'Team') }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz hinzugefügt.'); tkNotizen.delete(t.id); renderTicketDetail(); };
       d.querySelector('[data-notizspeichern]').onclick = notizSpeichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') notizSpeichern(); };
       // Verlauf + Gesprächsverlauf (zwischengespeichert)
       const meinId = t.id;
@@ -9480,7 +9503,7 @@
         for (const n of data || []) if (!notiz.has(n.ticket_id)) notiz.set(n.ticket_id, n);
       }
       const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt am', 'Quelle', 'Beschreibung', 'Letzte Notiz']];
-      liste.forEach((t) => { const n = notiz.get(t.id); rows.push(['#' + t.number, t.title, TK_STATUS[t.status] || t.status, TK_PRIO[t.priority] || 'Normal', t.category || '', t.assignee || '', t.caller_name || ktName(t.caller_phone || '') || '', t.caller_phone || '', csvZeit(t.due_at), csvZeit(t.created_at), csvZeit(t.closed_at), TK_QUELLE[t.source] || t.source || '', t.body || '', n ? n.body + ' (' + (n.author || 'Team') + ', ' + csvZeit(n.created_at) + ')' : '']); });
+      liste.forEach((t) => { const n = notiz.get(t.id); rows.push([t.number, t.title, TK_STATUS[t.status] || t.status, TK_PRIO[t.priority] || 'Normal', t.category || '', t.assignee || '', t.caller_name || ktName(t.caller_phone || '') || '', t.caller_phone || '', csvZeit(t.due_at), csvZeit(t.created_at), csvZeit(t.closed_at), TK_QUELLE[t.source] || t.source || '', t.body || '', n ? n.body + ' (' + (n.author || 'Team') + ', ' + csvZeit(n.created_at) + ')' : '']); });
       csvHerunterladen(rows, 'vorgaenge'); toast(liste.length + (liste.length === 1 ? ' Vorgang' : ' Vorgänge') + ' exportiert.');
     };
     $('tkNeuBtn').onclick = async () => {
@@ -10424,7 +10447,11 @@
     async function sitzungPruefen() {
       if (!appUserId || Date.now() - sitzungGeprueft < 30000) return;
       sitzungGeprueft = Date.now();
-      try { const { data, error } = await sb.auth.refreshSession(); if (!error && data?.session) { accessToken = data.session.access_token; return; } } catch { /* unten abmelden */ }
+      let fehler = null;
+      try { const { data, error } = await sb.auth.refreshSession(); if (!error && data?.session) { accessToken = data.session.access_token; return; } fehler = error; } catch (e) { fehler = e; }
+      // Netz wackelt, zu viele Anfragen (mehrere Tabs) oder Auth-Dienst gestört: nicht abmelden, beim nächsten 401 in 10 s erneut.
+      const st = Number(fehler?.status) || 0;
+      if (fehler && (fehler.name === 'AuthRetryableFetchError' || istNetzfehler(fehler) || st === 429 || st >= 500)) { sitzungGeprueft = Date.now() - 20000; return; }
       try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* ohne Speicher kein Hinweis */ }
       try { await sb.auth.signOut({ scope: 'local' }); } catch { /* der Seitenwechsel räumt trotzdem auf */ }
     }
@@ -10438,13 +10465,24 @@
     // Nach dem Abmelden blieben Teile der vorigen Firma im Speicher (Stufe, Gäste, Tags, Filter). Neu laden
     // ist der einzige Weg, der garantiert nichts übersieht. Betreiber-Ansicht (?imp) geht zurück zum Super-Dashboard.
     let uiAngemeldet = false, uiSelbstAbgemeldet = false, uiStartGeroutet = false;
-    $('logoutBtn').addEventListener('click', () => { uiSelbstAbgemeldet = true; }, true);
+    // Beim Verlassen bzw. Neuladen brechen offene Abrufe ab und sehen für fetch wie Netzfehler aus: dann nicht mehr die
+    // Gegenstelle anpingen (der Ping selbst bricht ab und landet als Fehler in der Konsole).
+    let seiteEntlaedt = false;
+    window.addEventListener('pagehide', () => { seiteEntlaedt = true; });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) seiteEntlaedt = false; }); // aus dem Zurück-Speicher
+    { const roh = verbindungGestoert; verbindungGestoert = function (quelle) { if (seiteEntlaedt) return; return roh(quelle); }; }
+    $('logoutBtn').addEventListener('click', () => { uiSelbstAbgemeldet = true; try { localStorage.setItem('vocaris.abgemeldet', String(Date.now())); } catch { /* egal */ } }, true);
+    // Bisher meldete „Abmelden“ den Login auf allen Geräten ab (signOut ohne scope = global) – bei geteilten Logins (Laptop + iPad) lästig.
+    $('logoutBtn').onclick = () => sb.auth.signOut({ scope: 'local' });
+    const kuerzlichAbgemeldet = () => { try { return Date.now() - Number(localStorage.getItem('vocaris.abgemeldet') || 0) < 15000; } catch { return false; } };
     sb.auth.onAuthStateChange((event, session) => {
       if (session) { uiAngemeldet = true; return; }
       if (event === 'SIGNED_OUT' && uiAngemeldet) {
         uiAngemeldet = false;
+        if (!uiSelbstAbgemeldet && kuerzlichAbgemeldet()) uiSelbstAbgemeldet = true; // in einem anderen Tab abgemeldet
         if (!uiSelbstAbgemeldet) { try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* egal */ } }
         setTimeout(() => {
+          seiteEntlaedt = true;
           if (IMP_HASH) location.replace('admin.html');
           else if (uiSelbstAbgemeldet) location.replace(location.pathname + location.search);
           else location.reload(); // abgelaufen: Adresse (Bereich) behalten, nach der Anmeldung geht es dort weiter
@@ -10460,21 +10498,54 @@
     {
       const loadAllRoh = loadAll;
       loadAll = async function (...args) {
-        let stufeP = null;
+        let stufeP = null, stufeGemerkt = false;
         if (tmMeineStufe == null) {
           stufeP = (async () => {
             for (let i = 0; i < 80 && !tenant; i++) await new Promise((r) => setTimeout(r, 50));
-            if (tenant && tmMeineStufe == null) await ladeZugaenge();
+            if (!tenant || tmMeineStufe != null) return;
+            // Schon einmal hier angemeldet: die gemerkte Stufe gilt sofort, der Server bestätigt sie im Hintergrund.
+            const s = stufeLesen(); if (s) { tmMeineStufe = s; tmNavigationAnpassen(s); stufeGemerkt = true; }
+            await ladeZugaenge();
           })().catch(() => { /* Navigation bleibt wie bisher, der erste Klick holt die Stufe nach */ });
         }
-        const erg = await loadAllRoh.apply(this, args);
-        if (stufeP) await Promise.race([stufeP, new Promise((r) => setTimeout(r, 2500))]);
+        // Endet die Sitzung mitten im Laden (anderswo abgemeldet), setzt showAuth tenant = null; der Rest von loadAll
+        // greift dann ins Leere. Die Anmeldeseite steht schon – kein Seitenfehler.
+        let erg; try { erg = await loadAllRoh.apply(this, args); } catch (e) { if (!tenant) return; throw e; }
+        if (!tenant) return erg;
+        if (stufeP && !stufeGemerkt) await Promise.race([stufeP, new Promise((r) => setTimeout(r, 2500))]);
         // Beim ersten Laden der Adresse folgen (#vorgaenge/26 …), noch hinter dem Startbild – ohne Umweg übers Dashboard.
         // Die Adresse selbst wird dabei nie umgeschrieben (Anmelde-Token, Kalender-Rücksprung, fremde Anker bleiben).
         if (!uiStartGeroutet && tenant) { uiStartGeroutet = true; try { await Promise.race([adresseAnwenden('start'), new Promise((r) => setTimeout(r, 4000))]); } catch { /* Dashboard bleibt */ } }
         return erg;
       };
     }
+
+    const stufeSchluessel = () => 'vocaris.stufe.' + appUserId + '.' + tenant?.id;
+    function stufeLesen() { try { const s = localStorage.getItem(stufeSchluessel()); return ['owner', 'admin', 'member'].includes(s) ? s : null; } catch { return null; } }
+    {
+      const roh = tmNavigationAnpassen;
+      tmNavigationAnpassen = function (stufe) {
+        roh(stufe);
+        const mitarbeiter = stufe === 'member';
+        const rsEinst = $('rsSaveCfg')?.closest('details');
+        if (rsEinst) {
+          if (!rsEinst.querySelector('.nur-lesen-hinweis')) { const p = document.createElement('p'); p.className = 'nur-lesen-hinweis'; p.textContent = 'Nur Lesen: Einstellungen ändert der Inhaber oder ein Admin.'; rsEinst.querySelector('summary')?.after(p); }
+          rsEinst.classList.toggle('nur-lesen', mitarbeiter);
+        }
+        const plan = $('sec-floorplan')?.querySelector('.db-kopf > div');
+        if (plan) {
+          if (!plan.querySelector('.nur-lesen-hinweis')) { const p = document.createElement('p'); p.className = 'nur-lesen-hinweis'; p.textContent = 'Nur Lesen: Den Tischplan ändert der Inhaber oder ein Admin.'; plan.append(p); }
+          plan.classList.toggle('nur-lesen', mitarbeiter);
+        }
+        if ($('rsEditToggle')) $('rsEditToggle').hidden = mitarbeiter;
+        if (stufe && appUserId && tenant) { try { localStorage.setItem(stufeSchluessel(), stufe); } catch { /* ohne Speicher: beim nächsten Start wieder warten */ } }
+      };
+    }
+
+    // Reservierungs-Lader werden nicht abgewartet aufgerufen (z. B. am Ende von loadRestaurant): endet die Sitzung genau dann,
+    // ist tenant schon null – still aussteigen statt Seitenfehler.
+    { const roh = loadDayOccupancy; loadDayOccupancy = function (...a) { if (!tenant) return Promise.resolve(); return roh.apply(this, a); }; }
+    { const roh = refreshDay; refreshDay = function (...a) { if (!tenant) return Promise.resolve(); return roh.apply(this, a); }; }
 
     // ---- Nach einer Lücke (Netz, Echtzeit, Hintergrund) nur Listen nachladen ----
     // Formulare (Assistent, Wissen, Antworten auf offene Fragen) bleiben unangetastet, solange jemand darin arbeitet.
@@ -10484,7 +10555,7 @@
       if (!tenant) return;
       if (!sofort && Date.now() - nachladenZuletzt < 3000) return;
       nachladenZuletzt = Date.now();
-      loadLive();
+      lvAuffrischen();
       loadTickets();
       mgLaden();
       if (!uiTipptIn('#gapDetail') && !($('gapDetail')?.querySelector('[data-antwort]')?.value || '').trim()) loadGaps();
@@ -10492,6 +10563,47 @@
       if (module.reservierung && $('rsDayDate')) { refreshDay(); if ($('rsPlanDate')?.value) loadDayOccupancy($('rsPlanDate').value); }
       if (!$('sec-kontakte')?.classList.contains('hidden')) ladeKontakte();
       if (!asDirty && !uiTipptIn('#sec-kb') && !uiTipptIn('#sec-assistant')) loadDept();
+    }
+    /** Anrufe nach einer Lücke zusammenführen statt alles neu zu laden: neue Anrufe ab dem jüngsten bekannten (mit Puffer)
+     *  und alle, die in der Lücke noch liefen. Geladene Gesprächsverläufe und „ältere laden“ bleiben erhalten. */
+    async function lvAuffrischen() {
+      if (!tenant) return;
+      if (!liveCalls.size) return loadLive();
+      let neuester = -Infinity, aeltesterAktiv = Infinity;
+      for (const x of liveCalls.values()) { const t = new Date(x.call.started_at).getTime(); if (t > neuester) neuester = t; if (callIsActive(x.call) && t < aeltesterAktiv) aeltesterAktiv = t; }
+      const ab = Math.min(neuester - 2 * 3600e3, aeltesterAktiv), gen = lvLadeGen, MAX = 200;
+      const { data, error } = await sb.from('calls').select('*').eq('tenant_id', tenant.id).gte('started_at', new Date(ab).toISOString()).order('started_at', { ascending: false }).limit(MAX);
+      if (error || gen !== lvLadeGen) return;
+      if ((data || []).length >= MAX) return loadLive(); // sehr viel verpasst: einmal ganz neu
+      const nachholen = [];
+      let neu = 0;
+      for (const c of stimmungNorm(data)) {
+        const e = liveCalls.get(c.id);
+        if (!e) { liveCalls.set(c.id, { call: c, turns: [], geladen: false }); neu++; }
+        else if (JSON.stringify(e.call) !== JSON.stringify(c)) { e.call = c; if (e.geladen) { e.geladen = false; nachholen.push(c.id); } }
+        lvTagsVon(c).forEach((t) => lvAlleTags.add(t));
+      }
+      lvGeladen += neu; // Seitenzähler für „ältere laden“ bleibt passend
+      const offen = new Set(Object.values(LV_ANSICHTEN).map((A) => A.auswahl).filter(Boolean));
+      const holen = [...new Set([...(data || []).filter(callIsActive).map((c) => c.id), ...nachholen.filter((id) => offen.has(id))])];
+      if (holen.length) await turnsLaden(holen);
+      renderLive();
+    }
+    // Eigene Notiz: Das Echo über Echtzeit (nur notes/updated_at anders) zeichnet nicht beide Listen samt Detail neu.
+    let lvNotizEcho = null;
+    function lvNotizEchoErwarten(id) { lvNotizEcho = { id, obj: liveCalls.get(id)?.call || null, groesse: liveCalls.size, bis: Date.now() + 8000 }; }
+    const nurNotizAnders = (a, b) => { for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) { if (k !== 'notes' && k !== 'updated_at' && JSON.stringify(a[k]) !== JSON.stringify(b[k])) return false; } return true; };
+    {
+      const roh = renderLive;
+      renderLive = function (...a) {
+        const ec = lvNotizEcho;
+        if (ec && Date.now() < ec.bis) {
+          const akt = liveCalls.get(ec.id)?.call;
+          if (akt && ec.obj && akt !== ec.obj && liveCalls.size === ec.groesse && nurNotizAnders(ec.obj, akt)) { ec.obj = akt; return; }
+          ec.obj = akt || ec.obj; ec.groesse = liveCalls.size;
+        } else if (ec) lvNotizEcho = null;
+        return roh.apply(this, a);
+      };
     }
     // Echtzeit-Kanal neu verbunden: Ereignisse aus der Lücke sind verloren, also einmal nachladen.
     const echtzeitVerbundenVorher = { live: false, rs: false };
@@ -10545,14 +10657,15 @@
     // „7 Tage“ schon die Vorwoche. Jetzt wird der gewählte Zeitraum vollständig nachgeladen (höchstens 1.000 Anrufe).
     const LV_MAX = 1000;
     let lvGekuerzt = false, lvNachladenLaeuft = null;
-    async function lvZeitraumVollstaendig() {
+    async function lvZeitraumVollstaendig(Aziel) {
+      const A = Aziel || Object.values(LV_ANSICHTEN).find((v) => !$(v.sec)?.classList.contains('hidden')) || LV_ANSICHTEN.ein;
+      A.vollFuer = A.zeitraum + ':' + lvLadeGen; // für diesen Zeitraum und diesen Ladestand ist geprüft
       if (!tenant || lvAlleGeladen) { lvGekuerzt = false; return; }
-      const A = Object.values(LV_ANSICHTEN).find((v) => !$(v.sec)?.classList.contains('hidden')) || LV_ANSICHTEN.ein;
       const grenze = A.zeitraum === 0 ? -Infinity : A.zeitraum === 1 ? lvHeute0().getTime() : Date.now() - A.zeitraum * 864e5;
       let aeltester = Infinity; for (const x of liveCalls.values()) { const t = new Date(x.call.started_at).getTime(); if (t < aeltester) aeltester = t; }
       if (aeltester <= grenze) { lvGekuerzt = false; renderLive(); return; } // alles aus dem Zeitraum ist schon da
       if (lvGeladen >= LV_MAX) { lvGekuerzt = true; renderLive(); return; }
-      if (lvNachladenLaeuft) return lvNachladenLaeuft;
+      if (lvNachladenLaeuft) return lvNachladenLaeuft.then(() => lvZeitraumVollstaendig(A)); // danach für den neuen Zeitraum prüfen
       const gen = lvLadeGen, von = lvGeladen;
       lvNachladenLaeuft = (async () => {
         let q = sb.from('calls').select('*').eq('tenant_id', tenant.id).order('started_at', { ascending: false });
@@ -10570,10 +10683,14 @@
     }
     {
       const loadLiveRoh = loadLive;
-      loadLive = async function (mehr) { await loadLiveRoh(mehr); if (!mehr) await lvZeitraumVollstaendig(); };
+      // Den Rest des Zeitraums nachlaufen lassen statt abzuwarten: die neuesten Anrufe stehen sofort da, das Echtzeit-Abo
+      // beim Start wartet nicht auf bis zu 1.000 Zeilen.
+      loadLive = async function (mehr) { await loadLiveRoh(mehr); if (!mehr) lvZeitraumVollstaendig(); };
       const lvZeichnenRoh = lvZeichnen;
       lvZeichnen = function () {
         lvZeichnenRoh();
+        // Zeitraum wurde von außen gesetzt (Auswertung, Dashboard, Gespräch öffnen …): einmal vollständig nachladen.
+        if (tenant && !$(LV.sec)?.classList.contains('hidden') && LV.vollFuer !== LV.zeitraum + ':' + lvLadeGen) { const A = LV; setTimeout(() => { if (A.vollFuer !== A.zeitraum + ':' + lvLadeGen) lvZeitraumVollstaendig(A); }, 0); }
         if (!lvGekuerzt || lvAlleGeladen) return;
         const st = lvEl('Streifen'); if (!st) return;
         const b = document.createElement('button'); b.type = 'button'; b.className = 'lv-streifen__mehr'; b.textContent = 'nur die neuesten ' + lvGeladen.toLocaleString('de-DE') + ' · ältere laden';
@@ -10605,12 +10722,18 @@
       const c = verknuepfungCache.get(callId); const frisch = c && Date.now() - c.zeit < 60000;
       return { vorgaenge: vorgaenge.length ? vorgaenge : (frisch ? c.vorgaenge : []), nachricht: nachricht || (frisch ? c.nachricht : null), sicher: !!frisch };
     }
-    async function verknuepfungHolen(callId) {
-      const [{ data: t }, { data: m }] = await Promise.all([
-        sb.from('tickets').select('id, number, status, call_id, message_id').eq('tenant_id', tenant.id).eq('call_id', callId).order('number').limit(5),
-        sb.from('messages').select('id, status, call_id').eq('tenant_id', tenant.id).eq('call_id', callId).limit(1),
-      ]);
-      verknuepfungCache.set(callId, { vorgaenge: t || [], nachricht: (m || [])[0] || null, zeit: Date.now() });
+    const verknuepfungLaeuft = new Map();
+    function verknuepfungHolen(callId) {
+      if (verknuepfungLaeuft.has(callId)) return verknuepfungLaeuft.get(callId); // dieselbe Abfrage läuft schon (mehrfaches Neuzeichnen)
+      const p = (async () => {
+        const [{ data: t }, { data: m }] = await Promise.all([
+          sb.from('tickets').select('id, number, status, call_id, message_id').eq('tenant_id', tenant.id).eq('call_id', callId).order('number').limit(5),
+          sb.from('messages').select('id, status, call_id').eq('tenant_id', tenant.id).eq('call_id', callId).limit(1),
+        ]);
+        verknuepfungCache.set(callId, { vorgaenge: t || [], nachricht: (m || [])[0] || null, zeit: Date.now() });
+      })().finally(() => verknuepfungLaeuft.delete(callId));
+      verknuepfungLaeuft.set(callId, p);
+      return p;
     }
     /** Zeile „Daraus entstanden: Vorgang #26 · in Arbeit · Nachricht · offen“ im Anruf; blendet „Vorgang anlegen“ aus, wenn es einen gibt. */
     function entstandenZeile(callId, anlegenKnopf) {
@@ -10626,7 +10749,11 @@
         if (nachricht) chip('Nachricht · ' + ((nachricht.status || 'new') === 'done' ? 'erledigt' : 'offen'), 'Nachricht öffnen', () => { geh('sec-messages'); nachrichtOeffnen(nachricht.id); });
       };
       z._fuellen = fuellen; fuellen();
-      if (!verknuepftMitAnruf(callId).sicher && tenant) verknuepfungHolen(callId).then(() => { if (z.isConnected) fuellen(); }).catch(() => { /* ohne Zeile weiter */ });
+      // Erst fragen, wenn das Detail wirklich zu sehen ist: Eingehend und Ausgehend werden im Hintergrund mitgezeichnet.
+      if (!verknuepftMitAnruf(callId).sicher && tenant) setTimeout(() => {
+        if (!z.isConnected || z.closest('.section')?.classList.contains('hidden') || verknuepftMitAnruf(callId).sicher) return;
+        verknuepfungHolen(callId).then(() => { if (z.isConnected) fuellen(); }).catch(() => { /* ohne Zeile weiter */ });
+      }, 0);
       return z;
     }
     // Status koppeln: Vorgang erledigt ⇒ zugehörige Nachricht erledigt (und zurück). Bis ein Datenbank-Trigger das
@@ -10640,11 +10767,21 @@
       if (m) Object.assign(m, data[0]);
       renderNachrichten();
     }
-    async function vorgaengeMitziehen(msgId, erledigt) {
+    const kopplungGeschlossen = new Map(); // Nachricht → Vorgänge, die die Kopplung selbst erledigt hat
+    async function vorgaengeMitziehen(msgId, erledigt, warErledigtAm) {
       let q = sb.from('tickets').update({ status: erledigt ? 'done' : 'open' }).eq('tenant_id', tenant.id).eq('message_id', msgId);
-      q = erledigt ? q.neq('status', 'done') : q.eq('status', 'done');
+      if (erledigt) q = q.neq('status', 'done');
+      else {
+        // Nur zurück, was mit der Nachricht zusammen erledigt wurde – nicht einen Vorgang, der schon vorher für sich erledigt war.
+        const ids = kopplungGeschlossen.get(msgId);
+        if (ids?.length) q = q.eq('status', 'done').in('id', ids);
+        else if (warErledigtAm) { const t = new Date(warErledigtAm).getTime(); q = q.eq('status', 'done').gte('closed_at', new Date(t - 120000).toISOString()).lte('closed_at', new Date(t + 120000).toISOString()); }
+        else return;
+      }
       const { data, error } = await q.select('*');
+      if (!erledigt) kopplungGeschlossen.delete(msgId);
       if (error || !data?.length) return;
+      if (erledigt) kopplungGeschlossen.set(msgId, data.map((z) => z.id));
       for (const z of data) { const t = tkAlle.find((x) => x.id === z.id); if (t) Object.assign(t, z); tkNotizen.delete(z.id); }
       const { data: kz } = await sb.rpc('tickets_kennzahlen', { t: tenant.id }); if (kz) tkKz = kz;
       renderTickets();
@@ -10665,9 +10802,9 @@
       };
       const mgAendernRoh = mgAendern;
       mgAendern = async function (m, patch) {
-        const warErledigt = (m.status || 'new') === 'done';
+        const warErledigt = (m.status || 'new') === 'done', warErledigtAm = m.done_at || null;
         const ok = await mgAendernRoh(m, patch);
-        if (ok && tenant && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await vorgaengeMitziehen(m.id, patch.status === 'done');
+        if (ok && tenant && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await vorgaengeMitziehen(m.id, patch.status === 'done', warErledigtAm);
         return ok;
       };
     }
@@ -10676,7 +10813,8 @@
     // #vorgaenge/26, #eingehend/<id>, #nachrichten/<id>, #assistent/zeiten … Bereichswechsel legen einen Verlaufseintrag
     // an (Zurück geht einen Schritt zurück), die Auswahl im Bereich ersetzt ihn nur. Adressen mit „=“ (Anmelde-Token,
     // #cal=…) und unbekannte Anker (z. B. #abo) bleiben unangetastet.
-    const BEREICH_ZU_KURZ = { 'sec-overview': 'dashboard', 'sec-live': 'eingehend', 'sec-outbound': 'ausgehend', 'sec-kontakte': 'telefonbuch', 'sec-messages': 'nachrichten', 'sec-tickets': 'vorgaenge', 'sec-auswertung': 'auswertung', 'sec-kb': 'wissen', 'sec-gaps': 'fragen', 'sec-assistant': 'assistent', 'sec-number': 'nummer', 'sec-team': 'zugaenge', 'sec-booking': 'termine', 'sec-restaurant': 'reservierungen', 'sec-floorplan': 'tischplan', 'sec-guests': 'gaeste', 'sec-webhooks': 'schnittstellen' };
+    const BEREICH_ZU_KURZ = { 'sec-overview': 'dashboard', 'sec-live': 'eingehend', 'sec-outbound': 'ausgehend', 'sec-kontakte': 'telefonbuch', 'sec-messages': 'nachrichten', 'sec-tickets': 'vorgaenge', 'sec-auswertung': 'auswertung', 'sec-kb': 'wissen', 'sec-gaps': 'fragen', 'sec-assistant': 'assistent', 'sec-number': 'nummer', 'sec-team': 'zugaenge', 'sec-booking': 'termine', 'sec-restaurant': 'reservierungen', 'sec-floorplan': 'tischplan', 'sec-guests': 'gaeste', 'sec-webhooks': 'schnittstellen', 'sec-whatsapp': 'whatsapp', 'sec-abo': 'rechnungen' };
+    const SPAETER_SICHTBAR = ['sec-whatsapp', 'sec-abo']; // werden erst nach einer Server-Antwort eingeblendet
     const KURZ_ZU_BEREICH = Object.assign(Object.fromEntries(Object.entries(BEREICH_ZU_KURZ).map(([b, k]) => [k, b])), { benachrichtigungen: 'sec-webhooks' });
     const IST_UUID = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
     let routerAktiv = false;
@@ -10704,13 +10842,30 @@
       const h = adresseFuer(target);
       const url = h ? location.pathname + location.search + h : location.pathname + location.search; // unbekannter Bereich: ohne Anker
       if (url === location.pathname + location.search + location.hash) return;
-      try { history[art === 'push' ? 'pushState' : 'replaceState'](null, '', url); } catch { /* ohne Verlauf (z. B. Datei-URL) */ }
+      try { if (art === 'push') history.pushState(null, '', url); else history.replaceState(history.state, '', url); } catch { /* ohne Verlauf (z. B. Datei-URL) */ }
+    }
+    const mobilDetail = () => window.matchMedia('(max-width: 900px)').matches;
+    const mitAuswahl = (h) => String(h || '').split('/').length > 1;
+    /** Handy: offenes Detail schließen (Zurück aus #vorgaenge/26 nach #vorgaenge). */
+    function detailSchliessen(target) {
+      if (!mobilDetail() || !$(target)?.classList.contains('lv-zeigt-detail')) return;
+      if (target === 'sec-tickets' && tkAuswahl) { tkAuswahl = null; renderTickets(); }
+      else if (target === 'sec-messages' && mgAuswahl) { mgAuswahl = null; renderNachrichten(); }
+      else { const A = Object.values(LV_ANSICHTEN).find((v) => v.sec === target); if (A?.auswahl) { A.auswahl = null; renderLive(); } }
     }
     /** Auswahl im Bereich hat sich geändert: Adresse ersetzen, aber nur, wenn sie schon zu diesem Bereich gehört. */
     function adresseDetail(target) {
       if (routerAktiv || !target || !navItem(target)?.classList.contains('active')) return;
-      if (adresseLesen()?.target !== target && location.hash) return; // Bereichswechsel läuft gerade, die Adresse setzt der Wechsel
       if (!location.hash) return;
+      // Bereichswechsel läuft gerade (die Adresse setzt der Wechsel) oder fremder Anker: nichts tun. Maßgeblich ist der
+      // Bereichsname vorn, damit auch #nachrichten/ueberfaellig (Wochenbericht) beim ersten Auswählen ersetzt wird.
+      if (KURZ_ZU_BEREICH[location.hash.slice(1).split('/')[0].toLowerCase()] !== target) return;
+      if (mobilDetail()) {
+        // Handy: Detail öffnen legt einen Verlaufseintrag an, damit Zurück (Browser, Android) wieder zur Liste führt.
+        const neu = adresseFuer(target);
+        if (neu && mitAuswahl(neu) && !mitAuswahl(location.hash)) { try { history.pushState({ vocarisDetail: 1 }, '', location.pathname + location.search + neu); } catch { /* ohne Verlauf */ } return; }
+        if (neu && !mitAuswahl(neu) && mitAuswahl(location.hash) && history.state?.vocarisDetail) { history.back(); return; } // „‹ Zurück“ in der App
+      }
       adresseSetzen(target, 'replace');
     }
     document.querySelectorAll('.nav-item').forEach((b) => {
@@ -10731,12 +10886,20 @@
     async function adresseAnwenden(art) {
       const z = adresseLesen();
       if (!z || !tenant || (z.leer && art === 'start')) return;
-      const b = navItem(z.target); if (!navSichtbar(b)) return;
+      const b = navItem(z.target);
+      if (!navSichtbar(b)) {
+        const h = location.hash;
+        // WhatsApp, Abo: kommen erst nach einer Server-Antwort dazu – beim Start kurz darauf warten.
+        if (art === 'start' && SPAETER_SICHTBAR.includes(z.target)) { for (let i = 0; i < 27 && !navSichtbar(navItem(z.target)); i++) await new Promise((r) => setTimeout(r, 300)); if (location.hash === h && navSichtbar(navItem(z.target))) return adresseAnwenden('start'); return; }
+        // Bekannter, aber hier nicht verfügbarer Bereich (Modul aus, Mitarbeiter): Adresse an die Ansicht angleichen.
+        const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt && location.hash === h) adresseSetzen(akt, 'replace');
+        return;
+      }
       routerAktiv = true;
       try {
         if (!b.classList.contains('active')) await b.onclick();
         if (!b.classList.contains('active')) { routerAktiv = false; const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt) adresseSetzen(akt, 'replace'); return; } // Ungespeichert-Dialog: stehen geblieben
-        if (!z.sub) return;
+        if (!z.sub) { if (art === 'zurueck') detailSchliessen(z.target); return; }
         if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
         else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
         else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
@@ -10745,9 +10908,18 @@
           if (!t) { const { data } = await sb.from('tickets').select('id').eq('tenant_id', tenant.id).eq('number', Number(z.sub)).maybeSingle(); t = data; }
           if (t) await vorgangOeffnen(t.id); else toast('Vorgang #' + z.sub + ' gibt es nicht (mehr).', 'err');
         }
+        // Direktlink auf ein Detail (Handy): die Liste darunter in den Verlauf, damit Zurück zur Liste führt statt aus der App.
+        if (art === 'start' && mobilDetail() && mitAuswahl(location.hash)) {
+          const voll = location.pathname + location.search + location.hash;
+          try { history.replaceState(null, '', location.pathname + location.search + location.hash.split('/')[0]); history.pushState({ vocarisDetail: 1 }, '', voll); } catch { /* ohne Verlauf */ }
+        }
       } finally { routerAktiv = false; }
     }
-    window.addEventListener('popstate', () => { adresseAnwenden('zurueck'); });
+    // Ein leerer Anker (href="#", location.hash = '') ist keine Navigation – sonst sprang die App aufs Dashboard.
+    window.addEventListener('popstate', () => { if (location.href.endsWith('#')) return; adresseAnwenden('zurueck'); });
+    document.addEventListener('click', (e) => { if (e.target.closest?.('a[href="#"]')) e.preventDefault(); }, true);
+    // Wissen: „N offene Fragen“ im Streifen führt zu den Fragen
+    $('sec-kb')?.addEventListener('click', (e) => { const g = e.target.closest('#kbStreifen [data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
 
     // ---- Einblendungen statt Browser-Tooltips, Tastatur und Screenreader ----
     // title-Attribute (auch solche, die Listen oder Echtzeit später setzen) werden zu data-tip: dieselbe sofortige
@@ -10760,7 +10932,10 @@
         const t = el.getAttribute('title'); el.removeAttribute('title');
         if (!t) return;
         if (spaeter || !el.dataset.tip) el.dataset.tip = t; // vom Skript später gesetzt (z. B. „Zuletzt aktualisiert um …“): aktueller Text gewinnt
-        if (el.matches('button, a, [role=button], input, select, textarea') && nameFehlt(el)) el.setAttribute('aria-label', t);
+        if (el.matches('button, a, [role=button], input, select, textarea')) {
+          if (nameFehlt(el)) el.setAttribute('aria-label', t);
+          else if (t !== (el.getAttribute('aria-label') || el.textContent || '').trim()) el.setAttribute('aria-description', t); // Name bleibt, der Hinweis wird mit vorgelesen
+        }
       };
       const nachruesten = (w) => {
         if (w.nodeType !== 1) return;
@@ -10779,10 +10954,12 @@
       // Wochen-Pfeile im Kalender (Termine) ohne Namen
       [['calPrev', 'Vorige Woche'], ['calNext', 'Nächste Woche']].forEach(([id, t]) => { const k = $(id); if (k && !k.getAttribute('aria-label')) { k.setAttribute('aria-label', t); k.dataset.tip = t; } });
       // Gekürzter Untertitel („…“): voller Text als Einblendung
-      document.addEventListener('mouseover', (e) => {
+      const untertitelTip = (e) => {
         const ps = e.target.closest?.('.db-kopf .pagesub'); if (!ps) return;
         if (ps.scrollWidth > ps.clientWidth + 1) ps.dataset.tip = ps.textContent.trim(); else delete ps.dataset.tip;
-      }, true);
+      };
+      document.addEventListener('mouseover', untertitelTip, true);
+      document.addEventListener('touchstart', untertitelTip, { capture: true, passive: true }); // iPad: Antippen zeigt den vollen Text
       // Einblendung auch bei Tastaturfokus (bisher nur beim Überfahren mit der Maus)
       const tipEl = () => document.querySelector('body > .db-tip');
       document.addEventListener('focusin', (e) => {
@@ -10795,7 +10972,9 @@
         if (x + tr.width > innerWidth - 8) x = Math.max(8, innerWidth - tr.width - 8);
         tip.style.left = x + 'px'; tip.style.top = y + 'px';
       });
-      document.addEventListener('focusout', () => { const tip = tipEl(); if (tip) tip.hidden = true; });
+      // Nur die Einblendung des Elements schließen, das den Fokus verliert – sonst verschwand ein per Antippen gezeigter
+      // Hinweis sofort wieder, weil das Antippen den Fokus (z. B. von der Überschrift) wegnimmt.
+      document.addEventListener('focusout', (e) => { const tip = tipEl(); const el = e.target.closest?.('[data-tip]'); if (tip && el && tip.textContent === el.dataset.tip) tip.hidden = true; });
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const tip = tipEl(); if (tip) tip.hidden = true; } });
       // „Zum Inhalt“ springt an die Überschrift des offenen Bereichs
       const ueberschrift = () => { const sec = [...document.querySelectorAll('#content > .section')].find((s) => !s.classList.contains('hidden')); const h = sec?.querySelector('.pagehead'); if (h && !h.hasAttribute('tabindex')) h.tabIndex = -1; return h; };
@@ -11115,6 +11294,9 @@
       const res = zustand.industry === 'restaurant' && module.reservierung && navSichtbar(navItem('sec-restaurant'));
       if (res && t.dataset.tab !== 'sec-restaurant') { t.dataset.tab = 'sec-restaurant'; t.innerHTML = (navItem('sec-restaurant')?.querySelector('svg')?.outerHTML || '').replace('<svg ', '<svg aria-hidden="true" ') + 'Reservierungen'; }
       else if (!res && t.dataset.tab !== t.dataset.origTab) { t.dataset.tab = t.dataset.origTab; t.innerHTML = t.dataset.origHtml; }
+      const mehr = $('tabMehr'), lb = mehr?.querySelector('[data-tabbadge="liveBadge"]');
+      if (res && mehr && !lb) { const s = document.createElement('span'); s.className = 'gap-badge hidden'; s.dataset.tabbadge = 'liveBadge'; s.setAttribute('aria-label', 'laufende Anrufe'); mehr.append(s); }
+      else if (!res && lb) lb.remove();
       syncTabbar();
     }
     {
@@ -11134,9 +11316,18 @@
     }
 
     // ---- Abteilungs-Umschalter nur, wenn es mehr als eine Abteilung gibt ----
+    const abtInhalt = { fuer: null, hat: false };
     function abteilungenZeigen(nums) {
       if ((BRANCHEN_KURATIERUNG[tenant?.industry]?.selektorenAus || []).includes('[data-deptbar]')) return; // Kuratierung blendet ohnehin aus
-      const mehrere = (nums || []).some((n) => (n.department || 'general') !== 'general');
+      const mehrere = (nums || []).some((n) => (n.department || 'general') !== 'general') || (abtInhalt.fuer === tenant?.id && abtInhalt.hat);
+      if (tenant && abtInhalt.fuer !== tenant.id) {
+        // Wissen oder Einstellungen für Vertrieb/Support sind schon angelegt (z. B. Abteilungsnummer wieder entfernt): erreichbar lassen.
+        abtInhalt.fuer = tenant.id;
+        Promise.all([
+          sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).neq('department', 'general').limit(1),
+          sb.from('assistant_config').select('department').eq('tenant_id', tenant.id).neq('department', 'general').limit(1),
+        ]).then(([k, a]) => { abtInhalt.hat = !!(k.data?.length || a.data?.length); if (abtInhalt.hat && !mehrere) abteilungenZeigen(nums); }).catch(() => { /* Umschalter bleibt nach den Nummern */ });
+      }
       const aus = !mehrere && currentDept === 'general';
       document.querySelectorAll('[data-deptbar], .dept-hint').forEach((el) => el.classList.toggle('hidden', aus));
       if ($('numSubtitle')) $('numSubtitle').textContent = mehrere ? 'Deine Vocaris-Nummern. Jede Nummer steuert ihre Abteilung an (Allgemein, Vertrieb, Support).' : 'Die Rufnummer, unter der dein Assistent erreichbar ist.';
@@ -11165,19 +11356,31 @@
       };
       const llRoh = dbLayoutLaden;
       dbLayoutLaden = async function (...a) {
-        await llRoh.apply(this, a);
+        // Endet die Sitzung während des Ladens, ist tenant schon null – dann gibt es nichts mehr zu zeichnen.
+        try { await llRoh.apply(this, a); } catch (e) { if (!tenant) return; throw e; }
+        if (!tenant || !dbLayout) return;
+        dbLayoutStand = dbLayoutJson();
         // Restaurant mit Reservierungen: die beiden Kacheln einmalig in ein gespeichertes Layout aufnehmen (Merker res1).
         if (tenant?.industry === 'restaurant' && module.reservierung && dbLayout && !dbLayout.res1) {
           const r = dbLayout.reihenfolge; let neu = false;
           if (!r.includes('reservierungen')) { r.unshift('reservierungen'); neu = true; }
           if (!r.includes('reservierungsliste')) { const i = r.findIndex((id) => dbWidget(id)?.art === 'panel'); r.splice(i < 0 ? r.length : i, 0, 'reservierungsliste'); neu = true; }
-          dbLayout.res1 = true; if (neu) dbLayoutSpeichern();
+          dbLayout.res1 = true; if (neu) dbLayoutSpeichern(); else dbLayoutStand = dbLayoutJson();
         }
+      };
+      // Gespeichert wird nur, was sich geändert hat („Anpassen“ ein und aus schrieb bisher jedes Mal ins Konto),
+      // und in der Betreiber-Ansicht (?imp) nie – dort ist die Sitzung die des Kunden.
+      const lsRoh = dbLayoutSpeichern;
+      dbLayoutSpeichern = function (...a) {
+        if (!dbLayout || !tenant || IMP_HASH) return;
+        const j = dbLayoutJson(); if (j === dbLayoutStand) return;
+        dbLayoutStand = j; return lsRoh.apply(this, a);
       };
       const zdRoh = zeichneDashboard;
       zeichneDashboard = function () { zdRoh(); dbResZeichnen(); };
     }
-    let dbResDaten = null, dbResZeit = 0, dbResLaeuft = null;
+    let dbResDaten = null, dbResZeit = 0, dbResLaeuft = null, dbLayoutStand = '';
+    function dbLayoutJson() { try { const { stand, ...rest } = dbLayout || {}; return JSON.stringify(rest); } catch { return ''; } }
     async function dbResLaden() {
       const h0 = new Date(); h0.setHours(0, 0, 0, 0);
       const { data, error } = await sb.from('reservations').select('id, starts_at, party_size, customer_name, status, notes').eq('tenant_id', tenant.id)
@@ -11216,7 +11419,15 @@
         // Erst wechseln (das zeigt das Wählfeld, siehe tnSichtbarkeit), dann gleich – noch vor Rückruf/Telefonbuch,
         // die es danach wieder aufklappen – zuklappen. Nur beim ersten Besuch; danach gilt, was der Nutzer wählt.
         const erg = roh.call(this, e);
-        if (!obWaehlEntschieden && tenant && b.classList.contains('active')) { obWaehlEntschieden = true; if ([...liveCalls.values()].some((x) => callRichtung(x.call) === 'out')) $('obWaehl')?.classList.add('hidden'); }
+        if (!obWaehlEntschieden && tenant && b.classList.contains('active')) {
+          obWaehlEntschieden = true;
+          if ([...liveCalls.values()].some((x) => callRichtung(x.call) === 'out')) {
+            $('obWaehl')?.classList.add('hidden');
+            // Der Bereich hatte den Fokus ins Wählfeld gesetzt – zugeklappt fiele er auf body. Freigeben, dann setzt der
+            // Bereichswechsel ihn auf die Überschrift.
+            const a = document.activeElement; if (a && $('obWaehl')?.contains(a)) a.blur();
+          }
+        }
         return erg;
       };
     }
@@ -11253,6 +11464,11 @@
       wrap.append(ton, hw); return wrap;
     }
     $('changePwBtn')?.before(meldungenBauen());
+
+    // ---- Wissens-Assistent-Knopf verdeckt keine Inhalte ----
+    // Mit Beschriftung lag er über Fristen und Gesprächsverläufen am rechten Rand. Jetzt nur das Symbol; die Beschriftung
+    // klappt beim Überfahren bzw. bei Tastaturfokus aus (Name für Screenreader: aria-label).
+    $('waLauncher')?.classList.add('klein');
     {
       const roh = mehrBauen;
       mehrBauen = function () {
