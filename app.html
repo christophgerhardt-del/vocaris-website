@@ -1261,6 +1261,13 @@
       body:has(.verbindung.sichtbar) .main { padding-top: 16px; }
     }
     /* Eingehend: Hinweis, wenn nur die neuesten Anrufe geladen sind */
+    /* Das hidden-Attribut muss auch bei Knöpfen mit eigener display-Regel wirken (Navigation für Mitarbeiter, Tab-Leiste, Knöpfe) */
+    .nav-item[hidden], .tab-item[hidden], .btn[hidden] { display: none !important; }
+    /* „Daraus entstanden“ im Anruf: verknüpfter Vorgang und Nachricht als Sprungmarken */
+    .lv-entstanden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+    .lv-entstanden[hidden] { display: none; }
+    .lv-entstanden button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 8%, var(--white)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-radius: 999px; padding: 3px 10px; min-height: 28px; cursor: pointer; }
+    .lv-entstanden button:hover { border-color: var(--accent); }
     .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   </style>
 </head>
@@ -6359,13 +6366,17 @@
         if (!raus) knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
       }
-      knopf('Vorgang anlegen', '', async () => {
+      // Gibt es schon einen Vorgang zu diesem Anruf, steht er unter „Daraus entstanden“ – kein zweiter per Knopf.
+      const anlegen = knopf('Vorgang anlegen', '', async () => {
         if (!confirm('Vorgang aus diesem Anruf anlegen?')) return;
-        const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? c.summary.slice(0, 90) : nr || 'Anrufer');
+        const { data: schon } = await sb.from('tickets').select('id, number').eq('tenant_id', tenant.id).eq('call_id', c.id).limit(1);
+        if (schon?.length) { toast('Zu diesem Anruf gibt es schon Vorgang #' + schon[0].number + '.'); geh('sec-tickets'); vorgangOeffnen(schon[0].id); return; }
+        const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? kuerzen(c.summary, 90) : nr || 'Anrufer');
         const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title: title.slice(0, 160), body: (c.summary || '') + (x.turns.length ? '\n\nGesprächsverlauf im Vorgang einsehbar.' : ''), source: 'call', caller_phone: nr || null, call_id: c.id, category: c.topic || null }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; }
         vorgangAngelegtToast(data?.id); loadTickets();
       });
+      if (nr && !ktName(nr)) knopf('Ins Telefonbuch', '', () => insTelefonbuch(nr, '')).dataset.tip = 'Namen zu dieser Nummer speichern – er erscheint dann überall statt der Nummer';
       const del = knopf('Löschen', '', async () => {
         if (!confirm('Diesen Anruf samt Gesprächsverlauf endgültig löschen?')) return;
         const { error: turnsFehler } = await sb.from('call_turns').delete().eq('call_id', c.id);
@@ -6375,7 +6386,7 @@
       });
       del.style.marginLeft = 'auto';
       const auftragBox = rueckrufBox(nr, '', '');
-      const wrap = document.createElement('div'); wrap.append(leiste, auftragBox); return wrap;
+      const wrap = document.createElement('div'); wrap.append(entstandenZeile(c.id, anlegen), leiste, auftragBox); return wrap;
     }
     // Ein Anruf gilt nur als „live", wenn er als aktiv markiert IST und nicht älter
     // als 20 Min ist — so bleibt kein verwaister Anruf (z. B. nach Server-Neustart) ewig „aktiv".
@@ -8003,12 +8014,17 @@
         }
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
       }
-      knopf('Vorgang anlegen', '', async () => {
+      const vzn = tkAlle.find((t) => t.message_id === m.id); // Vorgang zu dieser Nachricht (legt meist schon der Server an)
+      if (vzn) knopf('Vorgang #' + vzn.number + ' öffnen', '', () => { geh('sec-tickets'); vorgangOeffnen(vzn.id); }).dataset.tip = 'Zu dieser Nachricht gibt es schon einen Vorgang · ' + (TK_STATUS[vzn.status] || vzn.status);
+      else knopf('Vorgang anlegen', '', async () => {
         if (!confirm('Vorgang aus dieser Nachricht anlegen?')) return;
-        const title = ((m.category ? m.category + ': ' : '') + (m.summary ? m.summary.slice(0, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
-        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
+        const { data: schon } = await sb.from('tickets').select('id, number').eq('tenant_id', tenant.id).eq('message_id', m.id).limit(1);
+        if (schon?.length) { toast('Zu dieser Nachricht gibt es schon Vorgang #' + schon[0].number + '.'); geh('sec-tickets'); vorgangOeffnen(schon[0].id); return; }
+        const title = ((m.category ? m.category + ': ' : '') + (m.summary ? kuerzen(m.summary, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
+        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, message_id: m.id, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } vorgangAngelegtToast(data?.id); loadTickets();
       });
+      if (nr && !ktName(nr)) knopf('Ins Telefonbuch', '', () => insTelefonbuch(nr, m.caller_name || '')).dataset.tip = 'Namen zu dieser Nummer speichern';
       if (m.call_id) knopf('Gespräch öffnen', '', () => liveOeffnen(m.call_id));
       const del = knopf('Löschen', '', async () => { if (!confirm('Diese Nachricht endgültig löschen?')) return; const { error } = await sb.from('messages').delete().eq('id', m.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } mgItems.delete(m.id); mgAuswahl = null; toast('Nachricht gelöscht.'); renderNachrichten(); }); del.style.marginLeft = 'auto';
       const nt = d.querySelector('[data-notiz]'); nt.value = m.note || ''; nt.oninput = () => { clearTimeout(mgNotizTimer); mgNotizTimer = setTimeout(() => mgAendern(m, { note: nt.value.trim() || null }), 700); };
@@ -8156,7 +8172,9 @@
         a?.focus();
         return;
       }
-      $('callBtn')?.click();
+      // Nicht sofort wählen: Nummer und Weg stehen bereit, gewählt wird erst mit „Anrufen“ (Schutz vor Fehlklick).
+      $('callBtn')?.focus();
+      toast('Nummer übernommen – mit „Anrufen“ starten.');
     }
     // ---- Geplante Anrufe: der Assistent ruft später von selbst an ----
     /** In einer Stunde, auf 5 Minuten gerundet, als Wert für datetime-local (Ortszeit). */
@@ -8440,7 +8458,8 @@
         z.querySelector('.kt-nr').textContent = fmtNr(k.phone);
         const st = z.querySelector('.stack');
         const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; st.append(b); return b; };
-        knopf('Anrufen', 'btn--primary', () => { geh('sec-outbound'); $('obWaehl')?.classList.remove('hidden'); obNummerSetzen(k.phone); });
+        knopf('Verlauf', '', () => { sucheZeigen(true); $('sucheFeld').value = k.phone; $('sucheFeld').dispatchEvent(new Event('input')); }).dataset.tip = 'Anrufe, Nachrichten und Vorgänge zu dieser Nummer';
+        knopf('Anrufen', '', () => { geh('sec-outbound'); $('obWaehl')?.classList.remove('hidden'); obNummerSetzen(k.phone); });
         knopf('Bearbeiten', '', () => ktFormZeigen(k));
         knopf('Löschen', '', async () => {
           if (!confirm(k.name + ' aus dem Telefonbuch löschen?')) return;
@@ -9023,7 +9042,7 @@
       const dot = z.querySelector('.lv-dot');
       if (t.status === 'done') { dot.classList.add('haken'); dot.dataset.tip = 'Erledigt ' + fmtZeit(t.closed_at); } else { dot.style.background = TK_PRIO_FARBE[t.priority] || TK_PRIO_FARBE.normal; dot.dataset.tip = 'Priorität ' + (TK_PRIO[t.priority] || 'Normal') + (t.status === 'in_progress' ? ' · in Arbeit' : ''); }
       z.querySelector('b').innerHTML = '<span class="tk-nr">#' + t.number + '</span> ' + markierenMit(t.title, tkSuche) + (t.status === 'in_progress' && tkFilter !== 'in_progress' ? ' <span class="lv-neu">in Arbeit</span>' : '');
-      const teile = [t.caller_name, t.category, t.assignee ? '→ ' + t.assignee : null].filter(Boolean);
+      const teile = [t.caller_name || ktName(t.caller_phone || ''), t.category, t.assignee ? '→ ' + t.assignee : null].filter(Boolean);
       z.querySelector('.lv-text').innerHTML = teile.length ? markierenMit(teile.join(' · '), tkSuche) : markierenMit((t.body || '').slice(0, 90) || TK_QUELLE[t.source] || '', tkSuche);
       if (t.body && t.body.length > 40) z.querySelector('.lv-text').dataset.tip = t.body.slice(0, 300);
       const r = z.querySelectorAll('.lv-rechts span');
@@ -9094,6 +9113,7 @@
       // Kennzeichen
       const meta = d.querySelector('.lv-meta'); const mchip = (txt, tip, klick, cls) => { const s = document.createElement('span'); s.textContent = txt; if (tip) s.dataset.tip = tip; if (cls) s.classList.add(cls); if (klick) { s.classList.add('klick'); s.onclick = klick; s.tabIndex = 0; s.setAttribute('role', 'button'); s.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); klick(); }); } meta.append(s); };
       mchip((TK_QUELLE[t.source] || t.source) + ' · ' + fmtZeit(t.created_at), 'Angelegt');
+      const wer = t.caller_name || (nr ? ktName(nr) : ''); if (wer) mchip(wer, t.caller_name ? 'Name des Anrufers' : 'Name aus dem Telefonbuch');
       if (t.status !== 'done') mchip(t.due_at ? 'Frist ' + fmtFrist(t.due_at) : fmtFrist(t.due_at), t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist', null, ueber ? 'ueber' : ''); else mchip('erledigt ' + fmtZeit(t.closed_at));
       mchip('Priorität ' + (TK_PRIO[t.priority] || 'Normal'), 'Klick filtert die Liste', () => { tkPrio = tkPrio === t.priority ? '' : t.priority; document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.tkprio || '') === tkPrio)))); renderTickets(); });
       if (t.category) mchip(t.category, 'Kategorie · Klick filtert die Liste', () => { tkKat = tkKat === t.category ? '' : t.category; renderTickets(); });
@@ -9144,7 +9164,7 @@
       const entwurf = tkEntwuerfe.get(t.id);
       if (entwurf) { ta.value = entwurf.v; if (entwurf.fokus) { ta.focus(); try { ta.setSelectionRange(entwurf.s, entwurf.s); } catch { /* egal */ } } }
       ta.oninput = () => { if (ta.value.trim()) tkEntwuerfe.set(t.id, { v: ta.value, fokus: true, s: ta.selectionStart }); else tkEntwuerfe.delete(t.id); };
-      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz gespeichert.'); tkNotizen.delete(t.id); renderTicketDetail(); };
+      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: ($('userEmail')?.textContent || '').trim() || 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz gespeichert.'); tkNotizen.delete(t.id); renderTicketDetail(); };
       d.querySelector('[data-notizspeichern]').onclick = notizSpeichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') notizSpeichern(); };
       // Verlauf + Gesprächsverlauf (zwischengespeichert)
       const meinId = t.id;
@@ -10318,6 +10338,95 @@
         st.append(' · ', b);
       };
       for (const A of Object.values(LV_ANSICHTEN)) document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((b) => b.addEventListener('click', () => { lvZeitraumVollstaendig(); }));
+    }
+
+    // ---- Anruf, Nachricht und Vorgang hängen zusammen ----
+    /** Text am Wortende kürzen statt mitten im Wort („…“ angehängt). */
+    function kuerzen(text, n = 90) {
+      const s = String(text ?? '').replace(/\s+/g, ' ').trim(); if (s.length <= n) return s;
+      const schnitt = s.slice(0, n); const i = schnitt.lastIndexOf(' ');
+      return (i > n * 0.6 ? schnitt.slice(0, i) : schnitt).replace(/[\s,.;:–-]+$/, '') + '…';
+    }
+    /** Nummer ins Telefonbuch: Formular für einen neuen Eintrag öffnen, Nummer (und Name) vorbefüllt. */
+    function insTelefonbuch(nr, name) {
+      geh('sec-kontakte'); ktFormZeigen(null);
+      $('ktNr').value = ktNormal(nr); if (name) $('ktName').value = name;
+      $('ktName').focus();
+    }
+    const TK_STATUS_KLEIN = { open: 'offen', in_progress: 'in Arbeit', done: 'erledigt' };
+    // Was aus einem Anruf entstanden ist: erst aus dem Speicher (Vorgänge, Nachrichten), sonst einmal je Minute nachfragen.
+    const verknuepfungCache = new Map();
+    function verknuepftMitAnruf(callId) {
+      const vorgaenge = tkAlle.filter((t) => t.call_id === callId);
+      const nachricht = [...mgItems.values()].find((m) => m.call_id === callId) || null;
+      const c = verknuepfungCache.get(callId); const frisch = c && Date.now() - c.zeit < 60000;
+      return { vorgaenge: vorgaenge.length ? vorgaenge : (frisch ? c.vorgaenge : []), nachricht: nachricht || (frisch ? c.nachricht : null), sicher: !!frisch };
+    }
+    async function verknuepfungHolen(callId) {
+      const [{ data: t }, { data: m }] = await Promise.all([
+        sb.from('tickets').select('id, number, status, call_id, message_id').eq('tenant_id', tenant.id).eq('call_id', callId).order('number').limit(5),
+        sb.from('messages').select('id, status, call_id').eq('tenant_id', tenant.id).eq('call_id', callId).limit(1),
+      ]);
+      verknuepfungCache.set(callId, { vorgaenge: t || [], nachricht: (m || [])[0] || null, zeit: Date.now() });
+    }
+    /** Zeile „Daraus entstanden: Vorgang #26 · in Arbeit · Nachricht · offen“ im Anruf; blendet „Vorgang anlegen“ aus, wenn es einen gibt. */
+    function entstandenZeile(callId, anlegenKnopf) {
+      const z = document.createElement('div'); z.className = 'lv-entstanden'; z.hidden = true;
+      const fuellen = () => {
+        const { vorgaenge, nachricht } = verknuepftMitAnruf(callId);
+        z.innerHTML = ''; z.hidden = !vorgaenge.length && !nachricht;
+        if (anlegenKnopf) anlegenKnopf.hidden = vorgaenge.length > 0;
+        if (z.hidden) return;
+        const l = document.createElement('span'); l.textContent = 'Daraus entstanden:'; z.append(l);
+        const chip = (text, tip, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.dataset.tip = tip; b.onclick = fn; z.append(b); };
+        vorgaenge.forEach((t) => chip('Vorgang #' + t.number + ' · ' + (TK_STATUS_KLEIN[t.status] || t.status), 'Vorgang öffnen', () => { geh('sec-tickets'); vorgangOeffnen(t.id); }));
+        if (nachricht) chip('Nachricht · ' + ((nachricht.status || 'new') === 'done' ? 'erledigt' : 'offen'), 'Nachricht öffnen', () => { geh('sec-messages'); nachrichtOeffnen(nachricht.id); });
+      };
+      z._fuellen = fuellen; fuellen();
+      if (!verknuepftMitAnruf(callId).sicher && tenant) verknuepfungHolen(callId).then(() => { if (z.isConnected) fuellen(); }).catch(() => { /* ohne Zeile weiter */ });
+      return z;
+    }
+    // Status koppeln: Vorgang erledigt ⇒ zugehörige Nachricht erledigt (und zurück). Bis ein Datenbank-Trigger das
+    // übernimmt, zieht die Oberfläche die andere Seite mit; ohne Schreibrecht bleibt es still beim einen.
+    async function nachrichtMitziehen(msgId, erledigt) {
+      const m = mgItems.get(msgId);
+      if (m && ((m.status || 'new') === 'done') === erledigt) return;
+      const patch = erledigt ? { status: 'done', done_at: new Date().toISOString() } : { status: 'new', done_at: null };
+      const { data, error } = await sb.from('messages').update(patch).eq('id', msgId).select('id, status, done_at');
+      if (error || !data?.length) return;
+      if (m) Object.assign(m, data[0]);
+      renderNachrichten();
+    }
+    async function vorgaengeMitziehen(msgId, erledigt) {
+      let q = sb.from('tickets').update({ status: erledigt ? 'done' : 'open' }).eq('tenant_id', tenant.id).eq('message_id', msgId);
+      q = erledigt ? q.neq('status', 'done') : q.eq('status', 'done');
+      const { data, error } = await q.select('*');
+      if (error || !data?.length) return;
+      for (const z of data) { const t = tkAlle.find((x) => x.id === z.id); if (t) Object.assign(t, z); tkNotizen.delete(z.id); }
+      const { data: kz } = await sb.rpc('tickets_kennzahlen', { t: tenant.id }); if (kz) tkKz = kz;
+      renderTickets();
+    }
+    // Neue oder geänderte Vorgänge/Nachrichten: offene „Daraus entstanden“-Zeilen gleich mitziehen.
+    const entstandenAuffrischen = () => document.querySelectorAll('.lv-entstanden').forEach((z) => z._fuellen?.());
+    {
+      const renderTicketsRoh = renderTickets; renderTickets = function () { renderTicketsRoh(); entstandenAuffrischen(); };
+      const renderNachrichtenRoh = renderNachrichten; renderNachrichten = function () { renderNachrichtenRoh(); entstandenAuffrischen(); };
+    }
+    {
+      const tkUpdateRoh = tkUpdate;
+      tkUpdate = async function (t, patch, meldung) {
+        const warErledigt = t.status === 'done';
+        const ok = await tkUpdateRoh(t, patch, meldung);
+        if (ok && t.message_id && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await nachrichtMitziehen(t.message_id, patch.status === 'done');
+        return ok;
+      };
+      const mgAendernRoh = mgAendern;
+      mgAendern = async function (m, patch) {
+        const warErledigt = (m.status || 'new') === 'done';
+        const ok = await mgAendernRoh(m, patch);
+        if (ok && tenant && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await vorgaengeMitziehen(m.id, patch.status === 'done');
+        return ok;
+      };
     }
 
     boot();
