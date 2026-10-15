@@ -1372,6 +1372,37 @@
     .sprunglink { position: absolute; left: 12px; top: -80px; z-index: 300; padding: 10px 14px; background: var(--white); color: var(--accent-ink); border: 2px solid var(--accent); border-radius: 8px; font-weight: 600; text-decoration: none; }
     .sprunglink:focus { top: 12px; }
     .pagehead:focus { outline: none; }
+    /* Leer-Zustand: eine Karte über die volle Breite statt Liste und leerem Detail nebeneinander */
+    .section.lv-ganz-leer .lv-split { grid-template-columns: minmax(0, 1fr); }
+    .section.lv-ganz-leer .lv-split > .lv-detail { display: none; }
+    .section.lv-ganz-leer .lv-filter { display: none; }
+    /* Handy: Liste früher im Bild – Untertitel und CSV weg, Kennzahlen und Filter als waagrecht scrollende Zeilen */
+    @media (max-width: 700px) {
+      .db-kopf .pagesub { display: none; }
+      #lvCsv, #obCsv, #mgCsv, #tkExport { display: none; }
+      .db-kopf .pagehead { margin-bottom: 0; }
+      .db-aktionen .deptbar { max-width: 100%; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+      .db-aktionen .deptbar::-webkit-scrollbar, .tk-kpis::-webkit-scrollbar, .lv-filter .lv-chips::-webkit-scrollbar, #sec-tickets .lv-filter::-webkit-scrollbar { display: none; }
+      .db-aktionen .deptbar .deptseg { flex: none; white-space: nowrap; }
+      .db-aktionen .deptbar:has([data-tkansicht]) { display: none; } /* Liste/Spalten: auf dem Handy nur die Liste */
+      #tkStatusBar { flex: 1 1 0; min-width: 0; }
+      /* Eingehend/Ausgehend: Themen-Auswahl und Stimmungs-Chips in einer Zeile (Chips scrollen), Zähler darunter */
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-select { order: -1; flex: 0 1 auto; max-width: 46%; }
+      :is(#sec-live, #sec-outbound) .lv-filter > .lv-chips:first-child { flex: 1 1 50%; min-width: 0; }
+      :is(#sec-live, #sec-outbound) .lv-filter > span.muted { flex: none; }
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-streifen { width: auto !important; flex: 1 1 0; min-width: 0; }
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-chips:empty { display: none; }
+      .tk-kpis { display: flex; overflow-x: auto; gap: 8px; scrollbar-width: none; margin-bottom: 10px; }
+      .tk-kpis .db-kpi { flex: none; display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; min-height: 0; }
+      .tk-kpis .db-kpi .k { margin: 0; }
+      .tk-kpis .db-kpi .v { font-size: 18px; line-height: 1.2; }
+      .tk-kpis .db-kpi .d { display: none; }
+      .lv-filter { margin-bottom: 10px; row-gap: 8px; }
+      .lv-filter .lv-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+      .lv-filter .lv-chips .lv-chip { flex: none; white-space: nowrap; }
+      #sec-tickets .lv-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      #sec-tickets .lv-filter > * { flex: none; }
+    }
   </style>
 </head>
 <body>
@@ -10720,6 +10751,15 @@
         };
       });
     })();
+
+    // ---- Leere Listen über die ganze Breite ----
+    // Gibt es in einem Bereich noch gar nichts (Leer-Zustand mit Knopf), fällt die Detailspalte mit „Wähle links …“ weg:
+    // sonst stehen zwei leere Karten nebeneinander.
+    document.querySelectorAll('.lv-split .lv-liste').forEach((liste) => {
+      const sec = liste.closest('.section'); if (!sec) return;
+      const pruefen = () => sec.classList.toggle('lv-ganz-leer', !!liste.querySelector(':scope > .leer'));
+      new MutationObserver(pruefen).observe(liste, { childList: true }); pruefen();
+    });
 
     // ---- Reservierungen: Notiz direkt an der Reservierung ----
     function resNotizBearbeiten(r, karte) {
