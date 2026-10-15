@@ -1320,7 +1320,8 @@
     :is(.shell, .pwmodal, .login) select:not([multiple]) { -webkit-appearance: none; appearance: none; background-image: var(--pfeil); background-repeat: no-repeat; background-position: right 11px center; background-size: 11px 8px; padding-right: 32px; }
     .shell .lv-select { max-width: 100%; text-overflow: ellipsis; }
     /* Kopfzeilen bleiben einzeilig: der Titelblock gibt nach, der Untertitel kürzt mit „…“ (voller Text als Einblendung) */
-    .db-kopf > div:first-child { flex: 1 1 280px; min-width: 0; }
+    .db-kopf > div:first-child { flex: 1 1 auto; min-width: min-content; }
+    .db-kopf > div:first-child > p { contain: inline-size; } /* Untertitel bestimmt die Breite nicht mit: umgebrochen wird nur, wenn Titel und Knöpfe nicht nebeneinander passen */
     @media (min-width: 761px) { .db-kopf .pagesub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
     .hilfe__knopf { margin-left: 2px; }
     #sec-kb .db-aktionen .lv-suche { min-width: 0; width: 220px; }
