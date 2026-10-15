@@ -1368,6 +1368,10 @@
     }
     @media (min-width: 761px) and (max-width: 1100px) { .tk-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (min-width: 901px) and (max-width: 1099px) { .tk-felder { grid-template-columns: 1fr 1fr; } }
+    /* Sprunglink „Zum Inhalt“ (erst bei Tastaturfokus sichtbar); Überschriften als Fokusziel ohne Ring */
+    .sprunglink { position: absolute; left: 12px; top: -80px; z-index: 300; padding: 10px 14px; background: var(--white); color: var(--accent-ink); border: 2px solid var(--accent); border-radius: 8px; font-weight: 600; text-decoration: none; }
+    .sprunglink:focus { top: 12px; }
+    .pagehead:focus { outline: none; }
   </style>
 </head>
 <body>
@@ -1426,6 +1430,7 @@
 
   <!-- APP SHELL -->
   <div id="shell" class="shell hidden">
+    <a class="sprunglink" id="sprungInhalt" href="#inhalt">Zum Inhalt</a>
     <aside class="side">
       <a class="brand" href="./"><span class="m"><svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
       <!-- Suche über alles: Desktop als Feld über der Navigation, auf dem Handy als Lupe in der Kopfzeile -->
@@ -3112,9 +3117,12 @@
       const f = [...el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
         .filter((x) => !x.disabled && x.offsetParent !== null);
       if (!f.length) return;
-      const erst = f[0], letzt = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === erst) { e.preventDefault(); letzt.focus(); }
-      else if (!e.shiftKey && document.activeElement === letzt) { e.preventDefault(); erst.focus(); }
+      // Selbst weiterschalten statt nur an den Rändern: Safari springt mit Tab sonst über Knöpfe hinweg
+      // direkt aus dem Dialog heraus (Fokusfalle griff nur in Chrome).
+      e.preventDefault();
+      const i = f.indexOf(document.activeElement);
+      const n = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i < 0 || i === f.length - 1 ? 0 : i + 1);
+      f[n].focus();
     }
     function fokusFalle(el, schliessen, rueckziel) {
       const vorher = rueckziel || document.activeElement;
@@ -10651,6 +10659,67 @@
       } finally { routerAktiv = false; }
     }
     window.addEventListener('popstate', () => { adresseAnwenden('zurueck'); });
+
+    // ---- Einblendungen statt Browser-Tooltips, Tastatur und Screenreader ----
+    // title-Attribute (auch solche, die Listen oder Echtzeit später setzen) werden zu data-tip: dieselbe sofortige
+    // Einblendung überall, kein verzögerter Systemtooltip daneben. Symbolknöpfe (↻, ‹, ✕ …) behalten ihren Namen als aria-label.
+    (function tipsUndTastatur() {
+      const NUR_ZEICHEN = /^[^0-9A-Za-zÄÖÜäöüß]{0,3}$/;
+      const nameFehlt = (el) => !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') && NUR_ZEICHEN.test((el.textContent || '').trim());
+      const umstellen = (el, spaeter) => {
+        if (!el.hasAttribute?.('title') || el.tagName === 'IFRAME' || el.namespaceURI === 'http://www.w3.org/2000/svg') return;
+        const t = el.getAttribute('title'); el.removeAttribute('title');
+        if (!t) return;
+        if (spaeter || !el.dataset.tip) el.dataset.tip = t; // vom Skript später gesetzt (z. B. „Zuletzt aktualisiert um …“): aktueller Text gewinnt
+        if (el.matches('button, a, [role=button], input, select, textarea') && nameFehlt(el)) el.setAttribute('aria-label', t);
+      };
+      const nachruesten = (w) => {
+        if (w.nodeType !== 1) return;
+        const alle = (sel) => (w.matches(sel) ? [w] : []).concat([...w.querySelectorAll(sel)]);
+        alle('[title]').forEach((el) => umstellen(el, false));
+        // Klickbare Zellen und Symbolknöpfe ohne Text: die Einblendung ist zugleich ihr Name (z. B. Stunden im Dashboard)
+        alle('[role=button][data-tip], button[data-tip]').forEach((el) => { if (nameFehlt(el)) el.setAttribute('aria-label', el.dataset.tip); });
+        // Scrollbarer Gesprächsverlauf: per Tastatur erreichbar
+        alle('.lv-transkript:not([tabindex])').forEach((el) => { el.tabIndex = 0; el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Gesprächsverlauf'); });
+      };
+      new MutationObserver((liste) => {
+        for (const m of liste) { if (m.type === 'attributes') umstellen(m.target, true); else m.addedNodes.forEach(nachruesten); }
+      }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
+      nachruesten(document.body);
+      // Gekürzter Untertitel („…“): voller Text als Einblendung
+      document.addEventListener('mouseover', (e) => {
+        const ps = e.target.closest?.('.db-kopf .pagesub'); if (!ps) return;
+        if (ps.scrollWidth > ps.clientWidth + 1) ps.dataset.tip = ps.textContent.trim(); else delete ps.dataset.tip;
+      }, true);
+      // Einblendung auch bei Tastaturfokus (bisher nur beim Überfahren mit der Maus)
+      const tipEl = () => document.querySelector('body > .db-tip');
+      document.addEventListener('focusin', (e) => {
+        const el = e.target.closest?.('[data-tip]'); const tip = tipEl(); if (!el || !tip) return;
+        let sichtbar = false; try { sichtbar = e.target.matches(':focus-visible'); } catch { /* ältere Browser */ }
+        if (!sichtbar) return;
+        tip.textContent = el.dataset.tip; tip.hidden = false;
+        const er = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+        let x = er.left, y = er.bottom + 8; if (y + tr.height > innerHeight - 8) y = er.top - tr.height - 8;
+        if (x + tr.width > innerWidth - 8) x = Math.max(8, innerWidth - tr.width - 8);
+        tip.style.left = x + 'px'; tip.style.top = y + 'px';
+      });
+      document.addEventListener('focusout', () => { const tip = tipEl(); if (tip) tip.hidden = true; });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const tip = tipEl(); if (tip) tip.hidden = true; } });
+      // „Zum Inhalt“ springt an die Überschrift des offenen Bereichs
+      const ueberschrift = () => { const sec = [...document.querySelectorAll('#content > .section')].find((s) => !s.classList.contains('hidden')); const h = sec?.querySelector('.pagehead'); if (h && !h.hasAttribute('tabindex')) h.tabIndex = -1; return h; };
+      $('sprungInhalt')?.addEventListener('click', (e) => { e.preventDefault(); ueberschrift()?.focus(); });
+      // Nach einem Bereichswechsel steht der Fokus auf dessen Überschrift (nicht mehr auf dem Menüpunkt), außer der Bereich
+      // setzt ihn selbst (z. B. Ausgehend auf das Wählfeld).
+      document.querySelectorAll('.nav-item').forEach((b) => {
+        const roh = b.onclick; if (typeof roh !== 'function') return;
+        b.onclick = async function (e) {
+          const erg = await roh.call(this, e);
+          const a = document.activeElement;
+          if (b.classList.contains('active') && (!a || a === document.body || a === b || a.closest?.('.tabbar, .mehr'))) ueberschrift()?.focus({ preventScroll: true });
+          return erg;
+        };
+      });
+    })();
 
     // ---- Reservierungen: Notiz direkt an der Reservierung ----
     function resNotizBearbeiten(r, karte) {
