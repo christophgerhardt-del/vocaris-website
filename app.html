@@ -1455,6 +1455,13 @@
     .lv-rechts .tk-angelegt { font-size: 12px; color: var(--ink-faint); }
     .lv-neu, .lv-art { white-space: nowrap; }
   </style>
+  <style id="empfehlungen1016">
+    /* E-d: Ohne aktiven Tarif kein Kaufweg – bis der Tarif geladen ist, bleibt er zu (siehe nummernKaufZeigen). */
+    #sec-number:not(.mit-tarif) :is(#numAddKnopf, #numAddPanel) { display: none !important; }
+    .num-tarif-hinweis { margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--white); font-size: 13px; color: var(--ink-soft); text-align: left; }
+    .num-tarif-hinweis p { margin: 0; }
+    .num-tarif-hinweis b { color: var(--ink); font-weight: 600; }
+  </style>
 </head>
 <body>
   <!-- AUTH -->
@@ -1876,7 +1883,7 @@
             <div>
               <h1 class="pagehead">Vorgänge</h1>
               <h2 class="vh">Inhalt</h2>
-              <p class="pagesub" id="tkSub">Jede Nachricht wird ein Vorgang mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
+              <p class="pagesub" id="tkSub">Vorgänge mit Nummer, Frist, Zuständigkeit und Verlauf.</p>
             </div>
             <div class="db-aktionen">
               <input id="tkSuche" aria-label="Vorgänge durchsuchen" class="lv-suche" type="search" placeholder="Betreff, Name, Nummer, #12 …" autocomplete="off" />
@@ -2397,6 +2404,14 @@
           </div>
 
           </div>
+          <div data-if="ereignisse ticket" id="vaBlock">
+          <!-- 1b · Vorgänge aus Nachrichten: Standard aus (Empfehlung E-a, 16.10.2026) -->
+          <div class="panel">
+            <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Vorgänge</h3>
+            <label class="chk"><input type="checkbox" id="vaAuto" disabled /> <b>Vorgang automatisch aus jeder Nachricht anlegen</b> <span class="muted">– aus: du legst ihn an der Nachricht mit „Vorgang anlegen“ an</span></label>
+            <p class="muted" id="vaHint" style="text-align:left;padding:0;margin-top:6px;font-size:12.5px">Standard ist aus. Der Schalter gilt sofort, ohne „Speichern“. Nachricht und Vorgang bleiben verknüpft: Erledigst du das eine, ist das andere auch erledigt.</p>
+          </div>
+          </div>
           <div data-if="benachrichtigungen" class="hidden">
           <!-- 2 · Team-Benachrichtigungen -->
           <div class="panel">
@@ -2516,7 +2531,7 @@
               <button id="whTest" class="btn btn--ghost">Test senden</button>
             </div>
             <p class="muted" id="whHint" style="margin-top:8px"></p>
-            <p class="muted" style="text-align:left;padding:0;margin-top:6px;font-size:12px">„Speichern“ sichert Ereignisse, Benachrichtigungen & Webhook. CRM-Verbindungen werden direkt beim „CRM verbinden“ gespeichert. „Test senden“ schickt eine Probe-Nachricht an alle gespeicherten Ziele und legt dabei einen Test-Vorgang an.</p>
+            <p class="muted" style="text-align:left;padding:0;margin-top:6px;font-size:12px">„Speichern“ sichert Ereignisse, Benachrichtigungen & Webhook. CRM-Verbindungen, Ticketsysteme und der Schalter für Vorgänge gelten sofort. „Test senden“ schickt eine Probe-Nachricht an alle gespeicherten Ziele, auch an verbundene Ticketsysteme; einen Test-Vorgang legt er nur an, wenn Vorgänge automatisch entstehen.</p>
           </div>
           </div>
         </section>
@@ -4004,7 +4019,7 @@
         ['ereignisse', 'Ereignisse', an ? ereignisse.length : 0, an ? (ereignisse.join(', ') || 'keines gewählt') : 'Hauptschalter aus'],
         ['benachrichtigungen', 'Benachrichtigungen', kanaele.length, kanaele.join(', ') || 'kein Kanal eingetragen'],
         ['crm', 'CRM', zaehl('crmList'), zaehl('crmList') ? 'verbunden' : 'nicht verbunden'],
-        ['ticket', 'Ticketsystem', zaehl('tkList'), zaehl('tkList') ? 'verbunden' : 'eingebaute Vorgänge'],
+        ['ticket', 'Ticketsystem', zaehl('tkList'), zaehl('tkList') ? 'verbunden' : (vorgangAuto ? 'Vorgänge automatisch' : 'Vorgänge per Klick')],
         ['api', 'API-Schlüssel', zaehl('akList'), zaehl('akList') ? 'aktiv' : 'keiner erstellt'],
         ['webhook', 'Webhook', ($('whUrl')?.value || '').trim() ? 1 : 0, ($('whUrl')?.value || '').trim() ? 'URL hinterlegt' : 'keine URL'],
       ];
@@ -9153,8 +9168,9 @@
     };
     async function renderTicketList() {
       const el = $('tkList'); if (!el || !tenant) return;
-      const { data } = await sb.from('ticket_connections').select('*').eq('tenant_id', tenant.id).order('created_at');
-      if (!data || !data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Noch kein Ticketsystem verbunden.</p>'; return; }
+      const { data: alle } = await sb.from('ticket_connections').select('*').eq('tenant_id', tenant.id).order('created_at');
+      const data = (alle || []).filter((c) => c.provider !== 'vocaris'); // eingebaute Vorgänge: Schalter #vaAuto
+      if (!data.length) { el.innerHTML = '<p class="muted" style="font-size:12.5px">Noch kein Ticketsystem verbunden.</p>'; return; }
       el.innerHTML = '';
       data.forEach((c) => {
         const row = document.createElement('div'); row.className = 'item'; row.style.padding = '10px 14px';
@@ -9264,7 +9280,7 @@
       const alle = tkAlle; const k = tkKz;
       const heuteN = alle.filter(istHeuteFaellig).length;
       const badge = $('tkBadge'); if (badge) { badge.textContent = k.offen || ''; badge.classList.toggle('hidden', !k.offen); }
-      $('tkSub').textContent = k.offen ? (k.offen + (k.offen === 1 ? ' offener Vorgang' : ' offene Vorgänge') + (k.ueberfaellig ? ', ' + k.ueberfaellig + ' überfällig' : '') + '.') : 'Nichts offen. Nachrichten deines Assistenten werden hier automatisch zu Vorgängen.';
+      $('tkSub').textContent = k.offen ? (k.offen + (k.offen === 1 ? ' offener Vorgang' : ' offene Vorgänge') + (k.ueberfaellig ? ', ' + k.ueberfaellig + ' überfällig' : '') + '.') : vaSatz('kurz');
       // Kennzahlen (klickbar)
       $('tkStOffen').textContent = k.offen ?? '–'; $('tkStUeber').textContent = k.ueberfaellig ?? '–'; $('tkStHeute').textContent = heuteN; $('tkStErl').textContent = k.erledigt_30 ?? '–';
       $('tkStDauer').textContent = k.dauer_h != null ? (k.dauer_h < 48 ? k.dauer_h + ' h' : (Math.round(k.dauer_h / 24) === 1 ? '1 Tag' : Math.round(k.dauer_h / 24) + ' Tagen')) : '–';
@@ -9286,7 +9302,7 @@
       if (!tkAuswahl && items.length && window.innerWidth > 900) tkAuswahl = items[0].id;
       const ul = $('tkListe'); ul.innerHTML = '';
       if (!items.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Vorgänge für diese Auswahl.</p>'
-        : leerZustand('Noch keine Vorgänge. Nachrichten deines Assistenten werden automatisch zu Vorgängen mit Nummer und Frist, oder du legst einen von Hand an.', 'Vorgang anlegen', 'klick:tkNeuAuf');
+        : leerZustand(vaSatz('leer'), 'Vorgang anlegen', 'klick:tkNeuAuf');
       let grp = null;
       items.forEach((t) => { const [key, titel] = tkGruppe(t); if (key !== grp) { grp = key; const h = document.createElement('div'); h.className = 'lv-tag' + (key === '0-ueber' ? ' ueber' : ''); h.textContent = titel; ul.append(h); } ul.append(tkZeile(t)); });
       renderTicketDetail();
@@ -11475,6 +11491,108 @@
         roh();
         const pw = [...($('mehrInhalt')?.querySelectorAll('.mehr__eintrag') || [])].find((b) => b.textContent.trim() === 'Passwort ändern');
         if (pw) pw.before(meldungenBauen('mehr__meldungen'));
+      };
+    }
+
+    // ---- Empfehlungen 16.10.2026 (Christoph: „ja mach auch alles“) ----
+    // E-a: Aus Nachrichten entsteht ohne Einstellung kein Vorgang mehr (ki-anruf tickets.ts, STANDARD_INTERN aus).
+    //      Der Schalter #vaAuto ist eine Zeile in ticket_connections mit provider 'vocaris': an = enabled + on_messages,
+    //      aus = on_messages false (die Zeile bleibt stehen, wie bei Getränke-Altinger). Fremde Ticketsysteme bleiben, wie sie sind.
+    // E-d: Neue Nummern nur mit aktivem Tarif: subscriptions.plan klein/standard/gross UND status active – dieselbe Regel
+    //      wie ki-anruf tarif-schutz.ts, das POST /api/numbers/order sonst mit 402 ablehnt.
+    // Hilfe-Text der Vorgänge hier statt im HILFE-Block (der ist Konfliktzone mit PR #35). hilfeEinbauen() hat das
+    // Feld schon gebaut, deshalb auch den ersten Absatz im fertigen Hilfe-Feld tauschen.
+    {
+      const satz = 'Vorgänge mit Nummer, Frist und Zuständigkeit. An einer Nachricht legt <b>Vorgang anlegen</b> einen an, <b>+ Vorgang</b> einen von Hand; <b>Liste / Spalten</b> wechselt die Ansicht. Automatisch aus jeder Nachricht: Schalter unter Schnittstellen bzw. Benachrichtigungen → Ereignisse.';
+      if (HILFE['sec-tickets']) HILFE['sec-tickets'][0] = satz;
+      const erster = $('hilfePanel-sec-tickets')?.querySelector('p'); if (erster) erster.innerHTML = satz;
+    }
+    var vorgangAuto = null; // null = noch nicht geladen; dann gilt der Standard (aus). var: renderTickets darf es jederzeit lesen
+    function vaSatz(art) {
+      if (vorgangAuto) return art === 'kurz' ? 'Nichts offen. Nachrichten deines Assistenten werden hier automatisch zu Vorgängen.'
+        : 'Noch keine Vorgänge. Nachrichten deines Assistenten werden automatisch zu Vorgängen mit Nummer und Frist, oder du legst einen von Hand an.';
+      return art === 'kurz' ? 'Nichts offen. Aus einer Nachricht machst du mit „Vorgang anlegen“ einen Vorgang.'
+        : 'Noch keine Vorgänge. Aus einer Nachricht machst du mit „Vorgang anlegen“ einen Vorgang mit Nummer und Frist, oder du legst hier einen von Hand an.';
+    }
+    async function vorgangAutoLaden() {
+      if (!tenant) return;
+      const fuer = tenant.id;
+      const { data, error } = await sb.from('ticket_connections').select('id, enabled, on_messages').eq('tenant_id', fuer).eq('provider', 'vocaris');
+      if (error || tenant?.id !== fuer) return; // Stand bleibt unbekannt, der Schalter gesperrt
+      vorgangAuto = (data || []).some((c) => c.enabled !== false && c.on_messages);
+      vorgangAutoZeigen();
+    }
+    function vorgangAutoZeigen() {
+      const cb = $('vaAuto');
+      if (cb) { cb.checked = !!vorgangAuto; cb.disabled = vorgangAuto == null; }
+      // Texte in Vorgänge (Untertitel ohne offene Vorgänge, Leer-Zustand) folgen dem Schalter.
+      if (!$('sec-tickets')?.classList.contains('hidden') && Array.isArray(tkAlle)) renderTickets();
+      ifStatus(); // Kachel „Ticketsystem“: Vorgänge per Klick oder automatisch
+    }
+    $('vaAuto')?.addEventListener('change', async (e) => {
+      const cb = e.target, an = cb.checked;
+      if (!tenant) { cb.checked = !an; return; }
+      cb.disabled = true;
+      let ok = false;
+      try {
+        const { data: zeilen, error } = await sb.from('ticket_connections').select('id').eq('tenant_id', tenant.id).eq('provider', 'vocaris');
+        if (error) throw error;
+        if (zeilen && zeilen.length) {
+          ok = await schreibenGeprueft(sb.from('ticket_connections').update(an ? { enabled: true, on_messages: true } : { on_messages: false })
+            .eq('tenant_id', tenant.id).eq('provider', 'vocaris').select('id'));
+        } else if (an) {
+          ok = await schreiben(sb.from('ticket_connections').insert({ tenant_id: tenant.id, provider: 'vocaris', config: {}, enabled: true, on_messages: true, on_gaps: false, on_calls: false }));
+        } else ok = true; // keine Zeile = Standard = aus
+      } catch (err) { toast('Fehler: ' + fehlerText(err), 'err'); }
+      if (ok) {
+        vorgangAuto = an;
+        toast(an ? 'Gespeichert: Aus jeder neuen Nachricht wird automatisch ein Vorgang.' : 'Gespeichert: Vorgänge legst du an der Nachricht mit „Vorgang anlegen“ an.');
+      }
+      vorgangAutoZeigen();
+    });
+
+    const TARIF_BEZAHLT = ['klein', 'standard', 'gross']; // wie PLAN_PREISE in ki-anruf margen.ts / preise.html
+    const tarifIstAktiv = (abo) => !!abo && TARIF_BEZAHLT.includes(abo.plan) && abo.status === 'active';
+    var tarifStand = null; // null = noch nicht geladen: Kaufweg bleibt zu
+    async function tarifLaden() {
+      if (!tenant) return;
+      const fuer = tenant.id;
+      const { data, error } = await sb.from('subscriptions').select('plan, status').eq('tenant_id', fuer).maybeSingle();
+      if (tenant?.id !== fuer) return;
+      tarifStand = error ? { aktiv: false, fehler: true } : { aktiv: tarifIstAktiv(data), plan: data?.plan ?? null, status: data?.status ?? null };
+      nummernKaufZeigen();
+    }
+    function nummernKaufZeigen() {
+      const sec = $('sec-number'); if (!sec) return;
+      const aktiv = !!tarifStand?.aktiv;
+      sec.classList.toggle('mit-tarif', aktiv);
+      if (aktiv || !tarifStand) { $('numTarifHinweis')?.remove(); return; }
+      $('numAddPanel')?.classList.add('hidden');
+      // Restaurants: Bestellen ist dort ohnehin ausgeblendet, der Untertitel sagt schon „melde dich bei uns“.
+      if ($('numAddKnopf')?.classList.contains('hidden')) { $('numTarifHinweis')?.remove(); return; }
+      let h = $('numTarifHinweis');
+      if (!h) { h = document.createElement('div'); h.id = 'numTarifHinweis'; h.className = 'num-tarif-hinweis'; h.setAttribute('role', 'note'); $('numAddPanel')?.before(h); }
+      const abo = typeof navItem === 'function' ? navItem('sec-abo') : null; // „Abo & Rechnungen“ kommt mit PR #35
+      const zumAbo = !!abo && navSichtbar(abo);
+      h.innerHTML = '<p><b>Neue Nummern gibt es mit einem aktiven Tarif.</b> '
+        + (zumAbo ? 'Deinen Tarif wählst du unter <a href="#abo" data-geh="sec-abo">Abo & Rechnungen</a>, oder melde dich bei uns, dann kümmern wir uns um deine Nummer.'
+          : 'Melde dich bei uns, dann kümmern wir uns um deine Nummer.') + '</p>';
+    }
+    // Falls doch jemand bestellt (alte Seite, Tarif inzwischen weg): nicht erst den Server fragen.
+    {
+      const roh = numOrder;
+      numOrder = async function (...a) {
+        if (!tarifStand?.aktiv) { toast('Neue Nummern gibt es mit einem aktiven Tarif. Melde dich bei uns, dann kümmern wir uns um deine Nummer.', 'err', 6000); return; }
+        return roh.apply(this, a);
+      };
+    }
+    // Nach jedem Laden der Firma (Anmeldung, Kontowechsel, Rückkehr der Verbindung) beides neu lesen.
+    {
+      const roh = loadAll;
+      loadAll = async function (...args) {
+        const erg = await roh.apply(this, args);
+        if (tenant) { void vorgangAutoLaden().catch(() => {}); void tarifLaden().catch(() => {}); }
+        return erg;
       };
     }
 
