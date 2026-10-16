@@ -1251,6 +1251,210 @@
       } catch (e) { /* ohne Speicher: hell */ }
     })();
   </script>
+  <!-- UI-Runde 15.10.2026: eigener Block, damit offene Zweige rebasebar bleiben -->
+  <style id="uiRunde">
+    /* Verbindungsbalken schiebt den Inhalt nach unten, statt Kopfzeile und ↻ zu verdecken (Höhe --vb-h per Skript) */
+    body:has(.verbindung.sichtbar) .main { padding-top: calc(30px + var(--vb-h, 62px) / var(--app-zoom, 1)); }
+    @media (max-width: 900px) {
+      body:has(.verbindung.sichtbar) .shell { padding-top: var(--vb-h, 62px); }
+      body:has(.verbindung.sichtbar) .side { top: var(--vb-h, 62px); }
+      body:has(.verbindung.sichtbar) .main { padding-top: 16px; }
+    }
+    /* Handy: Zeitraum-Leiste („14 Tage“) etwas enger, damit ↻ in derselben Zeile bleibt */
+    @media (max-width: 480px) { :is(#lvZeitraum, #obZeitraum, #awZeitraum) .deptseg { padding-left: 8px; padding-right: 8px; } }
+    /* Eingehend: Hinweis, wenn nur die neuesten Anrufe geladen sind */
+    /* Das hidden-Attribut muss auch bei Knöpfen mit eigener display-Regel wirken (Navigation für Mitarbeiter, Tab-Leiste, Knöpfe) */
+    .nav-item[hidden], .tab-item[hidden], .btn[hidden] { display: none !important; }
+    /* „Daraus entstanden“ im Anruf: verknüpfter Vorgang und Nachricht als Sprungmarken */
+    .lv-entstanden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+    .lv-entstanden[hidden] { display: none; }
+    .lv-entstanden button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 8%, var(--white)); border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-radius: 999px; padding: 3px 10px; min-height: 28px; cursor: pointer; }
+    .lv-entstanden button:hover { border-color: var(--accent); }
+    /* Reservierung: Notiz direkt bearbeiten */
+    .res-notiz { margin-top: 8px; display: grid; gap: 6px; }
+    .res-notiz textarea { width: 100%; min-height: 56px; font: inherit; font-size: 14px; }
+    .res-notiz .stack { margin: 0; }
+    /* Assistent: Fehlerzustände (Sonderhinweis „bis“ vor „ab“, Weiterleitung ohne Zeiten, ungültige Nummer) */
+    .as-hinweisstatus[data-art="fehler"] { background: #fef2f2; color: #b91c1c; }
+    :root[data-theme="dark"] .as-hinweisstatus[data-art="fehler"] { background: #3a1616; color: #fca5a5; }
+    .as-hinweisstatus[hidden] { display: none; }
+    #sec-assistant [aria-invalid="true"] { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220, 38, 38, .15); }
+    /* Testanruf-Dialog */
+    .ta-text { text-align: left; padding: 0; margin: 0 0 8px; }
+    .ta-nummer { display: block; font-size: 28px; font-weight: 700; letter-spacing: -.01em; color: var(--accent-ink); text-decoration: none; margin: 4px 0 12px; font-variant-numeric: tabular-nums; }
+    .ta-nummer:hover { text-decoration: underline; text-underline-offset: 4px; }
+    /* Restaurant: Benachrichtigungen ohne Entwickler-Schnittstellen (CRM, Ticketsystem, API, Webhook) */
+    #sec-webhooks.if-nur-benachrichtigung :is(#ifTabs, #ifStatus) :is([data-iftab="crm"], [data-iftab="ticket"], [data-iftab="api"], [data-iftab="webhook"]),
+    #sec-webhooks.if-nur-benachrichtigung :is([data-if="crm"], [data-if="ticket"], [data-if="api"], [data-if="webhook"]),
+    #sec-webhooks.if-nur-benachrichtigung .db-kopf .db-aktionen a { display: none !important; }
+    /* Assistent: die Seitenleiste nennt nur die Abschnitte des offenen Reiters */
+    .as-nav a.as-nav__fern { display: none; }
+    /* Ausgehend: geplante Anrufe kompakt */
+    .gp-leer { margin: 0; font-size: 13.5px; color: var(--ink-soft); text-align: left; padding: 2px 0; }
+    .gp-link { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--accent-ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    /* Hauptknöpfe flach und lesbar (Weiß auf Elektroblau ≥ 4,5:1, hell und dunkel), ohne Verlauf und Glow */
+    .btn--primary, .wa-launcher { background: #1f5eff; box-shadow: none; }
+    .btn--primary:hover, .wa-launcher:hover { background: #1a4fe0; box-shadow: none; transform: none; }
+    :root[data-theme="dark"] .cal__ev:not(.busy):not(.manual) { background: #1f5eff; }
+    .btn--danger { color: #c0392b; border-color: #c0392b; }
+    :root[data-theme="dark"] .btn--danger { color: #f87171; border-color: #f87171; }
+    /* Handy: der Wissens-Assistent-Knopf verdeckt den schwebenden „Anrufen“-Knopf nicht */
+    body:has(#callBtnSchwebend:not(.hidden)) .wa-launcher { display: none; }
+    /* Überfällige Frist auch hell erkennbar (die graue Zeitangabe der Zeile gewann bisher) */
+    .db-zeile .t.ueber-text { color: #c2410c; font-weight: 600; }
+    :root[data-theme="dark"] .db-zeile .t.ueber-text { color: #fb923c; }
+    /* Dashboard-Listen: die rechte Angabe (Zeit, Frist) drückt den Titel nie aus der Karte; auf dem Handy steht sie unter dem Titel */
+    .db-zeile { grid-template-columns: minmax(0, 1fr) auto; } .db-zeile b { min-width: 0; overflow-wrap: break-word; }
+    /* Reservierungs-Einstellungen nur lesen: Links kopieren geht trotzdem */
+    .nur-lesen :is(#rsCopyLink, #rsCopyKiosk, #rsPreviewRefresh) { pointer-events: auto; opacity: 1; }
+    details.nur-lesen > .nur-lesen-hinweis { margin-top: 8px; }
+    @media (max-width: 700px) {
+      /* Handy: Titel über die volle Breite (höchstens zwei Zeilen), darunter links der Text, rechts Zeit bzw. Frist */
+      .db-zeile { grid-template-areas: "b b" "z t"; }
+      .db-zeile b { grid-area: b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .db-zeile .t { grid-area: t; align-self: center; text-align: right; }
+      .db-zeile .z { grid-area: z; min-width: 0; }
+    }
+    @media (max-width: 700px) {
+      #rsDayKpis:not(.hidden) { display: flex !important; overflow-x: auto; gap: 8px !important; scrollbar-width: none; margin-top: 10px !important; }
+      #rsDayKpis::-webkit-scrollbar { display: none; }
+      #rsDayKpis .db-kpi { flex: none; display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; min-height: 0; }
+      #rsDayKpis .db-kpi .k { margin: 0; } #rsDayKpis .db-kpi .v { font-size: 18px; line-height: 1.2; } #rsDayKpis .db-kpi .d { display: none; }
+    }
+    /* Wissens-Assistent-Knopf: nur das Symbol, beim Überfahren bzw. Fokus mit Beschriftung */
+    .wa-launcher.klein { padding: 13px; }
+    .wa-launcher.klein span { display: none; }
+    @media (hover: hover) and (min-width: 601px) { .wa-launcher.klein:is(:hover, :focus-visible) { padding: 13px 18px; } .wa-launcher.klein:is(:hover, :focus-visible) span { display: inline; } }
+    /* Konto-Menü: Ton und Hinweise bei Anrufen */
+    .konto__meldungen { display: grid; gap: 2px; padding: 4px 0; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+    .konto__schalter { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 0 10px; margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); cursor: pointer; }
+    .konto__schalter input { width: auto; margin: 0; accent-color: var(--accent); }
+    .konto__hinweise { text-align: left; min-height: 40px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 13.5px; color: var(--accent-ink); cursor: pointer; border-radius: var(--r-sm); }
+    .konto__hinweise:hover:not(:disabled) { background: var(--paper-2); }
+    .konto__hinweise:disabled { color: var(--ink-faint); cursor: default; }
+    .mehr__meldungen { border-bottom: 0; }
+    .mehr__meldungen .konto__schalter, .mehr__meldungen .konto__hinweise { min-height: 44px; }
+    .lv-streifen__mehr { border: 0; background: none; padding: 0; font: inherit; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    /* ---- Etappe 2: Einheitlichkeit ---- */
+    /* Auswahlfelder sehen in Safari wie in Chrome aus: eigener Pfeil statt der Systemdarstellung */
+    :root { --pfeil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235f6b7d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    :root[data-theme="dark"] { --pfeil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a1b7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    :is(.shell, .pwmodal, .login) select:not([multiple]) { -webkit-appearance: none; appearance: none; background-image: var(--pfeil); background-repeat: no-repeat; background-position: right 11px center; background-size: 11px 8px; padding-right: 32px; }
+    .shell .lv-select { max-width: 100%; text-overflow: ellipsis; }
+    /* Kopfzeilen bleiben einzeilig: der Titelblock gibt nach, der Untertitel kürzt mit „…“ (voller Text als Einblendung) */
+    .db-kopf > div:first-child { flex: 1 1 auto; min-width: min-content; }
+    .db-kopf > div:first-child > p { contain: inline-size; } /* Untertitel bestimmt die Breite nicht mit: umgebrochen wird nur, wenn Titel und Knöpfe nicht nebeneinander passen */
+    @media (min-width: 761px) { .db-kopf .pagesub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    .hilfe__knopf { margin-left: 2px; }
+    #sec-kb .db-aktionen .lv-suche { min-width: 0; width: 220px; }
+    /* Vorgang: Titel und Statusknöpfe teilen sich die Zeile nur, wenn Platz ist (bei 1024 px stand der Titel Wort für Wort untereinander) */
+    .lv-detailkopf > div:first-child { flex: 1 1 260px !important; min-width: 0; }
+    /* Ein Feld-Maß für Formulare: 15 px Schrift, 8 px Rundung, Höhe über die Klickziel-Regeln (40/36/44), Beschriftung 13/500.
+       Filterleisten (Pillen, Suche), Wählfeld und Chat-Eingabe behalten ihr eigenes Maß. */
+    .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select), textarea:not(.wa-input textarea)) { font-size: 15px; border-radius: 8px; }
+    .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select)) { padding-top: 7px; padding-bottom: 7px; padding-left: 12px; }
+    .shell textarea:not(.wa-input textarea) { padding: 9px 12px; line-height: 1.45; }
+    .shell .tk-felder label { font-size: 13px; font-weight: 500; }
+    @media (pointer: coarse) {
+      .shell :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not(.lv-suche):not(.waehl__eingabe):not(.tk-titel-input):not(.lv-etikett-eingabe):not(.suche__feld), select:not(.lv-select), textarea:not(.wa-input textarea)) { font-size: 16px; }
+    }
+    /* Dialoge und Suche im selben Maßstab wie die Oberfläche (ab 1100 px 0,8) */
+    @media (min-width: 1100px) {
+      body .pwmodal__card, body .suche__box { zoom: var(--app-zoom); }
+      body .suche__box { max-height: min(calc(70vh / var(--app-zoom)), 800px); }
+      body .pwmodal__card { max-height: calc(92vh / var(--app-zoom)); overflow-y: auto; }
+    }
+    /* Schnittstellen bei 768 px: Reiter scrollen statt über den Rand zu laufen, Ereignisse einspaltig */
+    #ifTabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    #ifTabs .deptseg { flex: none; white-space: nowrap; }
+    @media (max-width: 900px) { .if-grid { grid-template-columns: 1fr; } }
+    /* Geschlossenes Wissens-Assistent-Panel wirft keinen Schatten an den rechten Rand */
+    .wa-panel:not(.open) { box-shadow: none; visibility: hidden; transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s linear .28s; }
+    .wa-panel.open { visibility: visible; }
+    /* Anmeldung markentreu: flaches Nachtblau ohne Leuchtflecken, Hervorhebung in Hellblau, Fehler in Rot statt Koralle */
+    .login__brand { background: #08122e; }
+    .login__brand::before { content: none; }
+    .login__pitch h2 em { color: var(--marke-hell); }
+    .login__submit { box-shadow: none; }
+    .login__err { color: #b91c1c; }
+    :root[data-theme="dark"] .login__err { color: #fca5a5; }
+    /* Stundenachse lesbar (10 px auf dem Bildschirm statt 8) */
+    .db-stunden div span { font-size: 12.5px; bottom: -18px; }
+    .db-stunden { margin-bottom: 4px; }
+    /* Werkzeugknöpfe im Anpassen-Modus: 40 px (32 px auf dem Bildschirm) */
+    .shell .db-werk button, .shell .db-werk .griff { min-height: 40px; min-width: 40px; display: inline-grid; place-items: center; }
+    /* Schmale Listenspalte (z. B. 1024 px neben dem Detail): Zeit und Frist unter den Text statt daneben, der Titel bekommt die Breite */
+    .lv-liste { container-type: inline-size; }
+    @media (min-width: 901px) {
+      @container (max-width: 340px) {
+        .lv-zeile { grid-template-columns: 10px minmax(0, 1fr); row-gap: 3px; }
+        .lv-zeile .lv-rechts { grid-column: 2; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: baseline; gap: 2px 10px; }
+      }
+    }
+    @media (min-width: 761px) and (max-width: 1100px) { .tk-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (min-width: 901px) and (max-width: 1099px) { .tk-felder { grid-template-columns: 1fr 1fr; } }
+    /* Sprunglink „Zum Inhalt“ (erst bei Tastaturfokus sichtbar); Überschriften als Fokusziel ohne Ring */
+    .sprunglink { position: absolute; left: 12px; top: -80px; z-index: 300; padding: 10px 14px; background: var(--white); color: var(--accent-ink); border: 2px solid var(--accent); border-radius: 8px; font-weight: 600; text-decoration: none; }
+    .sprunglink:focus { top: 12px; }
+    .pagehead:focus { outline: none; }
+    /* Leer-Zustand: eine Karte über die volle Breite statt Liste und leerem Detail nebeneinander */
+    .section.lv-ganz-leer .lv-split { grid-template-columns: minmax(0, 1fr); }
+    .section.lv-ganz-leer .lv-split > .lv-detail { display: none; }
+    .section.lv-ganz-leer .lv-filter { display: none; }
+    /* Handy: Liste früher im Bild – Untertitel und CSV weg, Kennzahlen und Filter als waagrecht scrollende Zeilen */
+    @media (max-width: 700px) {
+      .db-kopf .pagesub { display: none; }
+      #lvCsv, #obCsv, #mgCsv, #tkExport { display: none; }
+      .db-kopf .pagehead { margin-bottom: 0; }
+      .db-aktionen .deptbar { max-width: 100%; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+      .db-aktionen .deptbar::-webkit-scrollbar, .tk-kpis::-webkit-scrollbar, .lv-filter .lv-chips::-webkit-scrollbar, #sec-tickets .lv-filter::-webkit-scrollbar { display: none; }
+      .db-aktionen .deptbar .deptseg { flex: none; white-space: nowrap; }
+      .db-aktionen .deptbar:has([data-tkansicht]) { display: none; } /* Liste/Spalten: auf dem Handy nur die Liste */
+      #tkStatusBar { flex: 1 1 0; min-width: 0; }
+      /* Eingehend/Ausgehend: Themen-Auswahl und Stimmungs-Chips in einer Zeile (Chips scrollen), Zähler darunter */
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-select { order: -1; flex: 0 1 auto; max-width: 46%; }
+      :is(#sec-live, #sec-outbound) .lv-filter > .lv-chips:first-child { flex: 1 1 50%; min-width: 0; }
+      :is(#sec-live, #sec-outbound) .lv-filter > span.muted { flex: none; }
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-streifen { width: auto !important; flex: 1 1 0; min-width: 0; }
+      :is(#sec-live, #sec-outbound) .lv-filter .lv-chips:empty { display: none; }
+      .tk-kpis { display: flex; overflow-x: auto; gap: 8px; scrollbar-width: none; margin-bottom: 10px; }
+      .tk-kpis .db-kpi { flex: none; display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; min-height: 0; }
+      .tk-kpis .db-kpi .k { margin: 0; }
+      .tk-kpis .db-kpi .v { font-size: 18px; line-height: 1.2; }
+      .tk-kpis .db-kpi .d { display: none; }
+      .lv-filter { margin-bottom: 10px; row-gap: 8px; }
+      .lv-filter .lv-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+      .lv-filter .lv-chips .lv-chip { flex: none; white-space: nowrap; }
+      #sec-tickets .lv-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      #sec-tickets .lv-filter > * { flex: none; }
+    }
+    /* Stimmung und Priorität: Farbpunkt + Text statt Emoji */
+    [data-stimmung="positiv"] { --punkt: #16a34a; } [data-stimmung="neutral"] { --punkt: #94a3b8; } [data-stimmung="negativ"] { --punkt: #dc2626; }
+    [data-tkprio="high"] { --punkt: #dc2626; } [data-tkprio="normal"] { --punkt: #3d8bff; } [data-tkprio="low"] { --punkt: #94a3b8; }
+    .mit-punkt::before, .lv-chips .lv-chip[data-stimmung]:not([data-stimmung=""])::before, .lv-chips .lv-chip[data-tkprio]:not([data-tkprio=""])::before {
+      content: ''; display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--punkt, var(--ink-faint)); margin-right: 6px; vertical-align: 1px; }
+    /* Restaurant: Bausteine wie im übrigen Kundenbereich (zarte Status-Abzeichen, Regler in Elektroblau) */
+    .res-chip { display: inline-flex; align-items: center; padding: 1px 9px; margin-left: 8px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; vertical-align: 2px;
+      border: 1px solid var(--line); background: var(--paper-2); color: var(--ink-soft); }
+    .res-chip[data-status="booked"] { background: #ecfdf3; border-color: #bbf7d0; color: #166534; }
+    .res-chip[data-status="seated"], .res-chip[data-status="stamm"] { background: var(--marke-zart); border-color: #c7d7fe; color: var(--accent-ink); }
+    .res-chip[data-status="no_show"] { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
+    :root[data-theme="dark"] .res-chip[data-status="booked"] { background: #123329; border-color: #1d4d3d; color: #6fe0b3; }
+    :root[data-theme="dark"] .res-chip[data-status="seated"], :root[data-theme="dark"] .res-chip[data-status="stamm"] { background: #1c2a4d; border-color: #2a3d6e; color: #9dbcff; }
+    :root[data-theme="dark"] .res-chip[data-status="no_show"] { background: #3f1a1a; border-color: #5a2a2a; color: #fca5a5; }
+    .res-notiztext { margin-top: 4px; font-size: 13px; color: var(--ink); }
+    .res-notiztext span { color: var(--ink-faint); font-weight: 600; margin-right: 2px; }
+    .shell input[type=range] { accent-color: var(--accent); }
+    #rsAreaTabs .deptseg { white-space: nowrap; }
+    /* Speicherstand unter Notizfeldern */
+    .speicherstatus { font-size: 12.5px; color: var(--ink-faint); margin-top: 4px; min-height: 18px; }
+    .speicherstatus[data-art="fehler"] { color: #b91c1c; }
+    :root[data-theme="dark"] .speicherstatus[data-art="fehler"] { color: #fca5a5; }
+    .speicherstatus__nochmal { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    /* Vorgänge: Anlagezeit klein unter der Frist */
+    .lv-rechts .tk-angelegt { font-size: 12px; color: var(--ink-faint); }
+    .lv-neu, .lv-art { white-space: nowrap; }
+  </style>
 </head>
 <body>
   <!-- AUTH -->
@@ -1308,6 +1512,7 @@
 
   <!-- APP SHELL -->
   <div id="shell" class="shell hidden">
+    <a class="sprunglink" id="sprungInhalt" href="#inhalt">Zum Inhalt</a>
     <aside class="side">
       <a class="brand" href="./"><span class="m"><svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><defs><radialGradient id="vk-navg" cx="0.35" cy="0.25" r="0.9"><stop offset="0" stop-color="#9cc4ff"/><stop offset="0.4" stop-color="#3d8bff"/><stop offset="0.85" stop-color="#0a2fd0"/><stop offset="1" stop-color="#072192"/></radialGradient><radialGradient id="vk-navh" cx="0.3" cy="0.18" r="0.45"><stop offset="0" stop-color="#fff" stop-opacity="0.6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><filter id="vk-navs" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter></defs><circle cx="50" cy="52" r="42" fill="url(#vk-navg)"/><g fill="none" stroke="#000" stroke-linecap="round" opacity="0.25" filter="url(#vk-navs)" transform="translate(0 2)"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><g fill="none" stroke="#fff" stroke-linecap="round"><path d="M50 31v42" stroke-width="8"/><path d="M34 40v24M66 40v24" stroke-width="7"/><path d="M20 47v10M80 47v10" stroke-width="6"/></g><ellipse cx="38" cy="28" rx="24" ry="14" fill="url(#vk-navh)"/></svg></span>Vocaris</a>
       <!-- Suche über alles: Desktop als Feld über der Navigation, auf dem Handy als Lupe in der Kopfzeile -->
@@ -1391,7 +1596,7 @@
               <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
               <span class="muted" id="dbStand" style="font-size:12.5px" title="Zuletzt aktualisiert" data-tip="Zuletzt aktualisiert – Zahlen werden beim Öffnen und mit ↻ neu geladen"></span>
               <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" title="Neu laden">↻</button>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
               <button class="btn btn--ghost sm" type="button" id="dbAnpassen">Anpassen</button>
             </div>
@@ -1427,15 +1632,15 @@
               <p class="pagesub" id="liveSub">Anrufe, die bei dir eingehen.</p>
             </div>
             <div class="db-aktionen">
-              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <input id="lvSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Text …" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="lvCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
-              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <div class="deptbar" id="lvZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="lvNeu" title="Neu laden">↻</button>
             </div>
           </div>
           <div id="lvActive"></div>
           <div class="lv-filter">
-            <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
+            <div class="lv-chips" id="lvStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">negativ</button></div>
             <select id="lvThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="lv-chips" id="lvTagFilter"></span>
             <span class="muted" id="lvAnzahl"></span>
@@ -1459,9 +1664,9 @@
               <p class="pagesub" id="obSub">Anrufe, die du über Vocaris führst.</p>
             </div>
             <div class="db-aktionen">
-              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Tag oder Text suchen" autocomplete="off" />
+              <input id="obSuche" aria-label="Anrufe durchsuchen" class="lv-suche" type="search" placeholder="Nummer, Thema, Text …" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="obCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
-              <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="7" type="button">7 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
+              <div class="deptbar" id="obZeitraum"><button class="deptseg" data-tage="1" type="button">Heute</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="0" type="button">Alle</button></div>
               <button class="btn btn--ghost sm" type="button" id="obNeu" title="Neu laden" aria-label="Neu laden">↻</button>
               <button class="btn btn--primary sm" type="button" id="obAnrufKnopf">Neuer Anruf</button>
             </div>
@@ -1571,7 +1776,7 @@
           <div id="obActive"></div>
           <div class="lv-filter">
             <div class="lv-chips" id="obArt"><button class="lv-chip aktiv" type="button" data-art="">Alle Arten</button><button class="lv-chip" type="button" data-art="bridge">Am Telefon</button><button class="lv-chip" type="button" data-art="browser">Im Browser</button><button class="lv-chip" type="button" data-art="assistant">Assistent</button></div>
-            <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">🙂 positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">😐 neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">🙁 negativ</button></div>
+            <div class="lv-chips" id="obStimmung"><button class="lv-chip aktiv" type="button" data-stimmung="">Alle Stimmungen</button><button class="lv-chip" type="button" data-stimmung="positiv">positiv</button><button class="lv-chip" type="button" data-stimmung="neutral">neutral</button><button class="lv-chip" type="button" data-stimmung="negativ">negativ</button></div>
             <select id="obThema" aria-label="Thema filtern" class="lv-select"><option value="">Alle Themen</option></select>
             <span class="lv-chips" id="obTagFilter"></span>
             <span class="muted" id="obAnzahl"></span>
@@ -1689,7 +1894,7 @@
             <div class="db-kpi klick" data-tkstat="erledigt" role="button" tabindex="0"><div class="k">Erledigt, 30 Tage</div><div class="v" id="tkStErl">–</div><div class="d">Ø Erledigung in <b id="tkStDauer">–</b></div></div>
           </div>
           <div class="lv-filter">
-            <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">🔴 hoch</button><button class="lv-chip" type="button" data-tkprio="normal">🔵 normal</button><button class="lv-chip" type="button" data-tkprio="low">⚪ niedrig</button></div>
+            <div class="lv-chips" id="tkPrioChips"><button class="lv-chip aktiv" type="button" data-tkprio="">Alle Prioritäten</button><button class="lv-chip" type="button" data-tkprio="high">hoch</button><button class="lv-chip" type="button" data-tkprio="normal">normal</button><button class="lv-chip" type="button" data-tkprio="low">niedrig</button></div>
             <select id="tkWer" aria-label="Zuständigkeit filtern" class="lv-select"><option value="">Alle Zuständigen</option></select>
             <select id="tkKat" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <span class="muted" id="tkAnzahl"></span>
@@ -1728,10 +1933,10 @@
               <p class="pagesub" id="awSub">Wann angerufen wird, worum es geht und wie die Gespräche laufen.</p>
             </div>
             <div class="db-aktionen">
-              <div class="deptbar" id="awZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
+              <div class="deptbar" id="awZeitraum"><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button><button class="deptseg" data-tage="90" type="button">90 Tage</button></div>
               <span class="muted" id="awStand" style="font-size:12.5px"></span>
               <button class="btn btn--ghost sm" type="button" id="awNeu" title="Neu laden" aria-label="Neu laden">↻</button>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Alle Anrufe</button>
+              <button class="btn btn--ghost sm" type="button" id="awAlleAnrufe" data-tip="Eingehend im selben Zeitraum, ohne weitere Filter">Alle Anrufe</button>
             </div>
           </div>
           <div class="aw-filterleiste" id="awFilterLeiste"></div>
@@ -1880,7 +2085,7 @@
                 <button class="deptseg" data-dept="support">Support</button>
               </div>
               <span class="lv-neu hidden" id="asDirty" data-tip="Es gibt Änderungen, die noch nicht gespeichert sind">ungespeichert</span>
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
               <button id="saveBtn" class="btn btn--primary sm" data-tip="Strg+S">Speichern</button>
             </div>
           </div>
@@ -1889,10 +2094,10 @@
           <div class="deptbar as-reiter" id="asReiter" role="tablist" aria-label="Abschnitte des Assistenten">
             <button class="deptseg active" type="button" role="tab" data-astab="grund" aria-selected="true">Grundlagen</button>
             <button class="deptseg" type="button" role="tab" data-astab="verhalten" aria-selected="false">Verhalten</button>
-            <button class="deptseg" type="button" role="tab" data-astab="zeiten" aria-selected="false">Zeiten</button>
+            <button class="deptseg" type="button" role="tab" data-astab="zeiten" aria-selected="false">Zeiten &amp; Ausnahmen</button>
             <button class="deptseg" type="button" role="tab" data-astab="stimme" aria-selected="false">Stimme &amp; Sprache</button>
             <button class="deptseg" type="button" role="tab" data-astab="erreichbar" aria-selected="false">Erreichbarkeit</button>
-            <button class="deptseg" type="button" role="tab" data-astab="hinweise" aria-selected="false">Hinweise</button>
+            <button class="deptseg" type="button" role="tab" data-astab="hinweise" aria-selected="false">Datenschutz &amp; Berichte</button>
           </div>
           <div class="as-split">
             <div class="as-form">
@@ -1913,7 +2118,7 @@
               <div class="panel" id="asZeiten" data-astab="zeiten">
                 <h3>Öffnungszeiten</h3>
                 <div id="hoursGrid" class="hours"></div>
-                <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z. B. für eine Mittagspause. Der Assistent weiß dann, ob gerade geöffnet ist.</p>
+                <p class="muted" style="margin:4px 0 0;text-align:left;padding:0">Leer lassen = an dem Tag geschlossen. Das zweite Zeitpaar ist z. B. für eine Mittagspause. Diese Zeiten nutzt der Assistent für „geöffnet“ und die Weiterleitung. Abweichende Zeiten einzelner Filialen gehören ins Wissen.</p>
                 <label for="location">Standort / Anfahrt <span class="muted">optional</span></label>
                 <input id="location" placeholder="z. B. Hauptstr. 1, 80331 München – Parkplätze im Hof" />
               </div>
@@ -1937,7 +2142,7 @@
                 <input id="asStilWert" type="hidden" value="normal" />
                 <p class="muted as-stil__erklaerung" id="asStilText" style="margin:8px 0 0;text-align:left;padding:0"></p>
               </div>
-              <div class="panel" id="asHinweis" data-astab="hinweise">
+              <div class="panel" id="asHinweis" data-astab="zeiten">
                 <h3>Sonderhinweis</h3>
                 <p class="muted" style="margin:0 0 10px;text-align:left;padding:0">Etwas, das der Assistent gerade jedem sagt, der anruft: Betriebsferien, Baustelle, Störung. Mit Datum gilt der Hinweis nur in dem Zeitraum.</p>
                 <label for="asNoticeText" style="margin-top:0">Hinweis</label>
@@ -2027,13 +2232,13 @@
                 <div class="as-vorschau" id="asVorschau"></div>
                 <dl class="db-fakten" id="asFakten"></dl>
                 <div class="stack" style="margin-top:12px">
-                  <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
+                  <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
                   <button class="btn btn--ghost sm" type="button" id="asProbe">Probefrage</button>
                   <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen</button>
                 </div>
               </div>
               <div class="panel as-nav" id="asNav">
-                <h3>Abschnitte</h3>
+                <h3>In diesem Reiter</h3>
                 <a href="#" data-as="asGrund">Grundlagen</a><a href="#" data-as="asZeiten">Öffnungszeiten</a><a href="#" data-as="asVerhalten">Verhalten</a><a href="#" data-as="asStil">Gesprächsstil</a><a href="#" data-as="asHinweis">Sonderhinweis</a><a href="#" data-as="asGlossar">Glossar</a><a href="#" data-as="asErfassung">Erfassungsfelder</a><a href="#" data-as="asStimme">Stimme &amp; Sprache</a><a href="#" data-as="asWeiter">Weiterleitung</a><a href="#" data-as="asSelbst">Eigene Anrufe</a><a href="#" data-as="asRecht">Hinweis zu Gesprächsbeginn</a><a href="#" data-as="asAufbewahrung">Aufbewahrung</a><a href="#" data-as="asBericht">Wochenbericht</a>
               </div>
             </div>
@@ -2325,8 +2530,8 @@
               <p class="pagesub" id="numSubtitle">Deine Vocaris-Nummer(n). Du kannst mehrere hinterlegen (z. B. je eine für Vertrieb und Support); jede Nummer steuert ihre Abteilung an.</p>
             </div>
             <div class="db-aktionen">
-              <button class="btn btn--ghost sm" type="button" data-geh="sec-live">Testanruf</button>
-              <button class="btn btn--primary sm" type="button" id="numAddKnopf">+ Neue Nummer</button>
+              <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
+              <button class="btn btn--ghost sm" type="button" id="numAddKnopf">+ Weitere Nummer</button>
             </div>
           </div>
           <div class="panel hidden" id="numAddPanel">
@@ -2418,7 +2623,7 @@
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-            <div id="rsAreaTabs" class="branch-chips" style="margin:0"></div>
+            <div id="rsAreaTabs" class="deptbar" role="group" aria-label="Bereich" style="margin:0"></div>
           </div>
           <div id="rsAreaManage" class="panel hidden" style="margin:0 0 10px">
             <h3 style="margin:0 0 8px">Bereiche verwalten</h3>
@@ -2787,7 +2992,7 @@
     <!-- Chat-Widget: Wissens-Assistent -->
     <button id="waLauncher" class="wa-launcher" aria-label="Wissens-Assistent öffnen" aria-haspopup="dialog" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Assistent</span>
+      <span>Wissens-Assistent</span>
     </button>
     <div id="waPanel" class="wa-panel" role="dialog" aria-modal="true" aria-label="Wissens-Assistent" inert>
       <div class="wa-head">
@@ -2853,6 +3058,15 @@
         <button class="btn btn--ghost" type="button" id="asDialogVerwerfen">Verwerfen</button>
         <button class="btn btn--ghost" type="button" id="asDialogAbbrechen">Abbrechen</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Testanruf: eigene Nummer zum Anrufen, statt im Kreis zwischen Eingehend und Telefonnummer zu springen -->
+  <div id="taDialog" class="pwmodal hidden" role="dialog" aria-modal="true" aria-labelledby="taTitel">
+    <div class="pwmodal__card ta-karte" style="width:min(460px,94vw)">
+      <h3 id="taTitel">Testanruf</h3>
+      <div id="taInhalt"></div>
+      <div class="stack" style="margin-top:16px" id="taKnoepfe"></div>
     </div>
   </div>
 
@@ -2985,9 +3199,12 @@
       const f = [...el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
         .filter((x) => !x.disabled && x.offsetParent !== null);
       if (!f.length) return;
-      const erst = f[0], letzt = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === erst) { e.preventDefault(); letzt.focus(); }
-      else if (!e.shiftKey && document.activeElement === letzt) { e.preventDefault(); erst.focus(); }
+      // Selbst weiterschalten statt nur an den Rändern: Safari springt mit Tab sonst über Knöpfe hinweg
+      // direkt aus dem Dialog heraus (Fokusfalle griff nur in Chrome).
+      e.preventDefault();
+      const i = f.indexOf(document.activeElement);
+      const n = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i < 0 || i === f.length - 1 ? 0 : i + 1);
+      f[n].focus();
     }
     function fokusFalle(el, schliessen, rueckziel) {
       const vorher = rueckziel || document.activeElement;
@@ -3045,7 +3262,11 @@
      */
     const BRANCHEN_KURATIERUNG = {
       restaurant: {
-        bereicheAus: ['sec-webhooks', 'sec-booking'],
+        // „Schnittstellen“ bleibt sichtbar, heißt aber „Benachrichtigungen“ und zeigt nur Ereignisse und Kanäle
+        // (E-Mail, Slack, Teams, Telegram, SMS) – CRM, Ticketsystem, API und Webhook blendet die Klasse
+        // if-nur-benachrichtigung aus (siehe uiRunde-CSS).
+        bereicheAus: ['sec-booking'],
+        navTexte: { 'sec-webhooks': 'Benachrichtigungen' },
         // „Telefonnummer" bleibt sichtbar — ein Restaurant soll seine eigene
         // Rufnummer sehen. Das BESTELLEN neuer Nummern bleibt aus: Das läuft
         // über Telnyx, kostet Geld und verlangt einen Adressnachweis; das
@@ -3175,6 +3396,15 @@
       const meiner = document.querySelector('meta[name="vocaris-stand"]')?.content || '';
       if (!meiner) return;
       let gemeldet = false, zuletzt = 0;
+      // Der Stempel wird beim Ausliefern nicht zuverlässig gesetzt (stand wochenlang auf demselben Wert). Darum zählt
+      // zusätzlich die Dateigröße: die der geladenen Seite gegen die, die der Server jetzt für app.html meldet.
+      let basisGroesse = 0;
+      try { basisGroesse = performance.getEntriesByType('navigation')[0]?.decodedBodySize || 0; } catch { /* ältere Browser: erste Prüfung zählt */ }
+      const groesseVon = (r) => {
+        const cr = (r.headers.get('content-range') || '').match(/\/(\d+)\s*$/); if (cr && !r.headers.get('content-encoding')) return Number(cr[1]);
+        const et = (r.headers.get('etag') || '').match(/-([0-9a-f]+)"?\s*$/i); if (et) return parseInt(et[1], 16);
+        return r.status === 200 && !r.headers.get('content-encoding') ? Number(r.headers.get('content-length')) || 0 : 0;
+      };
       const pruefen = async () => {
         if (gemeldet || document.hidden) return;
         const jetzt = Date.now();
@@ -3186,7 +3416,9 @@
           if (!r.ok) return;
           const txt = (await r.text()).slice(0, 4000);
           const treffer = txt.match(/name="vocaris-stand" content="([^"]+)"/);
-          if (!treffer || treffer[1] === meiner) return;
+          const groesse = groesseVon(r); if (!basisGroesse) basisGroesse = groesse;
+          const andererStempel = !!treffer && treffer[1] !== meiner, andereGroesse = !!groesse && !!basisGroesse && groesse !== basisGroesse;
+          if (!andererStempel && !andereGroesse) return;
           gemeldet = true;
           const t = toast('Es gibt eine neuere Fassung. Zum Übernehmen neu laden.', '', 20000);
           const b = document.createElement('button');
@@ -3405,7 +3637,7 @@
     document.addEventListener('click', (e) => {
       const b = e.target.closest('[data-leer]'); if (!b) return;
       const [art, ziel] = b.dataset.leer.split(':');
-      if (art === 'geh') geh(ziel); else if (art === 'klick') $(ziel)?.click(); else if (art === 'neu') FEHLER_NEU_LADEN[ziel]?.();
+      if (art === 'geh') geh(ziel); else if (art === 'klick') $(ziel)?.click(); else if (art === 'neu') FEHLER_NEU_LADEN[ziel]?.(); else if (art === 'testanruf') testanrufOeffnen();
     });
     // Skelett-Platzhalter statt „Lade …", solange eine Liste noch nicht da ist.
     const skelettHtml = (n = 4) => '<div class="skelett" aria-hidden="true">' + '<div class="skelett__zeile"></div>'.repeat(n) + '</div>';
@@ -3514,8 +3746,7 @@
       $('userAvatar').textContent = (mail.trim().charAt(0) || '?').toUpperCase();
       $('userAvatarHandy').textContent = $('userAvatar').textContent; $('kontoMail').textContent = mail;
       accessToken = session?.access_token ?? null;
-      // Benachrichtigungs-Erlaubnis (für Anruf-Hinweise) einmalig anfragen.
-      if ('Notification' in window && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (_) {} }
+      // Anruf-Hinweise erst auf Klick erlauben lassen (Konto-Menü) – Browser verweigern Anfragen ohne Geste.
       const boot = $('boot'); if (!tenant) boot.classList.remove('hidden');
       await loadAll();
       boot.classList.add('hidden');
@@ -3751,7 +3982,7 @@
         const label = inbound ? '<span class="dept-badge support">Empfangsnummer</span>' : '<span class="dept-badge ' + dep + '">' + (DEPT_LABEL[dep] || dep) + '</span>';
         card.innerHTML = '<div class="numhead"><span class="bignum"><span></span></span>' + label + '</div>'
           + '<p class="muted" style="font-size:13px;margin-top:6px;text-align:left;padding:0">' + (inbound ? 'Unter dieser Nummer erreichen dich deine Anrufer.' : 'Anrufe auf dieser Nummer nimmt der Assistent' + (dep === 'general' ? '' : ' im Bereich „' + (DEPT_LABEL[dep] || dep) + '“') + ' entgegen.') + '</p>'
-          + '<div class="stack" style="margin-top:12px"><a class="btn btn--primary sm" href="tel:' + num + '">Anrufen</a><button class="btn btn--ghost sm" type="button" data-kopie>Kopieren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Anrufe ansehen</button></div>';
+          + '<div class="stack" style="margin-top:12px"><button class="btn btn--primary sm" type="button" data-testanruf>Testanruf</button><button class="btn btn--ghost sm" type="button" data-kopie>Kopieren</button><button class="btn btn--ghost sm" type="button" data-geh="sec-live">Anrufe ansehen</button></div>';
         card.querySelector('.bignum span').textContent = fmtNr(num);
         card.querySelector('[data-kopie]').onclick = async () => { try { await navigator.clipboard.writeText(num); toast('Nummer kopiert.'); } catch { toast(num); } };
         wrap.append(card);
@@ -3938,8 +4169,8 @@
       if (rsGuestVisitsLoaded) return;
       rsGuestVisitsLoaded = true; rsGuestVisits = {}; rsGuestNoShows = {};
       const todayStart = new Date(heuteLokal() + 'T00:00:00').toISOString();
-      const { data } = await sb.from('reservations').select('customer_phone, status')
-        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed', 'no_show']).lt('starts_at', todayStart).limit(2000);
+      const { data } = await alleZeilen((a, z) => sb.from('reservations').select('customer_phone, status')
+        .eq('tenant_id', tenant.id).in('status', ['booked', 'seated', 'completed', 'no_show']).lt('starts_at', todayStart).order('starts_at', { ascending: false }).range(a, z));
       for (const r of data || []) {
         const k = (r.customer_phone || '').replace(/\D/g, '').slice(-9); if (k.length < 6) continue;
         if (r.status === 'no_show') rsGuestNoShows[k] = (rsGuestNoShows[k] || 0) + 1;
@@ -3978,10 +4209,14 @@
       return ids.size;
     }
     const RES_STATUS = { booked: 'Reserviert', seated: 'Am Tisch', no_show: 'No-Show', cancelled: 'Storniert', completed: 'Abgeschlossen' };
-    async function setResStatus(id, status) {
+    async function setResStatus(id, status, ohneRueckgaengig) {
+      // Vorigen Status merken: ein Fehlklick (Eingetroffen, No-Show, Storniert) lässt sich im Hinweis zurücknehmen.
+      const alt = ohneRueckgaengig ? null : (await sb.from('reservations').select('status').eq('id', id).maybeSingle()).data?.status;
       if (!(await schreiben(sb.from('reservations').update({ status }).eq('id', id)))) return;
       rsGuestVisitsLoaded = false; // Stammgast-/No-Show-Zähler bei nächster Anzeige neu laden, Status hat sich geändert
-      toast(RES_STATUS[status] ? (RES_STATUS[status] + '.') : 'Aktualisiert.'); loadRestaurant();
+      const t = toast(RES_STATUS[status] ? (RES_STATUS[status] + '.') : 'Aktualisiert.', '', alt && alt !== status ? 7000 : 2600);
+      if (alt && alt !== status) { const a = document.createElement('a'); a.href = '#'; a.className = 'toast__link'; a.textContent = 'Rückgängig'; a.onclick = (e) => { e.preventDefault(); t.className = 'toast'; setResStatus(id, alt, true); }; t.append(' ', a); }
+      loadRestaurant();
     }
     const AREA_LABEL = { innen: 'Drinnen', draussen: 'Draußen', bar: 'Bar' };
     function areaName(a) { return AREA_LABEL[a] || (a ? a.charAt(0).toUpperCase() + a.slice(1) : 'Bereich'); }
@@ -4014,7 +4249,7 @@
       wrap.innerHTML = '';
       areas.forEach((a) => {
         const b = document.createElement('button');
-        b.type = 'button'; b.className = 'chip' + (a === rsArea ? ' active' : ''); b.setAttribute('aria-pressed', String(a === rsArea));
+        b.type = 'button'; b.className = 'deptseg' + (a === rsArea ? ' active' : ''); b.setAttribute('aria-pressed', String(a === rsArea));
         const n = rsTablesData.filter((t) => (t.area || 'innen') === a).length;
         b.textContent = areaName(a) + ' (' + n + ')';
         b.onclick = () => { rsArea = a; renderAreaTabs(); renderRsPlan(); };
@@ -4479,7 +4714,7 @@
           const stcol = STATUS_COLOR[r.status] || '#888';
           div.innerHTML = '<h4 style="margin:0">' + esc(r.name || 'Ohne Namen') + ' · ' + (r.party || '?') + 'P <span style="font-size:11px;color:#fff;background:' + stcol + ';border-radius:999px;padding:2px 8px;margin-left:6px">' + esc(RES_STATUS[r.status] || r.status) + '</span></h4><p style="margin:4px 0 0">' + minToHHMM(new Date(r.s).getHours() * 60 + new Date(r.s).getMinutes()) + ' Uhr</p>';
           const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
-          const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { await setResStatus(r.id, s); closeTableModal(); }; return b; };
+          const mk = (l, s) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = l; b.onclick = async () => { if (s === 'no_show' && !confirm('Als No-Show markieren? Der Gast gilt dann als nicht erschienen.')) return; await setResStatus(r.id, s); closeTableModal(); }; return b; };
           if (r.status === 'booked') bar.append(mk('Eingetroffen', 'seated'));
           if (r.status === 'seated') bar.append(mk('Abschließen', 'completed'));
           if (r.status === 'booked') bar.append(mk('No-Show', 'no_show'));
@@ -4532,26 +4767,28 @@
       const when = new Date(r.starts_at).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       const div = document.createElement('div'); div.className = 'item';
       const st = r.status || 'booked';
-      const badge = '<span style="display:inline-block;font-size:11px;font-weight:600;color:#fff;background:' + (STATUS_COLOR[st] || '#888') + ';border-radius:999px;padding:2px 9px;margin-left:8px">' + (RES_STATUS[st] || st) + '</span>';
+      const badge = '<span class="res-chip" data-status="' + st + '">' + (RES_STATUS[st] || st) + '</span>';
       const visits = guestVisitCount(r.customer_phone);
-      const regular = visits > 0 ? '<span style="display:inline-block;font-size:11px;font-weight:600;color:var(--accent-ink);background:color-mix(in srgb, var(--accent) 12%, var(--white));border-radius:999px;padding:2px 9px;margin-left:6px">★ Stammgast (' + (visits + 1) + '×)</span>' : '';
+      const regular = visits > 0 ? '<span class="res-chip" data-status="stamm">Stammgast (' + (visits + 1) + '×)</span>' : '';
       // No-Show-Historie: Gäste mit früheren No-Shows markieren (ab 2× = Wiederholungstäter, kräftiger).
       const ns = guestNoShowCount(r.customer_phone);
       const repeat = ns >= 2;
-      const nsBadge = ns > 0 ? '<span title="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen." style="display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#c0392b;border-radius:999px;padding:2px 9px;margin-left:6px">⚠ ' + (repeat ? 'Wiederholungstäter · ' : '') + ns + '× No-Show</span>' : '';
+      const nsBadge = ns > 0 ? '<span class="res-chip" data-status="no_show" data-tip="Dieser Gast ist in der Vergangenheit ' + ns + '× nicht erschienen.">' + (repeat ? 'Wiederholt · ' : '') + ns + '× No-Show</span>' : '';
       // h3 statt h4: dies ist die erste Überschrift nach dem Bereichs-h1/h2 (siehe .item__titel oben).
       const h = document.createElement('h3'); h.className = 'item__titel';
       h.innerHTML = when + ' Uhr · ' + (r.party_size || '?') + ' Pers. · ' + esc(r.customer_name || 'Ohne Namen') + badge + regular + nsBadge;
       const p = document.createElement('p');
-      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
+      p.textContent = 'Tisch: ' + tableNamesFor(r, map) + ' · ' + [r.customer_phone ? fmtNr(r.customer_phone) : null, r.customer_email].filter(Boolean).join(' · ') + (SRC_LABEL[r.source] || '');
       div.append(h, p);
-      if (r.notes) { const n = document.createElement('p'); n.style.cssText = 'margin-top:4px;color:var(--accent-ink);font-weight:600;font-size:13px'; n.textContent = '📝 ' + r.notes; div.append(n); }
+      if (r.notes) { const n = document.createElement('p'); n.className = 'res-notiztext'; n.innerHTML = '<span>Notiz</span> '; n.append(r.notes); div.append(n); }
       const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
       const mkBtn = (label, fn) => { const b = document.createElement('button'); b.className = 'btn btn--ghost sm'; b.textContent = label; b.onclick = fn; return b; };
       if (st === 'booked') bar.append(mkBtn('Eingetroffen', () => setResStatus(r.id, 'seated')));
       if (st === 'seated') bar.append(mkBtn('Abschließen', () => setResStatus(r.id, 'completed')));
-      if (st === 'booked') bar.append(mkBtn('No-Show', () => setResStatus(r.id, 'no_show')));
+      if (st === 'booked') bar.append(mkBtn('No-Show', () => { if (confirm('Als No-Show markieren? Der Gast gilt dann als nicht erschienen.')) setResStatus(r.id, 'no_show'); }));
       if (st === 'booked' || st === 'seated') bar.append(mkBtn('Stornieren', () => { if (confirm('Reservierung stornieren?')) setResStatus(r.id, 'cancelled'); }));
+      if (st === 'seated' || st === 'no_show' || st === 'cancelled') bar.append(mkBtn('Zurück auf Reserviert', () => setResStatus(r.id, 'booked')));
+      bar.append(mkBtn(r.notes ? 'Notiz ändern' : 'Notiz', () => resNotizBearbeiten(r, div)));
       div.append(bar);
       return div;
     }
@@ -4562,8 +4799,9 @@
     let rsTagesPromise = null;
     function rsTagesLaden(date) {
       if (!rsTagesPromise) rsTagesPromise = (async () => {
-        const { data: res } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
+        const { data: res, error } = await sb.from('reservations').select('*').eq('tenant_id', tenant.id)
           .gte('starts_at', new Date(date + 'T00:00:00').toISOString()).lte('starts_at', new Date(date + 'T23:59:59').toISOString()).order('starts_at');
+        if (error) { rsTagesPromise = null; return { items: [], jt: [], fehler: error }; } // nicht als „0 Reservierungen“ ausgeben
         const items = res || [];
         const ids = items.map((r) => r.id);
         let jt = [];
@@ -4577,7 +4815,8 @@
       const host = $('rsDayKpis'); if (!host) return;
       const date = $('rsDayDate').value; if (!date) { host.classList.add('hidden'); return; }
       await ensureGuestVisits();
-      const { items: tagesRes } = await rsTagesLaden(date);
+      const { items: tagesRes, fehler } = await rsTagesLaden(date);
+      if (fehler) return; // Kennzahlen stehen lassen statt auf 0 zu springen; die Liste zeigt den Fehler
       const items = tagesRes.filter((r) => r.status !== 'cancelled');
       if (!items.length) { host.innerHTML = ''; host.classList.add('hidden'); return; }
       const active = items.filter((r) => r.status !== 'no_show');
@@ -4595,16 +4834,13 @@
       // No-Show-Risiko: heutige, noch offene Gäste mit früheren No-Shows
       const risky = items.filter((r) => r.status === 'booked' && guestNoShowCount(r.customer_phone) > 0).length;
       const tile = (label, value, sub, accent) =>
-        '<div style="background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px 14px">' +
-        '<div style="font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint)">' + label + '</div>' +
-        '<div style="font-size:22px;font-weight:800;color:' + (accent || 'var(--ink)') + ';margin-top:2px;line-height:1.15">' + value + '</div>' +
-        (sub ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">' + sub + '</div>' : '') + '</div>';
+        '<div class="db-kpi"><div class="k">' + label + '</div><div class="v"' + (accent ? ' style="color:' + accent + '"' : '') + '>' + value + '</div>' + (sub ? '<div class="d">' + sub + '</div>' : '') + '</div>';
       host.innerHTML =
         tile('Gäste', covers, items.length + ' Reservierung' + (items.length === 1 ? '' : 'en')) +
-        tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + esc(upcoming.customer_name) : '')) : 'keine offene', upcoming ? '#2563eb' : null) +
+        tile('Nächste Ankunft', upcoming ? new Date(upcoming.starts_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '—', upcoming ? ((upcoming.party_size || '?') + 'P' + (upcoming.customer_name ? ' · ' + esc(upcoming.customer_name) : '')) : 'keine offene', upcoming ? 'var(--accent-ink)' : null) +
         tile('Stoßzeit', peakLbl, peakH != null ? (peakC + ' Gäste') : '') +
         tile('Am Tisch / fertig', seated + ' / ' + done, 'gerade / abgeschlossen') +
-        tile('No-Show-Risiko', risky, risky ? 'Gäste mit früheren No-Shows' : 'unauffällig', risky ? '#c0392b' : '#3f7d63');
+        tile('No-Show-Risiko', risky, risky ? 'Gäste mit früheren No-Shows' : 'unauffällig', risky ? '#c0392b' : null);
       host.classList.remove('hidden');
     }
     let rsDayView = 'list';
@@ -4624,10 +4860,10 @@
       const list = $('guestList'); if (!list) return;
       backToGuestList();
       list.innerHTML = '<span class="muted">Wird geladen …</span>';
-      const { data: res, error } = await sb.from('reservations')
+      const { data: res, error } = await alleZeilen((a, z) => sb.from('reservations')
         .select('customer_name, customer_phone, customer_email, starts_at, status, notes')
         .eq('tenant_id', tenant.id).not('customer_phone', 'is', null)
-        .order('starts_at', { ascending: false }).limit(4000);
+        .order('starts_at', { ascending: false }).range(a, z));
       if (error) { toast('Fehler beim Laden der Gäste: ' + fehlerText(error), 'err'); list.innerHTML = fehlerZustand(loadGuests); return; }
       const byKey = {};
       const now = Date.now();
@@ -4846,8 +5082,8 @@
     async function renderAnalytics() {
       const box = $('rsAnalytics'); box.innerHTML = '<span class="muted">Werte werden berechnet …</span>';
       const since = new Date(Date.now() - 30 * 86400000).toISOString();
-      const { data } = await sb.from('reservations').select('starts_at, party_size, status, source')
-        .eq('tenant_id', tenant.id).gte('starts_at', since).limit(5000);
+      const { data } = await alleZeilen((a, z) => sb.from('reservations').select('starts_at, party_size, status, source')
+        .eq('tenant_id', tenant.id).gte('starts_at', since).order('starts_at').range(a, z));
       const rows = data || [];
       const done = rows.filter((r) => r.status !== 'cancelled');
       const noShow = rows.filter((r) => r.status === 'no_show').length;
@@ -4886,7 +5122,8 @@
       const date = $('rsDayDate').value; if (!date) return;
       await ensureGuestVisits();
       const q = ($('rsDaySearch').value || '').trim().toLowerCase();
-      const { items: res, jt } = await rsTagesLaden(date);
+      const { items: res, jt, fehler } = await rsTagesLaden(date);
+      if (fehler) { toast('Reservierungen konnten nicht geladen werden: ' + fehlerText(fehler), 'err'); const sm0 = $('rsDaySummary'); if (sm0) sm0.textContent = 'Nicht geladen'; $('rsDayList').innerHTML = fehlerZustand(refreshDay); return; }
       const map = {}; for (const j of jt) (map[j.reservation_id] ||= []).push(j.table_id);
       let items = res.filter((r) => r.status !== 'cancelled');
       if (q) items = items.filter((r) => (r.customer_name || '').toLowerCase().includes(q));
@@ -5231,8 +5468,8 @@
     // in liveCalls. LV zeigt auf die Ansicht, die gerade gezeichnet wird; lvEl
     // holt deren Element (lvListe bzw. obListe).
     const LV_ANSICHTEN = {
-      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
-      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 7, stimmung: '', thema: '', art: '', tag: '' },
+      ein: { p: 'lv', sec: 'sec-live', richtung: 'in', auswahl: null, suche: '', zeitraum: 14, stimmung: '', thema: '', art: '', tag: '' },
+      aus: { p: 'ob', sec: 'sec-outbound', richtung: 'out', auswahl: null, suche: '', zeitraum: 14, stimmung: '', thema: '', art: '', tag: '' },
     };
     /** Alle Tags, die der Mandant schon benutzt hat – für die Vorschläge im Detail. */
     const lvAlleTags = new Set();
@@ -5251,8 +5488,23 @@
       browser: 'Ihr habt im Browser gesprochen',
       assistant: 'Der Assistent hat den Anruf geführt',
     };
-    // Ohne verlässliche Vorwahl-Tabelle nur die Ländervorwahl abtrennen statt eine falsche Dreiergruppe vorzutäuschen (z. B. München/Berlin mit zweistelliger Vorwahl).
-    const fmtNr = (n) => (n || 'Anrufer').replace(/^(\+\d{2})(\d+)$/, '$1 $2');
+    // Nummern so, wie man sie liest: deutsche national mit 0, Handy (015x/016x/017x) und die Großstadt-Vorwahlen 030/040/069/089
+    // abgesetzt, sonst ohne Gruppen (ohne Vorwahl-Tabelle keine falsche Gruppe vortäuschen); Ausland mit abgesetzter Ländervorwahl.
+    // Kopieren und tel:-Links nutzen weiter die Rohnummer.
+    const LAENDER_2 = new Set(['20', '27', '30', '31', '32', '33', '34', '36', '39', '40', '41', '43', '44', '45', '46', '47', '48', '49', '51', '52', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '64', '65', '66', '81', '82', '84', '86', '90', '91', '92', '93', '94', '95', '98']);
+    const fmtNr = (n) => {
+      const roh = String(n || '').trim(); if (!roh) return 'Anrufer';
+      const z = roh.replace(/[\s/().-]/g, '').replace(/^00/, '+');
+      const national = z.startsWith('+49') ? z.slice(3) : (/^0[1-9]/.test(z) ? z.slice(1) : null);
+      if (national !== null && /^\d{5,13}$/.test(national)) {
+        if (/^1[5-7]\d/.test(national)) return '0' + national.slice(0, 3) + ' ' + national.slice(3);
+        if (/^(30|40|69|89)/.test(national)) return '0' + national.slice(0, 2) + ' ' + national.slice(2);
+        return '0' + national;
+      }
+      const m = z.match(/^\+(\d+)$/); if (!m || m[1].length < 6) return roh;
+      const cc = /^[17]/.test(m[1]) ? 1 : LAENDER_2.has(m[1].slice(0, 2)) ? 2 : 3;
+      return '+' + m[1].slice(0, cc) + ' ' + m[1].slice(cc);
+    };
     const escHtml = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     /** Text als HTML mit hervorgehobenen Suchtreffern. */
     const markierenMit = (t, such) => { const raw = String(t ?? ''); const s = (such || '').trim(); if (!s) return escHtml(raw); const re = new RegExp('(' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'); return raw.split(re).map((teil, i) => i % 2 === 1 ? '<mark>' + escHtml(teil) + '</mark>' : escHtml(teil)).join(''); };
@@ -5266,7 +5518,7 @@
     const fmtSeit = (iso) => { const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
     const lvDauer = (c) => c.duration_seconds || (c.ended_at ? Math.round((new Date(c.ended_at) - new Date(c.started_at)) / 1000) : 0);
     const lvWann = (iso) => { const d = new Date(iso); const h0 = lvHeute0(); const uhr = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); if (d >= h0) return 'Heute ' + uhr; if (d >= new Date(h0.getTime() - 864e5)) return 'Gestern ' + uhr; return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + uhr; };
-    const LV_STIMMUNG = { positiv: ['#16a34a', '🙂 positiv'], neutral: ['#94a3b8', '😐 neutral'], negativ: ['#dc2626', '🙁 negativ'] };
+    const LV_STIMMUNG = { positiv: ['#16a34a', 'positiv'], neutral: ['#94a3b8', 'neutral'], negativ: ['#dc2626', 'negativ'] };
     // Der Server speichert sentiment teils englisch (positive/negative); die Oberfläche rechnet durchgängig mit positiv/neutral/negativ.
     const stimmungKey = (s) => ({ positive: 'positiv', negative: 'negativ' }[s] || s);
     const stimmungNorm = (rows) => { for (const r of (rows || [])) r.sentiment = stimmungKey(r.sentiment); return rows || []; };
@@ -5338,7 +5590,7 @@
         if (ausser !== 'stimmung' && A.stimmung && c.sentiment !== A.stimmung) return false;
         if (ausser !== 'thema' && A.thema && c.topic !== A.thema) return false;
         if (ausser !== 'tag' && A.tag && !lvTagsVon(c).includes(A.tag)) return false;
-        if (s && ![c.caller_number, c.topic, c.summary, c.notes, ...lvTagsVon(c), ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        if (s && ![c.caller_number, c.caller_number ? fmtNr(c.caller_number) : '', c.caller_number ? fmtNr(c.caller_number).replace(/\s/g, '') : '', c.topic, c.summary, c.notes, ...lvTagsVon(c), ...x.turns.map((t) => t.content)].some((v) => (v || '').toLowerCase().includes(s))) return false;
         return true;
       }).sort((a, b) => (callIsActive(b.call) - callIsActive(a.call)) || (new Date(b.call.started_at) - new Date(a.call.started_at)));
     }
@@ -5381,7 +5633,7 @@
       const z = document.createElement('div'); z.className = 'lv-zeile' + (c.id === LV.auswahl ? ' aktiv' : '') + (live ? ' live' : ''); z.dataset.callId = c.id;
       const st = LV_STIMMUNG[c.sentiment];
       z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic hidden"></span><span class="lv-live hidden">● Live</span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
-      const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1].slice(2); } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
+      const dot = z.querySelector('.lv-dot'); if (st) { dot.style.background = st[0]; dot.dataset.tip = 'Stimmung: ' + st[1]; } else dot.dataset.tip = live ? 'Gespräch läuft' : 'Stimmung noch nicht ausgewertet';
       const name = typeof ktName === 'function' ? ktName(c.caller_number) : '';
       z.querySelector('b').innerHTML = markieren(name || fmtNr(c.caller_number));
       if (name) z.querySelector('b').dataset.tip = fmtNr(c.caller_number);
@@ -5429,7 +5681,7 @@
       box.innerHTML = '<label for="' + uid + '" style="margin-top:0">Tags <span class="muted">Enter fügt hinzu · Klick auf einen Tag filtert die Liste</span></label>'
         + '<div class="lv-etiketten" data-tags></div>'
         + '<datalist id="' + uid + 'L"></datalist>'
-        + '<label for="' + uid + 'N">Notiz <span class="muted">wird beim Verlassen des Feldes gespeichert</span></label>'
+        + '<label for="' + uid + 'N">Notiz <span class="muted">wird automatisch gespeichert</span></label>'
         + '<textarea class="db-notizen" id="' + uid + 'N" data-notiz placeholder="Eigene Notiz zu diesem Anruf, z. B. was danach vereinbart wurde."></textarea>';
       const A = lvAnsichtVon(c);
       async function speichern(patch, meldung) {
@@ -5462,7 +5714,16 @@
       }
       zeichnen();
       const nt = box.querySelector('[data-notiz]'); nt.value = c.notes || '';
-      nt.onchange = async () => { const v = nt.value.trim() || null; if (v === (c.notes || null)) return; if (await speichern({ notes: v }, 'Notiz gespeichert.')) { const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; } };
+      let ntTimer = null;
+      const ntSpeichern = async () => {
+        clearTimeout(ntTimer); const v = nt.value.trim() || null; if (v === (c.notes || null)) return;
+        speicherStatus(nt, 'call:' + c.id, 'laeuft'); lvNotizEchoErwarten(c.id);
+        if (await speichern({ notes: v })) { speicherStatus(nt, 'call:' + c.id, 'ok'); const z = $(A.sec)?.querySelector('.lv-zeile[data-call-id="' + c.id + '"]'); if (z && !c.summary) z.querySelector('.lv-text').textContent = v || 'ohne Zusammenfassung'; }
+        else speicherStatus(nt, 'call:' + c.id, 'fehler', ntSpeichern);
+      };
+      nt.oninput = () => { clearTimeout(ntTimer); ntTimer = setTimeout(ntSpeichern, 900); };
+      nt.onchange = ntSpeichern;
+      speicherStatus(nt, 'call:' + c.id);
       return box;
     }
     /** Beide Ansichten neu zeichnen – Daten und Filter hängen zusammen. */
@@ -5510,7 +5771,7 @@
       const ul = lvEl('Liste'); ul.innerHTML = '';
       if (!liste.length) ul.innerHTML = alle.length ? '<p class="lv-leer">Keine Anrufe für diese Auswahl.</p>'
         : (raus ? leerZustand('Noch kein ausgehender Anruf. Wähle eine Nummer, dann erscheint das Gespräch hier mit Mitschrift.', 'Neuer Anruf', 'klick:obAnrufKnopf')
-          : leerZustand('Noch keine Anrufe. Ruf deine Vocaris-Nummer an, dann erscheint das Gespräch hier mit Zusammenfassung und Verlauf.', 'Testanruf starten', 'geh:sec-number'));
+          : leerZustand('Noch keine Anrufe. Ruf deine Vocaris-Nummer an, dann erscheint das Gespräch hier mit Zusammenfassung und Verlauf.', 'Testanruf starten', 'testanruf'));
       let tagKey = null;
       liste.forEach((x) => { if (!callIsActive(x.call)) { const k = lvTagKey(x.call.started_at); if (k !== tagKey) { tagKey = k; const h = document.createElement('div'); h.className = 'lv-tag'; h.textContent = lvTagTitel(k); ul.append(h); } } ul.append(lvZeile(x)); });
       lvEl('Mehr').classList.toggle('hidden', lvAlleGeladen);
@@ -5542,6 +5803,7 @@
       chip(new Date(c.started_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
       if (!live) chip(lvDauer(c) ? 'Dauer ' + fmtDauer(lvDauer(c)) : 'Dauer unbekannt');
       if (st) chip(st[1], 'Stimmung, automatisch ausgewertet · Klick filtert die Liste', () => { A.stimmung = A.stimmung === c.sentiment ? '' : c.sentiment; document.querySelectorAll('#' + A.p + 'Stimmung .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.stimmung || '') === A.stimmung)))); renderLive(); });
+      if (st) { const sp = meta.lastElementChild; sp?.classList.add('mit-punkt'); sp?.style.setProperty('--punkt', st[0]); }
       if (c.topic) chip(c.topic, 'Thema, automatisch erkannt · Klick filtert die Liste', () => { A.thema = A.thema === c.topic ? '' : c.topic; renderLive(); });
       if (c.status && !live && c.status !== 'ended') chip(c.status);
       if (c.summary) { const z = d.querySelector('[data-zusammenfassung]'); z.innerHTML = markieren(c.summary); z.classList.remove('hidden'); }
@@ -5579,7 +5841,7 @@
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       return a.download;
     }
-    const csvZeit = (iso) => iso ? new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const csvZeit = (iso) => iso ? new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(', ', ' ') : '';
     /** Die gerade gefilterte Anrufliste einer Ansicht als CSV. */
     function csvAnrufe(A) {
       const liste = lvGefiltert(null, A);
@@ -6336,13 +6598,17 @@
         if (!raus) knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Anruf'); });
         knopf('Nummer kopieren', '', async () => { try { await navigator.clipboard.writeText(nr); toast('Kopiert.'); } catch { toast(nr); } });
       }
-      knopf('Vorgang anlegen', '', async () => {
+      // Gibt es schon einen Vorgang zu diesem Anruf, steht er unter „Daraus entstanden“ – kein zweiter per Knopf.
+      const anlegen = knopf('Vorgang anlegen', '', async () => {
         if (!confirm('Vorgang aus diesem Anruf anlegen?')) return;
-        const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? c.summary.slice(0, 90) : nr || 'Anrufer');
+        const { data: schon } = await sb.from('tickets').select('id, number').eq('tenant_id', tenant.id).eq('call_id', c.id).limit(1);
+        if (schon?.length) { toast('Zu diesem Anruf gibt es schon Vorgang #' + schon[0].number + '.'); geh('sec-tickets'); vorgangOeffnen(schon[0].id); return; }
+        const title = (c.topic ? c.topic + ': ' : 'Anruf: ') + (c.summary ? kuerzen(c.summary, 90) : nr || 'Anrufer');
         const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title: title.slice(0, 160), body: (c.summary || '') + (x.turns.length ? '\n\nGesprächsverlauf im Vorgang einsehbar.' : ''), source: 'call', caller_phone: nr || null, call_id: c.id, category: c.topic || null }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; }
         vorgangAngelegtToast(data?.id); loadTickets();
       });
+      if (nr && !ktName(nr)) knopf('Ins Telefonbuch', '', () => insTelefonbuch(nr, '')).dataset.tip = 'Namen zu dieser Nummer speichern – er erscheint dann überall statt der Nummer';
       const del = knopf('Löschen', '', async () => {
         if (!confirm('Diesen Anruf samt Gesprächsverlauf endgültig löschen?')) return;
         const { error: turnsFehler } = await sb.from('call_turns').delete().eq('call_id', c.id);
@@ -6352,7 +6618,7 @@
       });
       del.style.marginLeft = 'auto';
       const auftragBox = rueckrufBox(nr, '', '');
-      const wrap = document.createElement('div'); wrap.append(leiste, auftragBox); return wrap;
+      const wrap = document.createElement('div'); wrap.append(entstandenZeile(c.id, anlegen), leiste, auftragBox); return wrap;
     }
     // Ein Anruf gilt nur als „live", wenn er als aktiv markiert IST und nicht älter
     // als 20 Min ist — so bleibt kein verwaister Anruf (z. B. nach Server-Neustart) ewig „aktiv".
@@ -6445,6 +6711,7 @@
           c.sentiment = stimmungKey(c.sentiment);
           const e = liveCalls.get(c.id) || { call: c, turns: [] };
           e.call = c; liveCalls.set(c.id, e); renderLive();
+          dbNachAnruf(p); // Dashboard-Zahlen nach neuem oder beendetem Anruf nachziehen
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'call_turns', filter: 'tenant_id=eq.' + tenantId }, (p) => {
           const t = p.new; if (!t || !t.id) return;
@@ -6470,6 +6737,7 @@
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Live-Kanal:', status, err && err.message || '');
+          else if (status === 'SUBSCRIBED') echtzeitVerbunden('live'); // nach einer Lücke verpasste Ereignisse nachladen
         });
       // Tischplan/Belegung ohne dieses Abo: ein zweites offenes Gerät (z. B. Empfang + Service)
       // sieht eine hier gerade angelegte/geänderte Reservierung sonst dauerhaft nicht, auch nicht
@@ -6484,6 +6752,7 @@
         })
         .subscribe((status, err) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('[Echtzeit] Reservierungs-Kanal:', status, err && err.message || '');
+          else if (status === 'SUBSCRIBED') echtzeitVerbunden('rs');
         });
     }
 
@@ -6508,12 +6777,12 @@
         ['Heute', zeiten + (iv.length ? ' · ' + (offen ? '<span class="statusdot"></span> gerade geöffnet' : 'gerade geschlossen') : '')],
         ['Stimme', stimme ? stimme.name : stimmenName($('voiceId').value)],
         ['Eigene Nummer', $('asAgentNummer')?.value.trim() ? escHtml($('asAgentNummer').value.trim()) + ($('asBridgeTranscript')?.checked === false ? ' · ohne Mitschrift' : '') + ($('asBridgeNotice')?.checked ? ' · mit Ansage' : '') : 'nicht hinterlegt'],
-        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') + (($('asZiele')?.querySelectorAll('.as-feldzeile').length || 0) ? ' · ' + $('asZiele').querySelectorAll('.as-feldzeile').length + ' Ziele nach Thema' : '') : 'aus'],
+        ['Weiterleitung', $('fwdEnabled').checked ? escHtml($('fwdNumber').value.trim() || 'Nummer fehlt') + ($('fwdHours').value === 'true' ? ' · nur zu Öffnungszeiten' : ' · immer') + (($('asZiele')?.querySelectorAll('.as-feldzeile').length || 0) ? ' · ' + $('asZiele').querySelectorAll('.as-feldzeile').length + ($('asZiele').querySelectorAll('.as-feldzeile').length === 1 ? ' Ziel' : ' Ziele') + ' nach Thema' : '') : 'aus'],
       ];
       if ($('asStilWert')) {
         fakten.push(['Stil', { knapp: 'knapp', normal: 'normal', ausfuehrlich: 'ausführlich' }[$('asStilWert').value] || 'normal']);
         const art = typeof asHinweisStatus === 'function' ? asHinweisStatus() : 'aus';
-        fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade' }[art] || 'keiner']);
+        fakten.push(['Sonderhinweis', { aus: 'keiner', bald: 'geplant', vorbei: 'abgelaufen', jetzt: '<span class="statusdot"></span> gilt gerade', fehler: 'Datum prüfen' }[art] || 'keiner']);
         const nF = $('asFelder')?.querySelectorAll('.as-feldzeile').length || 0;
         if (nF) fakten.push(['Erfassung', nF + (nF === 1 ? ' Zusatzfeld' : ' Zusatzfelder')]);
         const nT = typeof asTastenLesen === 'function' ? asTastenLesen().length : 0;
@@ -6823,7 +7092,7 @@
       d.querySelector('.tk-titel-edit').onclick = () => { if (tt.querySelector('input')) return; const inp = document.createElement('input'); inp.value = it.title; inp.className = 'tk-titel-input'; tt.textContent = ''; tt.append(inp); inp.focus(); inp.select(); const fertig = async () => { const v = inp.value.trim(); if (v && v !== it.title) { await kbUpdate(it, { title: v.slice(0, 200) }, 'Titel geändert.'); renderWissen(); } else renderWissenDetail(); }; inp.onblur = fertig; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = it.title; inp.blur(); } }; };
       const meta = d.querySelector('.lv-meta'); const mchip = (t, tip) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; meta.append(s); };
       mchip(kbKatName(it)); if (deptSichtbar) mchip(DEPT_LABEL[it.department] || it.department); mchip('angelegt ' + new Date(it.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })); mchip((it.content || '').length + ' Zeichen', 'Länge des Inhalts');
-      if (kbIstVorlage(it)) { const v = document.createElement('span'); v.className = 'kb-vorlage'; v.textContent = 'Vorlage'; v.dataset.tip = 'Noch nicht angepasst – ersetze die eckigen Klammern mit euren Angaben und speichere, dann fällt der Platzhalter weg'; meta.append(v); }
+      if (kbIstVorlage(it)) { const v = document.createElement('span'); v.className = 'kb-vorlage'; v.textContent = 'Vorlage'; v.dataset.tip = 'Noch nicht angepasst – ersetze „(Bitte anpassen)“ durch eure Angaben und speichere, dann zählt der Eintrag als eigener'; meta.append(v); }
       const kopf = d.querySelector('[data-kopf]'); const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'btn btn--primary sm'; sp.textContent = 'Speichern'; sp.dataset.tip = 'Strg+Enter im Text'; kopf.append(sp);
       const fCat = d.querySelector('[data-f=category]'); fCat.value = it.category || '';
       fCat.onchange = async () => { const v = fCat.value.trim() || null; if (v !== (it.category || null) && await kbUpdate(it, { category: v }, 'Kategorie gespeichert.')) renderWissen(); };
@@ -7357,7 +7626,14 @@
         }
       } else {
         d.querySelector('[data-antwortText]').innerHTML = g.answer ? markierenMit(g.answer, gapSuche) : '<span class="muted">Ohne Antwort verworfen.</span>';
-        knopf('Wieder öffnen', 'btn--primary', async () => { const { error } = await sb.from('knowledge_gaps').update({ status: 'open', answer: null, answered_at: null }).eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); g.status = 'open'; g.answer = null; gapItems.unshift(g); gapStatus = 'open'; gapAuswahl = g.id; document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.gapstatus === 'open')))); toast('Wieder offen.'); renderFragen(); });
+        knopf('Wieder öffnen', 'btn--primary', async () => {
+          // Die Antwort steht als Eintrag im Wissen – wieder öffnen ohne Aufräumen ließe den Assistenten weiter die alte Antwort sagen.
+          const { data: kbE } = g.answer ? await sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).eq('department', g.department || 'general').eq('title', g.question).limit(1) : { data: [] };
+          if (kbE?.length && confirm('Wissenseintrag „' + kuerzen(g.question, 60) + '“ auch entfernen?\n\nOK: Eintrag löschen, der Assistent kennt die Antwort dann nicht mehr.\nAbbrechen: Eintrag bleibt, nur die Frage wird wieder geöffnet.')) {
+            if (!(await schreibenGeprueft(sb.from('knowledge_base').delete().eq('id', kbE[0].id).select('id')))) return;
+            kbItems = kbItems.filter((x) => x.id !== kbE[0].id); renderWissen();
+          }
+          const { error } = await sb.from('knowledge_gaps').update({ status: 'open', answer: null, answered_at: null }).eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); g.status = 'open'; g.answer = null; gapItems.unshift(g); gapStatus = 'open'; gapAuswahl = g.id; document.querySelectorAll('#gapStatusBar [data-gapstatus]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.gapstatus === 'open')))); toast('Wieder offen.'); renderFragen(); });
         if (g.answer) knopf('In der Wissensdatenbank suchen', '', () => { geh('sec-kb'); kbSuche = g.question.slice(0, 40); if ($('kbSuche')) $('kbSuche').value = kbSuche; renderWissen(); });
         const del = knopf('Löschen', '', async () => { if (!confirm('Diese Frage endgültig löschen?')) return; const { error } = await sb.from('knowledge_gaps').delete().eq('id', g.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } gapBeantwortet = gapBeantwortet.filter((x) => x.id !== g.id); gapAuswahl = null; toast('Gelöscht.'); renderFragen(); }); del.style.marginLeft = 'auto';
       }
@@ -7366,8 +7642,14 @@
       if (!answer) return toast('Bitte eine Antwort eingeben.', 'err');
       if (btn) btn.disabled = true;
       const dep = g.department || 'general';
-      const ins = await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
+      // Gibt es den Eintrag schon (z. B. Frage wieder geöffnet und neu beantwortet), wird er geändert statt verdoppelt.
+      const { data: vorhanden } = await sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).eq('department', dep).eq('title', g.question).limit(1);
+      const ins = vorhanden?.length
+        ? await sb.from('knowledge_base').update({ content: answer }).eq('id', vorhanden[0].id).select().maybeSingle()
+        : await sb.from('knowledge_base').insert({ tenant_id: tenant.id, department: dep, title: g.question, content: answer }).select().maybeSingle();
+      if (vorhanden?.length && ins.data) kbItems = kbItems.filter((x) => x.id !== ins.data.id);
       if (ins.error) { if (btn) btn.disabled = false; return toast('Fehler: ' + fehlerText(ins.error), 'err'); }
+      if (!ins.data) { if (btn) btn.disabled = false; return toast('Dein Konto darf das Wissen nicht ändern – die Antwort ist nicht gespeichert.', 'err'); }
       const jetzt = new Date().toISOString();
       if (!(await schreiben(sb.from('knowledge_gaps').update({ status: 'answered', answer, answered_at: jetzt }).eq('id', g.id)))) { if (btn) btn.disabled = false; return; }
       gapItems = gapItems.filter((x) => x.id !== g.id); g.status = 'answered'; g.answer = answer; g.answered_at = jetzt; if (gapBeantwortet) gapBeantwortet.unshift(g);
@@ -7568,9 +7850,9 @@
       const monat0 = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
       const in7 = new Date(jetzt.getTime() + 7 * 864e5);
       const ergebnisse = await Promise.all([
-        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(3000),
+        alleZeilen((a, z) => sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, summary, topic, sentiment').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).range(a, z)),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
-        sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).limit(5000),
+        alleZeilen((a, z) => sb.from('calls').select('started_at, ended_at, duration_seconds').eq('tenant_id', tenant.id).gte('started_at', monat0.toISOString()).order('started_at').range(a, z)),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
         sb.rpc('tickets_kennzahlen', { t: tenant.id }),
         sb.from('tickets').select('id, number, title, priority, due_at, caller_name, status').eq('tenant_id', tenant.id).neq('status', 'done').order('due_at', { ascending: true }).limit(5),
@@ -7690,16 +7972,16 @@
       q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" title="Filter entfernen">' + esc(dbFilter.label) + ' · ' + liste.length + ' ×</button>' : '';
       const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
-      liste.slice(0, dbFilter ? 8 : 5).forEach((x) => { const sent = { positiv: '🙂', neutral: '', negativ: '🙁' }[x.sentiment] || '';
-        const z = zeile((x.caller_number || 'Anrufer') + (x.topic ? ' · ' + x.topic : ''), new Date(x.started_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (sent ? sent + ' ' : '') + (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
-        z.title = 'Anruf öffnen'; z.onclick = () => liveOeffnen(x.id); la.append(z); });
+      liste.slice(0, dbFilter ? 8 : 5).forEach((x) => {
+        const z = zeile((ktName(x.caller_number) || fmtNr(x.caller_number)) + (x.topic ? ' · ' + x.topic : ''), lvWann(x.started_at) + (dauerVon(x) ? ' · ' + fmtDauer(dauerVon(x)) : ''), (x.summary || (x.status === 'active' ? 'läuft gerade' : 'ohne Zusammenfassung')));
+        z.onclick = () => liveOeffnen(x.id); la.append(z); const sp = LV_STIMMUNG[x.sentiment]; if (sp) { z.querySelector('.z').classList.add('mit-punkt'); z.querySelector('.z').style.setProperty('--punkt', sp[0]); } });
       if (liste.length > (dbFilter ? 8 : 5)) { const m = document.createElement('a'); m.href = '#'; m.dataset.geh = 'sec-live'; m.className = 'db-mehr'; m.textContent = 'Alle ' + liste.length + ' Anrufe ansehen'; la.append(m); }
       // Offene Vorgänge
       const lv = q('dbVorgaenge'); lv.innerHTML = '';
       if (!offene.length) lv.innerHTML = leerText('Keine offenen Vorgänge.');
       offene.forEach((t) => { const ueber = t.due_at && new Date(t.due_at) < jetzt;
-        const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (t.due_at ? 'Frist ' + new Date(t.due_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : ''), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
-        if (ueber) z.querySelector('.t').classList.add('ueber-text');
+        const fr = t.due_at ? fmtFrist(t.due_at) : ''; const z = zeile('#' + t.number + ' · ' + t.title, (t.priority === 'high' ? 'Hoch · ' : '') + (!fr || ueber ? fr : (fr.startsWith('in ') ? 'fällig ' : 'Frist ') + fr), (t.caller_name || '') + (t.status === 'in_progress' ? (t.caller_name ? ' · ' : '') + 'in Arbeit' : ''));
+        if (ueber) z.querySelector('.t').classList.add('ueber-text'); if (t.due_at) z.querySelector('.t').dataset.tip = 'Frist ' + fmtZeit(t.due_at);
         z.onclick = () => { geh('sec-tickets'); vorgangOeffnen(t.id); }; lv.append(z); });
       // Themen (klickbar)
       const themen = {}; ausser('thema').forEach((x) => { if (x.topic) themen[x.topic] = (themen[x.topic] || 0) + 1; });
@@ -7736,7 +8018,7 @@
     // ohne Kosten: die gehören dem Betreiber. Wochentag, Stunde und Dauer
     // filtern innerhalb der Auswertung; Thema, Stimmung und Anrufer springen
     // nach „Eingehend" mit passendem Filter.
-    let awTage = 30, awDaten = null, awFilter = null, awLaufId = 0;
+    let awTage = 14, awDaten = null, awFilter = null, awLaufId = 0;
     async function ladeAuswertung() {
       if (!tenant) return;
       // Laufzähler gegen Wettläufe: wird der Zeitraum erneut gewechselt, bevor diese Antwort da ist,
@@ -7744,7 +8026,7 @@
       const meinLauf = ++awLaufId;
       const jetzt = new Date(); const start = new Date(jetzt.getTime() - awTage * 864e5); const davor = new Date(jetzt.getTime() - 2 * awTage * 864e5);
       const ergebnisse = await Promise.all([
-        sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).limit(5000),
+        alleZeilen((a, z) => sb.from('calls').select('id, caller_number, status, started_at, ended_at, duration_seconds, topic, sentiment, mode, direction').eq('tenant_id', tenant.id).gte('started_at', start.toISOString()).order('started_at', { ascending: false }).range(a, z)),
         sb.from('calls').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('started_at', davor.toISOString()).lt('started_at', start.toISOString()),
         sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', start.toISOString()),
         sb.from('appointments').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'booked').gte('created_at', start.toISOString()),
@@ -7769,7 +8051,7 @@
     /** Nach „Eingehend" springen und dort einen Filter setzen (Thema, Stimmung oder Suche). */
     function awNachEingehend(patch) {
       const A = LV_ANSICHTEN.ein;
-      A.zeitraum = awTage === 7 ? 7 : awTage === 30 ? 30 : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = '';
+      A.zeitraum = [14, 30].includes(awTage) ? awTage : 0; A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = ''; // 90 Tage gibt es in Eingehend nicht → Alle
       Object.assign(A, patch);
       if ($('lvSuche')) $('lvSuche').value = A.suche;
       document.querySelectorAll('#lvZeitraum [data-tage]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', Number(b.dataset.tage) === A.zeitraum))));
@@ -7978,12 +8260,17 @@
         }
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
       }
-      knopf('Vorgang anlegen', '', async () => {
+      const vzn = tkAlle.find((t) => t.message_id === m.id); // Vorgang zu dieser Nachricht (legt meist schon der Server an)
+      if (vzn) knopf('Vorgang #' + vzn.number + ' öffnen', '', () => { geh('sec-tickets'); vorgangOeffnen(vzn.id); }).dataset.tip = 'Zu dieser Nachricht gibt es schon einen Vorgang · ' + (TK_STATUS[vzn.status] || vzn.status);
+      else knopf('Vorgang anlegen', '', async () => {
         if (!confirm('Vorgang aus dieser Nachricht anlegen?')) return;
-        const title = ((m.category ? m.category + ': ' : '') + (m.summary ? m.summary.slice(0, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
-        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
+        const { data: schon } = await sb.from('tickets').select('id, number').eq('tenant_id', tenant.id).eq('message_id', m.id).limit(1);
+        if (schon?.length) { toast('Zu dieser Nachricht gibt es schon Vorgang #' + schon[0].number + '.'); geh('sec-tickets'); vorgangOeffnen(schon[0].id); return; }
+        const title = ((m.category ? m.category + ': ' : '') + (m.summary ? kuerzen(m.summary, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
+        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, message_id: m.id, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } vorgangAngelegtToast(data?.id); loadTickets();
       });
+      if (nr && !ktName(nr)) knopf('Ins Telefonbuch', '', () => insTelefonbuch(nr, m.caller_name || '')).dataset.tip = 'Namen zu dieser Nummer speichern';
       if (m.call_id) knopf('Gespräch öffnen', '', () => liveOeffnen(m.call_id));
       const del = knopf('Löschen', '', async () => { if (!confirm('Diese Nachricht endgültig löschen?')) return; const { error } = await sb.from('messages').delete().eq('id', m.id); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } mgItems.delete(m.id); mgAuswahl = null; toast('Nachricht gelöscht.'); renderNachrichten(); }); del.style.marginLeft = 'auto';
       const nt = d.querySelector('[data-notiz]'); nt.value = m.note || ''; nt.oninput = () => { clearTimeout(mgNotizTimer); mgNotizTimer = setTimeout(() => mgAendern(m, { note: nt.value.trim() || null }), 700); };
@@ -8131,7 +8418,9 @@
         a?.focus();
         return;
       }
-      $('callBtn')?.click();
+      // Nicht sofort wählen: Nummer und Weg stehen bereit, gewählt wird erst mit „Anrufen“ (Schutz vor Fehlklick).
+      $('callBtn')?.focus();
+      toast('Nummer übernommen – mit „Anrufen“ starten.');
     }
     // ---- Geplante Anrufe: der Assistent ruft später von selbst an ----
     /** In einer Stunde, auf 5 Minuten gerundet, als Wert für datetime-local (Ortszeit). */
@@ -8148,20 +8437,30 @@
       rrLaedt = true;
       try {
         const r = await apiFetch('/api/rueckrufe', { headers: numAuth() });
-        const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler');
+        const j = await apiJson(r);
         rueckrufeZeichnen(j.rueckrufe || []);
       } catch (e) { liste.innerHTML = '<p class="muted" style="font-size:13px;text-align:left;padding:0">Geplante Anrufe konnten nicht geladen werden: ' + escHtml(e.message) + '</p>'; }
       rrLaedt = false;
       if (rrNochmal) { rrNochmal = false; rueckrufeLaden(); }
     }
+    let rrAeltereOffen = false;
     function rueckrufeZeichnen(eintraege) {
       const liste = $('obGeplantListe'); liste.innerHTML = '';
-      // Abgesagte und Gestartete von früher nicht ewig zeigen: nur die letzten 7 Tage.
+      // Abgesagte und Gestartete von früher nicht ewig zeigen: nur die letzten 7 Tage – und nur auf Wunsch („Frühere anzeigen“).
       const grenze = Date.now() - 7 * 864e5;
-      const zeigen = eintraege.filter((e) => e.status === 'geplant' || new Date(e.scheduled_at).getTime() > grenze);
-      const offen = zeigen.filter((e) => e.status === 'geplant').length;
+      const alle = eintraege.filter((e) => e.status === 'geplant' || new Date(e.scheduled_at).getTime() > grenze);
+      const offen = alle.filter((e) => e.status === 'geplant').length, aeltere = alle.length - offen;
       $('obGeplantAnzahl').textContent = offen ? offen + (offen === 1 ? ' offen' : ' offen') : '';
-      if (!zeigen.length) { liste.innerHTML = leerZustand(assistentWegErlaubt() ? 'Noch kein Anruf geplant. Wähle beim Weg „Der Assistent“ die Option „Später anrufen“, dann ruft er zur Uhrzeit von selbst an.' : 'Noch kein Anruf geplant.', 'Anruf planen', 'klick:obPlanenKnopf'); return; }
+      const aelterKnopf = () => { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = rrAeltereOffen ? 'Frühere ausblenden' : 'Frühere anzeigen (' + aeltere + ')'; k.onclick = () => { rrAeltereOffen = !rrAeltereOffen; rueckrufeZeichnen(eintraege); }; return k; };
+      // Ohne geplante Anrufe nur eine Zeile statt eines großen Leer-Kastens – der Verlauf darunter bleibt im ersten Bild.
+      if (!offen) {
+        const p = document.createElement('p'); p.className = 'gp-leer'; p.textContent = 'Kein Anruf geplant.';
+        if (assistentWegErlaubt()) { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = 'Anruf planen'; k.dataset.tip = 'Der Assistent ruft zur gewählten Uhrzeit von selbst an'; k.onclick = () => rueckrufPlanenOeffnen('', '', ''); p.append(' ', k); }
+        if (aeltere) p.append(' · ', aelterKnopf());
+        liste.append(p);
+        if (!rrAeltereOffen || !aeltere) return;
+      }
+      const zeigen = rrAeltereOffen ? alle : alle.filter((e) => e.status === 'geplant');
       // Geplante zuerst (nächster oben), danach die erledigten, neueste oben.
       zeigen.sort((a, b) => { const ga = a.status === 'geplant', gb = b.status === 'geplant'; if (ga !== gb) return ga ? -1 : 1; const d = new Date(a.scheduled_at) - new Date(b.scheduled_at); return ga ? d : -d; });
       zeigen.forEach((e) => {
@@ -8178,13 +8477,14 @@
           const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--ghost sm'; b.textContent = 'Absagen'; b.dataset.tip = 'Der Anruf findet dann nicht statt';
           b.onclick = async () => {
             b.disabled = true;
-            try { const r = await apiFetch('/api/rueckrufe/' + encodeURIComponent(e.id), { method: 'DELETE', headers: numAuth() }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('Anruf abgesagt.'); rueckrufeLaden(); }
+            try { const r = await apiFetch('/api/rueckrufe/' + encodeURIComponent(e.id), { method: 'DELETE', headers: numAuth() }); const j = await apiJson(r); toast('Anruf abgesagt.'); rueckrufeLaden(); }
             catch (err) { toast('Absagen: ' + err.message, 'err'); b.disabled = false; }
           };
           z.querySelector('.gp-rechts').append(b);
         }
         liste.append(z);
       });
+      if (offen && aeltere) { const p = document.createElement('p'); p.className = 'gp-leer'; p.append(aelterKnopf()); liste.append(p); }
     }
     /** Aus Anruf oder Nachricht heraus: Nummer und Auftrag vorfüllen und die Planung öffnen. */
     function rueckrufPlanenOeffnen(nr, name, auftrag) {
@@ -8307,8 +8607,7 @@
       liste.innerHTML = skelettHtml(3);
       try {
         const r = await apiFetch('/api/mitglieder?tenant_id=' + encodeURIComponent(tenant.id), { headers: numAuth() });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j.error || 'Zugänge konnten nicht geladen werden.');
+        const j = await apiJson(r, 'Zugänge konnten nicht geladen werden.');
         tmMeineStufe = j.stufe;
         tmNavigationAnpassen(tmMeineStufe);
         const darf = tmMeineStufe === 'owner' || tmMeineStufe === 'admin';
@@ -8415,7 +8714,8 @@
         z.querySelector('.kt-nr').textContent = fmtNr(k.phone);
         const st = z.querySelector('.stack');
         const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || 'btn--ghost'); b.textContent = text; b.onclick = fn; st.append(b); return b; };
-        knopf('Anrufen', 'btn--primary', () => { geh('sec-outbound'); $('obWaehl')?.classList.remove('hidden'); obNummerSetzen(k.phone); });
+        knopf('Verlauf', '', () => { sucheZeigen(true); $('sucheFeld').value = k.phone; $('sucheFeld').dispatchEvent(new Event('input')); }).dataset.tip = 'Anrufe, Nachrichten und Vorgänge zu dieser Nummer';
+        knopf('Anrufen', '', () => { geh('sec-outbound'); $('obWaehl')?.classList.remove('hidden'); obNummerSetzen(k.phone); });
         knopf('Bearbeiten', '', () => ktFormZeigen(k));
         knopf('Löschen', '', async () => {
           if (!confirm(k.name + ' aus dem Telefonbuch löschen?')) return;
@@ -8931,7 +9231,7 @@
     async function loadTickets() {
       if (!tenant) return;
       const [{ data: items, error }, { data: kz }] = await Promise.all([
-        sb.from('tickets').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(500),
+        ticketsVollstaendigLaden(), // alle offenen (seitenweise) + die 300 zuletzt erledigten statt der 500 neuesten
         sb.rpc('tickets_kennzahlen', { t: tenant.id }),
       ]);
       if (error) { toast('Fehler beim Laden der Vorgänge: ' + fehlerText(error), 'err'); const ul = $('tkListe'); if (ul && !tkAlle.length) ul.innerHTML = fehlerZustand(loadTickets); return; }
@@ -8949,7 +9249,7 @@
         if (ausser !== 'heute' && tkNurHeute && !istHeuteFaellig(t)) return false;
         if (!s) return true;
         if (s.startsWith('#')) return String(t.number).startsWith(s.slice(1));
-        return [t.title, t.body, t.caller_name, t.caller_phone, t.category, t.assignee, '#' + t.number].some((x) => (x || '').toLowerCase().includes(s));
+        return [t.title, t.body, t.caller_name, t.caller_phone, t.caller_phone ? fmtNr(t.caller_phone).replace(/\s/g, '') : '', t.category, t.assignee, '#' + t.number].some((x) => (x || '').toLowerCase().includes(s));
       }).sort((a, b) => {
         // Offene: dringendste zuerst (überfällig, dann nächste Frist, ohne Frist zuletzt); Erledigte: zuletzt erledigt zuerst
         if (a.status === 'done' && b.status === 'done') return new Date(b.closed_at || b.updated_at) - new Date(a.closed_at || a.updated_at);
@@ -8998,12 +9298,12 @@
       const dot = z.querySelector('.lv-dot');
       if (t.status === 'done') { dot.classList.add('haken'); dot.dataset.tip = 'Erledigt ' + fmtZeit(t.closed_at); } else { dot.style.background = TK_PRIO_FARBE[t.priority] || TK_PRIO_FARBE.normal; dot.dataset.tip = 'Priorität ' + (TK_PRIO[t.priority] || 'Normal') + (t.status === 'in_progress' ? ' · in Arbeit' : ''); }
       z.querySelector('b').innerHTML = '<span class="tk-nr">#' + t.number + '</span> ' + markierenMit(t.title, tkSuche) + (t.status === 'in_progress' && tkFilter !== 'in_progress' ? ' <span class="lv-neu">in Arbeit</span>' : '');
-      const teile = [t.caller_name, t.category, t.assignee ? '→ ' + t.assignee : null].filter(Boolean);
+      const teile = [t.caller_name || ktName(t.caller_phone || ''), t.category, t.assignee ? '→ ' + t.assignee : null].filter(Boolean);
       z.querySelector('.lv-text').innerHTML = teile.length ? markierenMit(teile.join(' · '), tkSuche) : markierenMit((t.body || '').slice(0, 90) || TK_QUELLE[t.source] || '', tkSuche);
       if (t.body && t.body.length > 40) z.querySelector('.lv-text').dataset.tip = t.body.slice(0, 300);
       const r = z.querySelectorAll('.lv-rechts span');
       if (t.status === 'done') { r[0].textContent = 'erledigt'; r[1].textContent = lvWann(t.closed_at || t.updated_at); }
-      else { r[0].textContent = fmtFrist(t.due_at); r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].classList.add('ueber-text'); r[1].textContent = lvWann(t.created_at); }
+      else { const fr = fmtFrist(t.due_at); r[0].textContent = !t.due_at || ueber ? fr : (fr.startsWith('in ') ? 'fällig ' : 'Frist ') + fr; r[0].dataset.tip = t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist gesetzt'; if (ueber) r[0].classList.add('ueber-text'); r[1].textContent = 'angelegt ' + lvWann(t.created_at).replace(/^(Heute|Gestern)/, (w) => w.toLowerCase()); r[1].className = 'tk-angelegt'; }
       z.onclick = () => { tkAuswahl = t.id; renderTickets(); };
       z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', t.id === tkAuswahl ? 'true' : 'false');
       // Nach Tastatur-Auswahl den Fokus mit in die Detailansicht nehmen (auf „‹ Zurück", die erste
@@ -9060,7 +9360,7 @@
         + '<div class="stack" style="margin-top:10px" data-aktionen></div><div data-rueckruf></div><div class="hidden tk-sms" data-smsbox><textarea rows="2" placeholder="z. B. Guten Tag, wir haben Ihre Nachricht erhalten und melden uns heute noch. Ihr Team …"></textarea><button class="btn sm" type="button" data-smssenden style="margin-top:6px">SMS senden</button></div>'
         + '<div data-transkript></div>'
         + '<div class="tk-verlauf" data-verlauf><label>Verlauf</label><p class="sys">wird geladen …</p></div>'
-        + '<div class="tk-notiz"><textarea rows="2" data-notiz aria-label="Notiz zum Vorgang" placeholder="Notiz hinzufügen … (Strg+Enter speichert)"></textarea><button class="btn sm" type="button" data-notizspeichern>Notiz speichern</button></div>';
+        + '<div class="tk-notiz"><textarea rows="2" data-notiz aria-label="Notiz zum Vorgang" placeholder="Notiz für den Verlauf … (Strg+Enter fügt hinzu)"></textarea><button class="btn sm" type="button" data-notizspeichern>Notiz hinzufügen</button></div>';
       d.dataset.ticketId = t.id;
       d.querySelector('.lv-zurueck').onclick = () => { tkAuswahl = null; renderTickets(); };
       // Titel umbenennen
@@ -9069,6 +9369,7 @@
       // Kennzeichen
       const meta = d.querySelector('.lv-meta'); const mchip = (txt, tip, klick, cls) => { const s = document.createElement('span'); s.textContent = txt; if (tip) s.dataset.tip = tip; if (cls) s.classList.add(cls); if (klick) { s.classList.add('klick'); s.onclick = klick; s.tabIndex = 0; s.setAttribute('role', 'button'); s.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); klick(); }); } meta.append(s); };
       mchip((TK_QUELLE[t.source] || t.source) + ' · ' + fmtZeit(t.created_at), 'Angelegt');
+      const wer = t.caller_name || (nr ? ktName(nr) : ''); if (wer) mchip(wer, t.caller_name ? 'Name des Anrufers' : 'Name aus dem Telefonbuch');
       if (t.status !== 'done') mchip(t.due_at ? 'Frist ' + fmtFrist(t.due_at) : fmtFrist(t.due_at), t.due_at ? 'Frist ' + fmtZeit(t.due_at) : 'Keine Frist', null, ueber ? 'ueber' : ''); else mchip('erledigt ' + fmtZeit(t.closed_at));
       mchip('Priorität ' + (TK_PRIO[t.priority] || 'Normal'), 'Klick filtert die Liste', () => { tkPrio = tkPrio === t.priority ? '' : t.priority; document.querySelectorAll('#tkPrioChips .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.tkprio || '') === tkPrio)))); renderTickets(); });
       if (t.category) mchip(t.category, 'Kategorie · Klick filtert die Liste', () => { tkKat = tkKat === t.category ? '' : t.category; renderTickets(); });
@@ -9104,7 +9405,7 @@
         knopf('SMS an Anrufer', '', () => { smsBox.classList.toggle('hidden'); if (!smsBox.classList.contains('hidden')) smsBox.querySelector('textarea').focus(); });
         smsBox.querySelector('[data-smssenden]').onclick = async () => {
           const text = smsBox.querySelector('textarea').value.trim(); if (text.length < 5) return; const send = smsBox.querySelector('[data-smssenden]'); send.disabled = true;
-          try { const r = await fetch(API + '/api/tickets/' + t.id + '/sms', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Fehler'); toast('SMS gesendet.'); smsBox.classList.add('hidden'); tkNotizen.delete(t.id); renderTicketDetail(); }
+          try { const r = await fetch(API + '/api/tickets/' + t.id + '/sms', { method: 'POST', headers: { authorization: 'Bearer ' + accessToken, 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); const j = await apiJson(r); toast('SMS gesendet.'); smsBox.classList.add('hidden'); tkNotizen.delete(t.id); renderTicketDetail(); }
           catch (e) { toast('SMS: ' + e.message, 'err'); }
           send.disabled = false;
         };
@@ -9119,7 +9420,7 @@
       const entwurf = tkEntwuerfe.get(t.id);
       if (entwurf) { ta.value = entwurf.v; if (entwurf.fokus) { ta.focus(); try { ta.setSelectionRange(entwurf.s, entwurf.s); } catch { /* egal */ } } }
       ta.oninput = () => { if (ta.value.trim()) tkEntwuerfe.set(t.id, { v: ta.value, fokus: true, s: ta.selectionStart }); else tkEntwuerfe.delete(t.id); };
-      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: 'Team' }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz gespeichert.'); tkNotizen.delete(t.id); renderTicketDetail(); };
+      const notizSpeichern = async () => { const v = ta.value.trim(); if (!v) return; const { error } = await sb.from('ticket_notes').insert({ ticket_id: t.id, tenant_id: tenant.id, body: v, author: IMP_HASH ? 'Vocaris-Support' : (($('userEmail')?.textContent || '').trim() || 'Team') }); if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } ta.value = ''; tkEntwuerfe.delete(t.id); toast('Notiz hinzugefügt.'); tkNotizen.delete(t.id); renderTicketDetail(); };
       d.querySelector('[data-notizspeichern]').onclick = notizSpeichern; ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') notizSpeichern(); };
       // Verlauf + Gesprächsverlauf (zwischengespeichert)
       const meinId = t.id;
@@ -9192,11 +9493,18 @@
         tkAuswahl = liste[j].id; renderTickets(); document.querySelector('.tk-zeile.aktiv')?.scrollIntoView({ block: 'nearest' });
       });
     })();
-    $('tkExport').onclick = () => {
-      const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt']];
-      tkGefiltert().forEach((t) => rows.push([t.number, t.title, TK_STATUS[t.status], TK_PRIO[t.priority], t.category || '', t.assignee || '', t.caller_name || '', t.caller_phone || '', fmtZeit(t.due_at), fmtZeit(t.created_at), fmtZeit(t.closed_at)]));
-      if (rows.length < 2) { toast('Keine Vorgänge in der Auswahl.', 'err'); return; }
-      csvHerunterladen(rows, 'vorgaenge'); toast((rows.length - 1) + (rows.length === 2 ? ' Vorgang' : ' Vorgänge') + ' exportiert.');
+    $('tkExport').onclick = async () => {
+      const liste = tkGefiltert(); if (!liste.length) { toast('Keine Vorgänge in der Auswahl.', 'err'); return; }
+      // Letzte Notiz je Vorgang (ohne die Statuseinträge des Systems), in Paketen geholt
+      const notiz = new Map();
+      for (let i = 0; i < liste.length; i += 80) {
+        const { data, error } = await sb.from('ticket_notes').select('ticket_id, body, author, created_at').in('ticket_id', liste.slice(i, i + 80).map((t) => t.id)).or('author.is.null,author.neq.System').order('created_at', { ascending: false });
+        if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; }
+        for (const n of data || []) if (!notiz.has(n.ticket_id)) notiz.set(n.ticket_id, n);
+      }
+      const rows = [['Nummer', 'Betreff', 'Status', 'Priorität', 'Kategorie', 'Zuständig', 'Name', 'Telefon', 'Frist', 'Angelegt', 'Erledigt am', 'Quelle', 'Beschreibung', 'Letzte Notiz']];
+      liste.forEach((t) => { const n = notiz.get(t.id); rows.push([t.number, t.title, TK_STATUS[t.status] || t.status, TK_PRIO[t.priority] || 'Normal', t.category || '', t.assignee || '', t.caller_name || ktName(t.caller_phone || '') || '', t.caller_phone || '', csvZeit(t.due_at), csvZeit(t.created_at), csvZeit(t.closed_at), TK_QUELLE[t.source] || t.source || '', t.body || '', n ? n.body + ' (' + (n.author || 'Team') + ', ' + csvZeit(n.created_at) + ')' : '']); });
+      csvHerunterladen(rows, 'vorgaenge'); toast(liste.length + (liste.length === 1 ? ' Vorgang' : ' Vorgänge') + ' exportiert.');
     };
     $('tkNeuBtn').onclick = async () => {
       if (!tenant) return;
@@ -9971,7 +10279,7 @@
       'sec-auswertung': ['Zahlen zu Anrufen im gewählten Zeitraum: Aufkommen, Dauer, Stimmung, Themen und häufigste Anrufer.', 'Balken und Zeilen sind klickbar: Sie filtern die Auswertung oder öffnen <b>Eingehend</b> mit dem passenden Filter.'],
       'sec-kb': ['Was der Assistent am Telefon wissen soll: Öffnungszeiten, Preise, Abläufe, Ansprechpartner. <b>+ Eintrag</b> legt einen an; Titel und Text änderst du direkt im Detail.', 'Einträge unter <b>Allgemein</b> gelten für alle Abteilungen. Der Wissens-Assistent unten rechts hilft beim Befüllen aus Dokumenten.'],
       'sec-gaps': ['Fragen von Anrufern, die der Assistent nicht beantworten konnte.', 'Antwort eintippen und <b>Speichern</b>: Sie landet in der Wissensdatenbank und gilt ab dem nächsten Anruf. <b>Verwerfen</b> entfernt Fragen, die nicht passen.'],
-      'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten, Stimme & Sprache, Erreichbarkeit, Hinweise. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> führt zu Eingehend, wo du das Ergebnis sofort siehst.'],
+      'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten & Ausnahmen, Stimme & Sprache, Erreichbarkeit, Datenschutz & Berichte. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> zeigt deine Nummer zum Anrufen; das Gespräch erscheint sofort unter Eingehend.'],
       'sec-booking': ['Terminbuchung am Telefon: Dauer, Puffer, Vorlauf und Zeitfenster festlegen, Kalender verbinden.', 'Gebuchte Termine stehen in der Liste; der iCal-Link bringt sie in deinen Kalender.'],
       'sec-webhooks': ['Wohin Ereignisse gehen: E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten, Terminen, Fragen und Anrufen. Dazu CRM, Ticketsystem, API-Schlüssel und eigener Webhook.', '<b>Speichern</b> sichert Ereignisse und Kanäle, <b>Test senden</b> prüft alle aktiven Ziele.'],
       'sec-number': ['Deine Vocaris-Rufnummern mit Abteilung und Weiterleitung. Die Nummer richten wir für dich ein; hier siehst du den Stand.', 'Darunter die <b>Sperrliste</b>: Gesperrte Nummern nimmt der Assistent nicht mehr an.'],
@@ -10007,9 +10315,9 @@
       const schritte = [
         { ok: chk.nummer, t: 'Rufnummer vorhanden', s: chk.nummer ? '' : 'Wir schalten deine Nummer frei – Stand unter Telefonnummer.', ziel: 'sec-number' },
         { ok: chk.begruessung, t: 'Begrüßung angepasst', s: 'So meldet sich der Assistent beim Abnehmen.', ziel: 'sec-assistant', danach: () => setTimeout(() => { asReiterZeigen('grund'); $('greeting')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('greeting')?.focus(); }, 150) },
-        { ok: chk.wissen >= 5, t: 'Mindestens fünf Wissenseinträge', s: chk.wissen + ' von 5 · Öffnungszeiten, Preise, Abläufe', ziel: 'sec-kb' },
+        { ok: chk.wissen >= 5, t: 'Mindestens fünf Wissenseinträge', s: chk.wissen + ' von 5 · Öffnungszeiten, Preise, Abläufe' + (dbDaten && dbDaten.kbEchtN != null && dbDaten.kbN > dbDaten.kbEchtN ? ' · Vorlagen zählen erst, wenn du sie angepasst hast' : ''), ziel: 'sec-kb' },
         { ok: chk.benachrichtigung, t: 'Benachrichtigung eingerichtet', s: 'E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten.', ziel: 'sec-webhooks', danach: () => document.querySelector('#ifTabs [data-iftab="benachrichtigungen"]')?.click() },
-        { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live' },
+        { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live', danach: () => testanrufOeffnen() },
       ];
       const fertig = schritte.filter((x) => x.ok).length;
       if (fertig === schritte.length) { box.classList.add('hidden'); return; }
@@ -10041,6 +10349,8 @@
     const istNetzfehler = (e) => e && (e.name === 'TypeError' || /Load failed|Failed to fetch|NetworkError|network/i.test(e.message || ''));
     function verbindungsFetch(url, opts) {
       return fetch(url, opts).then((r) => {
+        // 401 von der Datenbank heißt: Anmeldung abgelaufen (nicht Netzfehler) – einmal erneuern, sonst neu anmelden.
+        if (r.status === 401 && String(url).includes('/rest/v1/')) sitzungPruefen();
         // Nur eine erfolgreiche REST-Antwort beweist, dass die Datenbank wieder da ist.
         // Andere Supabase-Aufrufe (z. B. Auth) können gelingen, während REST weiter gestört ist –
         // dann lieber über verbindungPruefen() an der echten Gegenstelle nachfragen statt sofort zu entwarnen.
@@ -10056,7 +10366,8 @@
       // Erst die Gegenstelle anpingen; nur wenn auch das scheitert, kommt der Balken.
       verbProbe = true;
       const ziel = quelle === 'api' ? API + '/health' : SB_URL + '/auth/v1/health';
-      fetch(ziel, { cache: 'no-store' }).then(() => {}, () => verbindungZeigen(quelle)).finally(() => { verbProbe = false; });
+      // /health des Servers schickt keinen CORS-Kopf: ohne no-cors scheitert der Abruf immer, auch wenn der Server läuft.
+      fetch(ziel, { cache: 'no-store', mode: quelle === 'api' ? 'no-cors' : 'cors' }).then(() => {}, () => verbindungZeigen(quelle)).finally(() => { verbProbe = false; });
     }
     function verbindungZeigen(quelle) {
       if (verbGestoert) return;
@@ -10070,7 +10381,7 @@
       verbLaeuft = true;
       try {
         // Es zählt, dass die Gegenstelle antwortet – der Status ist egal.
-        if (verbGestoert === 'api') await fetch(API + '/health', { cache: 'no-store' });
+        if (verbGestoert === 'api') await fetch(API + '/health', { cache: 'no-store', mode: 'no-cors' }); // opake Antwort genügt
         else await fetch(SB_URL + '/auth/v1/health', { cache: 'no-store' });
         verbindungWieder();
       } catch { /* weiter warten */ }
@@ -10081,8 +10392,9 @@
       const war = verbGestoert; verbGestoert = ''; clearInterval(verbUhr); verbUhr = null;
       $('verbindung').classList.remove('sichtbar');
       toast('Verbindung wieder da.');
-      // Nach einem Supabase-Ausfall die Daten frisch holen, damit nichts Altes stehen bleibt.
-      if (war === 'supabase' && tenant) loadAll().catch(() => { /* zeigt sich beim nächsten Aufruf */ });
+      // Nach einem Supabase-Ausfall die Listen frisch holen, damit nichts Altes stehen bleibt. Kein loadAll():
+      // das setzte Assistent und Wissen auf den Serverstand zurück und verwarf ungespeicherte Eingaben.
+      if (war === 'supabase' && tenant) datenNachladen(true);
     }
     $('verbindungNeu').onclick = async () => { const b = $('verbindungNeu'); b.setAttribute('aria-busy', 'true'); await verbindungPruefen(); b.removeAttribute('aria-busy'); };
     window.addEventListener('offline', () => verbindungZeigen('supabase'));
@@ -10103,6 +10415,1068 @@
     }
     ['authBtn', 'pwSave', 'saveBtn', 'addKbBtn', 'callBtn', 'ktSpeichern', 'ktImportLos', 'ingestBtn', 'ingestTextBtn', 'whSave', 'whTest', 'crmAdd', 'tkAdd', 'tkTest', 'akCreate', 'tkNeuBtn', 'blockAdd', 'bkSave', 'bkAdd', 'bbAdd', 'rbAdd', 'guestSave', 'dbAktualisieren'].forEach(knopfSchuetzen);
 
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UI-Runde 15.10.2026 – eigener Block, damit offene Zweige (PR #35) rebasebar bleiben.
+    // Bestehende Funktionen werden hier eingewickelt statt an Ort und Stelle umgeschrieben.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // ---- Schreibende Server-Aufrufe nicht still wiederholen ----
+    // apiFetch versuchte jeden Aufruf bis zu dreimal. Bei POST/PATCH/DELETE heißt ein Netzfehler aber nicht,
+    // dass nichts passiert ist: Bestellung, Versand oder Anlegen liefen sonst doppelt. Wiederholt werden nur
+    // Lesezugriffe und Abrufe, die nichts ändern (Vorschläge, Datei lesen, Verfügbarkeit, Nummernsuche).
+    const API_WIEDERHOLBAR = /^\/api\/(gap-suggest|parse-file|kb-chat|restaurant\/availability|numbers\/search)$/;
+    {
+      const apiFetchRoh = apiFetch;
+      apiFetch = async function (path, opts, tries) {
+        const methode = String(opts?.method || 'GET').toUpperCase();
+        if (methode === 'GET' || methode === 'HEAD' || opts?.wiederholen || API_WIEDERHOLBAR.test(String(path).split('?')[0])) return apiFetchRoh(path, opts, tries);
+        try { return await fetch(API + path, opts); }
+        catch (e) {
+          verbindungGestoert('api');
+          throw new Error('Keine Antwort vom Server. Unklar, ob das ausgeführt wurde – bitte erst die Liste prüfen, bevor du es nochmal machst.');
+        }
+      };
+    }
+
+    // ---- Abgelaufene Anmeldung erkennen ----
+    // Ein abgelaufener Zugang sah bisher aus wie ein Netzfehler („Keine Verbindung zum Server“).
+    FEHLER_MUSTER.unshift([/JWT expired|PGRST30\d|not authenticated|Nicht angemeldet|invalid jwt/i, 'Deine Anmeldung ist abgelaufen – bitte neu anmelden.']);
+    let sitzungGeprueft = 0;
+    /** Nach einer 401 der Datenbank: einmal erneuern; klappt das nicht, sauber abmelden und das auf der Anmeldeseite sagen. */
+    async function sitzungPruefen() {
+      if (!appUserId || Date.now() - sitzungGeprueft < 30000) return;
+      sitzungGeprueft = Date.now();
+      let fehler = null;
+      try { const { data, error } = await sb.auth.refreshSession(); if (!error && data?.session) { accessToken = data.session.access_token; return; } fehler = error; } catch (e) { fehler = e; }
+      // Netz wackelt, zu viele Anfragen (mehrere Tabs) oder Auth-Dienst gestört: nicht abmelden, beim nächsten 401 in 10 s erneut.
+      const st = Number(fehler?.status) || 0;
+      if (fehler && (fehler.name === 'AuthRetryableFetchError' || istNetzfehler(fehler) || st === 429 || st >= 500)) { sitzungGeprueft = Date.now() - 20000; return; }
+      try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* ohne Speicher kein Hinweis */ }
+      try { await sb.auth.signOut({ scope: 'local' }); } catch { /* der Seitenwechsel räumt trotzdem auf */ }
+    }
+    // Zugriffstoken für Server-Aufrufe (numAuth) frisch halten, wenn der Tab länger im Hintergrund lag.
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden || !appUserId) return;
+      try { const { data } = await sb.auth.getSession(); if (data?.session?.access_token) accessToken = data.session.access_token; } catch { /* nächster Versuch beim nächsten Wechsel */ }
+    });
+
+    // ---- Abmelden räumt vollständig auf ----
+    // Nach dem Abmelden blieben Teile der vorigen Firma im Speicher (Stufe, Gäste, Tags, Filter). Neu laden
+    // ist der einzige Weg, der garantiert nichts übersieht. Betreiber-Ansicht (?imp) geht zurück zum Super-Dashboard.
+    let uiAngemeldet = false, uiSelbstAbgemeldet = false, uiStartGeroutet = false;
+    // Beim Verlassen bzw. Neuladen brechen offene Abrufe ab und sehen für fetch wie Netzfehler aus: dann nicht mehr die
+    // Gegenstelle anpingen (der Ping selbst bricht ab und landet als Fehler in der Konsole).
+    let seiteEntlaedt = false;
+    window.addEventListener('pagehide', () => { seiteEntlaedt = true; });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) seiteEntlaedt = false; }); // aus dem Zurück-Speicher
+    { const roh = verbindungGestoert; verbindungGestoert = function (quelle) { if (seiteEntlaedt) return; return roh(quelle); }; }
+    $('logoutBtn').addEventListener('click', () => { uiSelbstAbgemeldet = true; try { localStorage.setItem('vocaris.abgemeldet', String(Date.now())); } catch { /* egal */ } }, true);
+    // Bisher meldete „Abmelden“ den Login auf allen Geräten ab (signOut ohne scope = global) – bei geteilten Logins (Laptop + iPad) lästig.
+    $('logoutBtn').onclick = () => sb.auth.signOut({ scope: 'local' });
+    const kuerzlichAbgemeldet = () => { try { return Date.now() - Number(localStorage.getItem('vocaris.abgemeldet') || 0) < 15000; } catch { return false; } };
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session) { uiAngemeldet = true; return; }
+      if (event === 'SIGNED_OUT' && uiAngemeldet) {
+        uiAngemeldet = false;
+        if (!uiSelbstAbgemeldet && kuerzlichAbgemeldet()) uiSelbstAbgemeldet = true; // in einem anderen Tab abgemeldet
+        if (!uiSelbstAbgemeldet) { try { sessionStorage.setItem('vocaris.abgelaufen', '1'); } catch { /* egal */ } }
+        setTimeout(() => {
+          seiteEntlaedt = true;
+          if (IMP_HASH) location.replace('admin.html');
+          else if (uiSelbstAbgemeldet) location.replace(location.pathname + location.search);
+          else location.reload(); // abgelaufen: Adresse (Bereich) behalten, nach der Anmeldung geht es dort weiter
+        }, 0);
+        return;
+      }
+      let abgelaufen = false;
+      try { abgelaufen = sessionStorage.getItem('vocaris.abgelaufen') === '1'; sessionStorage.removeItem('vocaris.abgelaufen'); } catch { /* egal */ }
+      if (abgelaufen && $('authMsg')) $('authMsg').textContent = 'Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.';
+    });
+    // Rechte ab dem ersten Bild: Die eigene Stufe (Inhaber/Admin/Mitarbeiter) kam erst beim ersten Klick in der
+    // Navigation. Jetzt wird sie geholt, sobald die Firma feststeht, und das Dashboard erscheint erst danach.
+    {
+      const loadAllRoh = loadAll;
+      loadAll = async function (...args) {
+        let stufeP = null, stufeGemerkt = false;
+        if (tmMeineStufe == null) {
+          stufeP = (async () => {
+            for (let i = 0; i < 80 && !tenant; i++) await new Promise((r) => setTimeout(r, 50));
+            if (!tenant || tmMeineStufe != null) return;
+            // Schon einmal hier angemeldet: die gemerkte Stufe gilt sofort, der Server bestätigt sie im Hintergrund.
+            const s = stufeLesen(); if (s) { tmMeineStufe = s; tmNavigationAnpassen(s); stufeGemerkt = true; }
+            await ladeZugaenge();
+          })().catch(() => { /* Navigation bleibt wie bisher, der erste Klick holt die Stufe nach */ });
+        }
+        // Endet die Sitzung mitten im Laden (anderswo abgemeldet), setzt showAuth tenant = null; der Rest von loadAll
+        // greift dann ins Leere. Die Anmeldeseite steht schon – kein Seitenfehler.
+        let erg; try { erg = await loadAllRoh.apply(this, args); } catch (e) { if (!tenant) return; throw e; }
+        if (!tenant) return erg;
+        if (stufeP && !stufeGemerkt) await Promise.race([stufeP, new Promise((r) => setTimeout(r, 2500))]);
+        // Beim ersten Laden der Adresse folgen (#vorgaenge/26 …), noch hinter dem Startbild – ohne Umweg übers Dashboard.
+        // Die Adresse selbst wird dabei nie umgeschrieben (Anmelde-Token, Kalender-Rücksprung, fremde Anker bleiben).
+        if (!uiStartGeroutet && tenant) { uiStartGeroutet = true; try { await Promise.race([adresseAnwenden('start'), new Promise((r) => setTimeout(r, 4000))]); } catch { /* Dashboard bleibt */ } }
+        return erg;
+      };
+    }
+
+    const stufeSchluessel = () => 'vocaris.stufe.' + appUserId + '.' + tenant?.id;
+    function stufeLesen() { try { const s = localStorage.getItem(stufeSchluessel()); return ['owner', 'admin', 'member'].includes(s) ? s : null; } catch { return null; } }
+    {
+      const roh = tmNavigationAnpassen;
+      tmNavigationAnpassen = function (stufe) {
+        roh(stufe);
+        const mitarbeiter = stufe === 'member';
+        const rsEinst = $('rsSaveCfg')?.closest('details');
+        if (rsEinst) {
+          if (!rsEinst.querySelector('.nur-lesen-hinweis')) { const p = document.createElement('p'); p.className = 'nur-lesen-hinweis'; p.textContent = 'Nur Lesen: Einstellungen ändert der Inhaber oder ein Admin.'; rsEinst.querySelector('summary')?.after(p); }
+          rsEinst.classList.toggle('nur-lesen', mitarbeiter);
+        }
+        const plan = $('sec-floorplan')?.querySelector('.db-kopf > div');
+        if (plan) {
+          if (!plan.querySelector('.nur-lesen-hinweis')) { const p = document.createElement('p'); p.className = 'nur-lesen-hinweis'; p.textContent = 'Nur Lesen: Den Tischplan ändert der Inhaber oder ein Admin.'; plan.append(p); }
+          plan.classList.toggle('nur-lesen', mitarbeiter);
+        }
+        if ($('rsEditToggle')) $('rsEditToggle').hidden = mitarbeiter;
+        if (stufe && appUserId && tenant) { try { localStorage.setItem(stufeSchluessel(), stufe); } catch { /* ohne Speicher: beim nächsten Start wieder warten */ } }
+      };
+    }
+
+    // Reservierungs-Lader werden nicht abgewartet aufgerufen (z. B. am Ende von loadRestaurant): endet die Sitzung genau dann,
+    // ist tenant schon null – still aussteigen statt Seitenfehler.
+    { const roh = loadDayOccupancy; loadDayOccupancy = function (...a) { if (!tenant) return Promise.resolve(); return roh.apply(this, a); }; }
+    { const roh = refreshDay; refreshDay = function (...a) { if (!tenant) return Promise.resolve(); return roh.apply(this, a); }; }
+
+    // ---- Nach einer Lücke (Netz, Echtzeit, Hintergrund) nur Listen nachladen ----
+    // Formulare (Assistent, Wissen, Antworten auf offene Fragen) bleiben unangetastet, solange jemand darin arbeitet.
+    let nachladenZuletzt = 0;
+    const uiTipptIn = (sel) => { const a = document.activeElement; return !!(a && a.closest?.(sel) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)); };
+    function datenNachladen(sofort) {
+      if (!tenant) return;
+      if (!sofort && Date.now() - nachladenZuletzt < 3000) return;
+      nachladenZuletzt = Date.now();
+      lvAuffrischen();
+      loadTickets();
+      mgLaden();
+      if (!uiTipptIn('#gapDetail') && !($('gapDetail')?.querySelector('[data-antwort]')?.value || '').trim()) loadGaps();
+      if (!$('sec-overview')?.classList.contains('hidden')) ladeDashboard(); else dbDatenZeit = 0;
+      if (module.reservierung && $('rsDayDate')) { refreshDay(); if ($('rsPlanDate')?.value) loadDayOccupancy($('rsPlanDate').value); }
+      if (!$('sec-kontakte')?.classList.contains('hidden')) ladeKontakte();
+      if (!asDirty && !uiTipptIn('#sec-kb') && !uiTipptIn('#sec-assistant')) loadDept();
+    }
+    /** Anrufe nach einer Lücke zusammenführen statt alles neu zu laden: neue Anrufe ab dem jüngsten bekannten (mit Puffer)
+     *  und alle, die in der Lücke noch liefen. Geladene Gesprächsverläufe und „ältere laden“ bleiben erhalten. */
+    async function lvAuffrischen() {
+      if (!tenant) return;
+      if (!liveCalls.size) return loadLive();
+      let neuester = -Infinity, aeltesterAktiv = Infinity;
+      for (const x of liveCalls.values()) { const t = new Date(x.call.started_at).getTime(); if (t > neuester) neuester = t; if (callIsActive(x.call) && t < aeltesterAktiv) aeltesterAktiv = t; }
+      const ab = Math.min(neuester - 2 * 3600e3, aeltesterAktiv), gen = lvLadeGen, MAX = 200;
+      const { data, error } = await sb.from('calls').select('*').eq('tenant_id', tenant.id).gte('started_at', new Date(ab).toISOString()).order('started_at', { ascending: false }).limit(MAX);
+      if (error || gen !== lvLadeGen) return;
+      if ((data || []).length >= MAX) return loadLive(); // sehr viel verpasst: einmal ganz neu
+      const nachholen = [];
+      let neu = 0;
+      for (const c of stimmungNorm(data)) {
+        const e = liveCalls.get(c.id);
+        if (!e) { liveCalls.set(c.id, { call: c, turns: [], geladen: false }); neu++; }
+        else if (JSON.stringify(e.call) !== JSON.stringify(c)) { e.call = c; if (e.geladen) { e.geladen = false; nachholen.push(c.id); } }
+        lvTagsVon(c).forEach((t) => lvAlleTags.add(t));
+      }
+      lvGeladen += neu; // Seitenzähler für „ältere laden“ bleibt passend
+      const offen = new Set(Object.values(LV_ANSICHTEN).map((A) => A.auswahl).filter(Boolean));
+      const holen = [...new Set([...(data || []).filter(callIsActive).map((c) => c.id), ...nachholen.filter((id) => offen.has(id))])];
+      if (holen.length) await turnsLaden(holen);
+      renderLive();
+    }
+    // Eigene Notiz: Das Echo über Echtzeit (nur notes/updated_at anders) zeichnet nicht beide Listen samt Detail neu.
+    let lvNotizEcho = null;
+    function lvNotizEchoErwarten(id) { lvNotizEcho = { id, obj: liveCalls.get(id)?.call || null, groesse: liveCalls.size, bis: Date.now() + 8000 }; }
+    const nurNotizAnders = (a, b) => { for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) { if (k !== 'notes' && k !== 'updated_at' && JSON.stringify(a[k]) !== JSON.stringify(b[k])) return false; } return true; };
+    {
+      const roh = renderLive;
+      renderLive = function (...a) {
+        const ec = lvNotizEcho;
+        if (ec && Date.now() < ec.bis) {
+          const akt = liveCalls.get(ec.id)?.call;
+          if (akt && ec.obj && akt !== ec.obj && liveCalls.size === ec.groesse && nurNotizAnders(ec.obj, akt)) { ec.obj = akt; return; }
+          ec.obj = akt || ec.obj; ec.groesse = liveCalls.size;
+        } else if (ec) lvNotizEcho = null;
+        return roh.apply(this, a);
+      };
+    }
+    // Echtzeit-Kanal neu verbunden: Ereignisse aus der Lücke sind verloren, also einmal nachladen.
+    const echtzeitVerbundenVorher = { live: false, rs: false };
+    function echtzeitVerbunden(kanal) {
+      if (!echtzeitVerbundenVorher[kanal]) { echtzeitVerbundenVorher[kanal] = true; return; } // erstes Abo: Daten sind frisch
+      if (kanal === 'rs') { clearTimeout(rsBelegungTimer); rsBelegungTimer = setTimeout(() => { if (tenant && $('rsPlanDate')) loadDayOccupancy($('rsPlanDate').value); }, 400); return; }
+      datenNachladen();
+    }
+    // Lange im Hintergrund (Laptop zu, Handy gesperrt): beim Zurückkommen frisch holen.
+    let uiVerstecktSeit = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { uiVerstecktSeit = Date.now(); return; }
+      if (uiVerstecktSeit && Date.now() - uiVerstecktSeit > 60000) datenNachladen();
+      uiVerstecktSeit = 0;
+    });
+    // Der Verbindungsbalken schiebt den Inhalt nach unten (CSS --vb-h), statt Kopfzeile und ↻ zu verdecken.
+    (function verbindungsHoehe() {
+      const v = $('verbindung'); if (!v) return;
+      const setzen = () => document.documentElement.style.setProperty('--vb-h', Math.ceil(v.getBoundingClientRect().height) + 'px');
+      new MutationObserver(setzen).observe(v, { attributes: true, attributeFilter: ['class'] });
+      window.addEventListener('resize', setzen); setzen();
+    })();
+
+    // ---- Daten vollständig laden statt still zu kürzen ----
+    // Die Datenbank liefert höchstens 1.000 Zeilen je Abfrage; .limit(3000/5000) wurde dadurch still zu 1.000.
+    // alleZeilen holt seitenweise, bis eine Seite nicht mehr voll ist (Obergrenze max, dann gekuerzt: true).
+    const DB_SEITE = 1000;
+    async function alleZeilen(bauer, max = 20000) {
+      const alle = [];
+      for (let von = 0; von < max; von += DB_SEITE) {
+        const bis = Math.min(von + DB_SEITE, max) - 1;
+        const { data, error } = await bauer(von, bis);
+        if (error) return { data: alle.length ? alle : null, error };
+        alle.push(...(data || []));
+        if (!data || data.length < bis - von + 1) return { data: alle, error: null, gekuerzt: false };
+      }
+      return { data: alle, error: null, gekuerzt: true };
+    }
+    /** Vorgänge: alle nicht erledigten (seitenweise) und die 300 zuletzt erledigten. Bisher die 500 neuesten insgesamt –
+     *  ältere offene Vorgänge fehlten dann in der Liste, obwohl Kachel und Badge sie zählten. */
+    async function ticketsVollstaendigLaden() {
+      const [offen, erledigt] = await Promise.all([
+        alleZeilen((a, z) => sb.from('tickets').select('*').eq('tenant_id', tenant.id).neq('status', 'done').order('created_at', { ascending: false }).range(a, z)),
+        sb.from('tickets').select('*').eq('tenant_id', tenant.id).eq('status', 'done').order('closed_at', { ascending: false, nullsFirst: false }).limit(300),
+      ]);
+      const error = offen.error || erledigt.error;
+      if (error) return { data: null, error };
+      return { data: [...(offen.data || []), ...(erledigt.data || [])].sort((x, y) => new Date(y.created_at) - new Date(x.created_at)), error: null };
+    }
+    // Eingehend/Ausgehend: Die Liste lud die 100 neuesten Anrufe und filterte nur darin – bei viel Betrieb fehlte in
+    // „7 Tage“ schon die Vorwoche. Jetzt wird der gewählte Zeitraum vollständig nachgeladen (höchstens 1.000 Anrufe).
+    const LV_MAX = 1000;
+    let lvGekuerzt = false, lvNachladenLaeuft = null;
+    async function lvZeitraumVollstaendig(Aziel) {
+      const A = Aziel || Object.values(LV_ANSICHTEN).find((v) => !$(v.sec)?.classList.contains('hidden')) || LV_ANSICHTEN.ein;
+      A.vollFuer = A.zeitraum + ':' + lvLadeGen; // für diesen Zeitraum und diesen Ladestand ist geprüft
+      if (!tenant || lvAlleGeladen) { lvGekuerzt = false; return; }
+      const grenze = A.zeitraum === 0 ? -Infinity : A.zeitraum === 1 ? lvHeute0().getTime() : Date.now() - A.zeitraum * 864e5;
+      let aeltester = Infinity; for (const x of liveCalls.values()) { const t = new Date(x.call.started_at).getTime(); if (t < aeltester) aeltester = t; }
+      if (aeltester <= grenze) { lvGekuerzt = false; renderLive(); return; } // alles aus dem Zeitraum ist schon da
+      if (lvGeladen >= LV_MAX) { lvGekuerzt = true; renderLive(); return; }
+      if (lvNachladenLaeuft) return lvNachladenLaeuft.then(() => lvZeitraumVollstaendig(A)); // danach für den neuen Zeitraum prüfen
+      const gen = lvLadeGen, von = lvGeladen;
+      lvNachladenLaeuft = (async () => {
+        let q = sb.from('calls').select('*').eq('tenant_id', tenant.id).order('started_at', { ascending: false });
+        if (grenze > -Infinity) q = q.gte('started_at', new Date(grenze).toISOString());
+        const { data, error } = await q.range(von, LV_MAX - 1);
+        if (gen !== lvLadeGen || error || lvGeladen !== von) return; // inzwischen neu geladen oder Fehler – Liste bleibt, wie sie ist
+        for (const c of stimmungNorm(data)) { if (!liveCalls.has(c.id)) liveCalls.set(c.id, { call: c, turns: [], geladen: false }); lvTagsVon(c).forEach((t) => lvAlleTags.add(t)); }
+        lvGeladen = von + (data || []).length;
+        // Mit Zeitgrenze heißt eine nicht volle Seite nur: im Zeitraum ist alles da. Ohne Grenze („Alle“): wirklich alles.
+        if (grenze === -Infinity && (data || []).length < LV_MAX - von) lvAlleGeladen = true;
+        lvGekuerzt = lvGeladen >= LV_MAX && !lvAlleGeladen;
+        renderLive();
+      })().finally(() => { lvNachladenLaeuft = null; });
+      return lvNachladenLaeuft;
+    }
+    {
+      const loadLiveRoh = loadLive;
+      // Den Rest des Zeitraums nachlaufen lassen statt abzuwarten: die neuesten Anrufe stehen sofort da, das Echtzeit-Abo
+      // beim Start wartet nicht auf bis zu 1.000 Zeilen.
+      loadLive = async function (mehr) { await loadLiveRoh(mehr); if (!mehr) lvZeitraumVollstaendig(); };
+      const lvZeichnenRoh = lvZeichnen;
+      lvZeichnen = function () {
+        lvZeichnenRoh();
+        // Zeitraum wurde von außen gesetzt (Auswertung, Dashboard, Gespräch öffnen …): einmal vollständig nachladen.
+        if (tenant && !$(LV.sec)?.classList.contains('hidden') && LV.vollFuer !== LV.zeitraum + ':' + lvLadeGen) { const A = LV; setTimeout(() => { if (A.vollFuer !== A.zeitraum + ':' + lvLadeGen) lvZeitraumVollstaendig(A); }, 0); }
+        if (!lvGekuerzt || lvAlleGeladen) return;
+        const st = lvEl('Streifen'); if (!st) return;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'lv-streifen__mehr'; b.textContent = 'nur die neuesten ' + lvGeladen.toLocaleString('de-DE') + ' · ältere laden';
+        b.onclick = () => loadLive(true);
+        st.append(' · ', b);
+      };
+      for (const A of Object.values(LV_ANSICHTEN)) document.querySelectorAll('#' + A.p + 'Zeitraum [data-tage]').forEach((b) => b.addEventListener('click', () => { lvZeitraumVollstaendig(); }));
+    }
+
+    // ---- Anruf, Nachricht und Vorgang hängen zusammen ----
+    /** Text am Wortende kürzen statt mitten im Wort („…“ angehängt). */
+    function kuerzen(text, n = 90) {
+      const s = String(text ?? '').replace(/\s+/g, ' ').trim(); if (s.length <= n) return s;
+      const schnitt = s.slice(0, n); const i = schnitt.lastIndexOf(' ');
+      return (i > n * 0.6 ? schnitt.slice(0, i) : schnitt).replace(/[\s,.;:–-]+$/, '') + '…';
+    }
+    /** Nummer ins Telefonbuch: Formular für einen neuen Eintrag öffnen, Nummer (und Name) vorbefüllt. */
+    function insTelefonbuch(nr, name) {
+      geh('sec-kontakte'); ktFormZeigen(null);
+      $('ktNr').value = ktNormal(nr); if (name) $('ktName').value = name;
+      $('ktName').focus();
+    }
+    const TK_STATUS_KLEIN = { open: 'offen', in_progress: 'in Arbeit', done: 'erledigt' };
+    // Was aus einem Anruf entstanden ist: erst aus dem Speicher (Vorgänge, Nachrichten), sonst einmal je Minute nachfragen.
+    const verknuepfungCache = new Map();
+    function verknuepftMitAnruf(callId) {
+      const vorgaenge = tkAlle.filter((t) => t.call_id === callId);
+      const nachricht = [...mgItems.values()].find((m) => m.call_id === callId) || null;
+      const c = verknuepfungCache.get(callId); const frisch = c && Date.now() - c.zeit < 60000;
+      return { vorgaenge: vorgaenge.length ? vorgaenge : (frisch ? c.vorgaenge : []), nachricht: nachricht || (frisch ? c.nachricht : null), sicher: !!frisch };
+    }
+    const verknuepfungLaeuft = new Map();
+    function verknuepfungHolen(callId) {
+      if (verknuepfungLaeuft.has(callId)) return verknuepfungLaeuft.get(callId); // dieselbe Abfrage läuft schon (mehrfaches Neuzeichnen)
+      const p = (async () => {
+        const [{ data: t }, { data: m }] = await Promise.all([
+          sb.from('tickets').select('id, number, status, call_id, message_id').eq('tenant_id', tenant.id).eq('call_id', callId).order('number').limit(5),
+          sb.from('messages').select('id, status, call_id').eq('tenant_id', tenant.id).eq('call_id', callId).limit(1),
+        ]);
+        verknuepfungCache.set(callId, { vorgaenge: t || [], nachricht: (m || [])[0] || null, zeit: Date.now() });
+      })().finally(() => verknuepfungLaeuft.delete(callId));
+      verknuepfungLaeuft.set(callId, p);
+      return p;
+    }
+    /** Zeile „Daraus entstanden: Vorgang #26 · in Arbeit · Nachricht · offen“ im Anruf; blendet „Vorgang anlegen“ aus, wenn es einen gibt. */
+    function entstandenZeile(callId, anlegenKnopf) {
+      const z = document.createElement('div'); z.className = 'lv-entstanden'; z.hidden = true;
+      const fuellen = () => {
+        const { vorgaenge, nachricht } = verknuepftMitAnruf(callId);
+        z.innerHTML = ''; z.hidden = !vorgaenge.length && !nachricht;
+        if (anlegenKnopf) anlegenKnopf.hidden = vorgaenge.length > 0;
+        if (z.hidden) return;
+        const l = document.createElement('span'); l.textContent = 'Daraus entstanden:'; z.append(l);
+        const chip = (text, tip, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.dataset.tip = tip; b.onclick = fn; z.append(b); };
+        vorgaenge.forEach((t) => chip('Vorgang #' + t.number + ' · ' + (TK_STATUS_KLEIN[t.status] || t.status), 'Vorgang öffnen', () => { geh('sec-tickets'); vorgangOeffnen(t.id); }));
+        if (nachricht) chip('Nachricht · ' + ((nachricht.status || 'new') === 'done' ? 'erledigt' : 'offen'), 'Nachricht öffnen', () => { geh('sec-messages'); nachrichtOeffnen(nachricht.id); });
+      };
+      z._fuellen = fuellen; fuellen();
+      // Erst fragen, wenn das Detail wirklich zu sehen ist: Eingehend und Ausgehend werden im Hintergrund mitgezeichnet.
+      if (!verknuepftMitAnruf(callId).sicher && tenant) setTimeout(() => {
+        if (!z.isConnected || z.closest('.section')?.classList.contains('hidden') || verknuepftMitAnruf(callId).sicher) return;
+        verknuepfungHolen(callId).then(() => { if (z.isConnected) fuellen(); }).catch(() => { /* ohne Zeile weiter */ });
+      }, 0);
+      return z;
+    }
+    // Status koppeln: Vorgang erledigt ⇒ zugehörige Nachricht erledigt (und zurück). Bis ein Datenbank-Trigger das
+    // übernimmt, zieht die Oberfläche die andere Seite mit; ohne Schreibrecht bleibt es still beim einen.
+    async function nachrichtMitziehen(msgId, erledigt) {
+      const m = mgItems.get(msgId);
+      if (m && ((m.status || 'new') === 'done') === erledigt) return;
+      const patch = erledigt ? { status: 'done', done_at: new Date().toISOString() } : { status: 'new', done_at: null };
+      const { data, error } = await sb.from('messages').update(patch).eq('id', msgId).select('id, status, done_at');
+      if (error || !data?.length) return;
+      if (m) Object.assign(m, data[0]);
+      renderNachrichten();
+    }
+    const kopplungGeschlossen = new Map(); // Nachricht → Vorgänge, die die Kopplung selbst erledigt hat
+    async function vorgaengeMitziehen(msgId, erledigt, warErledigtAm) {
+      let q = sb.from('tickets').update({ status: erledigt ? 'done' : 'open' }).eq('tenant_id', tenant.id).eq('message_id', msgId);
+      if (erledigt) q = q.neq('status', 'done');
+      else {
+        // Nur zurück, was mit der Nachricht zusammen erledigt wurde – nicht einen Vorgang, der schon vorher für sich erledigt war.
+        const ids = kopplungGeschlossen.get(msgId);
+        if (ids?.length) q = q.eq('status', 'done').in('id', ids);
+        else if (warErledigtAm) { const t = new Date(warErledigtAm).getTime(); q = q.eq('status', 'done').gte('closed_at', new Date(t - 120000).toISOString()).lte('closed_at', new Date(t + 120000).toISOString()); }
+        else return;
+      }
+      const { data, error } = await q.select('*');
+      if (!erledigt) kopplungGeschlossen.delete(msgId);
+      if (error || !data?.length) return;
+      if (erledigt) kopplungGeschlossen.set(msgId, data.map((z) => z.id));
+      for (const z of data) { const t = tkAlle.find((x) => x.id === z.id); if (t) Object.assign(t, z); tkNotizen.delete(z.id); }
+      const { data: kz } = await sb.rpc('tickets_kennzahlen', { t: tenant.id }); if (kz) tkKz = kz;
+      renderTickets();
+    }
+    // Neue oder geänderte Vorgänge/Nachrichten: offene „Daraus entstanden“-Zeilen gleich mitziehen.
+    const entstandenAuffrischen = () => document.querySelectorAll('.lv-entstanden').forEach((z) => z._fuellen?.());
+    {
+      const renderTicketsRoh = renderTickets; renderTickets = function () { renderTicketsRoh(); entstandenAuffrischen(); };
+      const renderNachrichtenRoh = renderNachrichten; renderNachrichten = function () { renderNachrichtenRoh(); entstandenAuffrischen(); };
+    }
+    {
+      const tkUpdateRoh = tkUpdate;
+      tkUpdate = async function (t, patch, meldung) {
+        const warErledigt = t.status === 'done';
+        const ok = await tkUpdateRoh(t, patch, meldung);
+        if (ok && t.message_id && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await nachrichtMitziehen(t.message_id, patch.status === 'done');
+        return ok;
+      };
+      const mgAendernRoh = mgAendern;
+      mgAendern = async function (m, patch) {
+        const warErledigt = (m.status || 'new') === 'done', warErledigtAm = m.done_at || null;
+        const ok = await mgAendernRoh(m, patch);
+        if (ok && tenant && patch && 'status' in patch && (patch.status === 'done') !== warErledigt) await vorgaengeMitziehen(m.id, patch.status === 'done', warErledigtAm);
+        return ok;
+      };
+    }
+
+    // ---- Bereich in der Adresse: Neuladen, Zurück und Direktlinks ----
+    // #vorgaenge/26, #eingehend/<id>, #nachrichten/<id>, #assistent/zeiten … Bereichswechsel legen einen Verlaufseintrag
+    // an (Zurück geht einen Schritt zurück), die Auswahl im Bereich ersetzt ihn nur. Adressen mit „=“ (Anmelde-Token,
+    // #cal=…) und unbekannte Anker (z. B. #abo) bleiben unangetastet.
+    const BEREICH_ZU_KURZ = { 'sec-overview': 'dashboard', 'sec-live': 'eingehend', 'sec-outbound': 'ausgehend', 'sec-kontakte': 'telefonbuch', 'sec-messages': 'nachrichten', 'sec-tickets': 'vorgaenge', 'sec-auswertung': 'auswertung', 'sec-kb': 'wissen', 'sec-gaps': 'fragen', 'sec-assistant': 'assistent', 'sec-number': 'nummer', 'sec-team': 'zugaenge', 'sec-booking': 'termine', 'sec-restaurant': 'reservierungen', 'sec-floorplan': 'tischplan', 'sec-guests': 'gaeste', 'sec-webhooks': 'schnittstellen', 'sec-whatsapp': 'whatsapp', 'sec-abo': 'rechnungen' };
+    const SPAETER_SICHTBAR = ['sec-whatsapp', 'sec-abo']; // werden erst nach einer Server-Antwort eingeblendet
+    const KURZ_ZU_BEREICH = Object.assign(Object.fromEntries(Object.entries(BEREICH_ZU_KURZ).map(([b, k]) => [k, b])), { benachrichtigungen: 'sec-webhooks' });
+    const IST_UUID = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+    let routerAktiv = false;
+    function adresseLesen(h = location.hash) {
+      let roh = String(h || '').replace(/^#/, ''); try { roh = decodeURIComponent(roh); } catch { return null; }
+      if (!roh) return { target: 'sec-overview', sub: '', leer: true };
+      if (roh.includes('=')) return null;
+      const [kurz, sub = '', rest] = roh.split('/');
+      const target = KURZ_ZU_BEREICH[kurz.toLowerCase()]; if (!target || rest !== undefined) return null;
+      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages'].includes(target) && IST_UUID(sub))) return null;
+      return { target, sub };
+    }
+    function adresseFuer(target) {
+      let kurz = BEREICH_ZU_KURZ[target]; if (!kurz) return null;
+      if (target === 'sec-webhooks' && $('sec-webhooks')?.classList.contains('if-nur-benachrichtigung')) kurz = 'benachrichtigungen';
+      let sub = '';
+      if (target === 'sec-tickets' && tkAuswahl) sub = String(tkAlle.find((x) => x.id === tkAuswahl)?.number || '');
+      else if (target === 'sec-live') sub = LV_ANSICHTEN.ein.auswahl || '';
+      else if (target === 'sec-outbound') sub = LV_ANSICHTEN.aus.auswahl || '';
+      else if (target === 'sec-messages') sub = mgAuswahl || '';
+      else if (target === 'sec-assistant') sub = document.querySelector('#asReiter [data-astab].active')?.dataset.astab || '';
+      return '#' + kurz + (sub ? '/' + sub : '');
+    }
+    function adresseSetzen(target, art) {
+      const h = adresseFuer(target);
+      const url = h ? location.pathname + location.search + h : location.pathname + location.search; // unbekannter Bereich: ohne Anker
+      if (url === location.pathname + location.search + location.hash) return;
+      try { if (art === 'push') history.pushState(null, '', url); else history.replaceState(history.state, '', url); } catch { /* ohne Verlauf (z. B. Datei-URL) */ }
+    }
+    const mobilDetail = () => window.matchMedia('(max-width: 900px)').matches;
+    const mitAuswahl = (h) => String(h || '').split('/').length > 1;
+    /** Handy: offenes Detail schließen (Zurück aus #vorgaenge/26 nach #vorgaenge). */
+    function detailSchliessen(target) {
+      if (!mobilDetail() || !$(target)?.classList.contains('lv-zeigt-detail')) return;
+      if (target === 'sec-tickets' && tkAuswahl) { tkAuswahl = null; renderTickets(); }
+      else if (target === 'sec-messages' && mgAuswahl) { mgAuswahl = null; renderNachrichten(); }
+      else { const A = Object.values(LV_ANSICHTEN).find((v) => v.sec === target); if (A?.auswahl) { A.auswahl = null; renderLive(); } }
+    }
+    /** Auswahl im Bereich hat sich geändert: Adresse ersetzen, aber nur, wenn sie schon zu diesem Bereich gehört. */
+    function adresseDetail(target) {
+      if (routerAktiv || !target || !navItem(target)?.classList.contains('active')) return;
+      if (!location.hash) return;
+      // Bereichswechsel läuft gerade (die Adresse setzt der Wechsel) oder fremder Anker: nichts tun. Maßgeblich ist der
+      // Bereichsname vorn, damit auch #nachrichten/ueberfaellig (Wochenbericht) beim ersten Auswählen ersetzt wird.
+      if (KURZ_ZU_BEREICH[location.hash.slice(1).split('/')[0].toLowerCase()] !== target) return;
+      if (mobilDetail()) {
+        // Handy: Detail öffnen legt einen Verlaufseintrag an, damit Zurück (Browser, Android) wieder zur Liste führt.
+        const neu = adresseFuer(target);
+        if (neu && mitAuswahl(neu) && !mitAuswahl(location.hash)) { try { history.pushState({ vocarisDetail: 1 }, '', location.pathname + location.search + neu); } catch { /* ohne Verlauf */ } return; }
+        if (neu && !mitAuswahl(neu) && mitAuswahl(location.hash) && history.state?.vocarisDetail) { history.back(); return; } // „‹ Zurück“ in der App
+      }
+      adresseSetzen(target, 'replace');
+    }
+    document.querySelectorAll('.nav-item').forEach((b) => {
+      const roh = b.onclick; if (typeof roh !== 'function') return;
+      b.onclick = async function (e) {
+        const vorher = document.querySelector('.nav-item.active');
+        const erg = await roh.call(this, e);
+        if (!routerAktiv && b.classList.contains('active')) adresseSetzen(b.dataset.target, vorher === b ? 'replace' : 'push');
+        return erg;
+      };
+    });
+    {
+      const renderTicketDetailRoh = renderTicketDetail; renderTicketDetail = function () { renderTicketDetailRoh(); adresseDetail('sec-tickets'); };
+      const renderLiveDetailRoh = renderLiveDetail; renderLiveDetail = function () { renderLiveDetailRoh(); adresseDetail(LV.sec); };
+      const renderNachrichtDetailRoh = renderNachrichtDetail; renderNachrichtDetail = function () { renderNachrichtDetailRoh(); adresseDetail('sec-messages'); };
+    }
+    /** Adresse anwenden (Start, Zurück/Vor): Bereich öffnen und die Auswahl darin. */
+    async function adresseAnwenden(art) {
+      const z = adresseLesen();
+      if (!z || !tenant || (z.leer && art === 'start')) return;
+      const b = navItem(z.target);
+      if (!navSichtbar(b)) {
+        const h = location.hash;
+        // WhatsApp, Abo: kommen erst nach einer Server-Antwort dazu – beim Start kurz darauf warten.
+        if (art === 'start' && SPAETER_SICHTBAR.includes(z.target)) { for (let i = 0; i < 27 && !navSichtbar(navItem(z.target)); i++) await new Promise((r) => setTimeout(r, 300)); if (location.hash === h && navSichtbar(navItem(z.target))) return adresseAnwenden('start'); return; }
+        // Bekannter, aber hier nicht verfügbarer Bereich (Modul aus, Mitarbeiter): Adresse an die Ansicht angleichen.
+        const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt && location.hash === h) adresseSetzen(akt, 'replace');
+        return;
+      }
+      routerAktiv = true;
+      try {
+        if (!b.classList.contains('active')) await b.onclick();
+        if (!b.classList.contains('active')) { routerAktiv = false; const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt) adresseSetzen(akt, 'replace'); return; } // Ungespeichert-Dialog: stehen geblieben
+        if (!z.sub) { if (art === 'zurueck') detailSchliessen(z.target); return; }
+        if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
+        else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
+        else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
+        else if (z.target === 'sec-tickets') {
+          let t = tkAlle.find((x) => String(x.number) === z.sub);
+          if (!t) { const { data } = await sb.from('tickets').select('id').eq('tenant_id', tenant.id).eq('number', Number(z.sub)).maybeSingle(); t = data; }
+          if (t) await vorgangOeffnen(t.id); else toast('Vorgang #' + z.sub + ' gibt es nicht (mehr).', 'err');
+        }
+        // Direktlink auf ein Detail (Handy): die Liste darunter in den Verlauf, damit Zurück zur Liste führt statt aus der App.
+        if (art === 'start' && mobilDetail() && mitAuswahl(location.hash)) {
+          const voll = location.pathname + location.search + location.hash;
+          try { history.replaceState(null, '', location.pathname + location.search + location.hash.split('/')[0]); history.pushState({ vocarisDetail: 1 }, '', voll); } catch { /* ohne Verlauf */ }
+        }
+      } finally { routerAktiv = false; }
+    }
+    // Ein leerer Anker (href="#", location.hash = '') ist keine Navigation – sonst sprang die App aufs Dashboard.
+    window.addEventListener('popstate', () => { if (location.href.endsWith('#')) return; adresseAnwenden('zurueck'); });
+    document.addEventListener('click', (e) => { if (e.target.closest?.('a[href="#"]')) e.preventDefault(); }, true);
+    // Wissen: „N offene Fragen“ im Streifen führt zu den Fragen
+    $('sec-kb')?.addEventListener('click', (e) => { const g = e.target.closest('#kbStreifen [data-geh]'); if (g) { e.preventDefault(); geh(g.dataset.geh); } });
+
+    // ---- Einblendungen statt Browser-Tooltips, Tastatur und Screenreader ----
+    // title-Attribute (auch solche, die Listen oder Echtzeit später setzen) werden zu data-tip: dieselbe sofortige
+    // Einblendung überall, kein verzögerter Systemtooltip daneben. Symbolknöpfe (↻, ‹, ✕ …) behalten ihren Namen als aria-label.
+    (function tipsUndTastatur() {
+      const NUR_ZEICHEN = /^[^0-9A-Za-zÄÖÜäöüß]{0,3}$/;
+      const nameFehlt = (el) => !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') && NUR_ZEICHEN.test((el.textContent || '').trim());
+      const umstellen = (el, spaeter) => {
+        if (!el.hasAttribute?.('title') || el.tagName === 'IFRAME' || el.namespaceURI === 'http://www.w3.org/2000/svg') return;
+        const t = el.getAttribute('title'); el.removeAttribute('title');
+        if (!t) return;
+        if (spaeter || !el.dataset.tip) el.dataset.tip = t; // vom Skript später gesetzt (z. B. „Zuletzt aktualisiert um …“): aktueller Text gewinnt
+        if (el.matches('button, a, [role=button], input, select, textarea')) {
+          if (nameFehlt(el)) el.setAttribute('aria-label', t);
+          else if (t !== (el.getAttribute('aria-label') || el.textContent || '').trim()) el.setAttribute('aria-description', t); // Name bleibt, der Hinweis wird mit vorgelesen
+        }
+      };
+      const nachruesten = (w) => {
+        if (w.nodeType !== 1) return;
+        const alle = (sel) => (w.matches(sel) ? [w] : []).concat([...w.querySelectorAll(sel)]);
+        alle('[title]').forEach((el) => umstellen(el, false));
+        // Klickbare Zellen und Symbolknöpfe ohne Text: die Einblendung ist zugleich ihr Name (z. B. Stunden im Dashboard)
+        alle('[role=button][data-tip], button[data-tip]').forEach((el) => { if (nameFehlt(el) || (el.matches('[role=button]') && !el.getAttribute('aria-label') && (el.textContent || '').trim().length <= 2)) el.setAttribute('aria-label', el.dataset.tip); });
+        // Scrollbarer Gesprächsverlauf: per Tastatur erreichbar
+        alle('.lv-transkript:not([tabindex]), #tkDetail .transcript:not([tabindex])').forEach((el) => { el.tabIndex = 0; el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Gesprächsverlauf'); });
+        alle('#bkApple:not([aria-label])').forEach((el) => el.setAttribute('aria-label', 'Apple-Kalender: veröffentlichter Link (webcal://…)'));
+      };
+      new MutationObserver((liste) => {
+        for (const m of liste) { if (m.type === 'attributes') umstellen(m.target, true); else m.addedNodes.forEach(nachruesten); }
+      }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
+      nachruesten(document.body);
+      // Wochen-Pfeile im Kalender (Termine) ohne Namen
+      [['calPrev', 'Vorige Woche'], ['calNext', 'Nächste Woche']].forEach(([id, t]) => { const k = $(id); if (k && !k.getAttribute('aria-label')) { k.setAttribute('aria-label', t); k.dataset.tip = t; } });
+      // Gekürzter Untertitel („…“): voller Text als Einblendung
+      const untertitelTip = (e) => {
+        const ps = e.target.closest?.('.db-kopf .pagesub'); if (!ps) return;
+        if (ps.scrollWidth > ps.clientWidth + 1) ps.dataset.tip = ps.textContent.trim(); else delete ps.dataset.tip;
+      };
+      document.addEventListener('mouseover', untertitelTip, true);
+      document.addEventListener('touchstart', untertitelTip, { capture: true, passive: true }); // iPad: Antippen zeigt den vollen Text
+      // Einblendung auch bei Tastaturfokus (bisher nur beim Überfahren mit der Maus)
+      const tipEl = () => document.querySelector('body > .db-tip');
+      document.addEventListener('focusin', (e) => {
+        const el = e.target.closest?.('[data-tip]'); const tip = tipEl(); if (!el || !tip) return;
+        let sichtbar = false; try { sichtbar = e.target.matches(':focus-visible'); } catch { /* ältere Browser */ }
+        if (!sichtbar) return;
+        tip.textContent = el.dataset.tip; tip.hidden = false;
+        const er = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+        let x = er.left, y = er.bottom + 8; if (y + tr.height > innerHeight - 8) y = er.top - tr.height - 8;
+        if (x + tr.width > innerWidth - 8) x = Math.max(8, innerWidth - tr.width - 8);
+        tip.style.left = x + 'px'; tip.style.top = y + 'px';
+      });
+      // Nur die Einblendung des Elements schließen, das den Fokus verliert – sonst verschwand ein per Antippen gezeigter
+      // Hinweis sofort wieder, weil das Antippen den Fokus (z. B. von der Überschrift) wegnimmt.
+      document.addEventListener('focusout', (e) => { const tip = tipEl(); const el = e.target.closest?.('[data-tip]'); if (tip && el && tip.textContent === el.dataset.tip) tip.hidden = true; });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const tip = tipEl(); if (tip) tip.hidden = true; } });
+      // „Zum Inhalt“ springt an die Überschrift des offenen Bereichs
+      const ueberschrift = () => { const sec = [...document.querySelectorAll('#content > .section')].find((s) => !s.classList.contains('hidden')); const h = sec?.querySelector('.pagehead'); if (h && !h.hasAttribute('tabindex')) h.tabIndex = -1; return h; };
+      $('sprungInhalt')?.addEventListener('click', (e) => { e.preventDefault(); ueberschrift()?.focus(); });
+      // Nach einem Bereichswechsel steht der Fokus auf dessen Überschrift (nicht mehr auf dem Menüpunkt), außer der Bereich
+      // setzt ihn selbst (z. B. Ausgehend auf das Wählfeld).
+      document.querySelectorAll('.nav-item').forEach((b) => {
+        const roh = b.onclick; if (typeof roh !== 'function') return;
+        b.onclick = async function (e) {
+          const erg = await roh.call(this, e);
+          const a = document.activeElement;
+          if (b.classList.contains('active') && (!a || a === document.body || a === b || a.closest?.('.tabbar, .mehr'))) ueberschrift()?.focus({ preventScroll: true });
+          return erg;
+        };
+      });
+    })();
+
+    // ---- Leere Listen über die ganze Breite ----
+    // Gibt es in einem Bereich noch gar nichts (Leer-Zustand mit Knopf), fällt die Detailspalte mit „Wähle links …“ weg:
+    // sonst stehen zwei leere Karten nebeneinander.
+    document.querySelectorAll('.lv-split .lv-liste').forEach((liste) => {
+      const sec = liste.closest('.section'); if (!sec) return;
+      const pruefen = () => sec.classList.toggle('lv-ganz-leer', !!liste.querySelector(':scope > .leer'));
+      new MutationObserver(pruefen).observe(liste, { childList: true }); pruefen();
+    });
+
+    // ---- Notizen: ein Speicherstatus für Anruf, Nachricht und Wissen ----
+    // „Speichert …“ → „Gespeichert · 12:31“ oder rot „Nicht gespeichert. Erneut versuchen“. Der Stand übersteht das Neuzeichnen
+    // des Details (Echtzeit-Echo), deshalb merkt ihn eine Tabelle je Eintrag.
+    const notizStand = new Map();
+    function speicherStatus(feld, schluessel, art, nochmal) {
+      if (art) notizStand.set(schluessel, { art, zeit: new Date(), nochmal });
+      const st = notizStand.get(schluessel); if (!feld || !st) return;
+      let el = feld.nextElementSibling?.classList.contains('speicherstatus') ? feld.nextElementSibling : null;
+      if (!el) { el = document.createElement('div'); el.className = 'speicherstatus'; el.setAttribute('role', 'status'); feld.after(el); }
+      el.dataset.art = st.art; el.textContent = '';
+      if (st.art === 'laeuft') el.textContent = 'Speichert …';
+      else if (st.art === 'ok') el.textContent = 'Gespeichert · ' + st.zeit.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      else { el.append('Nicht gespeichert. '); const b = document.createElement('button'); b.type = 'button'; b.className = 'speicherstatus__nochmal'; b.textContent = 'Erneut versuchen'; b.onclick = () => st.nochmal?.(); el.append(b); }
+    }
+    {
+      // Nachricht: die Notiz speichert schon automatisch (mgAendern mit note) – jetzt mit sichtbarem Stand
+      const mgAendernVorNotiz = mgAendern;
+      mgAendern = async function (m, patch) {
+        if (!patch || !('note' in patch)) return mgAendernVorNotiz(m, patch);
+        const feld = () => document.querySelector('#mgDetail[data-msg-id="' + m.id + '"] [data-notiz]');
+        speicherStatus(feld(), 'msg:' + m.id, 'laeuft');
+        const ok = await mgAendernVorNotiz(m, patch);
+        speicherStatus(feld(), 'msg:' + m.id, ok ? 'ok' : 'fehler', () => mgAendern(m, { note: feld()?.value.trim() || null }));
+        return ok;
+      };
+      const renderNachrichtDetailVorNotiz = renderNachrichtDetail;
+      renderNachrichtDetail = function () { renderNachrichtDetailVorNotiz(); if (mgAuswahl) speicherStatus($('mgDetail')?.querySelector('[data-notiz]'), 'msg:' + mgAuswahl); };
+      // Wissen: Inhalt speichert beim Verlassen des Feldes bzw. mit „Speichern“ – Stand unter dem Text
+      const kbUpdateVorStand = kbUpdate;
+      kbUpdate = async function (it, patch, meldung) {
+        const ok = await kbUpdateVorStand(it, patch, meldung);
+        if (patch && 'content' in patch) { notizStand.set('kb:' + it.id, { art: ok ? 'ok' : 'fehler', zeit: new Date(), nochmal: () => $('kbDetail')?.querySelector('[data-kopf] .btn--primary')?.click() }); speicherStatus($('kbDetail')?.querySelector('[data-f=content]'), 'kb:' + it.id); }
+        return ok;
+      };
+      const renderWissenDetailVorStand = renderWissenDetail;
+      renderWissenDetail = function () { renderWissenDetailVorStand(); if (kbAuswahl) speicherStatus($('kbDetail')?.querySelector('[data-f=content]'), 'kb:' + kbAuswahl); };
+    }
+
+    // ---- Nachricht erledigt: Rückgängig im Hinweis ----
+    // Der Erledigt-Knopf (und Taste E) zeigt danach „Erledigt.“; daraus wird ein Hinweis mit „Rückgängig“ (stellt Status und
+    // Datum zurück, ein gekoppelter Vorgang geht über die Kopplung mit).
+    {
+      const mgAendernVorRueck = mgAendern;
+      mgAendern = async function (m, patch) {
+        const vorher = { status: m.status || 'new', done_at: m.done_at || null };
+        const ok = await mgAendernVorRueck(m, patch);
+        if (ok && patch?.status === 'done' && vorher.status !== 'done') setTimeout(() => {
+          const t = $('toast'); if (!t?.classList.contains('show') || t.textContent !== 'Erledigt.') return;
+          const neu = toast('Nachricht erledigt.', '', 6000);
+          const a = document.createElement('a'); a.href = '#'; a.className = 'toast__link'; a.textContent = 'Rückgängig';
+          a.onclick = async (e) => { e.preventDefault(); neu.className = 'toast'; if (await mgAendern(m, vorher)) { toast('Wieder offen.'); renderNachrichten(); } };
+          neu.append(' ', a);
+        }, 0);
+        return ok;
+      };
+    }
+
+    // ---- Dashboard nach einem Anruf aktuell ----
+    // Neuer oder beendeter Anruf (Echtzeit): Zahlen gelten als veraltet; ist das Dashboard offen, lädt es gedrosselt nach.
+    // Alte Anrufe (Notiz oder Tag geändert) ändern die Kennzahlen nicht.
+    let dbAnrufTimer = null;
+    function dbNachAnruf(p) {
+      const c = p?.new; if (!c?.started_at) return;
+      if (p.eventType !== 'INSERT' && Date.now() - new Date(c.started_at).getTime() > 3 * 3600e3) return;
+      dbDatenZeit = 0;
+      clearTimeout(dbAnrufTimer);
+      dbAnrufTimer = setTimeout(() => { if (tenant && !$('sec-overview')?.classList.contains('hidden') && document.visibilityState === 'visible') ladeDashboard(); }, 3000);
+    }
+
+    // ---- Ladefehler nur im eigenen Bereich ----
+    // Lädt eine Liste im Hintergrund (Echtzeit, Wiederkehr) und scheitert, gehört die Meldung nicht in einen anderen Bereich;
+    // bei sichtbarem Verbindungsbalken sagt der schon alles. Die Liste selbst zeigt ihren Fehler beim Öffnen.
+    {
+      const LADE_BEREICHE = [
+        [/^Fehler beim Laden der Anrufe/, ['sec-live', 'sec-outbound', 'sec-overview', 'sec-auswertung']],
+        [/^Fehler beim Laden der Nachrichten/, ['sec-messages', 'sec-overview']],
+        [/^Fehler beim Laden der Vorgänge/, ['sec-tickets', 'sec-overview']],
+        [/^Fehler beim Laden der (offenen|beantworteten) Fragen/, ['sec-gaps', 'sec-kb']],
+        [/^Fehler beim Laden des Telefonbuchs/, ['sec-kontakte']],
+        [/^Fehler beim Laden der Gäste/, ['sec-guests', 'sec-restaurant']],
+        [/^Fehler beim Laden der Sperrliste/, ['sec-number', 'sec-assistant']],
+        [/^Fehler beim Laden: /, ['sec-assistant', 'sec-kb', 'sec-overview']],
+      ];
+      const toastVorBereich = toast;
+      toast = function (msg, kind, dauer) {
+        if (kind === 'err' && typeof msg === 'string' && msg.startsWith('Fehler beim Laden')) {
+          const offen = document.querySelector('.nav-item.active')?.dataset.target;
+          const eintrag = LADE_BEREICHE.find(([re]) => re.test(msg));
+          if (document.querySelector('.verbindung.sichtbar') || (eintrag && offen && !eintrag[1].includes(offen))) { console.warn('[Laden]', msg); return $('toast'); }
+        }
+        return toastVorBereich(msg, kind, dauer);
+      };
+    }
+
+    /** Antwort des Vocaris-Servers als JSON lesen. Eine HTML-Fehlerseite (z. B. 502 vom Proxy) ergibt einen verständlichen
+     *  Satz statt „Unexpected token <“; bei !r.ok wirft sie mit der Fehlermeldung des Servers. */
+    async function apiJson(r, sonst) {
+      let j = null; try { const t = await r.text(); j = t ? JSON.parse(t) : {}; } catch { j = null; }
+      if (!r.ok) throw new Error(j?.error || (r.status === 401 ? 'Deine Anmeldung ist abgelaufen – bitte neu anmelden.' : r.status >= 500 ? 'Der Vocaris-Server antwortet gerade nicht (' + r.status + '). Bitte gleich noch einmal versuchen.' : sonst || 'Anfrage abgelehnt (' + r.status + ').'));
+      if (!j) throw new Error('Unerwartete Antwort vom Server – bitte gleich noch einmal versuchen.');
+      return j;
+    }
+
+    // ---- Wissen: „offene Fragen“ im Streifen folgt den Fragen ----
+    // Wieder geöffnete oder beantwortete Fragen zählten im Streifen erst nach dem nächsten Neuzeichnen des Wissens mit.
+    {
+      const renderFragenVorStreifen = renderFragen;
+      renderFragen = function (...args) {
+        const erg = renderFragenVorStreifen.apply(this, args);
+        const el = $('kbStreifen'); const link = el?.querySelector('[data-geh="sec-gaps"]'); const n = typeof gapItems !== 'undefined' ? gapItems.length : 0;
+        if (el && (link || n)) {
+          if (link && n) link.textContent = n + (n === 1 ? ' offene Frage' : ' offene Fragen');
+          else if (typeof renderWissen === 'function') renderWissen();
+        }
+        return erg;
+      };
+    }
+
+    // ---- Reservierungen: Notiz direkt an der Reservierung ----
+    function resNotizBearbeiten(r, karte) {
+      if (karte.querySelector('.res-notiz')) return;
+      const box = document.createElement('div'); box.className = 'res-notiz';
+      box.innerHTML = '<textarea rows="2" aria-label="Notiz zur Reservierung" placeholder="z. B. Kinderstuhl, Allergie, Fensterplatz"></textarea><div class="stack"><button class="btn btn--primary sm" type="button">Speichern</button><button class="btn btn--ghost sm" type="button">Abbrechen</button></div>';
+      const ta = box.querySelector('textarea'); ta.value = r.notes || '';
+      const [sp, ab] = box.querySelectorAll('button');
+      ab.onclick = () => box.remove();
+      sp.onclick = async () => {
+        sp.disabled = true;
+        const ok = await schreibenGeprueft(sb.from('reservations').update({ notes: ta.value.trim() || null }).eq('id', r.id).select('id'), 'Notiz gespeichert.');
+        sp.disabled = false; if (ok) { box.remove(); loadRestaurant(); }
+      };
+      ta.onkeydown = (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sp.click(); if (e.key === 'Escape') ab.click(); };
+      karte.append(box); ta.focus();
+    }
+
+    // ---- Assistent: ungültige Eingaben abfangen, Vorlagen nicht still übernehmen ----
+    /** Nummernfelder normalisieren (0170… → +49170…) und prüfen; Fehler rot markieren. Gibt die Liste der Probleme zurück. */
+    function asEingabenPruefen() {
+      const fehler = [];
+      const nrFeld = (el, name) => {
+        if (!el) return; const v = el.value.trim();
+        if (!v) { el.removeAttribute('aria-invalid'); return; }
+        const n = ktNormal(v);
+        if (/^\+\d{7,15}$/.test(n)) { if (n !== v) el.value = n; el.removeAttribute('aria-invalid'); return; }
+        el.setAttribute('aria-invalid', 'true'); fehler.push(name);
+      };
+      nrFeld($('fwdNumber'), 'Weiterleitungsnummer');
+      nrFeld($('asAgentNummer'), 'eigene Rufnummer');
+      $('asZiele')?.querySelectorAll('.as-feldzeile').forEach((z) => nrFeld(z.querySelector('[data-number]'), 'Ziel „' + (z.querySelector('[data-name]').value.trim() || z.querySelector('[data-topic]').value.trim() || 'ohne Namen') + '“'));
+      $('asTasten')?.querySelectorAll('.as-feldzeile').forEach((z) => nrFeld(z.querySelector('[data-number]'), 'Taste ' + z.querySelector('[data-digit]').value));
+      const von = $('asNoticeFrom')?.value, bis = $('asNoticeUntil')?.value;
+      if (von && bis && bis < von) { $('asNoticeUntil').setAttribute('aria-invalid', 'true'); fehler.push('Sonderhinweis („bis“ liegt vor „ab“)'); }
+      else $('asNoticeUntil')?.removeAttribute('aria-invalid');
+      return fehler;
+    }
+    {
+      const knopf = $('saveBtn'), roh = knopf?.onclick;
+      if (knopf && typeof roh === 'function') knopf.onclick = async function (e) {
+        const fehler = asEingabenPruefen();
+        if (fehler.length) {
+          toast('Nicht gespeichert – bitte prüfen: ' + fehler.join(', ') + '.', 'err', 7000);
+          const erstes = document.querySelector('#sec-assistant [aria-invalid="true"]');
+          const panel = erstes?.closest('.panel[data-astab]'); if (panel) asReiterZeigen(panel.dataset.astab);
+          erstes?.focus();
+          return;
+        }
+        return roh.call(this, e);
+      };
+    }
+    // Sonderhinweis mit „bis“ vor „ab“ gilt nie – das sagt die Statuszeile jetzt, statt „gilt ab …“ zu melden.
+    {
+      const roh = asHinweisStatus;
+      asHinweisStatus = function () {
+        const art = roh();
+        const von = $('asNoticeFrom')?.value, bis = $('asNoticeUntil')?.value, el = $('asNoticeStatus');
+        if (el && $('asNoticeText')?.value.trim() && von && bis && bis < von) { el.textContent = '„bis“ liegt vor „ab“ – so gilt der Hinweis nie. Bitte das Datum prüfen.'; el.dataset.art = 'fehler'; return 'fehler'; }
+        return art;
+      };
+    }
+    // Weiterleitung „nur während der Öffnungszeiten“ ohne eingetragene Zeiten: leitet nie weiter – Hinweis darunter.
+    function asWeiterleitungHinweis() {
+      const sel = $('fwdHours'); if (!sel) return;
+      let h = $('asFwdHinweis');
+      if (!h) { h = document.createElement('p'); h.id = 'asFwdHinweis'; h.className = 'as-hinweisstatus'; h.dataset.art = 'fehler'; h.setAttribute('aria-live', 'polite'); sel.closest('div')?.append(h); }
+      const ohneZeiten = !Object.values(readHours()).some((iv) => iv && iv.length);
+      const zeigen = $('fwdEnabled')?.checked && sel.value === 'true' && ohneZeiten;
+      h.hidden = !zeigen; h.textContent = zeigen ? 'Es sind keine Öffnungszeiten eingetragen – so wird nie weitergeleitet. Zeiten unter „Zeiten“ eintragen oder „Immer“ wählen.' : '';
+    }
+    $('sec-assistant')?.addEventListener('input', asWeiterleitungHinweis);
+    $('sec-assistant')?.addEventListener('change', asWeiterleitungHinweis);
+    { const roh = loadDept; loadDept = async function (...a) { const r = await roh.apply(this, a); asWeiterleitungHinweis(); return r; }; }
+    // Branchen-Vorlage: erst fragen, Öffnungszeiten nur ohne eigene Zeiten übernehmen, danach „ungespeichert“ anzeigen.
+    {
+      const roh = applyPreset;
+      applyPreset = function (name) {
+        if (!PERSONA_PRESETS[name]) return;
+        if (!confirm('Vorlage „' + name + '“ übernehmen?\n\nErsetzt Rolle, Ton, Verhalten, Grenzen und Verabschiedung. Öffnungszeiten nur, wenn noch keine eingetragen sind.')) return;
+        const zeiten = readHours(); const hatZeiten = Object.values(zeiten).some((iv) => iv && iv.length);
+        roh(name);
+        if (hatZeiten) renderHours(zeiten);
+        asSetzeDirty(true); asVorschau(); asWeiterleitungHinweis();
+      };
+    }
+
+    // ---- Offene Frage → Gespräch (zeitlich zugeordnet, bis die Frage die Anruf-Kennung mitbringt) ----
+    const frageAnrufCache = new Map();
+    async function anrufZurFrage(g) {
+      if (frageAnrufCache.has(g.id)) return frageAnrufCache.get(g.id);
+      const t = new Date(g.created_at).getTime();
+      const passt = (c) => { const s = new Date(c.started_at).getTime(); const e = c.ended_at ? new Date(c.ended_at).getTime() : s + 20 * 60000; return s <= t && t <= e + 2 * 60000; };
+      let treffer = [...liveCalls.values()].map((x) => x.call).filter(passt);
+      if (!treffer.length) {
+        const { data } = await sb.from('calls').select('id, started_at, ended_at').eq('tenant_id', tenant.id).lte('started_at', new Date(t).toISOString()).gte('started_at', new Date(t - 3 * 3600e3).toISOString()).limit(50);
+        treffer = (data || []).filter(passt);
+      }
+      const c = treffer.length === 1 ? treffer[0] : null;
+      frageAnrufCache.set(g.id, c); return c;
+    }
+    {
+      const roh = renderFrageDetail;
+      renderFrageDetail = function () {
+        roh();
+        const quelle = gapStatus === 'open' ? gapItems : (gapBeantwortet || []); const g = gapAuswahl ? quelle.find((x) => x.id === gapAuswahl) : null;
+        if (!g || !tenant) return;
+        anrufZurFrage(g).then((c) => {
+          const akt = $('gapDetail')?.querySelector('[data-aktionen]');
+          if (!c || gapAuswahl !== g.id || !akt || akt.querySelector('[data-gespraech]')) return;
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--ghost sm'; b.dataset.gespraech = '1';
+          b.textContent = 'Gespräch öffnen'; b.dataset.tip = 'Zeitlich zugeordnet: Anruf vom ' + new Date(c.started_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+          b.onclick = () => liveOeffnen(c.id);
+          const rechts = [...akt.children].find((x) => x.style.marginLeft === 'auto'); akt.insertBefore(b, rechts || null);
+        }).catch(() => { /* ohne Knopf weiter */ });
+      };
+    }
+
+    // ---- Testanruf: ein Dialog mit der eigenen Nummer statt im Kreis zwischen Eingehend und Telefonnummer ----
+    let taFalleLoesen = null;
+    function testanrufSchliessen() { $('taDialog')?.classList.add('hidden'); if (taFalleLoesen) { const f = taFalleLoesen; taFalleLoesen = null; f(); } }
+    function testanrufOeffnen() {
+      const d = $('taDialog'); if (!d || !tenant) return;
+      const eigene = (firmenNummern || []).filter((n) => n.tenant_id === tenant.id || n.inbound_tenant_id === tenant.id)
+        .sort((a, b) => ((a.department || 'general') === 'general' ? 0 : 1) - ((b.department || 'general') === 'general' ? 0 : 1));
+      const inhalt = $('taInhalt'), kn = $('taKnoepfe'); inhalt.innerHTML = ''; kn.innerHTML = '';
+      const absatz = (html) => { const p = document.createElement('p'); p.className = 'muted ta-text'; p.innerHTML = html; inhalt.append(p); return p; };
+      const knopf = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + cls; b.textContent = text; b.onclick = fn; kn.append(b); return b; };
+      if (eigene.length) {
+        const nr = eigene[0].phone_number;
+        absatz('Ruf diese Nummer mit deinem Handy oder vom Festnetz an:');
+        const a = document.createElement('a'); a.className = 'ta-nummer'; a.href = 'tel:' + nr; a.textContent = fmtNr(nr); inhalt.append(a);
+        if (eigene.length > 1) absatz('Weitere: ' + eigene.slice(1).map((n) => escHtml(fmtNr(n.phone_number)) + ' (' + escHtml(DEPT_LABEL[n.department || 'general'] || n.department) + ')').join(', '));
+        absatz('Das Gespräch erscheint sofort unter <b>Eingehend</b> – mit Mitschrift und Zusammenfassung.');
+        knopf('Zu Eingehend', 'btn--primary', () => { testanrufSchliessen(); geh('sec-live'); window.scrollTo({ top: 0 }); });
+        knopf('Nummer kopieren', 'btn--ghost', async () => { try { await navigator.clipboard.writeText(nr); toast('Nummer kopiert.'); } catch { toast(nr); } });
+      } else {
+        absatz('Deine Nummer wird gerade eingerichtet – wir melden uns, sobald sie aktiv ist.');
+        absatz('Bis dahin kannst du dem Wissens-Assistenten Fragen stellen, so wie ein Anrufer es tun würde.');
+        knopf('Probefrage stellen', 'btn--primary', () => { testanrufSchliessen(); if (typeof waOpen === 'function') waOpen(true); });
+      }
+      knopf('Schließen', 'btn--ghost', testanrufSchliessen);
+      d.onclick = (e) => { if (!e.target.closest('.pwmodal__card')) testanrufSchliessen(); };
+      d.classList.remove('hidden');
+      taFalleLoesen = fokusFalle(d, testanrufSchliessen);
+      kn.querySelector('button')?.focus();
+    }
+    // Alle Testanruf-Knöpfe (Kopfzeilen, Nummernkarte, Schnellaktionen auf dem Dashboard) öffnen den Dialog.
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest?.('[data-testanruf], .db-aktionen-grid [data-geh="sec-live"]'); if (!b) return;
+      if (dbEdit && b.closest('#sec-overview [data-widget]')) return;
+      e.preventDefault(); e.stopPropagation(); testanrufOeffnen();
+    }, true);
+
+    // ---- Seitenleiste nach Alltag, Restaurant mit Reservierungen vorn, Benachrichtigungen statt Schnittstellen ----
+    const textTauschen = (el, text) => { if (!el) return; const n = [...el.childNodes].find((x) => x.nodeType === 3 && x.textContent.trim()); if (n) n.textContent = text; };
+    function navOrdnen() {
+      const nav = document.querySelector('.side nav'); if (!nav) return;
+      nav.querySelectorAll('.nav-group').forEach((g) => { if (g.textContent.trim() === 'Funktionen') g.textContent = 'Verwaltung'; });
+      const nachVorgaengen = [];
+      if (module.reservierung && navSichtbar(navItem('sec-restaurant'))) nachVorgaengen.push('sec-restaurant', 'sec-floorplan', 'sec-guests');
+      if (module.termine && navSichtbar(navItem('sec-booking'))) nachVorgaengen.push('sec-booking');
+      let anker = navItem('sec-tickets'); if (!anker) return;
+      for (const z of nachVorgaengen) { const el = navItem(z); if (el) { anker.after(el); anker = el; } }
+      // Was nicht nach oben gehört (Modul aus), bleibt bzw. kommt zurück in die Verwaltung.
+      const verw = navItem('sec-webhooks');
+      if (verw) for (const z of ['sec-booking', 'sec-restaurant', 'sec-floorplan', 'sec-guests']) if (!nachVorgaengen.includes(z) && navItem(z)) verw.before(navItem(z));
+      const tb = navItem('sec-kontakte'), aw = navItem('sec-auswertung'); if (tb && aw) aw.before(tb);
+    }
+    /** Handy: beim Restaurant zeigt der zweite Reiter der Tab-Leiste die Reservierungen statt „Eingehend“. */
+    function tabbarAnpassen(zustand) {
+      const t = document.querySelector('.tab-item[data-tab="sec-live"], .tab-item[data-orig-tab]'); if (!t) return;
+      if (!t.dataset.origTab) { t.dataset.origTab = t.dataset.tab; t.dataset.origHtml = t.innerHTML; }
+      const res = zustand.industry === 'restaurant' && module.reservierung && navSichtbar(navItem('sec-restaurant'));
+      if (res && t.dataset.tab !== 'sec-restaurant') { t.dataset.tab = 'sec-restaurant'; t.innerHTML = (navItem('sec-restaurant')?.querySelector('svg')?.outerHTML || '').replace('<svg ', '<svg aria-hidden="true" ') + 'Reservierungen'; }
+      else if (!res && t.dataset.tab !== t.dataset.origTab) { t.dataset.tab = t.dataset.origTab; t.innerHTML = t.dataset.origHtml; }
+      const mehr = $('tabMehr'), lb = mehr?.querySelector('[data-tabbadge="liveBadge"]');
+      if (res && mehr && !lb) { const s = document.createElement('span'); s.className = 'gap-badge hidden'; s.dataset.tabbadge = 'liveBadge'; s.setAttribute('aria-label', 'laufende Anrufe'); mehr.append(s); }
+      else if (!res && lb) lb.remove();
+      syncTabbar();
+    }
+    {
+      const roh = applyVisibility;
+      applyVisibility = function (zustand) {
+        roh(zustand);
+        const kur = BRANCHEN_KURATIERUNG[zustand.industry] || {};
+        for (const [ziel, text] of Object.entries(kur.navTexte || {})) { textTauschen(navItem(ziel), text); textTauschen($(ziel)?.querySelector('.pagehead'), text); }
+        const nurBenachrichtigung = zustand.industry === 'restaurant';
+        $('sec-webhooks')?.classList.toggle('if-nur-benachrichtigung', nurBenachrichtigung);
+        if (nurBenachrichtigung) { const ps = $('sec-webhooks')?.querySelector('.pagesub'); if (ps) ps.textContent = 'Wohin neue Nachrichten, offene Fragen und Anrufe gemeldet werden: E-Mail, Slack, Teams, Telegram oder SMS.'; }
+        // Ohne Assistenten-Weg (Restaurant: dort spricht immer ein Mensch) gibt es keine geplanten Anrufe.
+        $('obGeplant')?.classList.toggle('hidden', !assistentWegErlaubt());
+        navOrdnen(); tabbarAnpassen(zustand);
+      };
+      const rrRoh = rueckrufeLaden; rueckrufeLaden = function (...a) { if (!assistentWegErlaubt()) return; return rrRoh.apply(this, a); };
+    }
+
+    // ---- Abteilungs-Umschalter nur, wenn es mehr als eine Abteilung gibt ----
+    const abtInhalt = { fuer: null, hat: false };
+    function abteilungenZeigen(nums) {
+      if ((BRANCHEN_KURATIERUNG[tenant?.industry]?.selektorenAus || []).includes('[data-deptbar]')) return; // Kuratierung blendet ohnehin aus
+      const mehrere = (nums || []).some((n) => (n.department || 'general') !== 'general') || (abtInhalt.fuer === tenant?.id && abtInhalt.hat);
+      if (tenant && abtInhalt.fuer !== tenant.id) {
+        // Wissen oder Einstellungen für Vertrieb/Support sind schon angelegt (z. B. Abteilungsnummer wieder entfernt): erreichbar lassen.
+        abtInhalt.fuer = tenant.id;
+        Promise.all([
+          sb.from('knowledge_base').select('id').eq('tenant_id', tenant.id).neq('department', 'general').limit(1),
+          sb.from('assistant_config').select('department').eq('tenant_id', tenant.id).neq('department', 'general').limit(1),
+        ]).then(([k, a]) => { abtInhalt.hat = !!(k.data?.length || a.data?.length); if (abtInhalt.hat && !mehrere) abteilungenZeigen(nums); }).catch(() => { /* Umschalter bleibt nach den Nummern */ });
+      }
+      const aus = !mehrere && currentDept === 'general';
+      document.querySelectorAll('[data-deptbar], .dept-hint').forEach((el) => el.classList.toggle('hidden', aus));
+      if ($('numSubtitle')) $('numSubtitle').textContent = mehrere ? 'Deine Vocaris-Nummern. Jede Nummer steuert ihre Abteilung an (Allgemein, Vertrieb, Support).' : 'Die Rufnummer, unter der dein Assistent erreichbar ist.';
+    }
+    { const roh = renderNumbers; renderNumbers = function (nums) { roh(nums); abteilungenZeigen(nums); }; }
+
+    // ---- Auswertung: „Alle Anrufe“ ohne Restfilter, im selben Zeitraum ----
+    if ($('awAlleAnrufe')) $('awAlleAnrufe').onclick = () => awNachEingehend({});
+
+    // ---- Dashboard: keine Kacheln für ausgeblendete Bereiche, Reservierungen fürs Restaurant ----
+    const dbKachelSichtbar = (id) => { const w = dbWidget(id); return !w || !w.ziel || navSichtbar(navItem(w.ziel)); };
+    if (dbWidget('terminliste')) dbWidget('terminliste').ziel = 'sec-booking';
+    DB_WIDGETS.splice(0, 0, { id: 'reservierungen', art: 'kpi', titel: 'Reservierungen heute', std: true, ziel: 'sec-restaurant', html: () => '<div class="k">Reservierungen heute</div><div class="v" id="dbResHeute">–</div><div class="d" id="dbResHeuteSub">&nbsp;</div>' });
+    DB_WIDGETS.splice(DB_WIDGETS.findIndex((w) => w.art === 'panel'), 0, { id: 'reservierungsliste', art: 'panel', titel: 'Nächste Reservierungen', std: true, groesse: 4, ziel: 'sec-restaurant', html: () => kopf('Nächste Reservierungen', 'sec-restaurant') + '<div id="dbResListe" class="db-liste"></div>' });
+    {
+      const roh = renderDashboardLayout;
+      renderDashboardLayout = function () {
+        if (!dbLayout) return roh();
+        const echt = dbLayout.reihenfolge; dbLayout.reihenfolge = echt.filter(dbKachelSichtbar); // gespeicherte Anordnung bleibt erhalten
+        try { roh(); } finally { dbLayout.reihenfolge = echt; }
+        q('dbHinzu').querySelectorAll?.('[data-hinzu]').forEach((b) => { if (!dbKachelSichtbar(b.dataset.hinzu)) b.remove(); });
+      };
+      const dvRoh = dbVerschieben;
+      dbVerschieben = function (id, richtung) { // über ausgeblendete Kacheln hinweg verschieben, sonst passiert sichtbar nichts
+        for (let i = 0; i < 40; i++) { const vor = dbLayout.reihenfolge.slice(); dvRoh(id, richtung); const j = dbLayout.reihenfolge.indexOf(id); if (vor.join() === dbLayout.reihenfolge.join() || dbKachelSichtbar(vor[j])) return; }
+      };
+      const llRoh = dbLayoutLaden;
+      dbLayoutLaden = async function (...a) {
+        // Endet die Sitzung während des Ladens, ist tenant schon null – dann gibt es nichts mehr zu zeichnen.
+        try { await llRoh.apply(this, a); } catch (e) { if (!tenant) return; throw e; }
+        if (!tenant || !dbLayout) return;
+        dbLayoutStand = dbLayoutJson();
+        // Restaurant mit Reservierungen: die beiden Kacheln einmalig in ein gespeichertes Layout aufnehmen (Merker res1).
+        if (tenant?.industry === 'restaurant' && module.reservierung && dbLayout && !dbLayout.res1) {
+          const r = dbLayout.reihenfolge; let neu = false;
+          if (!r.includes('reservierungen')) { r.unshift('reservierungen'); neu = true; }
+          if (!r.includes('reservierungsliste')) { const i = r.findIndex((id) => dbWidget(id)?.art === 'panel'); r.splice(i < 0 ? r.length : i, 0, 'reservierungsliste'); neu = true; }
+          dbLayout.res1 = true; if (neu) dbLayoutSpeichern(); else dbLayoutStand = dbLayoutJson();
+        }
+      };
+      // Gespeichert wird nur, was sich geändert hat („Anpassen“ ein und aus schrieb bisher jedes Mal ins Konto),
+      // und in der Betreiber-Ansicht (?imp) nie – dort ist die Sitzung die des Kunden.
+      const lsRoh = dbLayoutSpeichern;
+      dbLayoutSpeichern = function (...a) {
+        if (!dbLayout || !tenant || IMP_HASH) return;
+        const j = dbLayoutJson(); if (j === dbLayoutStand) return;
+        dbLayoutStand = j; return lsRoh.apply(this, a);
+      };
+      const zdRoh = zeichneDashboard;
+      zeichneDashboard = function () { zdRoh(); dbResZeichnen(); };
+    }
+    let dbResDaten = null, dbResZeit = 0, dbResLaeuft = null, dbLayoutStand = '';
+    function dbLayoutJson() { try { const { stand, ...rest } = dbLayout || {}; return JSON.stringify(rest); } catch { return ''; } }
+    async function dbResLaden() {
+      const h0 = new Date(); h0.setHours(0, 0, 0, 0);
+      const { data, error } = await sb.from('reservations').select('id, starts_at, party_size, customer_name, status, notes').eq('tenant_id', tenant.id)
+        .gte('starts_at', h0.toISOString()).lt('starts_at', new Date(h0.getTime() + 8 * 864e5).toISOString()).neq('status', 'cancelled').order('starts_at').limit(300);
+      if (error) return;
+      dbResDaten = { items: data || [], h0: h0.getTime() }; dbResZeit = Date.now();
+    }
+    function dbResZeichnen() {
+      if (!$('dbResHeute') && !$('dbResListe')) return;
+      if (!dbResDaten || Date.now() - dbResZeit > 60000) { if (!dbResLaeuft && tenant) dbResLaeuft = dbResLaden().finally(() => { dbResLaeuft = null; if (dbResDaten) dbResZeichnen(); }); if (!dbResDaten) return; }
+      const { items, h0 } = dbResDaten;
+      const heute = items.filter((r) => new Date(r.starts_at).getTime() < h0 + 864e5);
+      const gaeste = heute.filter((r) => r.status !== 'no_show').reduce((a, r) => a + (r.party_size || 0), 0);
+      const kommend = items.filter((r) => r.status === 'booked' && new Date(r.starts_at).getTime() >= Date.now() - 15 * 60000);
+      const naechste = kommend[0];
+      const uhr = (iso) => new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      if ($('dbResHeute')) { $('dbResHeute').textContent = heute.length; $('dbResHeuteSub').textContent = gaeste + (gaeste === 1 ? ' Gast' : ' Gäste') + (naechste && new Date(naechste.starts_at).getTime() < h0 + 864e5 ? ' · nächste ' + uhr(naechste.starts_at) + ' Uhr' : ''); }
+      const l = $('dbResListe'); if (!l) return;
+      l.innerHTML = '';
+      if (!kommend.length) { l.innerHTML = leerText('Keine offenen Reservierungen in den nächsten 7 Tagen.'); return; }
+      kommend.slice(0, 5).forEach((r) => {
+        const d = new Date(r.starts_at), tagNr = Math.floor((new Date(d).setHours(0, 0, 0, 0) - h0) / 864e5);
+        const wann = (tagNr === 0 ? 'Heute' : tagNr === 1 ? 'Morgen' : d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })) + ' ' + uhr(r.starts_at) + ' Uhr';
+        const z = zeile(r.customer_name || 'Ohne Namen', wann + ' · ' + (r.party_size || '?') + ' Pers.', r.notes || '');
+        z.onclick = () => { geh('sec-restaurant'); const tag = lokalDatum(new Date(r.starts_at)); if ($('rsDayDate') && $('rsDayDate').value !== tag) { $('rsDayDate').value = tag; refreshDay(); } };
+        l.append(z);
+      });
+    }
+
+    // ---- Ausgehend: Verlauf im ersten Bild ----
+    // Das Wählfeld startet zugeklappt, sobald es ausgehende Anrufe gibt; „Neuer Anruf“, Rückruf und Telefonbuch klappen es auf.
+    let obWaehlEntschieden = false;
+    {
+      const b = navItem('sec-outbound'), roh = b?.onclick;
+      if (b && typeof roh === 'function') b.onclick = function (e) {
+        // Erst wechseln (das zeigt das Wählfeld, siehe tnSichtbarkeit), dann gleich – noch vor Rückruf/Telefonbuch,
+        // die es danach wieder aufklappen – zuklappen. Nur beim ersten Besuch; danach gilt, was der Nutzer wählt.
+        const erg = roh.call(this, e);
+        if (!obWaehlEntschieden && tenant && b.classList.contains('active')) {
+          obWaehlEntschieden = true;
+          if ([...liveCalls.values()].some((x) => callRichtung(x.call) === 'out')) {
+            $('obWaehl')?.classList.add('hidden');
+            // Der Bereich hatte den Fokus ins Wählfeld gesetzt – zugeklappt fiele er auf body. Freigeben, dann setzt der
+            // Bereichswechsel ihn auf die Überschrift.
+            const a = document.activeElement; if (a && $('obWaehl')?.contains(a)) a.blur();
+          }
+        }
+        return erg;
+      };
+    }
+
+    // ---- Konto-Menü: Ton und Hinweise bei Anrufen selbst einstellen ----
+    // Bisher fragte die Seite beim Laden ungefragt nach Mitteilungen (Safari verweigert das ohne Klick) und der Klingelton
+    // ließ sich nicht abstellen. Jetzt: Schalter „Ton“ und ein Knopf, der die Erlaubnis im Klick anfragt.
+    const TON_KEY = 'vocaris.ton';
+    const tonAn = () => { try { return localStorage.getItem(TON_KEY) !== 'aus'; } catch { return true; } };
+    { const roh = ringTone; ringTone = function () { if (!tonAn()) return; return roh(); }; }
+    function hinweisStand() { if (!('Notification' in window)) return 'fehlt'; return Notification.permission; }
+    function meldungenBauen(klasse) {
+      const wrap = document.createElement('div'); wrap.className = 'konto__meldungen ' + (klasse || '');
+      const ton = document.createElement('label'); ton.className = 'konto__schalter';
+      ton.innerHTML = '<input type="checkbox"><span>Ton bei eingehenden Anrufen</span>';
+      const cb = ton.querySelector('input'); cb.checked = tonAn();
+      cb.onchange = () => { try { localStorage.setItem(TON_KEY, cb.checked ? 'an' : 'aus'); } catch { /* nur für diese Sitzung */ } document.querySelectorAll('.konto__schalter input').forEach((x) => { x.checked = cb.checked; }); };
+      ton.addEventListener('click', (e) => e.stopPropagation()); // Menü bleibt beim Umschalten offen
+      const hw = document.createElement('button'); hw.type = 'button'; hw.className = 'konto__hinweise';
+      const zeichnen = () => {
+        const st = hinweisStand();
+        hw.textContent = st === 'granted' ? 'Hinweise bei Anrufen: an' : st === 'denied' ? 'Hinweise blockiert' : st === 'fehlt' ? 'Hinweise: in diesem Browser nicht möglich' : 'Hinweise bei Anrufen einschalten';
+        hw.dataset.tip = st === 'denied' ? 'Im Browser blockiert: über das Schloss links neben der Adresse „Mitteilungen“ erlauben, dann neu laden.' : st === 'granted' ? 'Bei einem Anruf erscheint ein Hinweis, auch wenn der Tab im Hintergrund ist.' : 'Zeigt bei jedem Anruf einen Hinweis, auch wenn der Tab im Hintergrund ist.';
+        hw.disabled = st === 'granted' || st === 'fehlt';
+      };
+      hw.onclick = async (e) => {
+        e.stopPropagation();
+        if (hinweisStand() !== 'default') { toast(hw.dataset.tip, '', 6000); return; }
+        try { await Notification.requestPermission(); } catch { /* ältere Safari: Rückruf-Variante gibt es nicht mehr */ }
+        document.querySelectorAll('.konto__hinweise').forEach((x) => x._zeichnen?.());
+        toast(hinweisStand() === 'granted' ? 'Hinweise bei Anrufen sind eingeschaltet.' : 'Hinweise wurden nicht erlaubt.', hinweisStand() === 'granted' ? '' : 'err');
+      };
+      hw._zeichnen = zeichnen; zeichnen();
+      wrap.append(ton, hw); return wrap;
+    }
+    $('changePwBtn')?.before(meldungenBauen());
+
+    // ---- Wissens-Assistent-Knopf verdeckt keine Inhalte ----
+    // Mit Beschriftung lag er über Fristen und Gesprächsverläufen am rechten Rand. Jetzt nur das Symbol; die Beschriftung
+    // klappt beim Überfahren bzw. bei Tastaturfokus aus (Name für Screenreader: aria-label).
+    $('waLauncher')?.classList.add('klein');
+    {
+      const roh = mehrBauen;
+      mehrBauen = function () {
+        roh();
+        const pw = [...($('mehrInhalt')?.querySelectorAll('.mehr__eintrag') || [])].find((b) => b.textContent.trim() === 'Passwort ändern');
+        if (pw) pw.before(meldungenBauen('mehr__meldungen'));
+      };
+    }
 
     boot();
   </script>
