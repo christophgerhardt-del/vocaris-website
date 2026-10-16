@@ -6,7 +6,7 @@
   <!-- Stand dieser Fassung. Wird beim Ausliefern gesetzt und zur Laufzeit
        gegen die Datei auf dem Server verglichen, damit niemand tagelang mit
        einer alten, zwischengespeicherten Seite arbeitet. -->
-  <meta name="vocaris-stand" content="2026-10-13T13:57" />
+  <meta name="vocaris-stand" content="2026-10-16T10:26" />
   <title>Vocaris — Verwaltung</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -8078,7 +8078,6 @@
       else sub.textContent = 'in 24 h erledigt';
       if (k.offen_ueber_frist) { off.textContent = k.offen_ueber_frist + ' offen seit über 24 h'; off.classList.add('minus'); } else off.textContent = 'nichts überfällig';
     }
-    /** Antippen der Kachel: Gibt es Überfällige, die Arbeitsliste „Länger als 24 h offen“, sonst die offenen Nachrichten. */
     /** Kennzahl → Eingehend: Zeitraum des Dashboards mitnehmen (7 Tage gibt es dort nicht → 14), übrige Filter zurück. */
     function dbNachEingehend(patch) {
       const A = LV_ANSICHTEN.ein;
@@ -8090,6 +8089,7 @@
       // Über den Knopf: setzt den Zeitraum und lädt ihn vollständig nach (lvZeitraumVollstaendig).
       const z = document.querySelector('#lvZeitraum [data-tage="' + tage + '"]'); if (z) z.click(); else renderLive();
     }
+    /** Antippen der Kachel: Gibt es Überfällige, die Arbeitsliste „Länger als 24 h offen“, sonst die offenen Nachrichten. */
     function rrZuNachrichten() {
       if ((dbRueckruf?.jetzt?.offen_ueber_frist || 0) > 0 || [...mgItems.values()].some(mgUeberfaellig)) mgUeberfaelligZeigen();
       else mgFilterSetzen({ status: 'new' });
@@ -8676,12 +8676,12 @@
     function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); mgOffeneVollstaendig(); }
     // Offene Nachrichten vollständig: Die Liste hält die neuesten 200, ältere offene fehlten in „Offen“, im Badge und
     // im Untertitel. Jetzt kommen alle offenen dazu (seitenweise, alleZeilen); nur über 20.000 zählt die Datenbank.
-    let mgOffenGesamt = null; // exakte Zahl, nur wenn nicht alle offenen geladen werden konnten
+    let mgOffenGesamt = null, mgOffenGen = 0; // exakte Zahl, nur wenn nicht alle offenen geladen werden konnten
     async function mgOffeneVollstaendig() {
       if (!tenant) return;
-      const fuer = tenant.id;
+      const fuer = tenant.id, gen = ++mgOffenGen; // nur die jüngste Antwort zählt (sonst käme eine inzwischen erledigte als offen zurück)
       const r = await alleZeilen((a, z) => sb.from('messages').select('*').eq('tenant_id', fuer).eq('status', 'new').order('created_at', { ascending: false }).range(a, z));
-      if (r.error || tenant?.id !== fuer) return;
+      if (r.error || tenant?.id !== fuer || gen !== mgOffenGen) return;
       (r.data || []).forEach((m) => { if (!mgItems.has(m.id)) mgItems.set(m.id, m); });
       mgOffenGesamt = null;
       if (r.gekuerzt) { const { count } = await sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', fuer).eq('status', 'new'); if (tenant?.id === fuer && count != null) mgOffenGesamt = count; }
@@ -8910,7 +8910,8 @@
         ankerUhr = setInterval(() => {
           if (Date.now() > bis) { clearInterval(ankerUhr); return; }
           if (!tenant || mgStandFuer !== tenant.id) return;
-          clearInterval(ankerUhr); if (ankerPasst()) history.replaceState(null, '', location.pathname + location.search);
+          // Danach steht #nachrichten in der Adresse (Bereichsname des Routers): Neuladen bleibt hier, kein zusätzlicher Verlaufseintrag.
+          clearInterval(ankerUhr); if (ankerPasst()) history.replaceState(null, '', location.pathname + location.search + '#nachrichten');
           geh('sec-messages'); if (navSichtbar(navItem('sec-messages'))) mgUeberfaelligZeigen();
         }, 300);
       };
@@ -9004,10 +9005,12 @@
       if (!$('sec-abo')?.classList.contains('hidden')) aboZeichnen();
       const a = aboAktuell();
       if (aboRueck && a) {
-        // Zurück aus Kundenportal oder Zahlungsseite (app.html#abo): Bereich öffnen, Anker entfernen.
+        // Zurück aus Kundenportal oder Zahlungsseite (app.html#abo): Bereich öffnen. Die Adresse wird zu #rechnungen
+        // (Bereichsname des Routers), so bleibt Neuladen im Bereich und es entsteht kein zusätzlicher Verlaufseintrag.
         aboRueck = false;
-        try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* ohne Verlauf */ }
-        if (aboSichtbar(a)) geh('sec-abo');
+        const da = aboSichtbar(a);
+        try { history.replaceState(null, '', location.pathname + location.search + (da ? '#rechnungen' : '')); } catch (_) { /* ohne Verlauf */ }
+        if (da) geh('sec-abo');
         // Nach einem Abschluss braucht das Ereignis von Stripe einen Moment: ein paarmal nachfragen.
         if (!a.stripe) aboNachladen = 5;
       }
@@ -12261,6 +12264,9 @@
       if (!$('sec-overview')?.classList.contains('hidden')) ladeDashboard(); else dbDatenZeit = 0;
       if (module.reservierung && $('rsDayDate')) { refreshDay(); if ($('rsPlanDate')?.value) loadDayOccupancy($('rsPlanDate').value); }
       if (!$('sec-kontakte')?.classList.contains('hidden')) ladeKontakte();
+      // WhatsApp hat einen eigenen Echtzeit-Kanal ohne Nachladen nach der Lücke; Entwürfe im Antwortfeld bleiben erhalten.
+      if (wappStand?.verfuegbar && wappFuer === tenant.id) wappLaden();
+      if (!$('sec-abo')?.classList.contains('hidden')) aboLaden(true);
       if (!asDirty && !uiTipptIn('#sec-kb') && !uiTipptIn('#sec-assistant')) loadDept();
     }
     /** Anrufe nach einer Lücke zusammenführen statt alles neu zu laden: neue Anrufe ab dem jüngsten bekannten (mit Puffer)
@@ -12511,7 +12517,9 @@
     // ---- Bereich in der Adresse: Neuladen, Zurück und Direktlinks ----
     // #vorgaenge/26, #eingehend/<id>, #nachrichten/<id>, #assistent/zeiten … Bereichswechsel legen einen Verlaufseintrag
     // an (Zurück geht einen Schritt zurück), die Auswahl im Bereich ersetzt ihn nur. Adressen mit „=“ (Anmelde-Token,
-    // #cal=…) und unbekannte Anker (z. B. #abo) bleiben unangetastet.
+    // #cal=…) und unbekannte Anker bleiben unangetastet. #abo (Rückkehr von Stripe) und #nachrichten/ueberfaellig
+    // (Wochenbericht) werten Abo und Nachrichten selbst aus; danach steht #rechnungen bzw. #nachrichten in der Adresse.
+    // WhatsApp: #whatsapp/<id> öffnet die Unterhaltung.
     const BEREICH_ZU_KURZ = { 'sec-overview': 'dashboard', 'sec-live': 'eingehend', 'sec-outbound': 'ausgehend', 'sec-kontakte': 'telefonbuch', 'sec-messages': 'nachrichten', 'sec-tickets': 'vorgaenge', 'sec-auswertung': 'auswertung', 'sec-kb': 'wissen', 'sec-gaps': 'fragen', 'sec-assistant': 'assistent', 'sec-number': 'nummer', 'sec-team': 'zugaenge', 'sec-booking': 'termine', 'sec-restaurant': 'reservierungen', 'sec-floorplan': 'tischplan', 'sec-guests': 'gaeste', 'sec-webhooks': 'schnittstellen', 'sec-whatsapp': 'whatsapp', 'sec-abo': 'rechnungen' };
     const SPAETER_SICHTBAR = ['sec-whatsapp', 'sec-abo']; // werden erst nach einer Server-Antwort eingeblendet
     const KURZ_ZU_BEREICH = Object.assign(Object.fromEntries(Object.entries(BEREICH_ZU_KURZ).map(([b, k]) => [k, b])), { benachrichtigungen: 'sec-webhooks' });
@@ -12523,7 +12531,7 @@
       if (roh.includes('=')) return null;
       const [kurz, sub = '', rest] = roh.split('/');
       const target = KURZ_ZU_BEREICH[kurz.toLowerCase()]; if (!target || rest !== undefined) return null;
-      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages'].includes(target) && IST_UUID(sub))) return null;
+      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages', 'sec-whatsapp'].includes(target) && IST_UUID(sub))) return null;
       return { target, sub };
     }
     function adresseFuer(target) {
@@ -12534,6 +12542,7 @@
       else if (target === 'sec-live') sub = LV_ANSICHTEN.ein.auswahl || '';
       else if (target === 'sec-outbound') sub = LV_ANSICHTEN.aus.auswahl || '';
       else if (target === 'sec-messages') sub = mgAuswahl || '';
+      else if (target === 'sec-whatsapp') sub = wappReiter === 'liste' && wappAuswahl && wappItems.has(wappAuswahl) ? wappAuswahl : '';
       else if (target === 'sec-assistant') sub = document.querySelector('#asReiter [data-astab].active')?.dataset.astab || '';
       return '#' + kurz + (sub ? '/' + sub : '');
     }
@@ -12550,6 +12559,7 @@
       if (!mobilDetail() || !$(target)?.classList.contains('lv-zeigt-detail')) return;
       if (target === 'sec-tickets' && tkAuswahl) { tkAuswahl = null; renderTickets(); }
       else if (target === 'sec-messages' && mgAuswahl) { mgAuswahl = null; renderNachrichten(); }
+      else if (target === 'sec-whatsapp') { if (wappAuswahl) { wappAuswahl = null; renderWhatsApp(); } }
       else { const A = Object.values(LV_ANSICHTEN).find((v) => v.sec === target); if (A?.auswahl) { A.auswahl = null; renderLive(); } }
     }
     /** Auswahl im Bereich hat sich geändert: Adresse ersetzen, aber nur, wenn sie schon zu diesem Bereich gehört. */
@@ -12580,6 +12590,7 @@
       const renderTicketDetailRoh = renderTicketDetail; renderTicketDetail = function () { renderTicketDetailRoh(); adresseDetail('sec-tickets'); };
       const renderLiveDetailRoh = renderLiveDetail; renderLiveDetail = function () { renderLiveDetailRoh(); adresseDetail(LV.sec); };
       const renderNachrichtDetailRoh = renderNachrichtDetail; renderNachrichtDetail = function () { renderNachrichtDetailRoh(); adresseDetail('sec-messages'); };
+      const renderWappDetailRoh = renderWappDetail; renderWappDetail = function () { renderWappDetailRoh(); adresseDetail('sec-whatsapp'); };
     }
     /** Adresse anwenden (Start, Zurück/Vor): Bereich öffnen und die Auswahl darin. */
     async function adresseAnwenden(art) {
@@ -12589,7 +12600,12 @@
       if (!navSichtbar(b)) {
         const h = location.hash;
         // WhatsApp, Abo: kommen erst nach einer Server-Antwort dazu – beim Start kurz darauf warten.
-        if (art === 'start' && SPAETER_SICHTBAR.includes(z.target)) { for (let i = 0; i < 27 && !navSichtbar(navItem(z.target)); i++) await new Promise((r) => setTimeout(r, 300)); if (location.hash === h && navSichtbar(navItem(z.target))) return adresseAnwenden('start'); return; }
+        // Kommt der Bereich nicht (Firma ohne WhatsApp bzw. Abo, iOS-App), gilt dasselbe wie unten: Adresse an die Ansicht angleichen.
+        if (art === 'start' && SPAETER_SICHTBAR.includes(z.target)) {
+          for (let i = 0; i < 27 && !navSichtbar(navItem(z.target)); i++) await new Promise((r) => setTimeout(r, 300));
+          if (location.hash !== h) return;
+          if (navSichtbar(navItem(z.target))) return adresseAnwenden('start');
+        }
         // Bekannter, aber hier nicht verfügbarer Bereich (Modul aus, Mitarbeiter): Adresse an die Ansicht angleichen.
         const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt && location.hash === h) adresseSetzen(akt, 'replace');
         return;
@@ -12601,6 +12617,7 @@
         if (!z.sub) { if (art === 'zurueck') detailSchliessen(z.target); return; }
         if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
         else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
+        else if (z.target === 'sec-whatsapp') await wappOeffnen(z.sub);
         else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
         else if (z.target === 'sec-tickets') {
           let t = tkAlle.find((x) => String(x.number) === z.sub);
