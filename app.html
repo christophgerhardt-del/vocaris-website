@@ -1326,7 +1326,7 @@
     @media (max-width: 1000px) { .wapp-einr { grid-template-columns: 1fr; } }
     @media (max-width: 900px) { .wapp-verlauf { max-height: 52vh; min-height: 160px; } .lv-zeigt-detail .lv-detail .wapp-verlauf { max-height: 52vh; } }
     /* ---- Abo & Rechnungen (nur im Browser; in der iOS-App bleibt alles zu Preis und Bezahlen weg) ---- */
-    #navAbo[hidden] { display: none; }
+    #navAbo[hidden], #kontoAbo[hidden] { display: none; }
     .abo-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-color: #f0b37e; background: #fff7ed; color: #7c2d12; }
     .abo-banner.hidden { display: none; }
     .abo-banner p { margin: 0; flex: 1 1 260px; font-size: 14px; line-height: 1.5; }
@@ -1357,6 +1357,9 @@
     .abo-hinweis a { color: var(--accent); }
     .abo-geplant { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: color-mix(in srgb, var(--accent) 8%, var(--white)); font-size: 13.5px; color: var(--ink); }
     .abo-geplant .btn { margin: 0 0 0 auto; }
+    /* Nachrichten: Dringlichkeit als Farbpunkt + Text statt Emoji (wie Stimmung und Priorität) */
+    [data-dringend="hoch"] { --punkt: #dc2626; } [data-dringend="mittel"] { --punkt: #f59e0b; } [data-dringend="niedrig"] { --punkt: #94a3b8; }
+    .lv-chips .lv-chip[data-dringend]:not([data-dringend=""])::before { content: ''; display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--punkt, var(--ink-faint)); margin-right: 6px; vertical-align: 1px; }
     .abo-tarife { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
     .abo-tarif { position: relative; display: grid; gap: 4px; align-content: start; text-align: left; font: inherit; color: var(--ink); padding: 12px 12px 12px 40px; border: 1px solid var(--line-lav, var(--line)); border-radius: var(--r); background: var(--white); cursor: pointer; }
     .abo-tarif:hover { border-color: var(--accent); }
@@ -1690,6 +1693,7 @@
             <div class="konto__mail" id="kontoMail" aria-hidden="true"></div>
             <!-- Darstellung: hell, dunkel oder wie das System; Wahl liegt in localStorage -->
             <div class="konto__thema" role="group" aria-label="Darstellung"><span>Darstellung</span><div class="deptbar" id="themaWahl"><button class="deptseg" type="button" data-thema="hell">Hell</button><button class="deptseg" type="button" data-thema="dunkel">Dunkel</button><button class="deptseg" type="button" data-thema="system">System</button></div></div>
+            <button id="kontoAbo" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>Abo &amp; Rechnungen</button>
             <button id="changePwBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Passwort ändern</button>
             <button id="logoutBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Abmelden</button>
           </div>
@@ -1732,8 +1736,8 @@
             </div>
             <div class="db-aktionen">
               <div class="deptbar" id="dbZeitraum"><button class="deptseg" data-tage="7" type="button">7 Tage</button><button class="deptseg active" data-tage="14" type="button">14 Tage</button><button class="deptseg" data-tage="30" type="button">30 Tage</button></div>
-              <span class="muted" id="dbStand" style="font-size:12.5px" title="Zuletzt aktualisiert" data-tip="Zuletzt aktualisiert – Zahlen werden beim Öffnen und mit ↻ neu geladen"></span>
-              <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" title="Neu laden">↻</button>
+              <span class="muted" id="dbStand" style="font-size:12.5px" data-tip="Zuletzt aktualisiert – Zahlen werden beim Öffnen und mit ↻ neu geladen"></span>
+              <button class="btn btn--ghost sm" type="button" id="dbAktualisieren" data-tip="Neu laden" aria-label="Dashboard neu laden">↻</button>
               <button class="btn btn--ghost sm" type="button" data-testanruf>Testanruf</button>
               <button class="btn btn--ghost sm" type="button" data-geh="sec-kb">Wissen ergänzen</button>
               <button class="btn btn--ghost sm" type="button" id="dbAnpassen">Anpassen</button>
@@ -1991,11 +1995,11 @@
               <input id="mgSuche" aria-label="Nachrichten durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
               <button class="btn btn--ghost sm" type="button" id="mgCsv" data-tip="Aktuelle Auswahl als CSV für Excel">CSV</button>
               <div class="deptbar" id="mgStatus"><button class="deptseg active" data-status="new" type="button">Offen</button><button class="deptseg" data-status="done" type="button">Erledigt</button><button class="deptseg" data-status="" type="button">Alle</button></div>
-              <button class="btn btn--ghost sm" type="button" id="mgNeu" title="Neu laden">↻</button>
+              <button class="btn btn--ghost sm" type="button" id="mgNeu" data-tip="Neu laden" aria-label="Nachrichten neu laden">↻</button>
             </div>
           </div>
           <div class="lv-filter">
-            <div class="lv-chips" id="mgDringend"><button class="lv-chip aktiv" type="button" data-dringend="">Alle</button><button class="lv-chip" type="button" data-dringend="hoch">🔴 dringend</button><button class="lv-chip" type="button" data-dringend="mittel">🟠 mittel</button><button class="lv-chip" type="button" data-dringend="niedrig">⚪ niedrig</button></div>
+            <div class="lv-chips" id="mgDringend"><button class="lv-chip aktiv" type="button" data-dringend="">Alle</button><button class="lv-chip" type="button" data-dringend="hoch">dringend</button><button class="lv-chip" type="button" data-dringend="mittel">mittel</button><button class="lv-chip" type="button" data-dringend="niedrig">niedrig</button></div>
             <button class="lv-chip" type="button" id="mgUeber" aria-pressed="false" data-tip="Offene Nachrichten, die seit mehr als 24 Stunden warten. Sie zählen beim Rückruf-Erfolg als liegengeblieben.">Länger als 24 h offen</button>
             <select id="mgKategorie" aria-label="Kategorie filtern" class="lv-select"><option value="">Alle Kategorien</option></select>
             <select id="mgKanal" aria-label="Kanal filtern" class="lv-select hidden"><option value="">Alle Kanäle</option><option value="telefon">Telefon</option><option value="whatsapp">WhatsApp</option></select>
@@ -2021,7 +2025,7 @@
             <div class="db-aktionen">
               <input id="wappSuche" aria-label="Unterhaltungen durchsuchen" class="lv-suche" type="search" placeholder="Name, Nummer oder Text suchen" autocomplete="off" />
               <div class="deptbar" id="wappReiter" role="group" aria-label="Ansicht"><button class="deptseg active" data-wappreiter="liste" type="button" aria-pressed="true">Unterhaltungen</button><button class="deptseg" data-wappreiter="einrichtung" type="button" aria-pressed="false" id="wappReiterEinr">Einrichtung</button></div>
-              <button class="btn btn--ghost sm" type="button" id="wappNeu" title="Neu laden" aria-label="Neu laden">↻</button>
+              <button class="btn btn--ghost sm" type="button" id="wappNeu" data-tip="Neu laden" aria-label="Unterhaltungen neu laden">↻</button>
             </div>
           </div>
           <div id="wappListeTeil">
@@ -2821,7 +2825,7 @@
             </div>
             <div class="db-aktionen">
               <span class="muted" id="aboStand" style="font-size:12.5px"></span>
-              <button class="btn btn--ghost sm" type="button" id="aboNeu" title="Neu laden" aria-label="Abo neu laden">↻</button>
+              <button class="btn btn--ghost sm" type="button" id="aboNeu" data-tip="Neu laden" aria-label="Abo neu laden">↻</button>
             </div>
           </div>
           <div class="panel abo-imp hidden" id="aboImp">Du siehst diese Firma im Betreibermodus. Zahlungsart, Tarif und Kündigung ändert nur die Firma selbst, deshalb sind die Knöpfe hier gesperrt.</div>
@@ -8075,6 +8079,17 @@
       if (k.offen_ueber_frist) { off.textContent = k.offen_ueber_frist + ' offen seit über 24 h'; off.classList.add('minus'); } else off.textContent = 'nichts überfällig';
     }
     /** Antippen der Kachel: Gibt es Überfällige, die Arbeitsliste „Länger als 24 h offen“, sonst die offenen Nachrichten. */
+    /** Kennzahl → Eingehend: Zeitraum des Dashboards mitnehmen (7 Tage gibt es dort nicht → 14), übrige Filter zurück. */
+    function dbNachEingehend(patch) {
+      const A = LV_ANSICHTEN.ein;
+      const tage = patch.zeitraum ?? (dbTage <= 14 ? 14 : 30);
+      A.stimmung = ''; A.thema = ''; A.art = ''; A.tag = ''; A.suche = ''; A.auswahl = null;
+      Object.assign(A, patch);
+      if ($('lvSuche')) $('lvSuche').value = '';
+      document.querySelectorAll('#lvStimmung .lv-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('aktiv', (b.dataset.stimmung || '') === A.stimmung))));
+      // Über den Knopf: setzt den Zeitraum und lädt ihn vollständig nach (lvZeitraumVollstaendig).
+      const z = document.querySelector('#lvZeitraum [data-tage="' + tage + '"]'); if (z) z.click(); else renderLive();
+    }
     function rrZuNachrichten() {
       if ((dbRueckruf?.jetzt?.offen_ueber_frist || 0) > 0 || [...mgItems.values()].some(mgUeberfaellig)) mgUeberfaelligZeigen();
       else mgFilterSetzen({ status: 'new' });
@@ -8091,18 +8106,18 @@
 
     const DB_WIDGETS = [
       // Kennzahlen
-      { id: 'anrufe', art: 'kpi', titel: 'Anrufe', std: true, ziel: 'sec-live', html: () => '<div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div>' },
-      { id: 'heute', art: 'kpi', titel: 'Anrufe heute', std: true, ziel: 'sec-live', html: () => '<div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d">Anrufe seit Mitternacht</div>' },
-      { id: 'dauer', art: 'kpi', titel: 'Ø Gesprächsdauer', std: true, ziel: 'sec-live', html: () => '<div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div>' },
+      { id: 'anrufe', art: 'kpi', titel: 'Anrufe', std: true, ziel: 'sec-live', nachGeh: () => dbNachEingehend({}), html: () => '<div class="k">Anrufe</div><div class="v" id="dbAnrufe">–</div><div class="d" id="dbAnrufeDelta">&nbsp;</div>' },
+      { id: 'heute', art: 'kpi', titel: 'Anrufe heute', std: true, ziel: 'sec-live', nachGeh: () => dbNachEingehend({ zeitraum: 1 }), html: () => '<div class="k">Heute</div><div class="v" id="dbHeute">–</div><div class="d">Anrufe seit Mitternacht</div>' },
+      { id: 'dauer', art: 'kpi', titel: 'Ø Gesprächsdauer', std: true, ziel: 'sec-live', nachGeh: () => dbNachEingehend({}), html: () => '<div class="k">Ø Gesprächsdauer</div><div class="v" id="dbDauer">–</div><div class="d" id="dbDauerSub">&nbsp;</div>' },
       { id: 'minuten', art: 'kpi', titel: 'Minuten im Monat', std: true, html: () => '<div class="k" id="dbMinutenTitel">Minuten diesen Monat</div><div class="v" id="dbMinuten">–</div><div class="d"><div class="db-balken"><span id="dbMinutenBalken"></span></div><span id="dbMinutenSub">&nbsp;</span></div>' },
-      { id: 'nachrichten', art: 'kpi', titel: 'Nachrichten', std: true, ziel: 'sec-messages', html: () => '<div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div>' },
+      { id: 'nachrichten', art: 'kpi', titel: 'Nachrichten', std: true, ziel: 'sec-messages', nachGeh: () => mgFilterSetzen({ status: '' }), html: () => '<div class="k">Nachrichten</div><div class="v" id="ovMsg">–</div><div class="d">Rückrufe und Anliegen im Zeitraum</div>' },
       { id: 'rueckruf', art: 'kpi', titel: 'Rückruf-Erfolg', std: true, ziel: 'sec-messages', nachGeh: () => rrZuNachrichten(), html: () => '<div class="k">Rückruf-Erfolg</div><div class="v" id="dbRueckruf">–</div><div class="d" id="dbRueckrufSub">in 24 h erledigt</div><div class="d" id="dbRueckrufOffen">&nbsp;</div>' },
-      { id: 'offen', art: 'kpi', titel: 'Offene Vorgänge', std: true, ziel: 'sec-tickets', html: () => '<div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div>' },
+      { id: 'offen', art: 'kpi', titel: 'Offene Vorgänge', std: true, ziel: 'sec-tickets', nachGeh: () => document.querySelector('[data-tkstat="offen"]')?.click(), html: () => '<div class="k">Offene Vorgänge</div><div class="v" id="dbOffen">–</div><div class="d" id="dbUeber">&nbsp;</div>' },
       { id: 'fragen', art: 'kpi', titel: 'Offene Fragen', std: true, ziel: 'sec-gaps', html: () => '<div class="k">Offene Fragen</div><div class="v" id="ovGaps">–</div><div class="d">warten auf eine Antwort</div>' },
       { id: 'termine', art: 'kpi', titel: 'Termine', std: true, ziel: 'sec-booking', html: () => '<div class="k">Termine</div><div class="v" id="dbTermine">–</div><div class="d" id="dbTermineSub">&nbsp;</div>' },
       { id: 'abgewiesen', art: 'kpi', titel: 'Abgewiesene Anrufe', std: false, ziel: 'sec-number', html: () => '<div class="k">Abgewiesen</div><div class="v" id="dbAbgewiesen">–</div><div class="d" id="dbAbgewiesenSub">durch die Sperrliste</div>' },
       { id: 'wissen', art: 'kpi', titel: 'Wissensstand', std: false, ziel: 'sec-kb', html: () => '<div class="k">Wissen</div><div class="v" id="dbWissen">–</div><div class="d" id="dbWissenSub">Einträge</div>' },
-      { id: 'negativ', art: 'kpi', titel: 'Unzufriedene Anrufer', std: false, ziel: 'sec-live', html: () => '<div class="k">Unzufrieden</div><div class="v" id="dbNegativ">–</div><div class="d" id="dbNegativSub">Anrufe mit negativer Stimmung</div>' },
+      { id: 'negativ', art: 'kpi', titel: 'Unzufriedene Anrufer', std: false, ziel: 'sec-live', nachGeh: () => dbNachEingehend({ stimmung: 'negativ' }), html: () => '<div class="k">Unzufrieden</div><div class="v" id="dbNegativ">–</div><div class="d" id="dbNegativSub">Anrufe mit negativer Stimmung</div>' },
       // Kacheln
       { id: 'verlauf', art: 'panel', titel: 'Anrufe je Tag und Uhrzeit', std: true, groesse: 8, html: () => kopf('Anrufe je Tag', null, '<span class="muted" id="dbChartSub"></span>') + '<div id="statChart" class="statchart"></div><div class="db-panelkopf" style="margin-top:18px"><h3 style="font-size:14px">Nach Uhrzeit</h3><span class="muted" id="dbStundenSub">wann dein Telefon klingelt · zum Filtern anklicken</span></div><div id="dbStunden" class="db-stunden"></div>' },
       { id: 'assistent', art: 'panel', titel: 'Dein Assistent', std: true, groesse: 4, html: () => '<h3>Dein Assistent</h3><dl class="db-fakten" id="dbFakten"></dl><p class="muted" id="dbSystem" style="margin-top:10px;font-size:12.5px"></p>' },
@@ -8148,7 +8163,7 @@
       }, 1500);
     }
 
-    const werkzeuge = (w) => '<div class="db-werk"><span class="griff" title="Ziehen zum Verschieben">⠿</span><button type="button" data-w="links" title="nach vorn">‹</button><button type="button" data-w="rechts" title="nach hinten">›</button>' + (w.art === 'panel' ? '<button type="button" data-w="groesse" title="Breite ändern">' + groesseLabel(dbLayout.groesse[w.id] || w.groesse) + '</button>' : '') + '<button type="button" data-w="weg" title="Vom Dashboard entfernen">×</button></div>';
+    const werkzeuge = (w) => '<div class="db-werk"><span class="griff" title="Ziehen zum Verschieben">⠿</span><button type="button" data-w="links" data-tip="nach vorn" aria-label="Kachel nach vorn">‹</button><button type="button" data-w="rechts" data-tip="nach hinten" aria-label="Kachel nach hinten">›</button>' + (w.art === 'panel' ? '<button type="button" data-w="groesse" data-tip="Breite ändern" aria-label="Breite ändern">' + groesseLabel(dbLayout.groesse[w.id] || w.groesse) + '</button>' : '') + '<button type="button" data-w="weg" data-tip="Vom Dashboard entfernen" aria-label="Vom Dashboard entfernen">×</button></div>';
 
     function renderDashboardLayout() {
       const kp = q('dbKpis'), gr = q('dbGrid'); kp.innerHTML = ''; gr.innerHTML = '';
@@ -8284,7 +8299,7 @@
       if (fehler) {
         toast('Dashboard konnte nicht aktualisiert werden: ' + fehlerText(fehler.error), 'err');
         const st = q('dbStand');
-        if (st) { st.textContent = 'Aktualisieren fehlgeschlagen'; st.title = 'Letzter Versuch um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr – die zuvor geladenen Zahlen bleiben stehen.'; }
+        if (st) { st.textContent = 'Aktualisieren fehlgeschlagen'; st.dataset.tip = 'Letzter Versuch um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr – die zuvor geladenen Zahlen bleiben stehen.'; }
         return;
       }
       const [{ data: calls }, { count: davorN }, { data: monat }, { count: msgN }, { data: kz }, { data: offene }, { data: gaps }, { data: appts }, { data: nums }, { data: cfg }, { data: sub }, { count: kbN }, { count: gapsN }, { data: msgs }, { data: block }, { count: kbEchtN }] = ergebnisse;
@@ -8292,7 +8307,7 @@
       dbDatenZeit = Date.now();
       zeichneDashboard();
       q('dbStand').textContent = 'Stand ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-      q('dbStand').title = 'Zuletzt aktualisiert um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+      q('dbStand').dataset.tip = 'Zuletzt aktualisiert um ' + jetzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
       try { const r = await fetch(API + '/api/status', { cache: 'no-store' }); const j = await r.json(); q('dbSystem').innerHTML = j.ok ? '<span class="statusdot"></span> Alle Systeme laufen' : 'Eingeschränkter Betrieb'; } catch { q('dbSystem').textContent = 'Status gerade nicht abrufbar.'; }
     }
 
@@ -8359,15 +8374,16 @@
       const wmax = Math.max(1, ...wtage); const wt = q('dbWochentag'); wt.innerHTML = '';
       [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'wochentag' && dbFilter.wert === i ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'][i]; if (wtage[i]) d.onclick = () => filterSetzen({ art: 'wochentag', wert: i, label: ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'][i] }); wt.append(d); });
       // Fakten zum Assistenten
-      const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
+      const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)', live: 'OpenAI GPT-Live' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
       const stimme = ' · ' + stimmenName(cfg?.voice_id); // Anzeigename statt roher Kennung
-      const nummern = nums.map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
+      const nummern = nums.map((x) => esc(fmtNr(x.phone_number)) + (x.department && x.department !== 'general' ? ' (' + esc(DEPT_LABEL[x.department] || x.department) + ')' : '')).join(', ') || 'noch keine';
+      const kbVorlage = dbDaten.kbEchtN != null ? Math.max(0, kbN - dbDaten.kbEchtN) : 0; // Einträge mit „Bitte anpassen“ (siehe kbIstVorlage)
       q('dbFakten').innerHTML = [
         ['Status', nums.length ? '<span class="statusdot"></span> Aktiv' : '<span class="statusdot" style="background:var(--accent-3)"></span> Einrichtung'],
         ['Rufnummer', nummern + '<a href="#" data-geh="sec-number">ändern</a>'],
         ['KI und Stimme', anbieter + stimme + '<a href="#" data-geh="sec-assistant">ändern</a>'],
         ['Sprache', (cfg?.language || 'de') === 'en' ? 'Englisch' : 'Deutsch'],
-        ['Wissen', kbN + ' Einträge<a href="#" data-geh="sec-kb">pflegen</a>'],
+        ['Wissen', kbN + (kbN === 1 ? ' Eintrag' : ' Einträge') + (kbVorlage ? ', davon ' + kbVorlage + ' Vorlage' + (kbVorlage === 1 ? '' : 'n') : '') + '<a href="#" data-geh="sec-kb">pflegen</a>'],
         ['Tarif', '<span id="dbFaktTarif">' + esc(inkl ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' · ' + inkl + ' Min' : (plan === 'trial' ? 'Testphase' : plan)) + '</span>'],
       ].map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join('');
       minutenKachel(); // setzt auch die Tarifzeile, sobald /api/abo geantwortet hat
@@ -8375,7 +8391,7 @@
       const la = q('dbAnrufeListe'); la.innerHTML = '';
       let liste = c;
       if (dbFilter) liste = c.filter(passt);
-      q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" title="Filter entfernen">' + esc(dbFilter.label) + ' · ' + liste.length + ' ×</button>' : '';
+      q('dbAnrufeFilter').innerHTML = dbFilter ? '<button type="button" class="db-chip" id="dbFilterWeg" data-tip="Filter entfernen" aria-label="Filter entfernen">' + esc(dbFilter.label) + ' · ' + liste.length + ' ×</button>' : '';
       const fw = document.getElementById('dbFilterWeg'); if (fw) fw.onclick = () => { dbFilter = null; zeichneDashboard(); };
       if (!liste.length) la.innerHTML = leerText(dbFilter ? 'Keine Anrufe für diesen Filter.' : 'Noch keine Anrufe im Zeitraum.');
       liste.slice(0, dbFilter ? 8 : 5).forEach((x) => {
@@ -8398,7 +8414,7 @@
       const sti = { positiv: 0, neutral: 0, negativ: 0 }; ausser('stimmung').forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
       const farben = [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']];
       const sm = q('dbStimmung');
-      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" title="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" class="' + (dbFilter?.art === 'stimmung' && dbFilter.wert === kk ? 'aktiv' : '') + '"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' %</span>').join('') + '</div>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
+      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" data-tip="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" class="' + (dbFilter?.art === 'stimmung' && dbFilter.wert === kk ? 'aktiv' : '') + '"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' %</span>').join('') + '</div>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
       sm.querySelectorAll('[data-stimmung]').forEach((el) => el.onclick = () => filterSetzen({ art: 'stimmung', wert: el.dataset.stimmung, label: 'Stimmung ' + el.dataset.stimmung }));
       // Termine
       const lt = q('dbTermineListe'); lt.innerHTML = '';
@@ -8411,7 +8427,7 @@
       // Neueste Nachrichten
       const ln = q('dbNachrichtenListe'); ln.innerHTML = '';
       if (!msgs.length) ln.innerHTML = leerText('Noch keine Nachrichten.');
-      msgs.forEach((m) => { const z = zeile((m.caller_name || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => { geh('sec-messages'); nachrichtOeffnen(m.id); }; ln.append(z); });
+      msgs.forEach((m) => { const z = zeile((m.caller_name || ktName(m.callback_number || m.caller_number || '') || fmtNr(m.callback_number || m.caller_number || '') || 'Unbekannt') + (m.category ? ' · ' + m.category : ''), new Date(m.created_at).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) + (m.urgency === 'hoch' || m.urgency === 'high' ? ' · dringend' : ''), (m.summary || '') + ((m.callback_number || m.caller_number) ? ' · ' + (m.callback_number || m.caller_number) : '')); z.onclick = () => { geh('sec-messages'); nachrichtOeffnen(m.id); }; ln.append(z); });
       // Einstiegshilfe nur, solange nichts läuft
       // Checkliste mit frischen Zahlen; das Start-Panel weicht ihr, solange sie sichtbar ist
       chk.nummer = nums.length > 0; chk.wissen = dbDaten.kbEchtN ?? chk.wissen; if (c.length) chk.testanruf = true;
@@ -8481,13 +8497,15 @@
       const avg = dauern.length ? dauern.reduce((a, b) => a + b, 0) / dauern.length : 0;
       const eigene = gef.filter((x) => x.mode === 'bridge' || x.mode === 'browser').length; const assistent = gef.length - eigene;
       const delta = davorN === null || awFilter ? '' : ((gef.length - davorN >= 0 ? '+' : '') + (gef.length - davorN) + ' gegenüber den ' + awTage + ' Tagen davor');
+      const gefEin = gef.filter((x) => callRichtung(x) === 'in').length;
       // Rückruf-Erfolg (eigener Ladeweg, gilt unabhängig vom Anruf-Filter)
       const rr = awRrAktuell(), rrK = rr?.jetzt || null, rrTr = rrK ? rrTrend(rrK, rr.vorher, 'den ' + rr.tage + ' Tagen davor') : null;
       const rrSub = !rrK ? (!rr ? 'wird geladen …' : rr.fehler && rrFehlt(rr.fehler) ? 'noch nicht verfügbar' : 'gerade nicht abrufbar')
         : rrK.unvollstaendig ? 'Zeitraum länger als die Aufbewahrung' : !rrK.basis ? (rrK.laufend ? 'Nachrichten noch in der 24-Stunden-Frist' : 'keine Nachrichten im Zeitraum')
         : rrTr ? rrTr.text : 'in 24 h erledigt' + (rrK.erledigt && rrK.median_min !== null ? ' · Median ' + rrDauerText(rrK.median_min) : '');
       const kacheln = [
-        ['Anrufe', gef.length, delta || ('in ' + awTage + ' Tagen'), 'sec-live', davorN !== null && !awFilter ? (gef.length - davorN > 0 ? 'plus' : gef.length - davorN < 0 ? 'minus' : '') : ''],
+        // Aufgeschlüsselt: „Eingehend“ zeigt nur eingehende – die Zahl der Kachel enthält auch ausgehende. Der Vergleich zum Vorzeitraum steht in der Einblendung.
+        ['Anrufe', gef.length, gef.length ? gefEin + ' eingehend · ' + (gef.length - gefEin) + ' ausgehend' : ('in ' + awTage + ' Tagen'), 'sec-live', '', () => awNachEingehend({}), delta || ''],
         ['Minuten', minuten, 'Gesprächszeit gesamt', 'sec-live'],
         ['Ø Dauer', avg ? fmtDauer(avg) : '–', dauern.length ? 'längster ' + fmtDauer(Math.max(...dauern)) : 'noch keine Gespräche', null],
         ['Nachrichten', msgN, 'vom Assistenten aufgenommen', 'sec-messages'],
@@ -8525,7 +8543,7 @@
       const sti = { positiv: 0, neutral: 0, negativ: 0 }; gef.forEach((x) => { if (sti[x.sentiment] !== undefined) sti[x.sentiment]++; }); const stN = sti.positiv + sti.neutral + sti.negativ;
       const farben = [['positiv', '#16a34a'], ['neutral', '#94a3b8'], ['negativ', '#dc2626']];
       const sm = $('awStimmung');
-      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" title="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" role="button" tabindex="0"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' % (' + sti[kk] + ')</span>').join('') + '</div>' + '<p class="muted" style="font-size:12.5px;margin:10px 0 0;text-align:left;padding:0">' + (c.length - stN) + ' ohne Bewertung</p>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
+      sm.innerHTML = stN ? '<div class="db-stimm">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" data-tip="' + kk + ': ' + sti[kk] + '" style="width:' + (sti[kk] / stN * 100) + '%;background:' + col + '"></span>').join('') + '</div><div class="db-legende">' + farben.map(([kk, col]) => '<span data-stimmung="' + kk + '" role="button" tabindex="0"><i style="background:' + col + '"></i>' + kk + ' ' + Math.round(sti[kk] / stN * 100) + ' % (' + sti[kk] + ')</span>').join('') + '</div>' + '<p class="muted" style="font-size:12.5px;margin:10px 0 0;text-align:left;padding:0">' + (c.length - stN) + ' ohne Bewertung</p>' : leerText('Stimmung erscheint, sobald Anrufe ausgewertet sind.');
       sm.querySelectorAll('[data-stimmung]').forEach((el) => { el.onclick = () => awNachEingehend({ stimmung: el.dataset.stimmung }); el.onkeydown = (e) => { if (e.key === 'Enter') el.onclick(); }; });
       // Häufigste Anrufer
       const nrN = {}; gef.forEach((x) => { const n = (x.caller_number || '').replace(/\s+/g, ''); if (!n) return; const e = nrN[n] || (nrN[n] = { n: 0, letzter: x.started_at }); e.n++; if (x.started_at > e.letzter) e.letzter = x.started_at; });
@@ -8537,7 +8555,10 @@
         const body = tb.querySelector('tbody');
         topNr.forEach(([nr, e]) => { const name = typeof ktName === 'function' ? ktName(nr) : ''; const tr = document.createElement('tr'); tr.setAttribute('role', 'button'); tr.tabIndex = 0; tr.dataset.tip = 'Öffnet „Eingehend“ mit dieser Nummer'; tr.innerHTML = '<td></td><td class="z"></td><td class="z"></td>'; tr.children[0].innerHTML = name ? '<b></b><br><span class="nr"></span>' : '<span class="nr"></span>'; if (name) tr.querySelector('b').textContent = name; tr.querySelector('.nr').textContent = fmtNr(nr); tr.querySelector('.nr').className = 'nr'; tr.children[1].textContent = e.n; tr.children[2].textContent = new Date(e.letzter).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); tr.onclick = () => awNachEingehend({ suche: nr, zeitraum: 0 }); tr.onkeydown = (ev) => { if (ev.key === 'Enter') tr.onclick(); }; body.append(tr); });
       }
-      $('awSub').textContent = c.length ? c.length + (c.length === 1 ? ' Anruf' : ' Anrufe') + ' in den letzten ' + awTage + ' Tagen.' : 'Noch keine Anrufe in den letzten ' + awTage + ' Tagen.';
+      // Untertitel folgt dem Filter (Wochentag, Uhrzeit, Dauer)
+      $('awSub').textContent = !c.length ? 'Noch keine Anrufe in den letzten ' + awTage + ' Tagen.'
+        : awFilter ? gef.length + ' von ' + c.length + ' Anrufen in den letzten ' + awTage + ' Tagen · ' + awFilter.label + '.'
+        : c.length + (c.length === 1 ? ' Anruf' : ' Anrufe') + ' in den letzten ' + awTage + ' Tagen.';
       zeichneAwRueckruf();
     }
 
@@ -8652,7 +8673,20 @@
     const MG_SEITE = 200;
     const MG_DRING = { hoch: ['#dc2626', 'dringend'], mittel: ['#f59e0b', 'mittel'], niedrig: ['#94a3b8', 'niedrig'] };
     const mgDringKey = (u) => { const v = String(u || '').toLowerCase(); if (/hoch|high|dringend|urgent/.test(v)) return 'hoch'; if (/niedrig|low|gering/.test(v)) return 'niedrig'; return v ? 'mittel' : ''; };
-    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); }
+    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); mgOffeneVollstaendig(); }
+    // Offene Nachrichten vollständig: Die Liste hält die neuesten 200, ältere offene fehlten in „Offen“, im Badge und
+    // im Untertitel. Jetzt kommen alle offenen dazu (seitenweise, alleZeilen); nur über 20.000 zählt die Datenbank.
+    let mgOffenGesamt = null; // exakte Zahl, nur wenn nicht alle offenen geladen werden konnten
+    async function mgOffeneVollstaendig() {
+      if (!tenant) return;
+      const fuer = tenant.id;
+      const r = await alleZeilen((a, z) => sb.from('messages').select('*').eq('tenant_id', fuer).eq('status', 'new').order('created_at', { ascending: false }).range(a, z));
+      if (r.error || tenant?.id !== fuer) return;
+      (r.data || []).forEach((m) => { if (!mgItems.has(m.id)) mgItems.set(m.id, m); });
+      mgOffenGesamt = null;
+      if (r.gekuerzt) { const { count } = await sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', fuer).eq('status', 'new'); if (tenant?.id === fuer && count != null) mgOffenGesamt = count; }
+      renderNachrichten();
+    }
     // Rückruf-Erfolg: offen und älter als 24 Stunden = überfällig (gleiche Grenze wie nachrichten_erfolg).
     const mgUeberfaellig = (m) => (m.status || 'new') === 'new' && Date.now() - new Date(m.created_at).getTime() >= RR_FRIST_MS;
     // '40 Std.' bzw. '4 Tage' (mit seit: '4 Tagen')
@@ -8697,6 +8731,7 @@
       mgGeladen += (data || []).length; if ((data || []).length < MG_SEITE) mgAlle = true;
       renderNachrichten();
       if (!mehr && mgUeber) mgUeberfaelligeNachladen();
+      if (!mehr) mgOffeneVollstaendig();
     }
     function mgGefiltert(ausser) {
       const s = mgSuche.trim().toLowerCase();
@@ -8706,7 +8741,7 @@
         if (ausser !== 'dringend' && mgDringend && mgDringKey(m.urgency) !== mgDringend) return false;
         if (ausser !== 'kategorie' && mgKategorie && m.category !== mgKategorie) return false;
         if (ausser !== 'kanal' && mgKanal && (m.kanal || 'telefon') !== mgKanal) return false;
-        if (s && ![m.caller_name, m.caller_number, m.callback_number, m.summary, m.category, m.note].some((v) => (v || '').toLowerCase().includes(s))) return false;
+        if (s && ![m.caller_name, mgName(m), m.caller_number, m.callback_number, m.summary, m.category, m.note].some((v) => (v || '').toLowerCase().includes(s))) return false;
         return true;
       }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
@@ -8714,7 +8749,7 @@
     function renderNachrichten() {
       if (!$('mgListe')) return;
       const alle = [...mgItems.values()];
-      const offen = alle.filter((m) => (m.status || 'new') === 'new').length;
+      const offen = Math.max(alle.filter((m) => (m.status || 'new') === 'new').length, mgOffenGesamt || 0);
       const badge = $('msgBadge'); if (badge) { badge.textContent = offen || ''; badge.classList.toggle('hidden', !offen); }
       const ueberN = alle.filter(mgUeberfaellig).length;
       $('mgSub').textContent = offen ? (offen === 1 ? 'Eine offene Nachricht' : offen + ' offene Nachrichten') + (ueberN ? ', davon ' + ueberN + ' länger als 24 Stunden.' : '.') : 'Alles erledigt. Neue Rückrufe und Anliegen erscheinen hier sofort.';
@@ -8742,16 +8777,18 @@
       $('mgMehr').classList.toggle('hidden', mgAlle);
       renderNachrichtDetail();
     }
+    /** Name zur Nachricht: vom Assistenten aufgenommen, sonst aus dem Telefonbuch. */
+    const mgName = (m) => m.caller_name || ktName(m.callback_number || m.caller_number || '') || '';
     function mgZeile(m) {
       const z = document.createElement('div'); const erledigt = m.status === 'done'; const dk = mgDringKey(m.urgency);
       z.className = 'lv-zeile mg-zeile' + (m.id === mgAuswahl ? ' aktiv' : '') + (erledigt ? ' erledigt' : ''); z.dataset.msgId = m.id;
       z.innerHTML = '<span class="lv-dot"></span><div class="lv-mitte"><b></b><span class="call-topic lv-kanal hidden">WhatsApp</span><span class="call-topic hidden"></span><div class="lv-text"></div></div><div class="lv-rechts"><span></span><span></span></div>';
       const dot = z.querySelector('.lv-dot'); if (erledigt) { dot.classList.add('haken'); dot.dataset.tip = 'Erledigt'; } else if (dk) { dot.style.background = MG_DRING[dk][0]; dot.dataset.tip = 'Dringlichkeit: ' + MG_DRING[dk][1]; } else dot.dataset.tip = 'Dringlichkeit nicht angegeben';
-      z.querySelector('b').innerHTML = markierenMit(m.caller_name || fmtNr(m.callback_number || m.caller_number || '') || 'Unbekannt', mgSuche);
+      z.querySelector('b').innerHTML = markierenMit(mgName(m) || fmtNr(m.callback_number || m.caller_number || '') || 'Unbekannt', mgSuche);
       if (m.category) { const tp = z.querySelector('.call-topic:not(.lv-kanal)'); tp.innerHTML = markierenMit(m.category, mgSuche); tp.classList.remove('hidden'); }
       if (m.kanal === 'whatsapp') { const kc = z.querySelector('.lv-kanal'); kc.classList.remove('hidden'); kc.dataset.tip = 'Aufgenommen per WhatsApp'; }
       z.querySelector('.lv-text').innerHTML = markierenMit(m.summary || 'ohne Zusammenfassung', mgSuche); if (m.summary && m.summary.length > 70) z.querySelector('.lv-text').dataset.tip = m.summary;
-      const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(m.created_at); r[1].textContent = erledigt ? 'erledigt' : (m.caller_name ? fmtNr(m.callback_number || m.caller_number || '') : '');
+      const r = z.querySelectorAll('.lv-rechts span'); r[0].textContent = lvWann(m.created_at); r[1].textContent = erledigt ? 'erledigt' : (mgName(m) ? fmtNr(m.callback_number || m.caller_number || '') : '');
       if (!erledigt && mgUeberfaellig(m)) { r[1].textContent = mgAlterText(m) + ' offen'; r[1].classList.add('ueber-text'); r[1].dataset.tip = 'Länger als 24 Stunden offen'; }
       z.onclick = () => { mgAuswahl = m.id; renderNachrichten(); };
       z.setAttribute('role', 'button'); z.tabIndex = 0; z.setAttribute('aria-current', m.id === mgAuswahl ? 'true' : 'false');
@@ -8789,7 +8826,8 @@
         + '<div class="call-summary" data-zusammenfassung></div>'
         + '<div class="stack" style="margin-top:10px" data-aktionen></div><div data-rueckruf></div>'
         + '<label style="margin-top:14px">Notiz</label><textarea class="db-notizen" style="min-height:80px" data-notiz placeholder="Eigene Notiz zu dieser Nachricht, z. B. das Ergebnis des Rückrufs. Wird automatisch gespeichert."></textarea>';
-      d.querySelector('.lv-nr').textContent = m.caller_name || (m.kanal === 'whatsapp' ? 'Unbekannter Kunde' : 'Unbekannter Anrufer');
+      d.querySelector('.lv-nr').textContent = mgName(m) || (m.kanal === 'whatsapp' ? 'Unbekannter Kunde' : 'Unbekannter Anrufer');
+      if (!m.caller_name && mgName(m)) d.querySelector('.lv-nr').dataset.tip = 'Name aus dem Telefonbuch';
       d.querySelector('.lv-zurueck').onclick = () => { mgAuswahl = null; renderNachrichten(); };
       const meta = d.querySelector('.lv-meta'); const chip = (t, tip, klick) => { const s = document.createElement('span'); s.textContent = t; if (tip) s.dataset.tip = tip; if (klick) { s.classList.add('klick'); s.onclick = klick; } meta.append(s); };
       chip(new Date(m.created_at).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }));
@@ -8825,7 +8863,7 @@
         const { data: schon } = await sb.from('tickets').select('id, number').eq('tenant_id', tenant.id).eq('message_id', m.id).limit(1);
         if (schon?.length) { toast('Zu dieser Nachricht gibt es schon Vorgang #' + schon[0].number + '.'); geh('sec-tickets'); vorgangOeffnen(schon[0].id); return; }
         const title = ((m.category ? m.category + ': ' : '') + (m.summary ? kuerzen(m.summary, 90) : (m.caller_name || nr || 'Nachricht'))).slice(0, 160);
-        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: m.caller_name || null, caller_phone: nr || null, call_id: m.call_id || null, message_id: m.id, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
+        const { data, error } = await sb.from('tickets').insert({ tenant_id: tenant.id, title, body: m.summary || '', source: 'message', caller_name: mgName(m) || null, caller_phone: nr || null, call_id: m.call_id || null, message_id: m.id, category: m.category || null, priority: dk === 'hoch' ? 'high' : dk === 'niedrig' ? 'low' : 'normal' }).select('id').maybeSingle();
         if (error) { toast('Fehler: ' + fehlerText(error), 'err'); return; } vorgangAngelegtToast(data?.id); loadTickets();
       });
       if (nr && !ktName(nr)) knopf('Ins Telefonbuch', '', () => insTelefonbuch(nr, m.caller_name || '')).dataset.tip = 'Namen zu dieser Nummer speichern';
@@ -8849,7 +8887,7 @@
         const liste = mgGefiltert(); if (!liste.length) { toast('Keine Nachrichten in der Auswahl.', 'err'); return; }
         const zeilen = [['Datum', 'Name', 'Nummer', 'Kategorie', 'Dringlichkeit', 'Status', 'Zusammenfassung', 'Notiz', 'Erledigt am', 'Erledigt nach (Std.)', 'Kanal']];
         const nachStd = (m) => m.status === 'done' && m.done_at ? (Math.max(0, new Date(m.done_at) - new Date(m.created_at)) / 3600e3).toLocaleString('de-DE', { maximumFractionDigits: 1 }) : '';
-        liste.forEach((m) => zeilen.push([csvZeit(m.created_at), m.caller_name || '', m.callback_number || m.caller_number || '', m.category || '', m.urgency || '', m.status === 'done' ? 'erledigt' : 'offen', m.summary || '', m.note || '', csvZeit(m.done_at), nachStd(m), m.kanal === 'whatsapp' ? 'WhatsApp' : 'Telefon']));
+        liste.forEach((m) => zeilen.push([csvZeit(m.created_at), mgName(m), m.callback_number || m.caller_number || '', m.category || '', MG_DRING[mgDringKey(m.urgency)]?.[1] || '', m.status === 'done' ? 'erledigt' : 'offen', m.summary || '', m.note || '', csvZeit(m.done_at), nachStd(m), m.kanal === 'whatsapp' ? 'WhatsApp' : 'Telefon']));
         csvHerunterladen(zeilen, 'nachrichten'); toast(liste.length + (liste.length === 1 ? ' Nachricht' : ' Nachrichten') + ' exportiert.');
       };
       s.oninput = () => { clearTimeout(mgSuchTimer); mgSuchTimer = setTimeout(() => { mgSuche = s.value; renderNachrichten(); }, 150); };
@@ -8980,13 +9018,16 @@
       const nb = $('navAbo'); if (!nb) return;
       const an = aboSichtbar(aboAktuell());
       nb.hidden = !an;
+      const ka = $('kontoAbo'); if (ka) ka.hidden = !an; // Konto-Menü: derselbe Weg wie in der Seitenleiste
       if (!an && nb.classList.contains('active')) geh('sec-overview');
     }
     function aboZuruecksetzen() {
       aboGen++; aboStand = null; aboFuer = null; aboStandZeit = 0; aboModus = null; aboModusFuer = null; aboWahl = null; aboWechselOffen = false; aboNachladen = 0;
       const nb = $('navAbo'); if (nb) nb.hidden = true;
+      const ka = $('kontoAbo'); if (ka) ka.hidden = true;
       const bn = $('aboBanner'); if (bn) { bn.classList.add('hidden'); bn.innerHTML = ''; }
     }
+    $('kontoAbo')?.addEventListener('click', () => geh('sec-abo'));
     function aboBetreten() {
       if (!tenant) return;
       aboZeichnen();
@@ -11755,6 +11796,22 @@
       'sec-booking': 'termine kalender buchung kalender verbinden google outlook microsoft apple icloud', 'sec-restaurant': 'reservierungen tische', 'sec-floorplan': 'tischplan', 'sec-guests': 'gäste',
       'sec-abo': 'abo rechnungen rechnung tarif tarifwechsel zahlung zahlungsart kündigen kündigung minuten verbrauch kontingent stripe',
     };
+    // Einstellungen des Assistenten: Treffer öffnen den passenden Reiter und springen zum Abschnitt (asZuPanel).
+    const EINSTELLUNG_WORTE = [
+      ['asGrund', 'Grundlagen und Begrüßung', 'grundlagen begrüßung verabschiedung firmenname name rolle tonalität branchen-vorlage vorlage standort anfahrt adresse'],
+      ['asZeiten', 'Öffnungszeiten', 'öffnungszeiten geschäftszeiten geöffnet geschlossen zeiten'],
+      ['asHinweis', 'Sonderhinweis', 'sonderhinweis urlaub betriebsferien feiertag ausnahme hinweis ab bis'],
+      ['asVerhalten', 'Verhalten', 'verhalten regeln verhaltensregeln grenzen tabus hinweise'],
+      ['asStil', 'Gesprächsstil', 'gesprächsstil stil knapp ausführlich'],
+      ['asGlossar', 'Glossar', 'glossar begriffe aussprache fachbegriffe'],
+      ['asErfassung', 'Erfassungsfelder', 'erfassungsfelder erfassung felder abfragen kundennummer'],
+      ['asStimme', 'Stimme & Sprache', 'stimme sprache englisch deutsch ki-modell anbieter'],
+      ['asWeiter', 'Weiterleitung an Menschen', 'weiterleitung weiterleiten durchstellen verbinden notfall ziele tastenmenü'],
+      ['asSelbst', 'Anrufe, die du selbst führst', 'eigene rufnummer selbst anrufen ansage'],
+      ['asRecht', 'Hinweis zu Gesprächsbeginn', 'datenschutz ki-hinweis hinweis gesprächsbeginn aufzeichnung'],
+      ['asAufbewahrung', 'Aufbewahrung', 'aufbewahrung löschen löschfrist speicherdauer'],
+      ['asBericht', 'Wochenbericht', 'wochenbericht bericht wöchentlich'],
+    ];
     let suTreffer = [], suIndex = 0, suServer = { anrufe: [], wissen: [] }, suServerFuer = '', suServerTimer = null;
     const suNorm = (s) => String(s ?? '').toLowerCase();
     const suKurz = (s, n = 90) => { s = String(s ?? '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
@@ -11769,8 +11826,8 @@
       const anrufe = [...liveCalls.values()].map((x) => x.call).filter((c) => passt(c.caller_number, fmtNr(c.caller_number), ktName(c.caller_number), c.callee_number, c.to_number, c.topic, c.summary, c.notes, lvTagsVon(c).join(' ')))
         .slice(0, 6).map((c) => suAnruf(c));
       for (const c of suServer.anrufe) if (!liveCalls.has(c.id) && anrufe.length < 8) anrufe.push(suAnruf(c, true));
-      const nachrichten = [...mgItems.values()].filter((m) => passt(m.caller_name, m.callback_number, m.caller_number, m.summary, m.note, m.category))
-        .slice(0, 6).map((m) => ({ art: 'nachricht', titel: (m.caller_name || fmtNr(m.callback_number || m.caller_number)), sub: suKurz(m.summary), rechts: lvWann(m.created_at), icon: suIcon('sec-messages'), oeffnen: () => { geh('sec-messages'); nachrichtOeffnen(m.id); } }));
+      const nachrichten = [...mgItems.values()].filter((m) => passt(m.caller_name, mgName(m), m.callback_number, m.caller_number, m.summary, m.note, m.category))
+        .slice(0, 6).map((m) => ({ art: 'nachricht', titel: (mgName(m) || fmtNr(m.callback_number || m.caller_number)), sub: suKurz(m.summary), rechts: lvWann(m.created_at), icon: suIcon('sec-messages'), oeffnen: () => { geh('sec-messages'); nachrichtOeffnen(m.id); } }));
       const whatsapp = (wappStand?.verfuegbar ? [...wappItems.values()] : []).filter((u) => passt(u.profil_name, u.wa_id, u.wa_id ? fmtNr('+' + u.wa_id) : '', u.wa_id ? ktName('+' + u.wa_id) : '', u.letzte_vorschau))
         .slice(0, 6).map((u) => ({ art: 'whatsapp', titel: wappName(u), sub: suKurz(u.letzte_vorschau), rechts: lvWann(u.letzte_nachricht_at), icon: suIcon('sec-whatsapp'), oeffnen: () => wappOeffnen(u.id) }));
       const vorgaenge = tkAlle.filter((t) => passt('#' + t.number, t.title, t.body, t.caller_name, t.caller_phone, t.assignee, t.category))
@@ -11781,7 +11838,10 @@
       for (const it of suServer.wissen) if (!kbItems.some((x) => x.id === it.id) && wissen.length < 8) wissen.push(suWissen(it, true));
       const fragen = [...gapItems, ...(gapBeantwortet || [])].filter((g) => passt(g.question, g.answer))
         .slice(0, 6).map((g) => ({ art: 'frage', titel: suKurz(g.question, 70), sub: g.status === 'open' ? 'offen · aus einem Anruf' : suKurz(g.answer), rechts: lvWann(g.created_at), icon: suIcon('sec-gaps'), oeffnen: () => { geh('sec-gaps'); frageOeffnen(g.id); } }));
-      for (const [titel, treffer] of [['Anrufe', anrufe], ['Nachrichten', nachrichten], ['WhatsApp', whatsapp], ['Vorgänge', vorgaenge], ['Telefonbuch', kontakte], ['Wissensdatenbank', wissen], ['Offene Fragen', fragen], ['Bereiche', bereiche]]) if (treffer.length) gruppen.push({ titel, treffer });
+      const reiterName = (id) => document.querySelector('#asReiter [data-astab="' + ($(id)?.dataset.astab || '') + '"]')?.textContent.trim() || 'Assistent';
+      const einstellungen = !navSichtbar(navItem('sec-assistant')) ? [] : EINSTELLUNG_WORTE.filter(([id, titel, worte]) => $(id) && passt(titel, worte))
+        .slice(0, 6).map(([id, titel]) => ({ art: 'einstellung', titel, sub: 'Assistent · ' + reiterName(id), icon: suIcon('sec-assistant'), oeffnen: () => { geh('sec-assistant'); requestAnimationFrame(() => asZuPanel(id)); } }));
+      for (const [titel, treffer] of [['Anrufe', anrufe], ['Nachrichten', nachrichten], ['WhatsApp', whatsapp], ['Vorgänge', vorgaenge], ['Telefonbuch', kontakte], ['Wissensdatenbank', wissen], ['Offene Fragen', fragen], ['Einstellungen', einstellungen], ['Bereiche', bereiche]]) if (treffer.length) gruppen.push({ titel, treffer });
       return gruppen;
     }
     function suAnruf(c, aelter) {
@@ -11858,7 +11918,7 @@
     // ---- Kurzbefehle ----
     // Läuft in der Capture-Phase, damit „g dann e" nicht gleichzeitig „Vorgang erledigt" auslöst.
     // In Eingabefeldern feuert nichts außer ⌘K / Strg+K.
-    const KURZ_BEREICHE = { d: 'sec-overview', e: 'sec-live', a: 'sec-outbound', n: 'sec-messages', v: 'sec-tickets', w: 'sec-kb', f: 'sec-gaps', u: 'sec-auswertung', s: 'sec-assistant', t: 'sec-number', z: 'sec-team', k: 'sec-kontakte', c: 'sec-whatsapp' };
+    const KURZ_BEREICHE = { d: 'sec-overview', e: 'sec-live', a: 'sec-outbound', n: 'sec-messages', v: 'sec-tickets', w: 'sec-kb', f: 'sec-gaps', u: 'sec-auswertung', s: 'sec-assistant', t: 'sec-number', z: 'sec-team', k: 'sec-kontakte', c: 'sec-whatsapp', r: 'sec-restaurant', p: 'sec-floorplan', g: 'sec-guests', m: 'sec-booking' };
     const KURZ_HILFE = [
       ['Überall', null],
       [[IST_MAC ? '⌘' : 'Strg', 'K'], 'Suche über alles'],
@@ -11867,14 +11927,18 @@
       ['Bereiche wechseln', null],
       [['g', 'd'], 'Dashboard'], [['g', 'e'], 'Eingehende Anrufe'], [['g', 'a'], 'Ausgehende Anrufe'], [['g', 'n'], 'Nachrichten'], [['g', 'v'], 'Vorgänge'],
       [['g', 'w'], 'Wissensdatenbank'], [['g', 'f'], 'Offene Fragen'], [['g', 'u'], 'Auswertung'], [['g', 's'], 'Assistent'], [['g', 'k'], 'Telefonbuch'], [['g', 'c'], 'WhatsApp'],
+      [['g', 't'], 'Telefonnummer'], [['g', 'z'], 'Zugänge'], [['g', 'm'], 'Termine'], [['g', 'r'], 'Reservierungen'], [['g', 'p'], 'Tischplan'], [['g', 'g'], 'Gäste'],
       ['Im Bereich', null],
       [['/'], 'In die Suche des Bereichs springen'], [['↑', '↓'], 'Durch die Liste'], [['n'], 'Neuer Vorgang (in Vorgänge)'], [['a'], 'Vorgang in Arbeit'], [['e'], 'Vorgang erledigt'],
       [[IST_MAC ? '⌘' : 'Strg', 'S'], 'Assistent speichern'], [[IST_MAC ? '⌘' : 'Strg', '↵'], 'Notiz oder Antwort speichern'],
     ];
-    $('kurzHilfeListe').innerHTML = KURZ_HILFE.map(([tasten, text]) => text === null ? '<div class="kurzhilfe__gruppe">' + tasten + '</div>'
-      : '<div>' + tasten.map((t) => '<kbd>' + t + '</kbd>').join(tasten.length === 2 && tasten[0] === 'g' ? '<span class="dann">dann</span>' : ' ') + '</div><div>' + text + '</div>').join('');
+    // Nur Kurzbefehle für Bereiche, die diese Firma und dieses Konto haben (Reservierungen nur mit Modul, Zugänge nur für Admins …).
+    const kurzHilfeBauen = () => { $('kurzHilfeListe').innerHTML = KURZ_HILFE.filter(([tasten, text]) => text === null || !(tasten.length === 2 && tasten[0] === 'g' && KURZ_BEREICHE[tasten[1]] && !navSichtbar(navItem(KURZ_BEREICHE[tasten[1]])))).map(([tasten, text]) => text === null ? '<div class="kurzhilfe__gruppe">' + tasten + '</div>'
+      : '<div>' + tasten.map((t) => '<kbd>' + t + '</kbd>').join(tasten.length === 2 && tasten[0] === 'g' ? '<span class="dann">dann</span>' : ' ') + '</div><div>' + text + '</div>').join(''); };
+    kurzHilfeBauen();
     let kurzHilfeFalleLoesen = null;
     function kurzHilfeZeigen(an) {
+      if (an) kurzHilfeBauen();
       $('kurzHilfe').classList.toggle('hidden', !an);
       if (an) { kurzHilfeFalleLoesen = fokusFalle($('kurzHilfe'), () => kurzHilfeZeigen(false)); $('kurzHilfeZu').focus(); }
       else if (kurzHilfeFalleLoesen) { const f = kurzHilfeFalleLoesen; kurzHilfeFalleLoesen = null; f(); }
