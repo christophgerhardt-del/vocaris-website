@@ -54,6 +54,7 @@
       </div>
       <nav aria-label="Bereiche">
         <button class="nav-item active" type="button" data-target="sec-firmen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/></svg>Firmen <span class="zahl" id="navFirmen"></span></button>
+        <button class="nav-item" type="button" data-target="sec-aufgaben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Aufgaben <span class="zahl" id="navAufgaben"></span></button>
         <button class="nav-item" type="button" data-target="sec-margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Margen</button>
         <button class="nav-item" type="button" data-target="sec-nummern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Nummern <span class="zahl" id="navNummern"></span></button>
         <button class="nav-item" type="button" data-target="sec-anbieter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16M7 8v8M17 8v8M2 11v2M22 11v2"/></svg>Anbieter &amp; Stimmen</button>
@@ -71,6 +72,7 @@
          .nav-item aus, damit es nur eine Navigationslogik gibt. -->
     <nav class="tabbar" aria-label="Bereiche">
       <button class="tab-item active" type="button" data-tab="sec-firmen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"/></svg>Firmen</button>
+      <button class="tab-item" type="button" data-tab="sec-aufgaben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Aufgaben<span class="tab-zahl" id="tabAufgaben" hidden></span></button>
       <button class="tab-item" type="button" data-tab="sec-margen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Margen</button>
       <button class="tab-item" type="button" data-tab="sec-nummern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Nummern</button>
       <button class="tab-item" type="button" data-tab="sec-anbieter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16M7 8v8M17 8v8M2 11v2M22 11v2"/></svg>Anbieter</button>
@@ -131,6 +133,7 @@
             <button class="chip" type="button" data-filter="status" data-wert="ohne-nummer" aria-pressed="false">Ohne Nummer</button>
             <button class="chip" type="button" data-filter="status" data-wert="ohne-login" aria-pressed="false">Ohne Login</button>
             <button class="chip" type="button" data-filter="status" data-wert="widerspruch" aria-pressed="false">Branche ≠ Module</button>
+            <button class="chip" type="button" data-filter="status" data-wert="gebucht" aria-pressed="false">Online gebucht</button>
           </div>
         </div>
 
@@ -145,6 +148,30 @@
             <button class="btn btn--ghost detail__zu" id="detailZu" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Zurück zur Liste</button>
             <div id="detailInhalt"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ── Aufgaben ───────────────────────────────────────────────────────
+           Was nach Online-Buchungen und Abo-Ereignissen von Hand zu tun ist
+           (Server: betreiber-aufgaben.ts, GET/POST /api/admin/aufgaben). -->
+      <section id="sec-aufgaben" hidden>
+        <div class="db-kopf">
+          <div>
+            <h1 class="pagehead">Aufgaben</h1>
+            <p class="pagesub" id="aufgabenSub">Rufnummern einrichten, fehlgeschlagene Buchungen und Zahlungen klären.</p>
+          </div>
+          <div class="db-aktionen">
+            <div class="fgruppe" role="group" aria-label="Status" id="aufgabenFilter">
+              <button class="chip aktiv" type="button" data-astatus="offen" aria-pressed="true">Offen</button>
+              <button class="chip" type="button" data-astatus="erledigt" aria-pressed="false">Erledigt</button>
+              <button class="chip" type="button" data-astatus="verworfen" aria-pressed="false">Verworfen</button>
+              <button class="chip" type="button" data-astatus="alle" aria-pressed="false">Alle</button>
+            </div>
+            <button class="btn btn--ghost btn--sym" id="aufgabenReload" type="button" aria-label="Aufgaben neu laden" title="Neu laden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+          </div>
+        </div>
+        <div class="aufgaben" id="aufgabenListe">
+          <div class="panel"><div class="skelett" aria-hidden="true"><div class="skelett__zeile"></div><div class="skelett__zeile"></div><div class="skelett__zeile kurz"></div></div></div>
         </div>
       </section>
 
@@ -373,6 +400,18 @@
     const ANBIETER = { openai: 'OpenAI (GPT-Realtime)', live: 'OpenAI GPT-Live (Vollduplex)', gemini: 'Google Gemini Live', grok: 'xAI Grok Voice', mistral: 'Mistral (EU/DSGVO)' };
     const ANBIETER_KURZ = { openai: 'OpenAI', live: 'GPT-Live', gemini: 'Gemini', grok: 'Grok', mistral: 'Mistral' };
     const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
+    // Abo aus tenants/list (Buchungs-Migration): Status und Herkunft lesbar
+    const ABO_STATUS = { active: 'aktiv', trialing: 'Testphase', past_due: 'Zahlung offen', unpaid: 'unbezahlt', incomplete: 'Zahlung ausstehend', incomplete_expired: 'abgebrochen', canceled: 'beendet', paused: 'pausiert' };
+    const ABO_QUELLE = { buchung: 'online gebucht', umstellung: 'im Kundenbereich abgeschlossen', manuell: 'manuell' };
+    // Betreiber-Aufgaben (betreiber_aufgaben.art)
+    const AUFGABE_ART = {
+      nummer_einrichten: ['Rufnummer einrichten', 'tag--ein'], weitere_nummer: ['Weitere Rufnummer', 'tag--ein'], nummer_freigeben: ['Nummer freigeben', ''],
+      buchung_fehler: ['Buchung fehlgeschlagen', 'tag--warn'], buchung_konflikt: ['Login schon vorhanden', 'tag--warn'], zugangsmail_fehlt: ['Zugangsmail fehlt', 'tag--warn'],
+      zahlung_fehlgeschlagen: ['Zahlung fehlgeschlagen', 'tag--warn'], abo_beendet: ['Abo beendet', ''], sonstiges: ['Sonstiges', ''],
+    };
+    // Stripe-Verweise: Test- oder Live-Dashboard. „an“ heißt Live-Schlüssel (buchungMoeglich im Server), sonst Testmodus.
+    let stripeLive = null;
+    const stripeLink = (art, id) => 'https://dashboard.stripe.com/' + (stripeLive ? '' : 'test/') + art + '/' + encodeURIComponent(id);
     const ABTEILUNG = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
     // Stimmen je Anbieter: nur diese sind für das jeweilige Modell gültig.
     const VOICES_BY_PROVIDER = {
@@ -485,6 +524,7 @@
       document.querySelectorAll('.tab-item').forEach((b) => { const an = b.dataset.tab === ziel; b.classList.toggle('active', an); an ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'); });
       document.body.classList.remove('zeigt-detail');
       window.scrollTo({ top: 0 });
+      if (ziel === 'sec-aufgaben' && token) ladeAufgaben();
     }
     document.querySelectorAll('.nav-item').forEach((b) => (b.onclick = () => geh(b.dataset.target)));
     document.querySelectorAll('.tab-item').forEach((b) => (b.onclick = () => geh(b.dataset.tab)));
@@ -510,6 +550,7 @@
       renderAnbieter();
       renderSitzung();
       if (aktiveFirma && tenants.some((t) => t.id === aktiveFirma)) renderDetail(aktiveFirma);
+      ladeAufgaben(); // nach den Firmen, damit Aufgaben ihren Firmennamen finden
     }
     async function ladeMargen() {
       $('margenBox').innerHTML = SKELETT;
@@ -526,6 +567,7 @@
       else if (a === 'neu') $('neuBtn').click();
       else if (a === 'filter-weg') { Object.keys(filter).forEach((k) => (filter[k] = '')); suche = ''; $('fSuche').value = ''; syncFilterChips(); renderFirmen(); }
       else if (a === 'nummer') openNumDlg(null);
+      else if (a === 'reload-aufgaben') ladeAufgaben();
     });
 
     // ---- Kacheln ----
@@ -587,6 +629,7 @@
       if (filter.status === 'ohne-nummer' && t.numbers.length) return false;
       if (filter.status === 'ohne-login' && t.ownerEmail) return false;
       if (filter.status === 'widerspruch' && !widerspruch(t)) return false;
+      if (filter.status === 'gebucht' && t.abo?.quelle !== 'buchung') return false;
       if (suche) {
         const s = suche.toLowerCase();
         const text = [t.name, t.ownerEmail, ...t.numbers.map((n) => n.phone_number)].join(' ').toLowerCase();
@@ -624,6 +667,14 @@
       const name = TARIF_NAMEN[z.tarif] || z.tarif;
       return '<span class="tag ' + (z.monatspreis != null ? 'tag--tarif' : 'tag--test') + '">' + esc(name) + (z.monatspreis == null && z.tarif !== 'trial' ? ' · kein Umsatz' : '') + '</span>';
     }
+    function aboTags(t) {
+      const a = t.abo; if (!a) return '';
+      let h = '';
+      if (a.quelle === 'buchung') h += '<span class="tag tag--ein" title="Selbst über die Website gebucht">gebucht</span>';
+      if (['past_due', 'unpaid'].includes(a.status)) h += '<span class="tag tag--warn" title="Letzte Zahlung fehlgeschlagen">Zahlung offen</span>';
+      if (a.kuendigungZum || a.cancelAtPeriodEnd) h += '<span class="tag tag--aus" title="' + esc(a.kuendigungZum ? 'Gekündigt zum ' + datum(a.kuendigungZum) : 'Gekündigt zum Ende des Zeitraums') + '">gekündigt</span>';
+      return h;
+    }
     function firmaZeile(t) {
       return `<div class="firma${t.id === aktiveFirma ? ' aktiv' : ''}" data-id="${esc(t.id)}">
         <button class="firma__kopf" type="button" data-firma="${esc(t.id)}" aria-pressed="${t.id === aktiveFirma}">
@@ -633,7 +684,7 @@
           <span class="firma__tags">
             <span class="tag${t.industry === 'restaurant' ? ' tag--rest' : ''}">${t.industry === 'restaurant' ? 'Restaurant' : 'Allgemein'}</span>
             <span class="tag">${esc(ANBIETER_KURZ[t.voiceProvider] || t.voiceProvider)} · ${esc(stimmeName(t.voiceProvider, t.voiceId))}</span>
-            ${tarifTag(t)}
+            ${tarifTag(t)}${aboTags(t)}
           </span>
         </button></div>`;
     }
@@ -690,6 +741,24 @@
       if (wert === undefined || wert === null) return `<span class="tag tag--unbek" title="Zustand unbekannt, der Server liefert dieses Feld noch nicht."><span class="punkt"></span>${esc(text)} ?</span>`;
       return `<span class="tag tag--${wert ? 'an' : 'aus'}" title="${esc(wert ? anTitel : ausTitel)}"><span class="punkt"></span>${esc(text)}</span>`;
     }
+    function aboBlock(t) {
+      const a = t.abo;
+      const offen = (aufgaben.offen || []).filter((x) => x.tenant_id === t.id);
+      if (!a && !offen.length) return '';
+      let h = '<div class="detail__block"><h3>Abo</h3>';
+      if (a) {
+        h += '<dl class="db-fakten">'
+          + '<dt>Tarif</dt><dd>' + esc(TARIF_NAMEN[a.plan] || a.plan || '–') + (a.status ? ' <small>· ' + esc(ABO_STATUS[a.status] || a.status) + '</small>' : '') + '</dd>'
+          + '<dt>Herkunft</dt><dd>' + esc(ABO_QUELLE[a.quelle] || a.quelle || '–') + '</dd>'
+          + (a.periodeBis ? '<dt>Zeitraum bis</dt><dd>' + datum(a.periodeBis) + '</dd>' : '')
+          + (a.kuendigungZum || a.cancelAtPeriodEnd ? '<dt>Gekündigt</dt><dd class="minus">' + (a.kuendigungZum ? 'zum ' + datum(a.kuendigungZum) : 'zum Ende des Zeitraums') + '</dd>' : '')
+          + '<dt>Weitere Nummern</dt><dd>' + zahl(a.zusatznummern) + (a.zusatznummern ? ' <small>· ' + eur(a.zusatznummern * 5) + ' im Monat</small>' : '') + '</dd>'
+          + (a.stripeCustomerId ? '<dt>Stripe</dt><dd><a href="' + esc(stripeLink('customers', a.stripeCustomerId)) + '" target="_blank" rel="noopener">' + esc(a.stripeCustomerId) + '</a></dd>' : '')
+          + '</dl>';
+      }
+      if (offen.length) h += '<div class="warn">' + plural(offen.length, 'offene Aufgabe', 'offene Aufgaben') + ': ' + offen.map((x) => esc((AUFGABE_ART[x.art] || [x.art])[0])).join(', ') + ' <button class="btn btn--ghost" type="button" data-zu-aufgaben>Ansehen</button></div>';
+      return h + '</div>';
+    }
     function renderDetail(id) {
       const t = tenants.find((x) => x.id === id); if (!t) return;
       // Der Fokus steht oft auf einem Knopf INNERHALB von detailInhalt (z. B. „Lösen" nach
@@ -725,6 +794,7 @@
           <dt>Kosten, 30 Tage</dt><dd>${z ? eur(z.kosten.total) + ' <small>· Telnyx ' + eur(z.kosten.telnyx) + ', KI ' + eur(z.kosten.ai) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
           <dt>Marge, 30 Tage</dt><dd class="${z ? (z.marge < 0 ? 'minus' : z.marge > 0 ? 'plus' : '') : ''}">${z ? eur(z.marge) + ' <small>· Umsatz ' + eur(z.umsatz) + '</small>' : '<small>Margen nicht geladen</small>'}</dd>
         </dl>
+        ${aboBlock(t)}
         <div class="detail__block">
           <h3>Nummern <button class="btn btn--ghost" type="button" id="dNummerNeu">+ Nummer</button></h3>
           <div class="nums">${nums}</div>
@@ -759,6 +829,7 @@
       $('dOeffnen').onclick = () => impersonate(t.id, t.name);
       $('dName').onclick = () => openNameDlg(t);
       $('dNummerNeu').onclick = () => openNumDlg(t.id);
+      $('detailInhalt').querySelector('[data-zu-aufgaben]')?.addEventListener('click', () => { aufgabenFilter = 'offen'; geh('sec-aufgaben'); });
       const prov = $('dAnbieter'), voiceSel = $('dStimme');
       prov.onchange = async () => {
         const provider = prov.value, alt = t.voiceProvider;
@@ -860,16 +931,18 @@
 
     // ---- Dialog: Nummer zuweisen ----
     const numDlg = $('numDlg');
-    function openNumDlg(tenantId) {
-      $('numForm').reset(); $('numErr').textContent = '';
+    let numDlgAufgabe = null;   // Aufgabe „Rufnummer einrichten“, die mit dem Zuweisen erledigt ist
+    function openNumDlg(tenantId, nummer = '', aufgabeId = null) {
+      $('numForm').reset(); $('numErr').textContent = ''; numDlgAufgabe = aufgabeId;
       // Ohne vorgewählte Firma einen Platzhalter voranstellen: sonst wählt der Browser
       // stillschweigend die erste Firma der Liste aus, und die Pflichtprüfung unten greift nie.
       const platzhalter = tenantId ? '' : '<option value="" disabled selected>Firma wählen …</option>';
       $('numTenant').innerHTML = platzhalter + tenants.map((t) => `<option value="${esc(t.id)}"${t.id === tenantId ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
+      if (nummer) $('numVal').value = nummer;
       numDlg.showModal(); (tenantId ? $('numVal') : $('numTenant')).focus();
     }
     $('nummerNeuBtn').onclick = () => openNumDlg(aktiveFirma);
-    $('numCancel').onclick = () => numDlg.close();
+    $('numCancel').onclick = () => { numDlgAufgabe = null; numDlg.close(); };
     $('numForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       $('numErr').textContent = '';
@@ -881,6 +954,12 @@
       try {
         await api('/api/admin/numbers/assign', { phoneNumber, tenantId, department: $('numDep').value });
         numDlg.close(); toast('Nummer ' + phoneNumber + ' zugewiesen');
+        if (numDlgAufgabe) {
+          const id = numDlgAufgabe; numDlgAufgabe = null;
+          try { await api('/api/admin/aufgaben/' + id, { status: 'erledigt', notiz: 'Nummer ' + phoneNumber + ' zugewiesen.' }); toast('Nummer ' + phoneNumber + ' zugewiesen, Aufgabe erledigt'); }
+          catch (err) { toast('Nummer zugewiesen, Aufgabe noch offen: ' + err.message, 'err'); }
+          ladeAufgaben();
+        }
         await ladeAlles();
         if (tenantId !== aktiveFirma) zeigeDetail(tenantId);
       } catch (err) { $('numErr').textContent = err.message; }
@@ -1012,6 +1091,102 @@
     // Escape schließt das Detail-Blatt auf dem Handy – nur wenn nicht gerade ein Dialog darüber offen ist,
     // sonst soll Escape erst den Dialog schließen (ein Druck = eine Ebene).
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('zeigt-detail') && !document.querySelector('dialog[open]')) schliesseDetailBlatt(); });
+
+    // ---- Aufgaben ----
+    // Was nach Online-Buchungen und Abo-Ereignissen von Hand zu tun ist (Server: betreiber-aufgaben.ts).
+    // GET /api/admin/aufgaben?status=…, POST /api/admin/aufgaben/:id { status, notiz }. Kennt der Server
+    // die Route noch nicht, zeigt der Bereich das an; sonst bleibt alles wie bisher.
+    let aufgaben = { offen: null, liste: [] };
+    let aufgabenFilter = 'offen', aufgabenLadeGen = 0;
+    const AUFGABE_FELD = { firma: 'Firma', tarif: 'Tarif', email: 'E-Mail', rueckfragen: 'Rückfragen an', vorwahl: 'Wunsch-Vorwahl', zahlung: 'Zahlung', nummer: 'Gewünschte Nummer', abteilung: 'Abteilung', vorhanden: 'Vorhandene Nummern', bestellt: 'Bestellt', stand: 'Stand', kunde: 'Stripe-Kunde', abo: 'Stripe-Abo', bisher: 'Bisheriges Abo', neu: 'Neues Abo', sitzung: 'Checkout', buchung: 'Buchung', beendet: 'Beendet am', fehler: 'Fehler', hinweis: 'Hinweis' };
+    const ZAHLUNG = { paid: 'bezahlt', unpaid: 'noch offen (Lastschrift)', no_payment_required: 'keine Zahlung nötig' };
+    function aufgabeWert(k, v) {
+      if (v === null || v === undefined || v === '' || typeof v === 'object') return null;
+      if (k === 'kunde') return '<a href="' + esc(stripeLink('customers', v)) + '" target="_blank" rel="noopener">' + esc(v) + '</a>';
+      if (['abo', 'bisher', 'neu'].includes(k)) return '<a href="' + esc(stripeLink('subscriptions', v)) + '" target="_blank" rel="noopener">' + esc(v) + '</a>';
+      if (k === 'email') return '<a href="mailto:' + esc(v) + '">' + esc(v) + '</a>';
+      if (k === 'rueckfragen') return '<a href="tel:' + esc(v) + '">' + esc(v) + '</a>';
+      if (k === 'tarif') return esc(TARIF_NAMEN[v] || v);
+      if (k === 'vorwahl') return esc('0' + String(v).replace(/^0+/, ''));
+      if (k === 'zahlung') return esc(ZAHLUNG[v] || v);
+      if (k === 'abteilung') return esc(ABTEILUNG[v] || v);
+      if (k === 'beendet') { const ms = typeof v === 'number' ? (v < 1e12 ? v * 1000 : v) : Date.parse(v); return esc(Number.isFinite(ms) ? datumZeit(ms) : v); }
+      return esc(String(v));
+    }
+    function aufgabeKarte(a) {
+      const [artName, artKlasse] = AUFGABE_ART[a.art] || [a.art, ''];
+      const firma = a.tenant_id ? tenants.find((x) => x.id === a.tenant_id) : null;
+      const d = a.details || {};
+      const felder = Object.keys(d).filter((k) => k !== 'von').map((k) => [AUFGABE_FELD[k] || k, aufgabeWert(k, d[k])]).filter(([, w]) => w !== null);
+      const nummer = typeof (d.bestellt || d.nummer) === 'string' ? (d.bestellt || d.nummer) : '';
+      let h = '<article class="panel aufgabe" data-aufgabe="' + esc(a.id) + '">'
+        + '<div class="aufgabe__kopf"><span class="tag ' + artKlasse + '">' + esc(artName) + '</span>'
+        + (a.status !== 'offen' ? '<span class="tag tag--' + (a.status === 'erledigt' ? 'an' : 'aus') + '"><span class="punkt"></span>' + esc(a.status) + '</span>' : '')
+        + '<time datetime="' + esc(a.created_at) + '">' + esc(datumZeit(Date.parse(a.created_at))) + '</time></div>'
+        + '<h3>' + esc(a.titel) + '</h3>';
+      if (a.tenant_id) h += '<p class="aufgabe__firma">' + (firma ? '<button class="verweis-knopf" type="button" data-firma-geh="' + esc(firma.id) + '">' + esc(firma.name) + '</button>' : '<span class="muted">Firma nicht mehr vorhanden</span>') + '</p>';
+      if (felder.length) h += '<dl class="db-fakten">' + felder.map(([k, w]) => '<dt>' + esc(k) + '</dt><dd>' + w + '</dd>').join('') + '</dl>';
+      if (a.status !== 'offen') h += '<p class="aufgabe__erledigt">' + (a.status === 'erledigt' ? 'Erledigt' : 'Verworfen') + (a.erledigt_at ? ' am ' + esc(datumZeit(Date.parse(a.erledigt_at))) : '') + (a.notiz ? ' · ' + esc(a.notiz) : '') + '</p>';
+      else {
+        h += '<div class="aufgabe__aktionen">';
+        if (['nummer_einrichten', 'weitere_nummer'].includes(a.art) && firma) h += '<button class="btn btn--primary" type="button" data-nummer="' + esc(nummer) + '">Nummer zuweisen</button>';
+        h += '<input class="aufgabe__notiz" type="text" maxlength="500" placeholder="Notiz (optional)" aria-label="Notiz zu „' + esc(a.titel) + '“" />'
+          + '<button class="btn" type="button" data-setzen="erledigt">Erledigt</button><button class="btn btn--ghost" type="button" data-setzen="verworfen">Verwerfen</button></div>';
+      }
+      return h + '</article>';
+    }
+    function aufgabenZaehler() {
+      const n = (aufgaben.offen || []).length;
+      $('navAufgaben').textContent = aufgaben.offen === null ? '' : String(n);
+      const tb = $('tabAufgaben'); tb.textContent = n ? String(n) : ''; tb.hidden = !n;
+    }
+    function renderAufgaben() {
+      const box = $('aufgabenListe'), l = aufgaben.liste || [];
+      document.querySelectorAll('#aufgabenFilter .chip').forEach((c) => { const an = c.dataset.astatus === aufgabenFilter; c.classList.toggle('aktiv', an); c.setAttribute('aria-pressed', an); });
+      const n = (aufgaben.offen || []).length;
+      $('aufgabenSub').textContent = (n ? plural(n, 'offene Aufgabe', 'offene Aufgaben') : 'Keine offenen Aufgaben') + '. Rufnummern einrichten, fehlgeschlagene Buchungen und Zahlungen klären.';
+      box.innerHTML = l.length ? l.map(aufgabeKarte).join('') : leer(aufgabenFilter === 'offen' ? 'Nichts zu tun. Neue Online-Buchungen und Abo-Ereignisse landen hier.' : 'Keine Aufgaben in dieser Auswahl.');
+    }
+    async function ladeAufgaben() {
+      const gen = ++aufgabenLadeGen, box = $('aufgabenListe');
+      if (!aufgaben.liste.length) box.innerHTML = '<div class="panel">' + SKELETT + '</div>';
+      try {
+        const [liste, offen] = await Promise.all([
+          api('/api/admin/aufgaben?status=' + encodeURIComponent(aufgabenFilter), null, 'GET'),
+          aufgabenFilter === 'offen' ? Promise.resolve(null) : api('/api/admin/aufgaben?status=offen', null, 'GET'),
+        ]);
+        if (gen !== aufgabenLadeGen) return;
+        aufgaben.liste = liste.aufgaben || [];
+        aufgaben.offen = aufgabenFilter === 'offen' ? aufgaben.liste : (offen?.aufgaben || []);
+        // Stripe-Verweise ins richtige Dashboard: einmal fragen, ob der Server live bucht
+        if (stripeLive === null) {
+          try { const r = await fetch(API + '/api/buchen/info', { cache: 'no-store' }); const i = r.ok ? await r.json() : null; stripeLive = i?.buchung === 'an'; } catch { stripeLive = false; }
+          if (gen !== aufgabenLadeGen) return;
+        }
+        aufgabenZaehler(); renderAufgaben();
+        if (aktiveFirma && tenants.some((x) => x.id === aktiveFirma)) renderDetail(aktiveFirma);
+      } catch (e) {
+        if (gen !== aufgabenLadeGen) return;
+        aufgaben.liste = []; aufgaben.offen = null; // ohne Stand kein Zähler, statt einer veralteten Zahl
+        box.innerHTML = leer(/Not Found|404/.test(e.message) ? 'Der Server kennt die Aufgaben noch nicht. Sie erscheinen, sobald die Online-Buchung ausgeliefert ist.' : e.message, 'Noch einmal laden', 'reload-aufgaben');
+        aufgabenZaehler();
+      }
+    }
+    $('aufgabenListe').addEventListener('click', async (e) => {
+      const fg = e.target.closest('[data-firma-geh]'); if (fg) { geh('sec-firmen'); zeigeDetail(fg.dataset.firmaGeh); return; }
+      const karte = e.target.closest('[data-aufgabe]'); if (!karte) return;
+      const a = (aufgaben.liste || []).find((x) => x.id === karte.dataset.aufgabe); if (!a) return;
+      const nk = e.target.closest('[data-nummer]'); if (nk) { openNumDlg(a.tenant_id, nk.dataset.nummer, a.id); return; }
+      const sk = e.target.closest('[data-setzen]'); if (!sk) return;
+      const status = sk.dataset.setzen, notiz = karte.querySelector('.aufgabe__notiz')?.value.trim() || '';
+      if (status === 'verworfen' && !(await frage('Aufgabe verwerfen?', '„' + a.titel + '“ wird ohne Erledigung geschlossen. Sie bleibt unter „Verworfen“ sichtbar.', 'Verwerfen'))) return;
+      karte.querySelectorAll('button, input').forEach((x) => (x.disabled = true));
+      try { await api('/api/admin/aufgaben/' + encodeURIComponent(a.id), Object.assign({ status }, notiz ? { notiz } : {})); toast(status === 'erledigt' ? 'Aufgabe erledigt' : 'Aufgabe verworfen'); await ladeAufgaben(); }
+      catch (err) { toast(err.message, 'err'); karte.querySelectorAll('button, input').forEach((x) => (x.disabled = false)); }
+    });
+    $('aufgabenListe').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.aufgabe__notiz')) e.target.closest('[data-aufgabe]')?.querySelector('[data-setzen="erledigt"]')?.click(); });
+    $('aufgabenFilter').addEventListener('click', (e) => { const c = e.target.closest('[data-astatus]'); if (!c || c.dataset.astatus === aufgabenFilter) return; aufgabenFilter = c.dataset.astatus; aufgaben.liste = []; ladeAufgaben(); });
+    $('aufgabenReload').onclick = ladeAufgaben;
 
     // ---- Start ----
     sb.auth.getSession().then(({ data }) => { data.session ? enter(data.session) : showLogin(); });

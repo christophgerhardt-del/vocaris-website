@@ -1,15 +1,19 @@
 # Vocaris
 
-> Vocaris ist ein KI-Telefonassistent für Betriebe im deutschsprachigen Raum. Er nimmt Anrufe rund um die Uhr mit natürlicher Stimme an, bucht Termine und Tische, nimmt Nachrichten und Rückrufwünsche auf, leitet nach Thema an Menschen weiter und schickt nach jedem Gespräch eine Zusammenfassung mit Verlauf. Datenhaltung in Frankfurt; der europäische Sprachweg läuft vollständig in der EU. Ab 49 € im Monat, monatlich kündbar, Einrichtung in etwa 15 Minuten.
+> Vocaris ist ein KI-Telefonassistent für Betriebe im deutschsprachigen Raum. Er nimmt Anrufe rund um die Uhr mit natürlicher Stimme an, bucht Termine und Tische, nimmt Nachrichten und Rückrufwünsche auf, leitet nach Thema an Menschen weiter und schickt nach jedem Gespräch eine Zusammenfassung mit Verlauf. Server bei Hetzner in Nürnberg, Datenbank bei Supabase in Frankfurt; der europäische Sprachweg läuft vollständig in der EU. Ab 49 € im Monat, monatlich kündbar, Einrichtung in etwa 15 Minuten.
 
 ## Produkt
 
 - [Funktionen](https://vocaris.eu/funktionen.html): alle Funktionen in fünf Gruppen (Gespräch, Wissen, Benachrichtigen, Zusammenarbeit, Datenschutz)
+- [WhatsApp als zweiter Kanal](https://vocaris.eu/funktionen.html#whatsapp) (im Pilotbetrieb): derselbe Assistent beantwortet WhatsApp-Nachrichten mit demselben Wissen wie am Telefon, bucht Termine und Tische, versteht Sprachnachrichten und gibt an das Team ab, was ein Mensch klären soll; das Team kann die Unterhaltung im Kundenbereich übernehmen. Anbindung über die offizielle WhatsApp-Business-Plattform von Meta
+- [Rückruf-Erfolg](https://vocaris.eu/funktionen.html#rueckruf-erfolg): Anteil der Nachrichten, die innerhalb eines Tages erledigt wurden, mit typischer Zeit bis zur Erledigung und Vergleich zum Vorzeitraum; auf dem Dashboard, im Wochenbericht und über die API (Arbeitsliste: offen und älter als 24 Stunden)
+- [iPhone- und iPad-App](https://apps.apple.com/de/app/vocaris-ki-telefonassistent/id6820505151): kostenlose App zum Kundenbereich im App Store (ab iOS 18). Laufende Gespräche mit Mitschrift live mitlesen und mithören, Nachrichten erledigen, mit der Firmennummer zurückrufen; Mitteilungen bei dringenden Nachrichten, Live Activity, Widgets, Siri-Kurzbefehle. Anmeldung mit einem bestehenden Vocaris-Konto
 - [Preise](https://vocaris.eu/preise.html): Tarife 49, 99 und 249 € mit Minutenkontingent, Preisrechner
 - [Vergleich](https://vocaris.eu/vergleich.html): Anrufbeantworter, Telefonservice, Telefonanlage und KI-Assistent im Vergleich
 - [KI-Modelle](https://vocaris.eu/ki-modelle.html): die fünf Sprachwege, darunter ein rein europäischer
 - [Sicherheit](https://vocaris.eu/sicherheit.html): Datenhaltung, Verschlüsselung, Auftragsverarbeitung
-- [Schnittstellen](https://vocaris.eu/schnittstellen.html): Kalender, CRM, Ticketsysteme, Slack, Teams, Webhooks
+- [Schnittstellen](https://vocaris.eu/schnittstellen.html): Kalender, CRM, Ticketsysteme, Slack, Teams, Webhooks, WhatsApp (im Pilotbetrieb: derselbe Assistent beantwortet WhatsApp-Nachrichten)
+- [Kalender-Anbindung](https://vocaris.eu/kalender.html): was Vocaris mit Google-, Outlook- und Apple-Kalendern tut (nur frei/belegt lesen, gebuchte Termine eintragen, Google Limited Use)
 - [API](https://vocaris.eu/api.html): öffentliche Schnittstelle und Webhook-Ereignisse
 
 ## Branchen
