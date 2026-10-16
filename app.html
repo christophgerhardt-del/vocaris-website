@@ -1461,6 +1461,10 @@
     .num-tarif-hinweis { margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--white); font-size: 13px; color: var(--ink-soft); text-align: left; }
     .num-tarif-hinweis p { margin: 0; }
     .num-tarif-hinweis b { color: var(--ink); font-weight: 600; }
+    /* Nachträge zur UI-Runde (#37): Die Stundenachse der Auswertung lag über „Gesprächsdauer“ (C18 setzte den Abstand
+       für alle .db-stunden auf 4px), und „Ton“/„Hinweise“ brachen im schmalen Konto-Menü dreizeilig um. */
+    .db-stunden.aw-stunden { margin-bottom: 26px; }
+    .konto__liste { right: auto; width: max(100%, 300px); } /* ab 1100 px wird die App auf 0,8 gezoomt: sichtbar rund 240 px */
   </style>
 </head>
 <body>
