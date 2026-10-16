@@ -8673,18 +8673,24 @@
     const MG_SEITE = 200;
     const MG_DRING = { hoch: ['#dc2626', 'dringend'], mittel: ['#f59e0b', 'mittel'], niedrig: ['#94a3b8', 'niedrig'] };
     const mgDringKey = (u) => { const v = String(u || '').toLowerCase(); if (/hoch|high|dringend|urgent/.test(v)) return 'hoch'; if (/niedrig|low|gering/.test(v)) return 'niedrig'; return v ? 'mittel' : ''; };
-    function renderMessages(items) { mgItems.clear(); (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); mgOffeneVollstaendig(); }
+    function renderMessages(items) { mgItems.clear(); mgOffenAusserhalb = 0; (items || []).forEach((m) => mgItems.set(m.id, m)); mgGeladen = (items || []).length; mgAlle = mgGeladen < MG_SEITE; mgStandFuer = tenant?.id || null; renderNachrichten(); if (mgUeber) mgUeberfaelligeNachladen(); mgOffeneVollstaendig(); }
     // Offene Nachrichten vollständig: Die Liste hält die neuesten 200, ältere offene fehlten in „Offen“, im Badge und
-    // im Untertitel. Jetzt kommen alle offenen dazu (seitenweise, alleZeilen); nur über 20.000 zählt die Datenbank.
-    let mgOffenGesamt = null, mgOffenGen = 0; // exakte Zahl, nur wenn nicht alle offenen geladen werden konnten
+    // im Untertitel. Die Zahl kommt immer exakt aus der Datenbank (count, ohne Zeilen). Zeilen holt die Seite nur, wenn
+    // offene fehlen (bei den meisten Firmen nie), höchstens MG_OFFEN_MAX; der Rest zählt über mgOffenAusserhalb mit.
+    const MG_OFFEN_MAX = 2000;
+    let mgOffenAusserhalb = 0, mgOffenGen = 0; // offene Nachrichten, die nicht in mgItems stehen
+    const mgOffenGeladen = () => { let n = 0; for (const m of mgItems.values()) if ((m.status || 'new') === 'new') n++; return n; };
     async function mgOffeneVollstaendig() {
       if (!tenant) return;
       const fuer = tenant.id, gen = ++mgOffenGen; // nur die jüngste Antwort zählt (sonst käme eine inzwischen erledigte als offen zurück)
-      const r = await alleZeilen((a, z) => sb.from('messages').select('*').eq('tenant_id', fuer).eq('status', 'new').order('created_at', { ascending: false }).range(a, z));
-      if (r.error || tenant?.id !== fuer || gen !== mgOffenGen) return;
-      (r.data || []).forEach((m) => { if (!mgItems.has(m.id)) mgItems.set(m.id, m); });
-      mgOffenGesamt = null;
-      if (r.gekuerzt) { const { count } = await sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', fuer).eq('status', 'new'); if (tenant?.id === fuer && count != null) mgOffenGesamt = count; }
+      const { count, error } = await sb.from('messages').select('id', { count: 'exact', head: true }).eq('tenant_id', fuer).eq('status', 'new');
+      if (error || count == null || tenant?.id !== fuer || gen !== mgOffenGen) return;
+      if (count > mgOffenGeladen()) {
+        const r = await alleZeilen((a, z) => sb.from('messages').select('*').eq('tenant_id', fuer).eq('status', 'new').order('created_at', { ascending: false }).range(a, z), MG_OFFEN_MAX);
+        if (r.error || tenant?.id !== fuer || gen !== mgOffenGen) return;
+        (r.data || []).forEach((m) => mgItems.set(m.id, Object.assign(mgItems.get(m.id) || {}, m)));
+      }
+      mgOffenAusserhalb = Math.max(0, count - mgOffenGeladen());
       renderNachrichten();
     }
     // Rückruf-Erfolg: offen und älter als 24 Stunden = überfällig (gleiche Grenze wie nachrichten_erfolg).
@@ -8726,8 +8732,21 @@
         if (!mehr && !mgItems.size) { const ul = $('mgListe'); if (ul) ul.innerHTML = fehlerZustand(() => mgLaden(false)); }
         return;
       }
+      // Gewählte Nachricht außerhalb der ersten Seite (ältere offene) behalten, sonst spränge die Auswahl auf die neueste.
+      const behalten = !mehr && mgAuswahl ? mgItems.get(mgAuswahl) : null;
+      const offenVorher = mgOffenGeladen() + mgOffenAusserhalb; // Badge bleibt stehen, bis mgOffeneVollstaendig neu gezählt hat
       if (!mehr) mgItems.clear();
       (data || []).forEach((m) => mgItems.set(m.id, m));
+      if (behalten && !mgItems.has(behalten.id)) {
+        mgItems.set(behalten.id, behalten);
+        const fuer = tenant.id;
+        sb.from('messages').select('*').eq('id', behalten.id).maybeSingle().then(({ data: frisch }) => {
+          if (tenant?.id !== fuer || !mgItems.has(behalten.id)) return;
+          if (frisch) Object.assign(mgItems.get(behalten.id), frisch); else { mgItems.delete(behalten.id); if (mgAuswahl === behalten.id) mgAuswahl = null; }
+          renderNachrichten();
+        }, () => { /* bleibt, wie sie war */ });
+      }
+      if (!mehr) mgOffenAusserhalb = Math.max(0, offenVorher - mgOffenGeladen());
       mgGeladen += (data || []).length; if ((data || []).length < MG_SEITE) mgAlle = true;
       renderNachrichten();
       if (!mehr && mgUeber) mgUeberfaelligeNachladen();
@@ -8749,7 +8768,7 @@
     function renderNachrichten() {
       if (!$('mgListe')) return;
       const alle = [...mgItems.values()];
-      const offen = Math.max(alle.filter((m) => (m.status || 'new') === 'new').length, mgOffenGesamt || 0);
+      const offen = alle.filter((m) => (m.status || 'new') === 'new').length + mgOffenAusserhalb;
       const badge = $('msgBadge'); if (badge) { badge.textContent = offen || ''; badge.classList.toggle('hidden', !offen); }
       const ueberN = alle.filter(mgUeberfaellig).length;
       $('mgSub').textContent = offen ? (offen === 1 ? 'Eine offene Nachricht' : offen + ' offene Nachrichten') + (ueberN ? ', davon ' + ueberN + ' länger als 24 Stunden.' : '.') : 'Alles erledigt. Neue Rückrufe und Anliegen erscheinen hier sofort.';
@@ -8856,7 +8875,7 @@
         }
         knopf('Nummer sperren', '', async () => { if (confirm(nr + ' sperren? Anrufe dieser Nummer werden dann abgewiesen.')) await sperren(nr, 'Aus Nachricht'); });
       }
-      const vzn = tkAlle.find((t) => t.message_id === m.id); // Vorgang zu dieser Nachricht (legt meist schon der Server an)
+      const vzn = tkAlle.find((t) => t.message_id === m.id); // Vorgang zu dieser Nachricht (per Klick; automatisch nur mit Schalter, ki-anruf #65)
       if (vzn) knopf('Vorgang #' + vzn.number + ' öffnen', '', () => { geh('sec-tickets'); vorgangOeffnen(vzn.id); }).dataset.tip = 'Zu dieser Nachricht gibt es schon einen Vorgang · ' + (TK_STATUS[vzn.status] || vzn.status);
       else knopf('Vorgang anlegen', '', async () => {
         if (!confirm('Vorgang aus dieser Nachricht anlegen?')) return;
@@ -9362,8 +9381,17 @@
     }
 
     // ---- Liste ----
+    let wappLaeuft = null; // laufender Abruf der ersten Seite: Bereich betreten, Direktlink und Nachladen teilen ihn
     async function wappLaden(mehr) {
       if (!tenant || !wappStand?.verfuegbar) return;
+      if (!mehr && wappLaeuft?.fuer === tenant.id) return wappLaeuft.p;
+      if (mehr) return wappSeiteLaden(true);
+      const fuer = tenant.id;
+      const p = wappSeiteLaden(false).finally(() => { if (wappLaeuft?.p === p) wappLaeuft = null; });
+      wappLaeuft = { fuer, p };
+      return p;
+    }
+    async function wappSeiteLaden(mehr) {
       const fuer = tenant.id, gen = ++wappLadeGen;
       if (!mehr) { wappGeladen = 0; wappAlle = false; }
       const { data, error } = await sb.from('whatsapp_unterhaltungen').select(WAPP_FELDER).eq('tenant_id', fuer)
@@ -9374,8 +9402,12 @@
         else toast('Fehler beim Laden der Unterhaltungen: ' + fehlerText(error), 'err');
         return;
       }
+      // Gewählte Unterhaltung außerhalb der ersten Seite (Direktlink, „Unterhaltung öffnen“) behalten – sonst wählte die
+      // Liste danach die neueste und schriebe deren Kennung in die Adresse.
+      const behalten = !mehr && wappAuswahl ? wappItems.get(wappAuswahl) : null;
       if (!mehr) wappItems.clear();
       (data || []).forEach((u) => wappItems.set(u.id, u));
+      if (behalten && !wappItems.has(behalten.id)) wappItems.set(behalten.id, behalten);
       wappGeladen += (data || []).length; if ((data || []).length < WAPP_SEITE) wappAlle = true;
       // Beim ersten Öffnen ohne offene Fälle gleich alle zeigen statt einer leeren Liste.
       if (!mehr && wappErsteLadung) { wappErsteLadung = false; if (wappItems.size && ![...wappItems.values()].some(wappFuersTeam)) wappFilter = 'alle'; }
@@ -9649,7 +9681,9 @@
     /** Unterhaltung öffnen (aus Nachrichten, Suche, Ausprobieren). */
     async function wappOeffnen(id) {
       if (!navSichtbar(navItem('sec-whatsapp'))) return;
-      geh('sec-whatsapp'); wappReiterSetzen('liste');
+      // Schon im Bereich (Direktlink nach dem Start, Zurück): nicht noch einmal betreten – das lüde die Liste erneut.
+      if (!navItem('sec-whatsapp').classList.contains('active')) geh('sec-whatsapp');
+      wappReiterSetzen('liste');
       if (!wappItems.has(id)) { const { data } = await sb.from('whatsapp_unterhaltungen').select(WAPP_FELDER).eq('id', id).maybeSingle(); if (data) wappItems.set(id, data); }
       if (!wappItems.has(id)) { toast('Diese Unterhaltung gibt es nicht mehr.', 'err'); return; }
       wappAuswahl = id; wappUnten = true; wappSuche = ''; if ($('wappSuche')) $('wappSuche').value = '';
@@ -10246,6 +10280,9 @@
       ktItems = data || [];
       renderKontakte();
       if (typeof renderLive === 'function' && liveCalls.size) renderLive();
+      // Namen aus dem Telefonbuch stehen auch in Nachrichten (Liste, Detail, Suche) und in der Dashboard-Liste.
+      if (mgItems.size) renderNachrichten();
+      if (dbDaten) zeichneDashboard(); // auch verborgen: beim nächsten Öffnen stehen die Namen schon da
     }
 
     function ktGefiltert() {
@@ -12531,7 +12568,7 @@
       if (roh.includes('=')) return null;
       const [kurz, sub = '', rest] = roh.split('/');
       const target = KURZ_ZU_BEREICH[kurz.toLowerCase()]; if (!target || rest !== undefined) return null;
-      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages', 'sec-whatsapp'].includes(target) && IST_UUID(sub))) return null;
+      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : target === 'sec-whatsapp' && sub === 'einrichtung' ? true : ['sec-live', 'sec-outbound', 'sec-messages', 'sec-whatsapp'].includes(target) && IST_UUID(sub))) return null;
       return { target, sub };
     }
     function adresseFuer(target) {
@@ -12542,7 +12579,7 @@
       else if (target === 'sec-live') sub = LV_ANSICHTEN.ein.auswahl || '';
       else if (target === 'sec-outbound') sub = LV_ANSICHTEN.aus.auswahl || '';
       else if (target === 'sec-messages') sub = mgAuswahl || '';
-      else if (target === 'sec-whatsapp') sub = wappReiter === 'liste' && wappAuswahl && wappItems.has(wappAuswahl) ? wappAuswahl : '';
+      else if (target === 'sec-whatsapp') sub = wappReiter === 'einrichtung' ? 'einrichtung' : wappReiter === 'liste' && wappAuswahl && wappItems.has(wappAuswahl) ? wappAuswahl : '';
       else if (target === 'sec-assistant') sub = document.querySelector('#asReiter [data-astab].active')?.dataset.astab || '';
       return '#' + kurz + (sub ? '/' + sub : '');
     }
@@ -12591,6 +12628,9 @@
       const renderLiveDetailRoh = renderLiveDetail; renderLiveDetail = function () { renderLiveDetailRoh(); adresseDetail(LV.sec); };
       const renderNachrichtDetailRoh = renderNachrichtDetail; renderNachrichtDetail = function () { renderNachrichtDetailRoh(); adresseDetail('sec-messages'); };
       const renderWappDetailRoh = renderWappDetail; renderWappDetail = function () { renderWappDetailRoh(); adresseDetail('sec-whatsapp'); };
+      // WhatsApp-Reiter in der Adresse (#whatsapp/einrichtung), damit Neuladen dort bleibt. Ersetzen statt neuer
+      // Verlaufseintrag; schaltet der Router selbst um (routerAktiv), setzt er die Adresse.
+      const wappReiterSetzenRoh = wappReiterSetzen; wappReiterSetzen = function (r) { wappReiterSetzenRoh(r); if (!routerAktiv && navItem('sec-whatsapp')?.classList.contains('active')) adresseSetzen('sec-whatsapp', 'replace'); };
     }
     /** Adresse anwenden (Start, Zurück/Vor): Bereich öffnen und die Auswahl darin. */
     async function adresseAnwenden(art) {
@@ -12614,10 +12654,10 @@
       try {
         if (!b.classList.contains('active')) await b.onclick();
         if (!b.classList.contains('active')) { routerAktiv = false; const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt) adresseSetzen(akt, 'replace'); return; } // Ungespeichert-Dialog: stehen geblieben
-        if (!z.sub) { if (art === 'zurueck') detailSchliessen(z.target); return; }
+        if (!z.sub) { if (z.target === 'sec-whatsapp' && wappReiter !== 'liste') wappReiterSetzen('liste'); if (art === 'zurueck') detailSchliessen(z.target); return; }
         if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
         else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
-        else if (z.target === 'sec-whatsapp') await wappOeffnen(z.sub);
+        else if (z.target === 'sec-whatsapp') { if (z.sub === 'einrichtung') wappReiterSetzen('einrichtung'); else await wappOeffnen(z.sub); }
         else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
         else if (z.target === 'sec-tickets') {
           let t = tkAlle.find((x) => String(x.number) === z.sub);
