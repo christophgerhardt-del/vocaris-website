@@ -11908,6 +11908,11 @@
       if (text) wwMeldung(text, 'fehler');
       return false;
     }
+    /** Teile des Status, die der Server bei speichern und testen mitschickt, übernehmen (Vertrag: dieselbe Form wie status). */
+    function wwStatusUebernehmen(j) {
+      const S = wwStand; if (!S?.d || !j || typeof j !== 'object') return;
+      for (const k of ['verbindung', 'faehigkeiten', 'zustand', 'uebergaben', 'freigaben']) if (k in j && (j[k] === null || typeof j[k] === 'object')) S.d[k] = j[k];
+    }
     async function wwAnfrage(pfad, rumpf, { methode = 'POST', frist = WW_FRIST_MS } = {}) {
       const ctl = new AbortController(); const uhr = setTimeout(() => ctl.abort(), frist);
       try {
@@ -12005,8 +12010,9 @@
       const S = wwStand, v = S.d?.verbindung || null;
       $('wwName').value = v?.anzeigename || WW_NAME;
       const sel = $('wwProtokoll'); const liste = [...(S.protokolle || [])];
-      if (v?.protokoll && !liste.some((p) => p.kennung === v.protokoll)) liste.push({ kennung: v.protokoll, bezeichnung: v.protokoll });
-      sel.replaceChildren(...(liste.length ? liste : [{ kennung: '', bezeichnung: 'Keine Schnittstelle verfügbar' }]).map((p) => { const o = document.createElement('option'); o.value = p.kennung; o.textContent = p.bezeichnung || p.kennung; return o; }));
+      // Kennung nie als sichtbaren Text: eine nicht (mehr) angebotene Schnittstelle heißt „Bisherige Schnittstelle“.
+      if (v?.protokoll && !liste.some((p) => p.kennung === v.protokoll)) liste.push({ kennung: v.protokoll, bezeichnung: 'Bisherige Schnittstelle' });
+      sel.replaceChildren(...(liste.length ? liste : [{ kennung: '', bezeichnung: 'Keine Schnittstelle verfügbar' }]).map((p) => { const o = document.createElement('option'); o.value = p.kennung; o.textContent = p.bezeichnung || 'Schnittstelle'; return o; }));
       sel.value = v?.protokoll || liste[0]?.kennung || '';
       $('wwUrl').value = v?.basis_url || '';
       $('wwSchluessel').value = '';
@@ -12202,6 +12208,7 @@
       k.disabled = false;
       if (!a.ok) { const id = WW_FELD_ID[a.j?.feld]; if (id) wwFeldFehler(id); wwMeldung(wwFehlerText(a, 'Speichern hat nicht geklappt.'), 'fehler'); return false; }
       $('wwSchluessel').value = '';
+      wwStatusUebernehmen(a.j);
       S.d.verbindung = a.j.verbindung && typeof a.j.verbindung === 'object' ? a.j.verbindung : { ...(v || {}), ...rumpf, schluessel: undefined, schluessel_hinterlegt: true };
       S.d.verbunden = true; S.dirty = false; S.schluesselNeu = false;
       if (schluessel || urlNeu) S.test = null;
@@ -12217,8 +12224,7 @@
       k.disabled = false;
       if (!a.ok) { wwMeldung(wwFehlerText(a, 'Der Test hat nicht geklappt.'), 'fehler'); return; }
       S.test = { schritte: Array.isArray(a.j.schritte) ? a.j.schritte : [], ok: a.j.ok === true };
-      if (a.j.verbindung && typeof a.j.verbindung === 'object') S.d.verbindung = a.j.verbindung;
-      if (a.j.faehigkeiten && typeof a.j.faehigkeiten === 'object') S.d.faehigkeiten = a.j.faehigkeiten;
+      wwStatusUebernehmen(a.j);
       if (!S.dirty) wwOrteZeichnen(S.d.verbindung);
       wwZeichnen();
       wwMeldung(S.test.ok ? (S.d.verbindung?.aktiv ? 'Test bestanden.' : 'Test bestanden. Jetzt kannst du rechts den Hauptschalter einschalten.') : 'Test nicht bestanden. Was fehlt, steht in der Liste.', S.test.ok ? '' : 'fehler');
@@ -12260,7 +12266,7 @@
       const a = await wwAnfrage('speichern', rumpf);
       S.schaltet = null;
       if (!a.ok) { zurueck?.(); toast(wwFehlerText(a, 'Umschalten hat nicht geklappt.'), 'err', 5000); }
-      else { S.d.verbindung = a.j.verbindung && typeof a.j.verbindung === 'object' ? a.j.verbindung : { ...S.d.verbindung, ...rumpf }; toast('Gespeichert.'); }
+      else { wwStatusUebernehmen(a.j); S.d.verbindung = a.j.verbindung && typeof a.j.verbindung === 'object' ? a.j.verbindung : { ...S.d.verbindung, ...rumpf }; toast('Gespeichert.'); }
       wwZeichnen();
     }
     /** Adresse #schnittstellen/warenwirtschaft (Router): Reiter öffnen, wenn es ihn für diese Firma gibt, sonst Adresse kürzen. */
