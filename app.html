@@ -1466,6 +1466,106 @@
     .db-stunden.aw-stunden { margin-bottom: 26px; }
     .konto__liste { right: auto; width: max(100%, 300px); } /* ab 1100 px wird die App auf 0,8 gezoomt: sichtbar rund 240 px */
   </style>
+  <style id="warenwirtschaft">
+    /* Schnittstellen → Warenwirtschaft (nur freigeschaltete Firmen, nur Inhaber/Admins). Ohne Freigabe bleibt der Reiter
+       verborgen und die Statusleiste behält ihre sechs Kacheln; .mit-ww schaltet erst dann auf sieben Spalten. */
+    .if-status.mit-ww { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .if-status.mit-ww { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 480px) { .if-status.mit-ww { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ww-intro { text-align: left; padding: 0; margin: 0 0 12px; font-size: 13.5px; color: var(--ink-soft); }
+    .ww-hinweis { margin: 0 0 12px; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: var(--r-sm);
+      background: color-mix(in srgb, var(--accent) 7%, var(--white)); font-size: 13px; color: var(--ink-soft); text-align: left; }
+    .ww-hinweis b { color: var(--ink); font-weight: 600; }
+    .ww-hinweis[data-art="fehler"] { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+    .ww-hinweis[data-art="fehler"] b { color: #7f1d1d; }
+    :root[data-theme="dark"] .ww-hinweis[data-art="fehler"] { border-color: #5a2a2a; background: #3f1a1a; color: #fca5a5; }
+    :root[data-theme="dark"] .ww-hinweis[data-art="fehler"] b { color: #fecaca; }
+    .ww-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 12px; }
+    .ww-kpis .db-kpi { padding: 10px 14px; } .ww-kpis .db-kpi .v { font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ww-kpis .db-kpi .d { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 480px) { .ww-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ww-split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; align-items: start; }
+    .ww-split > .panel { margin-bottom: 0; }
+    @media (max-width: 1100px) { .ww-split { grid-template-columns: minmax(0, 1fr); } }
+    #wwAbgleich { margin-top: 16px; }
+    .ww-felder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; }
+    .ww-feld { min-width: 0; } .ww-feld--breit { grid-column: 1 / -1; }
+    @media (max-width: 560px) { .ww-felder { grid-template-columns: minmax(0, 1fr); } }
+    .ww-feld label { margin-top: 10px; }
+    .ww-feld:first-child label, .ww-feld:nth-child(2) label { margin-top: 0; }
+    @media (max-width: 560px) { .ww-feld:nth-child(2) label { margin-top: 10px; } }
+    .ww-feld .ww-ort { display: block; }
+    .ww-feldhinweis { margin: 4px 0 0; font-size: 12px; color: var(--ink-faint); text-align: left; line-height: 1.4; }
+    .ww-feldhinweis.warn { color: #b45309; font-weight: 600; } :root[data-theme="dark"] .ww-feldhinweis.warn { color: #fbbf24; }
+    .ww-feld [aria-invalid="true"] { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220, 38, 38, .15); }
+    .ww-schluessel, .ww-schluessel-eingabe { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .ww-schluessel-eingabe input { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .ww-schluessel.hidden, .ww-schluessel-eingabe.hidden { display: none !important; }
+    .ww-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+      background: var(--paper-2); border: 1px solid var(--line); color: var(--ink-soft); white-space: nowrap; }
+    .ww-pill[data-art="ok"] { background: #ecfdf5; border-color: #d1fae5; color: #047857; }
+    .ww-pill[data-art="warn"] { background: #fef3c7; border-color: #fde68a; color: #b45309; }
+    .ww-pill[data-art="fehler"] { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
+    :root[data-theme="dark"] .ww-pill[data-art="ok"] { background: #123329; color: #6fe0b3; border-color: #1d4d3d; }
+    :root[data-theme="dark"] .ww-pill[data-art="warn"] { background: #3a2c0c; color: #fbbf24; border-color: #5a4a1a; }
+    :root[data-theme="dark"] .ww-pill[data-art="fehler"] { background: #3f1a1a; color: #fca5a5; border-color: #5a2a2a; }
+    .ww-meldung { text-align: left; padding: 0; margin: 8px 0 0; font-size: 13px; min-height: 0; }
+    .ww-meldung:empty { display: none; }
+    .ww-meldung[data-art="fehler"] { color: #b91c1c; font-weight: 600; } :root[data-theme="dark"] .ww-meldung[data-art="fehler"] { color: #fca5a5; }
+    .ww-test { list-style: none; margin: 10px 0 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+    .ww-test li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 12px; font-size: 13px; border-top: 1px solid var(--line); color: var(--ink); }
+    .ww-test li:first-child { border-top: 0; }
+    .ww-test li i { font-style: normal; font-weight: 700; text-align: center; border-radius: 50%; width: 20px; height: 20px; line-height: 20px; font-size: 12px; }
+    .ww-test li[data-art="ok"] i { background: #ecfdf5; color: #047857; }
+    .ww-test li[data-art="warnung"] i { background: #fef3c7; color: #b45309; }
+    .ww-test li[data-art="fehler"] i { background: #fee2e2; color: #b91c1c; }
+    .ww-test li[data-art="uebersprungen"] { color: var(--ink-faint); } .ww-test li[data-art="uebersprungen"] i { background: var(--paper-2); color: var(--ink-faint); }
+    :root[data-theme="dark"] .ww-test li[data-art="ok"] i { background: #123329; color: #6fe0b3; }
+    :root[data-theme="dark"] .ww-test li[data-art="warnung"] i { background: #3a2c0c; color: #fbbf24; }
+    :root[data-theme="dark"] .ww-test li[data-art="fehler"] i { background: #3f1a1a; color: #fca5a5; }
+    .ww-test li small { color: var(--ink-faint); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .ww-schalter-hinweis { margin: -6px 0 6px; }
+    .ww-schalter-hinweis:empty { display: none; }
+    .ww-schalter .ww-s { padding: 6px 0; border-top: 1px solid var(--line); }
+    .ww-schalter .ww-s:first-child { border-top: 0; }
+    .ww-schalter .ww-s--haupt { padding-bottom: 10px; }
+    .ww-schalter .chk { margin: 0; align-items: flex-start; }
+    .ww-schalter .chk input { margin-top: 0; }
+    .ww-schalter .chk span { display: block; min-width: 0; padding-top: 10px; }
+    .ww-schalter .chk b { display: block; font-size: 14px; color: var(--ink); }
+    .ww-schalter .chk small { display: block; font-size: 12.5px; color: var(--ink-faint); font-weight: 400; line-height: 1.4; margin-top: 2px; }
+    .ww-schalter .chk small.warn { color: #b45309; } :root[data-theme="dark"] .ww-schalter .chk small.warn { color: #fbbf24; }
+    .ww-schalter .ww-s.aus .chk { cursor: default; }
+    .ww-schalter .ww-s.aus .chk b { color: var(--ink-faint); }
+    .ww-unter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 2px 0 4px 56px; font-size: 12.5px; color: var(--ink-soft); }
+    .ww-unter .deptbar { margin: 0; padding: 3px; border-radius: 10px; }
+    .ww-unter .deptseg { font-size: 12.5px; padding: 4px 10px; border-radius: 8px; }
+    .shell .ww-unter .deptseg { min-height: 30px; }
+    @media (max-width: 560px) {
+      .ww-unter { margin-left: 0; }
+      .ww-unter .deptbar { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: none; overflow: visible; }
+      .ww-unter .deptseg { white-space: normal; line-height: 1.25; }
+      .ww-ueb__kopf .deptbar { margin: 0 !important; width: 100%; max-width: none; display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+    }
+    .ww-panelkopf { align-items: center; flex-wrap: wrap; }
+    .ww-panelkopf .stack { margin: 0; }
+    .ww-zeilen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 16px; margin: 0 0 12px; }
+    .ww-zeilen div { min-width: 0; }
+    .ww-zeilen dt { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+    .ww-zeilen dd { margin: 2px 0 0; font-size: 13.5px; color: var(--ink); overflow-wrap: anywhere; }
+    @media (max-width: 1100px) { .ww-zeilen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ww-ueb { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+    .ww-ueb__kopf { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 8px 12px; font-size: 12.5px; color: var(--ink-soft); background: var(--paper-2); border-bottom: 1px solid var(--line); }
+    .ww-ueb__kopf b { color: var(--ink); }
+    .ww-ueb__zeile { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 8px 12px; border: 0; border-top: 1px solid var(--line);
+      background: none; font: inherit; font-size: 13px; color: var(--ink); text-align: left; }
+    .ww-ueb__zeile:first-of-type { border-top: 0; }
+    button.ww-ueb__zeile { cursor: pointer; } button.ww-ueb__zeile:hover { background: color-mix(in srgb, var(--accent) 6%, var(--white)); }
+    .ww-ueb__zeile time { color: var(--ink-faint); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .ww-ueb__zeile span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ww-ueb__leer { margin: 0; padding: 12px; font-size: 13px; color: var(--ink-faint); text-align: left; }
+    @media (max-width: 560px) { .ww-ueb__zeile { grid-template-columns: minmax(0, 1fr) auto; } .ww-ueb__zeile time { grid-column: 1 / -1; } }
+  </style>
 </head>
 <body>
   <!-- AUTH -->
@@ -2392,7 +2492,7 @@
             </div>
           </div>
           <div class="db-kpis if-status" id="ifStatus"></div>
-          <div class="deptbar" id="ifTabs" style="margin-bottom:14px"><button class="deptseg active" data-iftab="ereignisse" type="button">Ereignisse</button><button class="deptseg" data-iftab="benachrichtigungen" type="button">Benachrichtigungen</button><button class="deptseg" data-iftab="crm" type="button">CRM</button><button class="deptseg" data-iftab="ticket" type="button">Ticketsystem</button><button class="deptseg" data-iftab="api" type="button">API-Schlüssel</button><button class="deptseg" data-iftab="webhook" type="button">Webhook</button></div>
+          <div class="deptbar" id="ifTabs" style="margin-bottom:14px"><button class="deptseg active" data-iftab="ereignisse" type="button">Ereignisse</button><button class="deptseg" data-iftab="benachrichtigungen" type="button">Benachrichtigungen</button><button class="deptseg" data-iftab="crm" type="button">CRM</button><button class="deptseg" data-iftab="ticket" type="button">Ticketsystem</button><button class="deptseg" data-iftab="api" type="button">API-Schlüssel</button><button class="deptseg" data-iftab="webhook" type="button">Webhook</button><button class="deptseg hidden" data-iftab="warenwirtschaft" type="button" id="wwReiter">Warenwirtschaft</button></div>
           <div data-if="ereignisse">
           <!-- 1 · Aktivierung & Ereignisse -->
           <div class="panel">
@@ -2526,6 +2626,87 @@
             </details>
           </div>
 
+          </div>
+          <div data-if="warenwirtschaft" class="hidden" id="wwBereich">
+          <!-- 5 · Warenwirtschaft: nur für freigeschaltete Firmen und nur für Inhaber/Admins (Reiter #wwReiter bleibt sonst verborgen).
+               Name und Adresse des Systems sind Felder der Verbindung, kein fester Text hier (Umbenennung betrifft nur die Einstellung). -->
+          <p class="muted ww-intro">Verbinde deinen Telefonassistenten mit deiner Warenwirtschaft. Dann beantwortet er Fragen zu Sortiment, Preisen, Pfand, Bestand, Lieferung und Zeitfenstern mit aktuellen Daten.</p>
+          <div class="ww-hinweis hidden" id="wwServerHinweis" role="note"><b>Auf dem Server noch nicht eingerichtet.</b> Sobald das erledigt ist, trägst du hier die Verbindung ein. Bis dahin beantwortet der Assistent Fragen wie bisher aus deiner Wissensbasis.</div>
+          <div class="ww-hinweis hidden" id="wwLadeHinweis" role="status"></div>
+          <div class="db-kpis ww-kpis" id="wwKacheln"></div>
+          <div class="ww-split">
+            <div class="panel" id="wwVerbindung">
+              <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg><span id="wwTitel">Verbindung</span></h3>
+              <div class="ww-hinweis hidden" id="wwOhneZugang" role="note"><b>Du hast noch keinen Zugang?</b> Bitte den Betreiber deiner Warenwirtschaft um einen technischen Zugang für den Telefonassistenten. Bis dahin beantwortet der Assistent Fragen wie bisher aus deiner Wissensbasis.</div>
+              <div class="ww-felder">
+                <div class="ww-feld">
+                  <label for="wwName">Name</label>
+                  <input id="wwName" maxlength="60" autocomplete="off" placeholder="Warenwirtschaft" />
+                  <p class="ww-feldhinweis">So heißt das System bei dir. Erscheint nur hier.</p>
+                </div>
+                <div class="ww-feld">
+                  <label for="wwProtokoll">Schnittstelle</label>
+                  <select id="wwProtokoll"></select>
+                  <p class="ww-feldhinweis">Welche Schnittstelle deine Warenwirtschaft anbietet.</p>
+                </div>
+                <div class="ww-feld ww-feld--breit">
+                  <label for="wwUrl">Adresse</label>
+                  <input id="wwUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://…" />
+                  <p class="ww-feldhinweis" id="wwUrlHinweis">Beginnt mit https://. Wenn du sie änderst, trag den Schlüssel neu ein.</p>
+                </div>
+                <div class="ww-feld ww-feld--breit">
+                  <label for="wwSchluessel" id="wwSchluesselLabel">Zugangsschlüssel</label>
+                  <div class="ww-schluessel hidden" id="wwSchluesselStand">
+                    <span class="ww-pill" data-art="ok" id="wwSchluesselText"></span>
+                    <button class="btn btn--ghost sm" type="button" id="wwSchluesselErsetzen">Ersetzen</button>
+                  </div>
+                  <div class="ww-schluessel-eingabe" id="wwSchluesselEingabe">
+                    <input id="wwSchluessel" name="ww-zugang" type="password" autocomplete="new-password" spellcheck="false" autocapitalize="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="Schlüssel einfügen" />
+                    <button class="btn btn--ghost sm hidden" type="button" id="wwSchluesselAbbrechen">Abbrechen</button>
+                  </div>
+                  <p class="ww-feldhinweis" id="wwSchluesselHinweis">Den Schlüssel bekommst du vom Betreiber deiner Warenwirtschaft (Zugang „Telefonassistent“). Wir zeigen ihn nie wieder an.</p>
+                </div>
+                <div class="ww-feld">
+                  <label for="wwOrtLieferung">Standort für Lieferung</label>
+                  <span class="ww-ort" data-feld="standort_lieferung" data-art="lieferung"><input id="wwOrtLieferung" autocomplete="off" spellcheck="false" placeholder="z. B. Lagercode" /></span>
+                  <p class="ww-feldhinweis">Bestand und Lieferregeln für Lieferungen.</p>
+                </div>
+                <div class="ww-feld">
+                  <label for="wwOrtAbholung">Standort für Abholung</label>
+                  <span class="ww-ort" data-feld="standort_abholung" data-art="abholung"><input id="wwOrtAbholung" autocomplete="off" spellcheck="false" placeholder="z. B. Marktcode" /></span>
+                  <p class="ww-feldhinweis">Bestand, Abholzeiten und Öffnungszeiten des Markts.</p>
+                </div>
+                <div class="ww-feld">
+                  <label for="wwSammelkunde">Kundennummer für Shop-Preise</label>
+                  <input id="wwSammelkunde" autocomplete="off" spellcheck="false" placeholder="z. B. Sammelkunde" />
+                  <p class="ww-feldhinweis">Sammelkunde, dessen Preise der Assistent nennt (Bruttopreise).</p>
+                </div>
+              </div>
+              <div class="stack">
+                <button id="wwSpeichern" class="btn btn--primary" type="button">Speichern</button>
+                <button id="wwTesten" class="btn btn--ghost" type="button">Verbindung testen</button>
+                <button id="wwTrennen" class="btn btn--danger hidden" type="button">Trennen</button>
+              </div>
+              <p class="muted ww-meldung" id="wwMeldung" role="status" aria-live="polite"></p>
+              <ul class="ww-test hidden" id="wwTest" aria-label="Ergebnis des Verbindungstests"></ul>
+            </div>
+            <div class="panel" id="wwSchalterPanel">
+              <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><path d="M16 2h6v6"/></svg>Was der Assistent nutzen darf</h3>
+              <p class="ww-feldhinweis ww-schalter-hinweis" id="wwSchalterHinweis">Erst die Verbindung speichern und testen.</p>
+              <div class="ww-schalter" id="wwSchalter"></div>
+            </div>
+          </div>
+          <div class="panel hidden" id="wwAbgleich">
+            <div class="db-panelkopf ww-panelkopf">
+              <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>Abgleich und Interessenten</h3>
+              <div class="stack">
+                <button id="wwAbgleichen" class="btn btn--ghost sm" type="button">Sortiment jetzt abgleichen</button>
+                <button id="wwNachreichen" class="btn btn--ghost sm hidden" type="button">Jetzt nachreichen</button>
+              </div>
+            </div>
+            <dl class="ww-zeilen" id="wwZeilen"></dl>
+            <div id="wwUebergaben"></div>
+          </div>
           </div>
           <div data-if="ereignisse benachrichtigungen webhook">
           <!-- Aktionen -->
@@ -4026,13 +4207,16 @@
         ['ticket', 'Ticketsystem', zaehl('tkList'), zaehl('tkList') ? 'verbunden' : (vorgangAuto ? 'Vorgänge automatisch' : 'Vorgänge per Klick')],
         ['api', 'API-Schlüssel', zaehl('akList'), zaehl('akList') ? 'aktiv' : 'keiner erstellt'],
         ['webhook', 'Webhook', ($('whUrl')?.value || '').trim() ? 1 : 0, ($('whUrl')?.value || '').trim() ? 'URL hinterlegt' : 'keine URL'],
+        ...(wwStand?.sichtbar ? [wwIfKachel()] : []), // nur für freigeschaltete Firmen (Schnittstellen → Warenwirtschaft)
       ];
+      box.classList.toggle('mit-ww', !!wwStand?.sichtbar);
       box.innerHTML = kacheln.map(([k, t, n, d]) => '<div class="db-kpi klick' + (document.querySelector('#ifTabs .deptseg.active')?.dataset.iftab === k ? ' aktiv' : '') + '" data-iftab="' + k + '" role="button" tabindex="0"><div class="k">' + t + '</div><div class="v">' + n + '</div><div class="d">' + escHtml(d) + '</div></div>').join('');
     }
     function ifTab(k) {
       document.querySelectorAll('#ifTabs [data-iftab]').forEach((b) => b.setAttribute('aria-pressed', String(b.classList.toggle('active', b.dataset.iftab === k))));
       document.querySelectorAll('#sec-webhooks [data-if]').forEach((el) => el.classList.toggle('hidden', !el.dataset.if.split(' ').includes(k)));
       ifStatus();
+      wwNachTab(k);
     }
     (function schnittstellenWiring() {
       const sec = $('sec-webhooks'); if (!sec) return;
@@ -10867,7 +11051,7 @@
       if (roh.includes('=')) return null;
       const [kurz, sub = '', rest] = roh.split('/');
       const target = KURZ_ZU_BEREICH[kurz.toLowerCase()]; if (!target || rest !== undefined) return null;
-      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : ['sec-live', 'sec-outbound', 'sec-messages'].includes(target) && IST_UUID(sub))) return null;
+      if (sub && !(target === 'sec-tickets' ? /^\d+$/.test(sub) : target === 'sec-assistant' ? AS_REITER.includes(sub) : target === 'sec-webhooks' ? sub.toLowerCase() === 'warenwirtschaft' : ['sec-live', 'sec-outbound', 'sec-messages'].includes(target) && IST_UUID(sub))) return null;
       return { target, sub };
     }
     function adresseFuer(target) {
@@ -10879,6 +11063,7 @@
       else if (target === 'sec-outbound') sub = LV_ANSICHTEN.aus.auswahl || '';
       else if (target === 'sec-messages') sub = mgAuswahl || '';
       else if (target === 'sec-assistant') sub = document.querySelector('#asReiter [data-astab].active')?.dataset.astab || '';
+      else if (target === 'sec-webhooks' && wwStand?.sichtbar && document.querySelector('#ifTabs [data-iftab="warenwirtschaft"].active')) sub = 'warenwirtschaft';
       return '#' + kurz + (sub ? '/' + sub : '');
     }
     function adresseSetzen(target, art) {
@@ -10944,6 +11129,7 @@
         if (!b.classList.contains('active')) { routerAktiv = false; const akt = document.querySelector('.nav-item.active')?.dataset.target; if (akt) adresseSetzen(akt, 'replace'); return; } // Ungespeichert-Dialog: stehen geblieben
         if (!z.sub) { if (art === 'zurueck') detailSchliessen(z.target); return; }
         if (z.target === 'sec-assistant') asReiterZeigen(z.sub, false);
+        else if (z.target === 'sec-webhooks') void wwAdresseOeffnen(); // wartet ggf. auf Stufe und Server – nicht im Router
         else if (z.target === 'sec-messages') await nachrichtOeffnen(z.sub);
         else if (z.target === 'sec-live' || z.target === 'sec-outbound') await liveOeffnen(z.sub);
         else if (z.target === 'sec-tickets') {
@@ -11663,6 +11849,492 @@
       loadAll = async function (...args) {
         const erg = await roh.apply(this, args);
         if (tenant) { void vorgangAutoLaden().catch(() => {}); void tarifLaden().catch(() => {}); }
+        return erg;
+      };
+    }
+
+    // ---- Schnittstellen → Warenwirtschaft ----
+    // Verbindet den Telefonassistenten mit der Warenwirtschaft der Firma (Sortiment, Preise, Pfand, Bestand, Lieferregeln,
+    // Zeitfenster). Der Reiter erscheint nur, wenn der Server die Firma als freigeschaltet meldet und der Login Inhaber oder
+    // Admin ist. Für alle anderen ändert sich nichts: kein Reiter, keine Kachel, keine Meldung – auch dann nicht, wenn der
+    // Server die Routen noch gar nicht kennt (404, Netzfehler). Darum hier bewusst fetch statt apiFetch: kein Wiederholen,
+    // kein Störungsbalken.
+    // Name und Adresse des Systems sind Felder der Verbindung, die Auswahl der Schnittstelle kommt vom Server; hier steht
+    // kein Produktname. Der Zugangsschlüssel geht nur hinein und kommt nie zurück (Anzeige nur „endet auf …“). Wer die
+    // Adresse ändert, muss den Schlüssel neu eintragen (sonst ließe sich ein hinterlegter Schlüssel an einen fremden Server
+    // schicken) – das prüft auch der Server.
+    //
+    // Routen im Server (alle mit Login-Token, Firma als tenant_id im Rumpf; Fehler: Status ≥ 400 mit { error, feld? }):
+    //   GET  /api/warenwirtschaft/protokolle  → { protokolle: [{ kennung, bezeichnung }] }
+    //   POST /api/warenwirtschaft/status      → { verfuegbar, freigeschaltet, darfVerwalten, verbunden, freigaben,
+    //                                             verbindung, faehigkeiten, zustand, uebergaben }
+    //   POST /api/warenwirtschaft/speichern   → { ok, verbindung }  (nur gesendete Felder ändern sich)
+    //   POST /api/warenwirtschaft/testen      → { ok, schritte: [{ id, ergebnis, text, dauer_ms }], verbindung, faehigkeiten }
+    //   POST /api/warenwirtschaft/trennen     → { ok }
+    //   POST /api/warenwirtschaft/abgleichen  → { ok, artikel_anzahl, katalog_stand }
+    //   POST /api/warenwirtschaft/nachreichen → { ok, versucht, gesendet, ausstehend }
+    var wwStand = null; // var: ifStatus()/ifTab() fragen ihn ab, auch wenn sie früher laufen als dieser Block
+    const WW_FRIST_MS = 8000, WW_TEST_FRIST_MS = 20000, WW_STATUS_ALTER_MS = 60000;
+    const WW_NAME = 'Warenwirtschaft';
+    const wwNeuerStand = () => ({ fuer: null, geprueft: 0, sichtbar: false, d: null, protokolle: null, laeuft: null, stufeGewartet: false, test: null, formFuer: null, dirty: false, schluesselNeu: false, schaltet: null, filter: '' });
+    wwStand = wwNeuerStand();
+    const WW_FELD_ID = { anzeigename: 'wwName', protokoll: 'wwProtokoll', basis_url: 'wwUrl', schluessel: 'wwSchluessel', standort_lieferung: 'wwOrtLieferung', standort_abholung: 'wwOrtAbholung', sammelkunde: 'wwSammelkunde' };
+    const WW_SCHRITT = { erreichbar: 'Erreichbar', schluessel: 'Schlüssel und Rechte', lieferregeln: 'Lieferregeln und Standorte', sortiment: 'Sortiment', preise: 'Preise' };
+    const WW_ZEICHEN = { ok: ['✓', 'bestanden'], warnung: ['!', 'Hinweis'], fehler: ['✕', 'nicht bestanden'], uebersprungen: ['–', 'übersprungen'] };
+    const WW_UEB_STATUS = { ausstehend: ['ausstehend', 'warn'], in_arbeit: ['wird übertragen', 'warn'], gesendet: ['übertragen', 'ok'], abgelehnt: ['abgelehnt', 'fehler'], verworfen: ['verworfen', ''] };
+    const WW_UEB_GRUND = { faehigkeit_fehlt: 'Die Warenwirtschaft nimmt Interessenten noch nicht an.', nicht_erreichbar: 'Die Warenwirtschaft war nicht erreichbar.', schluessel: 'Der Schlüssel wurde abgelehnt.' };
+    const WW_SCHALTER = [
+      { feld: 'aktiv', haupt: true, titel: 'Assistent nutzt die Warenwirtschaft', text: 'Hauptschalter. Aus: Der Assistent antwortet wie bisher nur aus deiner Wissensbasis.' },
+      { feld: 'f_sortiment', titel: 'Sortiment, Preise, Pfand und Bestand', text: 'Preise mit Pfand getrennt, Bestand nur grob („vorrätig“, „nur noch wenige“), nie genaue Stückzahlen.' },
+      { feld: 'f_lieferregeln', titel: 'Lieferung, Zeitfenster und Öffnungszeiten des Markts', text: 'Liefergebiete, Mindestbestellwert, Liefergebühr, freie Zeitfenster und Bestellschluss.', oeffnungszeiten: true },
+      { feld: 'f_gutschein', titel: 'Gutscheincodes prüfen, wenn der Anrufer einen nennt', text: 'Der Assistent prüft nur einen genannten Code und liest nie selbst Codes vor.' },
+      { feld: 'f_auftragsstatus', titel: 'Bestellstand mit Auftragsnummer und Postleitzahl', text: 'Nur mit beiden Angaben. Preise, Rechnungen und Kontodaten nennt der Assistent nie.', braucht: 'auftragsstatus', fehlt: 'Deine Warenwirtschaft bietet das noch nicht an.' },
+      { feld: 'f_interessenten', titel: 'Interessenten eintragen', text: 'Neue Interessenten landen auch ohne Verbindung als Nachricht bei dir.', ohne: 'interessenten', ohneText: 'Deine Warenwirtschaft nimmt sie noch nicht an: Sie bleiben als Nachricht bei dir und werden nachgereicht, sobald es geht.' },
+      { feld: 'f_bestellungen', freigabe: 'bestellungen', warn: true, titel: 'Bestellungen als Entwurf übertragen', text: 'Nur Entwürfe. Dein Team bestätigt jede Bestellung per Rückruf.' },
+      { feld: 'kanal_whatsapp', freigabe: 'whatsapp', titel: 'Auch im WhatsApp-Assistenten', text: 'Dieselben Auskünfte auch in WhatsApp-Unterhaltungen.' },
+    ];
+    const WW_STANDARD = ['f_sortiment', 'f_lieferregeln'];
+    const wwUrlNormal = (u) => String(u || '').trim().replace(/\/+$/, '').replace(/^https:\/\//i, 'https://');
+    const wwUrlGueltig = (u) => u.length <= 200 && /^https:\/\/[^\s/?#@]+(\/[^\s?#]*)?$/.test(u);
+    const wwDauer = (ms) => (ms < 1000 ? Math.round(ms) + ' ms' : (Math.round(ms / 100) / 10).toLocaleString('de-DE') + ' s');
+    const wwZahl = (n) => Number(n).toLocaleString('de-DE');
+    const wwVerbunden = () => !!wwStand?.d?.verbindung;
+    function wwMeldung(text, art = '') { const m = $('wwMeldung'); if (!m) return; m.textContent = text || ''; m.dataset.art = art; }
+    /** Fehler an einem Feld: markieren, Satz darunter in die Meldung, Fokus hin. Gibt immer false zurück. */
+    function wwFeldFehler(id, text) {
+      document.querySelectorAll('#wwVerbindung [aria-invalid="true"]').forEach((el) => el.removeAttribute('aria-invalid'));
+      if (!id) return false;
+      const el = $(id); if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); }
+      if (text) wwMeldung(text, 'fehler');
+      return false;
+    }
+    async function wwAnfrage(pfad, rumpf, { methode = 'POST', frist = WW_FRIST_MS } = {}) {
+      const ctl = new AbortController(); const uhr = setTimeout(() => ctl.abort(), frist);
+      try {
+        const opts = methode === 'GET'
+          ? { method: 'GET', headers: { authorization: 'Bearer ' + accessToken }, signal: ctl.signal, cache: 'no-store' }
+          : { method: 'POST', headers: numAuth(), body: JSON.stringify({ ...(rumpf || {}), tenant_id: tenant?.id }), signal: ctl.signal, cache: 'no-store' };
+        const r = await fetch(API + '/api/warenwirtschaft/' + pfad, opts);
+        let j = {}; try { j = (await r.json()) || {}; } catch { /* kein JSON, z. B. 404 einer Server-Fassung ohne diese Routen */ }
+        return { ok: r.ok, status: r.status, j: j && typeof j === 'object' ? j : {} };
+      } catch { return { ok: false, status: 0, j: {}, zeit: ctl.signal.aborted }; }
+      finally { clearTimeout(uhr); }
+    }
+    function wwFehlerText(a, sonst) {
+      if (typeof a.j?.error === 'string' && a.j.error) return a.j.error;
+      if (a.zeit) return 'Der Server hat nicht rechtzeitig geantwortet. Bitte versuch es gleich noch einmal.';
+      if (a.status === 0) return 'Server gerade nicht erreichbar – bitte in ein paar Sekunden nochmal versuchen.';
+      if (a.status === 429) return 'Zu viele Versuche. Bitte warte eine Minute.';
+      if (a.status === 401 || a.status === 403) return 'Das dürfen nur der Inhaber und Admins.';
+      return sonst;
+    }
+    /** Ansicht leeren (Firmenwechsel, abgemeldet): nichts von der vorigen Firma stehen lassen. */
+    function wwZuruecksetzen() {
+      wwStand = wwNeuerStand();
+      ['wwName', 'wwUrl', 'wwSchluessel', 'wwSammelkunde', 'wwOrtLieferung', 'wwOrtAbholung'].forEach((id) => { const el = $(id); if (el) el.value = ''; });
+      ['wwKacheln', 'wwSchalter', 'wwZeilen', 'wwUebergaben', 'wwTest'].forEach((id) => $(id)?.replaceChildren());
+      wwMeldung('');
+      wwSichtbar(false);
+    }
+    function wwSichtbar(an) {
+      if (!wwStand) return;
+      wwStand.sichtbar = !!an;
+      $('wwReiter')?.classList.toggle('hidden', !an);
+      if (!an && document.querySelector('#ifTabs [data-iftab="warenwirtschaft"].active')) {
+        ifTab('ereignisse');
+        if (navItem('sec-webhooks')?.classList.contains('active') && /\/warenwirtschaft$/i.test(location.hash)) adresseSetzen('sec-webhooks', 'replace');
+      } else ifStatus();
+    }
+    /** Status vom Server holen (höchstens einmal je Minute, außer erzwungen). Ergebnis: Reiter sichtbar ja/nein. */
+    async function wwPruefen(erzwingen = false) {
+      const S = wwStand;
+      if (!tenant || !accessToken || tmMeineStufe === 'member') { if (S.sichtbar || S.fuer) wwZuruecksetzen(); return false; }
+      if (S.fuer && S.fuer !== tenant.id) wwZuruecksetzen();
+      const T = wwStand;
+      if (!erzwingen && T.fuer === tenant.id && Date.now() - T.geprueft < WW_STATUS_ALTER_MS) return T.sichtbar;
+      if (T.laeuft) {
+        if (!erzwingen) return T.laeuft;
+        // Erzwungen (nach Speichern, Nachreichen …): eine schon laufende Abfrage kann den alten Stand liefern – danach neu fragen.
+        await T.laeuft.catch(() => false);
+        if (wwStand !== T || !tenant) return wwStand?.sichtbar || false;
+        if (T.laeuft) return T.laeuft;
+      }
+      const fuer = tenant.id;
+      T.laeuft = (async () => {
+        // Stufe noch unbekannt (erster Start, Direktlink): einmal kurz auf sie warten, damit Mitarbeiter gar nicht erst fragen.
+        // Nur einmal je Firma: bleibt die Stufe aus (Server langsam), entscheidet darfVerwalten aus der Antwort.
+        if (!T.stufeGewartet) { T.stufeGewartet = true; for (let i = 0; i < 40 && tmMeineStufe == null && tenant?.id === fuer; i++) await new Promise((r) => setTimeout(r, 100)); }
+        if (tmMeineStufe === 'member' || tenant?.id !== fuer || wwStand !== T) return false;
+        const a = await wwAnfrage('status');
+        if (tenant?.id !== fuer || wwStand !== T || tmMeineStufe === 'member') return false;
+        // Schon sichtbar und nur kurz gestört (Netz, Zeitüberschreitung, 5xx): Ansicht stehen lassen, Hinweis zeigen.
+        if (!a.ok && T.sichtbar && T.fuer === fuer && (a.status === 0 || a.status >= 500)) { wwLadeHinweis(wwFehlerText(a, 'Der Stand konnte gerade nicht geladen werden.')); return true; }
+        const d = a.ok ? a.j : null;
+        const sichtbar = !!d && d.freigeschaltet === true && d.darfVerwalten === true;
+        T.fuer = fuer; T.geprueft = Date.now(); T.d = sichtbar ? d : null;
+        if (sichtbar && !T.protokolle) {
+          const p = await wwAnfrage('protokolle', null, { methode: 'GET' });
+          if (tenant?.id !== fuer || wwStand !== T) return false;
+          const liste = Array.isArray(p.j) ? p.j : Array.isArray(p.j?.protokolle) ? p.j.protokolle : null;
+          if (p.ok && liste) T.protokolle = liste.filter((x) => x && typeof x.kennung === 'string' && x.kennung);
+        }
+        wwSichtbar(sichtbar);
+        if (sichtbar) { wwLadeHinweis(''); wwZeichnen(); }
+        return sichtbar;
+      })().finally(() => { T.laeuft = null; });
+      return T.laeuft;
+    }
+    function wwLadeHinweis(text) { const h = $('wwLadeHinweis'); if (!h) return; h.textContent = text; h.dataset.art = text ? 'fehler' : ''; h.classList.toggle('hidden', !text); }
+
+    // ---- Zeichnen ----
+    function wwZeichnen() {
+      const S = wwStand, d = S?.d; if (!d) return;
+      const v = d.verbindung || null, aus = d.verfuegbar === false;
+      if (!S.dirty || S.formFuer !== tenant?.id) wwFormFuellen(); else wwSchluesselZeigen();
+      $('wwServerHinweis').classList.toggle('hidden', !aus);
+      $('wwOhneZugang').classList.toggle('hidden', !!v || aus);
+      $('wwVerbindung').querySelectorAll('input, select').forEach((el) => { el.disabled = aus; });
+      ['wwSpeichern', 'wwTesten', 'wwSchluesselErsetzen'].forEach((id) => { $(id).disabled = aus; });
+      $('wwTrennen').classList.toggle('hidden', !v);
+      $('wwTitel').textContent = v?.anzeigename && v.anzeigename !== WW_NAME ? 'Verbindung zu „' + v.anzeigename + '“' : 'Verbindung';
+      $('wwAbgleich').classList.toggle('hidden', !v);
+      wwKachelnZeichnen(); wwSchalterZeichnen(); wwZeilenZeichnen(); wwUebergabenZeichnen(); wwTestZeichnen();
+      ifStatus();
+    }
+    function wwFormFuellen() {
+      const S = wwStand, v = S.d?.verbindung || null;
+      $('wwName').value = v?.anzeigename || WW_NAME;
+      const sel = $('wwProtokoll'); const liste = [...(S.protokolle || [])];
+      if (v?.protokoll && !liste.some((p) => p.kennung === v.protokoll)) liste.push({ kennung: v.protokoll, bezeichnung: v.protokoll });
+      sel.replaceChildren(...(liste.length ? liste : [{ kennung: '', bezeichnung: 'Keine Schnittstelle verfügbar' }]).map((p) => { const o = document.createElement('option'); o.value = p.kennung; o.textContent = p.bezeichnung || p.kennung; return o; }));
+      sel.value = v?.protokoll || liste[0]?.kennung || '';
+      $('wwUrl').value = v?.basis_url || '';
+      $('wwSchluessel').value = '';
+      $('wwSammelkunde').value = v?.sammelkunde || '';
+      wwOrteZeichnen(v);
+      S.dirty = false; S.schluesselNeu = false; S.formFuer = tenant?.id;
+      wwFeldFehler(null);
+      wwSchluesselZeigen();
+    }
+    /** Standorte: Auswahl, wenn die Warenwirtschaft welche meldet, sonst freies Feld. Der gespeicherte Wert bleibt immer wählbar. */
+    function wwOrteZeichnen(v) {
+      const orte = (Array.isArray(wwStand.d?.faehigkeiten?.standorte) ? wwStand.d.faehigkeiten.standorte : []).filter((o) => o && typeof o.code === 'string' && o.code);
+      document.querySelectorAll('#wwVerbindung .ww-ort').forEach((box) => {
+        const alt = box.querySelector('input, select'), id = alt.id, art = box.dataset.art, wert = v?.[box.dataset.feld] || '';
+        if (box.dataset.platzhalter == null && alt.tagName === 'INPUT') box.dataset.platzhalter = alt.getAttribute('placeholder') || '';
+        const passend = orte.filter((o) => o[art] !== false);
+        let el;
+        if (passend.length) {
+          el = document.createElement('select');
+          const opt = (wertO, text) => { const o = document.createElement('option'); o.value = wertO; o.textContent = text; el.append(o); };
+          opt('', '— keiner —');
+          passend.forEach((o) => opt(o.code, o.code + (o.name ? ' – ' + o.name : '')));
+          if (wert && !passend.some((o) => o.code === wert)) opt(wert, wert + ' (nicht gemeldet)');
+        } else {
+          el = document.createElement('input'); el.autocomplete = 'off'; el.spellcheck = false;
+          el.placeholder = box.dataset.platzhalter ?? (box.dataset.platzhalter = alt.getAttribute('placeholder') || '');
+        }
+        el.id = id; el.value = wert; el.disabled = alt.disabled;
+        box.replaceChildren(el);
+      });
+    }
+    function wwSchluesselZeigen() {
+      const S = wwStand, v = S.d?.verbindung || null;
+      const hinterlegt = !!v?.schluessel_hinterlegt, ungueltig = v?.status === 'schluessel_ungueltig';
+      const urlNeu = !!v && wwUrlNormal($('wwUrl').value) !== (v.basis_url || '');
+      const eingabe = S.schluesselNeu || !hinterlegt || urlNeu;
+      $('wwSchluesselStand').classList.toggle('hidden', eingabe);
+      $('wwSchluesselEingabe').classList.toggle('hidden', !eingabe);
+      $('wwSchluesselAbbrechen').classList.toggle('hidden', !(eingabe && hinterlegt && !urlNeu));
+      const pill = $('wwSchluesselText');
+      pill.textContent = hinterlegt ? (ungueltig ? 'Ungültig' : 'Hinterlegt') + (v.schluessel_ende ? ', endet auf …' + String(v.schluessel_ende).slice(-4) : '') : '';
+      pill.dataset.art = ungueltig ? 'fehler' : 'ok';
+      const h = $('wwSchluesselHinweis'); let warn = true;
+      if (urlNeu && hinterlegt) h.textContent = 'Neue Adresse: Bitte trag den Schlüssel neu ein. Der hinterlegte gilt nur für die bisherige Adresse.';
+      else if (ungueltig) h.textContent = 'Der hinterlegte Schlüssel wird nicht mehr angenommen. Bitte trag einen neuen ein.';
+      else { warn = false; h.textContent = 'Den Schlüssel bekommst du vom Betreiber deiner Warenwirtschaft (Zugang „Telefonassistent“). Wir zeigen ihn nie wieder an.'; }
+      h.classList.toggle('warn', warn);
+    }
+    function wwStatusInfo(d) {
+      const v = d?.verbindung || null, z = d?.zustand || {};
+      if (d?.verfuegbar === false) return { wert: '–', text: 'Server noch nicht eingerichtet', art: '' };
+      if (!v) return { wert: '–', text: 'nicht verbunden', art: '' };
+      if (v.status === 'schluessel_ungueltig') return { wert: 'Ungültig', text: 'Schlüssel bitte neu eintragen', art: 'fehler', tip: 'Die Warenwirtschaft nimmt den hinterlegten Schlüssel nicht mehr an. Der Assistent antwortet so lange wie bisher aus deiner Wissensbasis.' };
+      if (v.status === 'fehler') return { wert: 'Störung', text: v.letzter_fehler || 'nicht erreichbar', art: 'fehler', tip: (v.letzter_fehler || 'Nicht erreichbar.') + (v.letzter_erfolg ? ' Zuletzt erfolgreich: ' + lvWann(v.letzter_erfolg) + '.' : '') };
+      if (v.status !== 'ok') return { wert: 'Neu', text: 'noch nicht getestet', art: 'warn' };
+      if (z.pause_bis && new Date(z.pause_bis).getTime() > Date.now()) return { wert: 'Pause', text: 'nach Störungen bis ' + new Date(z.pause_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr', art: 'warn', tip: 'Nach mehreren Fehlern in Folge fragt der Assistent kurz nicht nach und nimmt stattdessen eine Nachricht auf.' };
+      return { wert: v.aktiv ? 'Aktiv' : 'Aus', text: v.aktiv ? 'der Assistent nutzt sie' : 'getestet, Hauptschalter aus', art: v.aktiv ? 'ok' : '', tip: v.letzter_erfolg ? 'Letzter erfolgreicher Abruf: ' + lvWann(v.letzter_erfolg) : '' };
+    }
+    /** Kachel für die Statusleiste über den Reitern (nur wenn der Reiter sichtbar ist). */
+    function wwIfKachel() {
+      const d = wwStand?.d, v = d?.verbindung, st = wwStatusInfo(d);
+      return ['warenwirtschaft', 'Warenwirtschaft', v?.aktiv && v.status === 'ok' ? 1 : 0, v ? (st.wert === 'Aktiv' || st.wert === 'Aus' ? (v.aktiv ? 'aktiv' : 'Hauptschalter aus') : st.text) : st.text];
+    }
+    function wwKachelnZeichnen() {
+      const d = wwStand.d || {}, v = d.verbindung || null, z = d.zustand || {}, u = d.uebergaben || null, st = wwStatusInfo(d);
+      const kacheln = [
+        { k: 'Verbindung', v: st.wert, d: st.text, tip: st.tip || st.text, art: st.art, ziel: 'test' },
+        { k: 'Artikel im Sortiment', v: v?.artikel_anzahl != null ? wwZahl(v.artikel_anzahl) : '–', d: v?.katalog_stand ? 'abgeglichen ' + lvWann(v.katalog_stand) : (v ? 'noch nicht abgeglichen' : 'nicht verbunden'), tip: v?.katalog_stand ? 'Letzter Sortimentsabgleich: ' + lvWann(v.katalog_stand) : '', ziel: v ? 'abgleich' : null },
+        { k: 'Abfragen heute', v: v ? wwZahl(z.aufrufe_heute || 0) : '–', d: z.mittlere_dauer_ms != null ? 'im Mittel ' + wwDauer(z.mittlere_dauer_ms) : (v ? 'noch keine' : 'nicht verbunden'), tip: z.fehler_heute ? wwZahl(z.fehler_heute) + ' ohne Antwort, der Assistent hat dann eine Nachricht angeboten' : '' },
+        { k: 'Interessenten ausstehend', v: u ? wwZahl(u.ausstehend || 0) : '–', d: u ? wwZahl(u.gesendet || 0) + ' übertragen' + (u.abgelehnt ? ', ' + wwZahl(u.abgelehnt) + ' abgelehnt' : '') : !v ? 'nicht verbunden' : v.f_interessenten ? 'noch keine' : 'Schalter aus', tip: u?.ausstehend ? 'Klick zeigt die ausstehenden Interessenten.' : '', ziel: u ? 'ausstehend' : null },
+      ];
+      $('wwKacheln').replaceChildren(...kacheln.map((x) => {
+        const el = document.createElement('div'); el.className = 'db-kpi' + (x.ziel ? ' klick' : '');
+        const k = document.createElement('div'); k.className = 'k'; k.textContent = x.k;
+        const w = document.createElement('div'); w.className = 'v'; w.textContent = x.v;
+        const dd = document.createElement('div'); dd.className = 'd' + (x.art === 'fehler' ? ' minus' : x.art === 'ok' ? ' plus' : ''); dd.textContent = x.d;
+        el.append(k, w, dd);
+        if (x.tip) el.dataset.tip = x.tip;
+        if (x.ziel) { el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.wwZiel = x.ziel; }
+        return el;
+      }));
+    }
+    function wwSchalterZeichnen() {
+      const S = wwStand, d = S.d || {}, v = d.verbindung || null, f = d.faehigkeiten || {}, fr = d.freigaben || {};
+      const box = $('wwSchalter'), fokus = document.activeElement?.closest?.('#wwSchalter') ? (document.activeElement.dataset.wwFeld || document.activeElement.dataset.wwOz) : null;
+      const gesperrt = d.verfuegbar === false || !v;
+      box.replaceChildren();
+      WW_SCHALTER.forEach((s) => {
+        if (s.freigabe && fr[s.freigabe] !== true) return;
+        // Ohne Verbindung: gesperrt, aber mit den Werten, die beim Verbinden gelten (Sortiment und Lieferregeln an).
+        const an = s.feld === 'kanal_whatsapp' ? (v?.kanaele || []).includes('whatsapp') : v ? !!v[s.feld] : WW_STANDARD.includes(s.feld);
+        let text = s.text, aus = gesperrt || S.schaltet === s.feld;
+        if (s.haupt && v && v.status !== 'ok' && !an) { aus = true; text = 'Erst nach erfolgreichem Test. ' + s.text; }
+        if (s.braucht && v && f[s.braucht] !== true && !an) { aus = true; text = s.fehlt; }
+        if (s.ohne && v && f[s.ohne] !== true) text = s.text + ' ' + s.ohneText;
+        const zeile = document.createElement('div'); zeile.className = 'ww-s' + (s.haupt ? ' ww-s--haupt' : '') + (aus ? ' aus' : '');
+        const lab = document.createElement('label'); lab.className = 'chk';
+        const inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = an; inp.disabled = aus; inp.dataset.wwFeld = s.feld;
+        const sp = document.createElement('span'); const b = document.createElement('b'); b.textContent = s.titel;
+        const sm = document.createElement('small'); sm.textContent = text; if (s.warn) sm.className = 'warn';
+        sp.append(b, sm); lab.append(inp, sp); zeile.append(lab);
+        if (s.oeffnungszeiten) zeile.append(wwOzWahl(v, gesperrt || !v?.f_lieferregeln || S.schaltet === 'oeffnungszeiten_quelle'));
+        box.append(zeile);
+      });
+      if (fokus) box.querySelector('[data-ww-feld="' + fokus + '"], [data-ww-oz="' + fokus + '"]')?.focus();
+      $('wwSchalterHinweis').textContent = d.verfuegbar === false ? '' : !v ? 'Erst die Verbindung speichern und testen.' : !v.aktiv ? 'Die Schalter gelten sofort, ohne „Speichern“, und wirken, sobald der Hauptschalter an ist.' : 'Die Schalter gelten sofort, ohne „Speichern“.';
+    }
+    function wwOzWahl(v, aus) {
+      const quelle = v?.oeffnungszeiten_quelle === 'warenwirtschaft' ? 'warenwirtschaft' : 'vocaris';
+      const w = document.createElement('div'); w.className = 'ww-unter';
+      const t = document.createElement('span'); t.id = 'wwOzText'; t.textContent = 'Öffnungszeiten des Markts nennt er aus:';
+      const bar = document.createElement('div'); bar.className = 'deptbar'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-labelledby', 'wwOzText');
+      [['vocaris', 'deinen Einstellungen', 'Wie bisher aus den Zeiten im Assistenten. Die Weiterleitung richtet sich immer nach diesen Zeiten.'], ['warenwirtschaft', 'der Warenwirtschaft', 'Aus den Öffnungszeiten und Ausnahmetagen des Markts in der Warenwirtschaft. Die Weiterleitung richtet sich weiter nach deinen Zeiten im Assistenten.']].forEach(([wert, text, tip]) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'deptseg' + (quelle === wert ? ' active' : ''); b.textContent = text;
+        b.dataset.wwOz = wert; b.dataset.tip = tip; b.setAttribute('aria-pressed', String(quelle === wert)); b.disabled = aus; bar.append(b);
+      });
+      w.append(t, bar); return w;
+    }
+    function wwZeilenZeichnen() {
+      const d = wwStand.d || {}, v = d.verbindung || null, f = d.faehigkeiten || {}, z = d.zustand || {};
+      const zeilen = !v ? [] : [
+        ['Letzter erfolgreicher Abruf', v.letzter_erfolg ? lvWann(v.letzter_erfolg) : 'noch keiner'],
+        ['Sortiment', v.artikel_anzahl != null ? wwZahl(v.artikel_anzahl) + ' Artikel' + (v.katalog_stand ? ', abgeglichen ' + lvWann(v.katalog_stand) : '') : 'noch nicht abgeglichen'],
+        ['Lieferregeln', v.regeln_version ? 'Stand ' + v.regeln_version : 'noch nicht geladen'],
+        ['Gegenstelle', f.produkt ? 'meldet sich als ' + f.produkt : '–'],
+      ];
+      if (v?.letzter_fehler && v.status !== 'ok') zeilen.push(['Letzte Störung', v.letzter_fehler]);
+      if (z.pause_bis && new Date(z.pause_bis).getTime() > Date.now()) zeilen.push(['Pause nach Störungen', 'bis ' + new Date(z.pause_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr']);
+      $('wwZeilen').replaceChildren(...zeilen.map(([dt, dd]) => { const g = document.createElement('div'); const a = document.createElement('dt'); a.textContent = dt; const b = document.createElement('dd'); b.textContent = dd; g.append(a, b); return g; }));
+      $('wwAbgleichen').disabled = !v || v.status !== 'ok';
+    }
+    function wwUebergabenZeichnen() {
+      const S = wwStand, u = S.d?.uebergaben || null, box = $('wwUebergaben');
+      $('wwNachreichen').classList.toggle('hidden', !(u?.ausstehend > 0));
+      if (!u) { box.replaceChildren(); return; }
+      const liste = (Array.isArray(u.letzte) ? u.letzte : []).filter((x) => x && (!S.filter || x.status === S.filter || (S.filter === 'ausstehend' && x.status === 'in_arbeit')));
+      const rahmen = document.createElement('div'); rahmen.className = 'ww-ueb';
+      const kopf = document.createElement('div'); kopf.className = 'ww-ueb__kopf';
+      const titel = document.createElement('b'); titel.textContent = 'An die Warenwirtschaft übergeben';
+      const chips = document.createElement('div'); chips.className = 'deptbar'; chips.style.margin = '0 0 0 auto'; chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', 'Übergaben filtern');
+      [['', 'Alle'], ['ausstehend', 'Ausstehend ' + wwZahl(u.ausstehend || 0)], ['gesendet', 'Übertragen ' + wwZahl(u.gesendet || 0)], ['abgelehnt', 'Abgelehnt ' + wwZahl(u.abgelehnt || 0)]].forEach(([wert, text]) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'deptseg' + (S.filter === wert ? ' active' : ''); b.textContent = text; b.dataset.wwFilter = wert; b.setAttribute('aria-pressed', String(S.filter === wert)); chips.append(b);
+      });
+      kopf.append(titel, chips); rahmen.append(kopf);
+      if (!liste.length) { const p = document.createElement('p'); p.className = 'ww-ueb__leer'; p.textContent = S.filter ? 'In dieser Auswahl gibt es gerade nichts.' : 'Noch keine Interessenten übergeben. Neue Interessenten landen immer zuerst als Nachricht bei dir.'; rahmen.append(p); }
+      liste.slice(0, 10).forEach((x) => {
+        const z = document.createElement(x.message_id ? 'button' : 'div'); z.className = 'ww-ueb__zeile'; if (x.message_id) { z.type = 'button'; z.dataset.wwNachricht = x.message_id; }
+        const t = document.createElement('time'); t.textContent = x.erstellt_am ? lvWann(x.erstellt_am) : ''; if (x.erstellt_am) t.dateTime = x.erstellt_am;
+        const n = document.createElement('span'); n.textContent = (x.name || 'Ohne Namen') + (x.art === 'bestellentwurf' ? ' · Bestellentwurf' : '');
+        const [txt, art] = WW_UEB_STATUS[x.status] || [x.status || '–', ''];
+        const pill = document.createElement('span'); pill.className = 'ww-pill'; pill.dataset.art = art; pill.textContent = txt;
+        const tip = [WW_UEB_GRUND[x.grund], x.letzter_fehler, x.gesendet_am ? 'Übertragen ' + lvWann(x.gesendet_am) : '', x.message_id ? 'Klick öffnet die Nachricht.' : ''].filter(Boolean).join(' ');
+        if (tip) z.dataset.tip = tip;
+        z.append(t, n, pill); rahmen.append(z);
+      });
+      box.replaceChildren(rahmen);
+    }
+    function wwTestZeichnen() {
+      const ul = $('wwTest'), t = wwStand?.test;
+      if (!t || !t.schritte.length) { ul.classList.add('hidden'); ul.replaceChildren(); return; }
+      ul.replaceChildren(...t.schritte.map((s) => {
+        const art = WW_ZEICHEN[s?.ergebnis] ? s.ergebnis : 'fehler';
+        const li = document.createElement('li'); li.dataset.art = art;
+        const i = document.createElement('i'); i.setAttribute('aria-hidden', 'true'); i.textContent = WW_ZEICHEN[art][0];
+        const sp = document.createElement('span'); const vh = document.createElement('span'); vh.className = 'vh'; vh.textContent = WW_ZEICHEN[art][1] + ': ';
+        const b = document.createElement('b'); b.textContent = WW_SCHRITT[s?.id] || String(s?.id || 'Schritt');
+        sp.append(vh, b, document.createTextNode(s?.text ? ' – ' + s.text : ''));
+        const sm = document.createElement('small'); sm.textContent = Number.isFinite(s?.dauer_ms) ? wwDauer(s.dauer_ms) : '';
+        li.append(i, sp, sm); return li;
+      }));
+      ul.classList.remove('hidden');
+    }
+
+    // ---- Aktionen ----
+    async function wwSpeichern({ still = false } = {}) {
+      const S = wwStand, v = S.d?.verbindung || null;
+      wwFeldFehler(null);
+      const name = $('wwName').value.trim() || WW_NAME;
+      const url = wwUrlNormal($('wwUrl').value);
+      const protokoll = $('wwProtokoll').value;
+      const schluessel = $('wwSchluessel').value.trim();
+      if (name.length > 60) return wwFeldFehler('wwName', 'Der Name darf höchstens 60 Zeichen lang sein.');
+      if (!protokoll) return wwFeldFehler('wwProtokoll', 'Der Server bietet noch keine Schnittstelle an.');
+      if (!url) return wwFeldFehler('wwUrl', 'Bitte trag die Adresse ein.');
+      if (!wwUrlGueltig(url)) return wwFeldFehler('wwUrl', 'Die Adresse muss mit https:// beginnen, zum Beispiel https://warenwirtschaft.meinefirma.de.');
+      const urlNeu = !v || url !== v.basis_url;
+      if (!schluessel && (!v?.schluessel_hinterlegt || urlNeu || S.schluesselNeu)) return wwFeldFehler('wwSchluessel', v?.schluessel_hinterlegt && urlNeu ? 'Neue Adresse: Bitte trag den Schlüssel neu ein.' : 'Bitte trag den Zugangsschlüssel ein.');
+      if (schluessel && (schluessel.length < 8 || schluessel.length > 512 || /\s/.test(schluessel))) return wwFeldFehler('wwSchluessel', 'Das sieht nicht wie ein Zugangsschlüssel aus. Bitte kopier ihn vollständig und ohne Leerzeichen.');
+      const rumpf = { anzeigename: name, protokoll, basis_url: url, standort_lieferung: $('wwOrtLieferung').value.trim(), standort_abholung: $('wwOrtAbholung').value.trim(), sammelkunde: $('wwSammelkunde').value.trim() };
+      if (schluessel) rumpf.schluessel = schluessel;
+      const k = $('wwSpeichern'); k.disabled = true; wwMeldung('Speichere …');
+      const a = await wwAnfrage('speichern', rumpf);
+      k.disabled = false;
+      if (!a.ok) { const id = WW_FELD_ID[a.j?.feld]; if (id) wwFeldFehler(id); wwMeldung(wwFehlerText(a, 'Speichern hat nicht geklappt.'), 'fehler'); return false; }
+      $('wwSchluessel').value = '';
+      S.d.verbindung = a.j.verbindung && typeof a.j.verbindung === 'object' ? a.j.verbindung : { ...(v || {}), ...rumpf, schluessel: undefined, schluessel_hinterlegt: true };
+      S.d.verbunden = true; S.dirty = false; S.schluesselNeu = false;
+      if (schluessel || urlNeu) S.test = null;
+      wwFormFuellen(); wwZeichnen();
+      if (!still) { wwMeldung(S.d.verbindung.status === 'ok' ? 'Gespeichert.' : 'Gespeichert. Als Nächstes „Verbindung testen“.'); toast('Gespeichert.'); }
+      return true;
+    }
+    async function wwTesten() {
+      const S = wwStand;
+      if (S.dirty || !wwVerbunden() || $('wwSchluessel').value.trim()) { if (!(await wwSpeichern({ still: true }))) return; }
+      const k = $('wwTesten'); k.disabled = true; wwMeldung('Teste die Verbindung … Das liest nur und dauert ein paar Sekunden.');
+      const a = await wwAnfrage('testen', {}, { frist: WW_TEST_FRIST_MS });
+      k.disabled = false;
+      if (!a.ok) { wwMeldung(wwFehlerText(a, 'Der Test hat nicht geklappt.'), 'fehler'); return; }
+      S.test = { schritte: Array.isArray(a.j.schritte) ? a.j.schritte : [], ok: a.j.ok === true };
+      if (a.j.verbindung && typeof a.j.verbindung === 'object') S.d.verbindung = a.j.verbindung;
+      if (a.j.faehigkeiten && typeof a.j.faehigkeiten === 'object') S.d.faehigkeiten = a.j.faehigkeiten;
+      if (!S.dirty) wwOrteZeichnen(S.d.verbindung);
+      wwZeichnen();
+      wwMeldung(S.test.ok ? (S.d.verbindung?.aktiv ? 'Test bestanden.' : 'Test bestanden. Jetzt kannst du rechts den Hauptschalter einschalten.') : 'Test nicht bestanden. Was fehlt, steht in der Liste.', S.test.ok ? '' : 'fehler');
+    }
+    async function wwTrennen() {
+      const S = wwStand, name = S.d?.verbindung?.anzeigename || WW_NAME;
+      if (!confirm('Verbindung zu „' + name + '“ trennen?\n\nDer Assistent beantwortet solche Fragen dann wieder nur aus deiner Wissensbasis. Der hinterlegte Schlüssel wird gelöscht.')) return;
+      const k = $('wwTrennen'); k.disabled = true;
+      const a = await wwAnfrage('trennen');
+      k.disabled = false;
+      if (!a.ok) { wwMeldung(wwFehlerText(a, 'Trennen hat nicht geklappt.'), 'fehler'); return; }
+      S.test = null; S.dirty = false;
+      S.d.verbindung = null; S.d.verbunden = false; S.d.uebergaben = null; S.d.zustand = null;
+      wwFormFuellen(); wwZeichnen(); wwMeldung(''); toast('Verbindung getrennt.');
+      void wwPruefen(true);
+    }
+    async function wwAbgleichen() {
+      const k = $('wwAbgleichen'); k.disabled = true; const alt = k.textContent; k.textContent = 'Gleiche ab …';
+      const a = await wwAnfrage('abgleichen', {}, { frist: WW_TEST_FRIST_MS });
+      k.textContent = alt; k.disabled = false;
+      if (!a.ok) { toast(wwFehlerText(a, 'Abgleich hat nicht geklappt.'), 'err', 5000); return; }
+      const v = wwStand.d?.verbindung; if (v) { if (a.j.artikel_anzahl != null) v.artikel_anzahl = a.j.artikel_anzahl; if (a.j.katalog_stand) v.katalog_stand = a.j.katalog_stand; }
+      toast(a.j.artikel_anzahl != null ? 'Sortiment abgeglichen: ' + wwZahl(a.j.artikel_anzahl) + ' Artikel.' : 'Sortiment abgeglichen.');
+      wwZeichnen(); void wwPruefen(true);
+    }
+    async function wwNachreichen() {
+      const k = $('wwNachreichen'); k.disabled = true;
+      const a = await wwAnfrage('nachreichen', {}, { frist: WW_TEST_FRIST_MS });
+      k.disabled = false;
+      if (!a.ok) { toast(wwFehlerText(a, 'Nachreichen hat nicht geklappt.'), 'err', 5000); return; }
+      const u = wwStand.d?.uebergaben;
+      if (u && Number.isFinite(a.j.ausstehend) && Number.isFinite(a.j.gesendet)) { u.gesendet = (u.gesendet || 0) + a.j.gesendet; u.ausstehend = a.j.ausstehend; wwKachelnZeichnen(); wwUebergabenZeichnen(); }
+      toast(a.j.gesendet ? wwZahl(a.j.gesendet) + ' übertragen' + (a.j.ausstehend ? ', ' + wwZahl(a.j.ausstehend) + ' weiter ausstehend.' : '.') : (a.j.ausstehend ? 'Noch nicht möglich, ' + wwZahl(a.j.ausstehend) + ' bleiben ausstehend.' : 'Nichts mehr ausstehend.'));
+      void wwPruefen(true);
+    }
+    async function wwUmschalten(rumpf, feld, zurueck) {
+      const S = wwStand; if (!S.d?.verbindung) return;
+      S.schaltet = feld; wwSchalterZeichnen();
+      const a = await wwAnfrage('speichern', rumpf);
+      S.schaltet = null;
+      if (!a.ok) { zurueck?.(); toast(wwFehlerText(a, 'Umschalten hat nicht geklappt.'), 'err', 5000); }
+      else { S.d.verbindung = a.j.verbindung && typeof a.j.verbindung === 'object' ? a.j.verbindung : { ...S.d.verbindung, ...rumpf }; toast('Gespeichert.'); }
+      wwZeichnen();
+    }
+    /** Adresse #schnittstellen/warenwirtschaft (Router): Reiter öffnen, wenn es ihn für diese Firma gibt, sonst Adresse kürzen. */
+    async function wwAdresseOeffnen() {
+      const h = location.hash;
+      let ok = false; try { ok = await wwPruefen(); } catch { ok = false; }
+      if (location.hash !== h || !navItem('sec-webhooks')?.classList.contains('active')) return; // inzwischen woanders hin
+      if (ok) ifTab('warenwirtschaft'); else adresseSetzen('sec-webhooks', 'replace');
+    }
+    /** Nach jedem Reiterwechsel in den Schnittstellen (aus ifTab): Adresse mitziehen – nur, wo es den Reiter gibt. */
+    function wwNachTab(k) {
+      if (!wwStand?.sichtbar) return;
+      if (k === 'warenwirtschaft') void wwPruefen();
+      if (!routerAktiv && navItem('sec-webhooks')?.classList.contains('active')) adresseSetzen('sec-webhooks', 'replace');
+    }
+    (function warenwirtschaftWiring() {
+      if (!$('wwBereich')) return;
+      const form = $('wwVerbindung');
+      form.addEventListener('input', (e) => {
+        if (!e.target.matches('input, select')) return;
+        wwStand.dirty = true; e.target.removeAttribute('aria-invalid');
+        if (e.target.id === 'wwUrl') wwSchluesselZeigen();
+      });
+      form.addEventListener('change', (e) => { if (e.target.matches('select')) wwStand.dirty = true; });
+      form.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); void wwSpeichern(); } });
+      $('wwSpeichern').onclick = () => void wwSpeichern();
+      $('wwTesten').onclick = () => void wwTesten();
+      $('wwTrennen').onclick = () => void wwTrennen();
+      $('wwAbgleichen').onclick = () => void wwAbgleichen();
+      $('wwNachreichen').onclick = () => void wwNachreichen();
+      $('wwSchluesselErsetzen').onclick = () => { wwStand.schluesselNeu = true; wwSchluesselZeigen(); $('wwSchluessel').focus(); };
+      $('wwSchluesselAbbrechen').onclick = () => { wwStand.schluesselNeu = false; $('wwSchluessel').value = ''; $('wwSchluessel').removeAttribute('aria-invalid'); wwSchluesselZeigen(); $('wwSchluesselErsetzen').focus(); };
+      $('wwSchalter').addEventListener('change', (e) => {
+        const inp = e.target.closest('input[data-ww-feld]'); const v = wwStand.d?.verbindung; if (!inp || !v) return;
+        const feld = inp.dataset.wwFeld, an = inp.checked;
+        if (feld === 'f_bestellungen' && an && !confirm('Bestellungen als Entwurf übertragen?\n\nDer Assistent legt dann nach dem Gespräch einen Entwurf in der Warenwirtschaft an. Dein Team bestätigt jede Bestellung per Rückruf.')) { inp.checked = false; return; }
+        const kanaele = Array.isArray(v.kanaele) && v.kanaele.length ? v.kanaele : ['telefon'];
+        const rumpf = feld === 'kanal_whatsapp' ? { kanaele: an ? [...new Set([...kanaele, 'whatsapp'])] : kanaele.filter((x) => x !== 'whatsapp') } : { [feld]: an };
+        void wwUmschalten(rumpf, feld, () => { inp.checked = !an; });
+      });
+      $('wwSchalter').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-ww-oz]'); const v = wwStand.d?.verbindung; if (!b || !v || b.disabled) return;
+        if ((v.oeffnungszeiten_quelle || 'vocaris') === b.dataset.wwOz) return;
+        void wwUmschalten({ oeffnungszeiten_quelle: b.dataset.wwOz }, 'oeffnungszeiten_quelle');
+      });
+      $('wwUebergaben').addEventListener('click', (e) => {
+        const f = e.target.closest('[data-ww-filter]'); if (f) { wwStand.filter = f.dataset.wwFilter; wwUebergabenZeichnen(); return; }
+        const z = e.target.closest('[data-ww-nachricht]'); if (z) { geh('sec-messages'); if (navItem('sec-messages')?.classList.contains('active')) void nachrichtOeffnen(z.dataset.wwNachricht); }
+      });
+      const kachel = (el) => {
+        const ziel = el?.dataset.wwZiel; if (!ziel) return;
+        if (ziel === 'test') { $('wwVerbindung').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); $('wwTesten').focus({ preventScroll: true }); }
+        else if (ziel === 'abgleich') { $('wwAbgleich').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        else if (ziel === 'ausstehend') { wwStand.filter = wwStand.filter === 'ausstehend' ? '' : 'ausstehend'; wwUebergabenZeichnen(); $('wwAbgleich').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+      };
+      $('wwKacheln').addEventListener('click', (e) => kachel(e.target.closest('[data-ww-ziel]')));
+      $('wwKacheln').addEventListener('keydown', (e) => { const el = e.target.closest('[data-ww-ziel]'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); kachel(el); } });
+      // Beim Öffnen der Schnittstellen den Stand holen (höchstens einmal je Minute). Der Router ruft onclick direkt auf.
+      const nav = navItem('sec-webhooks'), roh = nav?.onclick;
+      if (nav && typeof roh === 'function') nav.onclick = async function (e) { const erg = await roh.call(this, e); if (nav.classList.contains('active') && tenant) void wwPruefen(); return erg; };
+    })();
+    // Stufe Mitarbeiter (auch erst nachträglich bestätigt, wenn die gemerkte Stufe noch Admin war): Reiter weg.
+    {
+      const roh = tmNavigationAnpassen;
+      tmNavigationAnpassen = function (stufe) { roh(stufe); if (stufe === 'member' && (wwStand?.sichtbar || wwStand?.fuer || wwStand?.laeuft)) wwZuruecksetzen(); };
+    }
+    // Firmenwechsel, Abmelden und Neuladen: nichts von der vorigen Firma stehen lassen, offenen Bereich neu prüfen.
+    {
+      const roh = loadAll;
+      loadAll = async function (...args) {
+        if (wwStand?.fuer && wwStand.fuer !== tenant?.id) wwZuruecksetzen();
+        const erg = await roh.apply(this, args);
+        if (wwStand?.fuer && wwStand.fuer !== tenant?.id) wwZuruecksetzen();
+        if (tenant && navItem('sec-webhooks')?.classList.contains('active')) void wwPruefen(true);
         return erg;
       };
     }
