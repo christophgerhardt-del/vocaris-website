@@ -1483,7 +1483,9 @@
     .ww-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 12px; }
     .ww-kpis .db-kpi { padding: 10px 14px; } .ww-kpis .db-kpi .v { font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ww-kpis .db-kpi .d { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    @media (max-width: 480px) { .ww-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ww-kpis.ww-kpis--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .ww-kpis.ww-kpis--5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 480px) { .ww-kpis, .ww-kpis.ww-kpis--5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .ww-split { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; align-items: start; }
     .ww-split > .panel { margin-bottom: 0; }
     @media (max-width: 1100px) { .ww-split { grid-template-columns: minmax(0, 1fr); } }
@@ -1564,6 +1566,17 @@
     .ww-ueb__zeile time { color: var(--ink-faint); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .ww-ueb__zeile span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ww-ueb__leer { margin: 0; padding: 12px; font-size: 13px; color: var(--ink-faint); text-align: left; }
+    #wwUebergaben:not(:empty) + #wwBestellungen:not(:empty) { margin-top: 12px; }
+    .ww-ueb__zeile small { color: var(--ink-faint); font-size: 12px; white-space: nowrap; }
+    .ww-ueb--bestellungen .ww-ueb__zeile { grid-template-columns: 110px minmax(0, 1fr) auto auto; grid-template-areas: 'zeit name bis pill'; }
+    .ww-ueb--bestellungen .ww-ueb__zeile time { grid-area: zeit; }
+    .ww-ueb--bestellungen .ww-ueb__zeile > span:not(.ww-pill) { grid-area: name; }
+    .ww-ueb--bestellungen .ww-ueb__zeile small { grid-area: bis; }
+    .ww-ueb--bestellungen .ww-ueb__zeile .ww-pill { grid-area: pill; justify-self: end; }
+    @media (max-width: 560px) {
+      .ww-ueb--bestellungen .ww-ueb__zeile { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'zeit zeit' 'name pill' 'bis bis'; }
+      .ww-ueb--bestellungen .ww-ueb__zeile small:empty { display: none; }
+    }
     @media (max-width: 560px) { .ww-ueb__zeile { grid-template-columns: minmax(0, 1fr) auto; } .ww-ueb__zeile time { grid-column: 1 / -1; } }
   </style>
 </head>
@@ -2699,7 +2712,7 @@
           </div>
           <div class="panel hidden" id="wwAbgleich">
             <div class="db-panelkopf ww-panelkopf">
-              <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>Abgleich und Interessenten</h3>
+              <h3 class="if-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg><span id="wwAbgleichTitel">Abgleich und Interessenten</span></h3>
               <div class="stack">
                 <button id="wwAbgleichen" class="btn btn--ghost sm" type="button">Sortiment jetzt abgleichen</button>
                 <button id="wwNachreichen" class="btn btn--ghost sm hidden" type="button">Jetzt nachreichen</button>
@@ -2707,6 +2720,7 @@
             </div>
             <dl class="ww-zeilen" id="wwZeilen"></dl>
             <div id="wwUebergaben"></div>
+            <div id="wwBestellungen"></div>
           </div>
           </div>
           <div data-if="ereignisse benachrichtigungen webhook">
@@ -11868,7 +11882,10 @@
     // Routen im Server (alle mit Login-Token, Firma als tenant_id im Rumpf; Fehler: Status ≥ 400 mit { error, feld? }):
     //   GET  /api/warenwirtschaft/protokolle  → { protokolle: [{ kennung, bezeichnung }] }
     //   POST /api/warenwirtschaft/status      → { verfuegbar, freigeschaltet, darfVerwalten, verbunden, freigaben,
-    //                                             verbindung, faehigkeiten, zustand, uebergaben }
+    //                                             verbindung, faehigkeiten, zustand, uebergaben, bestellungen }
+    //     freigaben.bestellungen: Vocaris hat „Bestellungen annehmen“ für die Firma freigegeben UND die Warenwirtschaft
+    //     nimmt Telefon-Bestellungen an (faehigkeiten.bestellungen, Grenzen in faehigkeiten.bestellgrenzen);
+    //     bestellungen: { heute, offen, nicht_uebertragen, letzte: [{ id, status, name, bestellnummer, erstellt_am, bis, … }] } | null
     //   POST /api/warenwirtschaft/speichern   → { ok, verbindung }  (nur gesendete Felder ändern sich)
     //   POST /api/warenwirtschaft/testen      → { ok, schritte: [{ id, ergebnis, text, dauer_ms }], verbindung, faehigkeiten }
     //   POST /api/warenwirtschaft/trennen     → { ok }
@@ -11884,6 +11901,9 @@
     const WW_ZEICHEN = { ok: ['✓', 'bestanden'], warnung: ['!', 'Hinweis'], fehler: ['✕', 'nicht bestanden'], uebersprungen: ['–', 'übersprungen'] };
     const WW_UEB_STATUS = { ausstehend: ['ausstehend', 'warn'], in_arbeit: ['wird übertragen', 'warn'], gesendet: ['übertragen', 'ok'], abgelehnt: ['abgelehnt', 'fehler'], verworfen: ['verworfen', ''] };
     const WW_UEB_GRUND = { faehigkeit_fehlt: 'Die Warenwirtschaft nimmt Interessenten noch nicht an.', nicht_erreichbar: 'Die Warenwirtschaft war nicht erreichbar.', schluessel: 'Der Schlüssel wurde abgelehnt.', grenze: 'Die Warenwirtschaft nimmt gerade keine weiteren Interessenten an (Grenze je Stunde oder je Rückrufnummer). Wird später übertragen.' };
+    // Telefon-Bestellungen, deren Übertragung nach dem Ja gestört war: 30 Minuten lang nachgereicht, dem Anrufer ist ein Rückruf zugesagt.
+    const WW_BEST_STATUS = { ausstehend: ['Übertragung offen', 'warn'], in_arbeit: ['Übertragung offen', 'warn'], gesendet: ['übertragen', 'ok'], abgelehnt: ['nicht übertragen', 'fehler'], verworfen: ['nicht übertragen', 'fehler'] };
+    const WW_BEST_GRUND = { nicht_erreichbar: 'Die Warenwirtschaft war nicht erreichbar.', nicht_verbunden: 'Bestellungen waren gerade nicht eingeschaltet.', schluessel: 'Der Schlüssel wurde abgelehnt.', zeit_vorbei: 'In 30 Minuten nicht übertragbar.', grenze: 'Die Warenwirtschaft hat die Bestellung wegen einer Grenze nicht angenommen.', abgelehnt: 'Die Warenwirtschaft hat die Bestellung nicht angenommen.', getrennt: 'Die Verbindung wurde getrennt.', nachricht_geloescht: 'Die Nachricht wurde gelöscht.' };
     const WW_SCHALTER = [
       { feld: 'aktiv', haupt: true, titel: 'Assistent nutzt die Warenwirtschaft', text: 'Hauptschalter. Aus: Der Assistent antwortet wie bisher nur aus deiner Wissensbasis.' },
       { feld: 'f_sortiment', titel: 'Sortiment, Preise, Pfand und Bestand', text: 'Preise mit Pfand getrennt, Bestand nur grob („vorrätig“, „nur noch wenige“), nie genaue Stückzahlen.' },
@@ -11891,7 +11911,7 @@
       { feld: 'f_gutschein', titel: 'Gutscheincodes prüfen, wenn der Anrufer einen nennt', text: 'Der Assistent prüft nur einen genannten Code und liest nie selbst Codes vor.' },
       { feld: 'f_auftragsstatus', titel: 'Bestellstand mit Auftragsnummer und Postleitzahl', text: 'Nur mit beiden Angaben. Preise, Rechnungen und Kontodaten nennt der Assistent nie.', braucht: 'auftragsstatus', fehlt: 'Deine Warenwirtschaft bietet das noch nicht an.' },
       { feld: 'f_interessenten', titel: 'Interessenten eintragen', text: 'Neue Interessenten landen auch ohne Verbindung als Nachricht bei dir.', ohne: 'interessenten', ohneText: 'Deine Warenwirtschaft nimmt sie noch nicht an: Sie bleiben als Nachricht bei dir und werden nachgereicht, sobald es geht.' },
-      { feld: 'f_bestellungen', freigabe: 'bestellungen', warn: true, titel: 'Bestellungen als Entwurf übertragen', text: 'Nur Entwürfe. Dein Team bestätigt jede Bestellung per Rückruf.' },
+      { feld: 'f_bestellungen', bestellungen: true, warn: true, titel: 'Bestellungen annehmen', text: 'Der Assistent nimmt Bestellungen am Telefon an, liest sie vor und überträgt sie nach einem klaren Ja als unbestätigte Telefon-Bestellung. Dein Team bestätigt sie in der Warenwirtschaft.' },
       { feld: 'kanal_whatsapp', freigabe: 'whatsapp', titel: 'Auch im WhatsApp-Assistenten', text: 'Dieselben Auskünfte auch in WhatsApp-Unterhaltungen.' },
     ];
     const WW_STANDARD = ['f_sortiment', 'f_lieferregeln'];
@@ -11912,7 +11932,7 @@
     /** Teile des Status, die der Server bei speichern und testen mitschickt, übernehmen (Vertrag: dieselbe Form wie status). */
     function wwStatusUebernehmen(j) {
       const S = wwStand; if (!S?.d || !j || typeof j !== 'object') return;
-      for (const k of ['verbindung', 'faehigkeiten', 'zustand', 'uebergaben', 'freigaben']) if (k in j && (j[k] === null || typeof j[k] === 'object')) S.d[k] = j[k];
+      for (const k of ['verbindung', 'faehigkeiten', 'zustand', 'uebergaben', 'freigaben', 'bestellungen']) if (k in j && (j[k] === null || typeof j[k] === 'object')) S.d[k] = j[k];
     }
     async function wwAnfrage(pfad, rumpf, { methode = 'POST', frist = WW_FRIST_MS } = {}) {
       const ctl = new AbortController(); const uhr = setTimeout(() => ctl.abort(), frist);
@@ -11938,7 +11958,7 @@
     function wwZuruecksetzen() {
       wwStand = wwNeuerStand();
       ['wwName', 'wwUrl', 'wwSchluessel', 'wwSammelkunde', 'wwOrtLieferung', 'wwOrtAbholung'].forEach((id) => { const el = $(id); if (el) el.value = ''; });
-      ['wwKacheln', 'wwSchalter', 'wwZeilen', 'wwUebergaben', 'wwTest'].forEach((id) => $(id)?.replaceChildren());
+      ['wwKacheln', 'wwSchalter', 'wwZeilen', 'wwUebergaben', 'wwBestellungen', 'wwTest'].forEach((id) => $(id)?.replaceChildren());
       wwMeldung('');
       wwSichtbar(false);
     }
@@ -12004,7 +12024,8 @@
       $('wwTrennen').classList.toggle('hidden', !v);
       $('wwTitel').textContent = v?.anzeigename && v.anzeigename !== WW_NAME ? 'Verbindung zu „' + v.anzeigename + '“' : 'Verbindung';
       $('wwAbgleich').classList.toggle('hidden', !v);
-      wwKachelnZeichnen(); wwSchalterZeichnen(); wwZeilenZeichnen(); wwUebergabenZeichnen(); wwTestZeichnen();
+      $('wwAbgleichTitel').textContent = d.bestellungen ? 'Abgleich, Interessenten und Telefon-Bestellungen' : 'Abgleich und Interessenten';
+      wwKachelnZeichnen(); wwSchalterZeichnen(); wwZeilenZeichnen(); wwUebergabenZeichnen(); wwBestellungenZeichnen(); wwTestZeichnen();
       ifStatus();
     }
     function wwFormFuellen() {
@@ -12099,6 +12120,19 @@
         { k: 'Abfragen heute', v: v ? wwZahl(z.aufrufe_heute || 0) : '–', d: z.mittlere_dauer_ms != null ? 'im Mittel ' + wwDauer(z.mittlere_dauer_ms) : (v ? 'noch keine' : 'nicht verbunden'), tip: z.fehler_heute ? wwZahl(z.fehler_heute) + ' ohne Antwort, der Assistent hat dann eine Nachricht angeboten' : '' },
         { k: 'Interessenten ausstehend', v: u ? wwZahl(u.ausstehend || 0) : '–', d: u ? wwZahl(u.gesendet || 0) + ' übertragen' + (u.abgelehnt ? ', ' + wwZahl(u.abgelehnt) + ' abgelehnt' : '') : !v ? 'nicht verbunden' : v.f_interessenten ? 'noch keine' : 'Schalter aus', tip: u?.ausstehend ? 'Klick zeigt die ausstehenden Interessenten.' : '', ziel: u ? 'ausstehend' : null },
       ];
+      // Telefon-Bestellungen: nur, wenn es sie für diese Firma gibt (Schalter an, Warenwirtschaft bietet sie an oder es stehen welche aus).
+      const b = d.bestellungen || null;
+      if (b) {
+        const teile = [b.offen ? wwZahl(b.offen) + ' Übertragung offen' : '', b.nicht_uebertragen ? wwZahl(b.nicht_uebertragen) + ' nicht übertragen' : ''].filter(Boolean);
+        kacheln.push({
+          k: 'Telefon-Bestellungen heute', v: b.heute != null ? wwZahl(b.heute) : '–',
+          d: teile.length ? teile.join(', ') : v?.f_bestellungen ? (b.heute ? 'alle übertragen' : 'noch keine') : 'Schalter aus',
+          art: b.nicht_uebertragen ? 'fehler' : '',
+          tip: (b.heute != null ? 'Aufgenommen heute, gezählt aus deinen Nachrichten der Kategorie „Telefon-Bestellung“.' : '') + (b.nicht_uebertragen ? ' „Nicht übertragen“ zählt nur heute.' : '') + (b.offen || b.nicht_uebertragen ? ' Klick zeigt die Liste.' : ''),
+          ziel: (b.letzte || []).length ? 'bestellungen' : null,
+        });
+      }
+      $('wwKacheln').classList.toggle('ww-kpis--5', kacheln.length === 5);
       $('wwKacheln').replaceChildren(...kacheln.map((x) => {
         const el = document.createElement('div'); el.className = 'db-kpi' + (x.ziel ? ' klick' : '');
         const k = document.createElement('div'); k.className = 'k'; k.textContent = x.k;
@@ -12117,10 +12151,17 @@
       box.replaceChildren();
       WW_SCHALTER.forEach((s) => {
         if (s.freigabe && fr[s.freigabe] !== true) return;
+        // „Bestellungen annehmen“: nur sichtbar, wenn eine der beiden Seiten so weit ist (oder er schon an ist); schaltbar nur mit beiden.
+        if (s.bestellungen && !(fr.bestellungen === true || f.bestellungen === true || v?.f_bestellungen === true)) return;
         // Ohne Verbindung: gesperrt, aber mit den Werten, die beim Verbinden gelten (Sortiment und Lieferregeln an).
         const an = s.feld === 'kanal_whatsapp' ? (v?.kanaele || []).includes('whatsapp') : v ? !!v[s.feld] : WW_STANDARD.includes(s.feld);
         let text = s.text, aus = gesperrt || S.schaltet === s.feld;
         if (s.haupt && v && v.status !== 'ok' && !an) { aus = true; text = 'Erst nach erfolgreichem Test. ' + s.text; }
+        if (s.bestellungen && fr.bestellungen !== true) {
+          const grund = f.bestellungen !== true ? 'Deine Warenwirtschaft nimmt noch keine Bestellungen an.' : 'Noch nicht freigegeben.';
+          text = an ? grund + ' Bis dahin nimmt der Assistent keine an; ausschalten geht jederzeit.' : grund + ' ' + s.text;
+          if (!an) aus = true; // Ausschalten geht immer.
+        }
         if (s.braucht && v && f[s.braucht] !== true && !an) { aus = true; text = s.fehlt; }
         if (s.ohne && v && f[s.ohne] !== true) text = s.text + ' ' + s.ohneText;
         const zeile = document.createElement('div'); zeile.className = 'ww-s' + (s.haupt ? ' ww-s--haupt' : '') + (aus ? ' aus' : '');
@@ -12182,6 +12223,41 @@
         const tip = [WW_UEB_GRUND[x.grund], x.letzter_fehler, x.gesendet_am ? 'Übertragen ' + lvWann(x.gesendet_am) : '', x.message_id ? 'Klick öffnet die Nachricht.' : ''].filter(Boolean).join(' ');
         if (tip) z.dataset.tip = tip;
         z.append(t, n, pill); rahmen.append(z);
+      });
+      box.replaceChildren(rahmen);
+    }
+    /** Bestätigungsdialog beim Einschalten von „Bestellungen annehmen“, mit den Grenzen der Warenwirtschaft. */
+    function wwBestellFrage() {
+      const g = wwStand?.d?.faehigkeiten?.bestellgrenzen || null;
+      const euro = Number.isFinite(g?.max_betrag_cent) ? (g.max_betrag_cent / 100).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + ' €' : '1.000 €';
+      const gebinde = Number.isFinite(g?.max_gebinde) ? wwZahl(g.max_gebinde) : '50';
+      return 'Bestellungen annehmen?\n\n'
+        + 'Der Assistent nimmt dann am Telefon Bestellungen an, liest sie vollständig vor und überträgt sie erst nach einem klaren Ja als unbestätigte Telefon-Bestellung. Dein Team bestätigt sie in der Warenwirtschaft – erst dann wird etwas reserviert.\n\n'
+        + 'Grenzen je Bestellung: ' + euro + ' und ' + gebinde + ' Gebinde. Größere Bestellungen und Bestellungen ohne übertragene Rufnummer werden zur Nachricht, das Team ruft zurück.\n\n'
+        + 'Alkohol nimmt der Assistent nur von Erwachsenen an (er fragt nach 18 Jahren), Geschäftskunden liefert er nur an ihre hinterlegte Anschrift. Bei unsicheren Bestellungen – andere Rückrufnummer, neue Anschrift, Geschäftskunde – ruft dein Team vor dem Bestätigen kurz zurück; die Warenwirtschaft verlangt das.';
+    }
+    /** Liste der Telefon-Bestellungen, deren Übertragung offen ist oder nicht geklappt hat (aus der Warteschlange). Nie die Kennung. */
+    function wwBestellungenZeichnen() {
+      const S = wwStand, b = S.d?.bestellungen || null, box = $('wwBestellungen');
+      const liste = Array.isArray(b?.letzte) ? b.letzte.filter((x) => x && typeof x === 'object') : [];
+      if (!b || !liste.length) { box.replaceChildren(); return; }
+      const rahmen = document.createElement('div'); rahmen.className = 'ww-ueb ww-ueb--bestellungen';
+      const kopf = document.createElement('div'); kopf.className = 'ww-ueb__kopf';
+      const titel = document.createElement('b'); titel.textContent = 'Telefon-Bestellungen mit gestörter Übertragung';
+      const satz = document.createElement('span'); satz.textContent = 'Wird 30 Minuten lang nachgereicht. Bei „nicht übertragen“ bitte zurückrufen und selbst erfassen.';
+      kopf.append(titel, satz); rahmen.append(kopf);
+      liste.slice(0, 10).forEach((x) => {
+        const z = document.createElement(x.message_id ? 'button' : 'div'); z.className = 'ww-ueb__zeile'; if (x.message_id) { z.type = 'button'; z.dataset.wwNachricht = x.message_id; }
+        const t = document.createElement('time'); t.textContent = x.erstellt_am ? lvWann(x.erstellt_am) : ''; if (x.erstellt_am) t.dateTime = x.erstellt_am;
+        const n = document.createElement('span'); n.textContent = (x.name || 'Ohne Namen') + (x.bestellnummer ? ' · ' + x.bestellnummer : '');
+        const offen = x.status === 'ausstehend' || x.status === 'in_arbeit';
+        const bis = offen && x.bis ? new Date(x.bis) : null;
+        const sm = document.createElement('small'); sm.textContent = bis && !Number.isNaN(bis.getTime()) ? 'bis ' + bis.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr' : x.status === 'abgelehnt' || x.status === 'verworfen' ? 'bitte zurückrufen' : '';
+        const [txt, art] = WW_BEST_STATUS[x.status] || ['–', ''];
+        const pill = document.createElement('span'); pill.className = 'ww-pill'; pill.dataset.art = art; pill.textContent = txt;
+        const tip = [offen ? 'Bitte nicht neu erfassen – die Übertragung läuft noch.' : '', WW_BEST_GRUND[x.grund], x.gesendet_am ? 'Übertragen ' + lvWann(x.gesendet_am) : '', x.message_id ? 'Klick öffnet die Nachricht.' : ''].filter(Boolean).join(' ');
+        if (tip) z.dataset.tip = tip;
+        z.append(t, n, sm, pill); rahmen.append(z);
       });
       box.replaceChildren(rahmen);
     }
@@ -12319,7 +12395,7 @@
       $('wwSchalter').addEventListener('change', (e) => {
         const inp = e.target.closest('input[data-ww-feld]'); const v = wwStand.d?.verbindung; if (!inp || !v) return;
         const feld = inp.dataset.wwFeld, an = inp.checked;
-        if (feld === 'f_bestellungen' && an && !confirm('Bestellungen als Entwurf übertragen?\n\nDer Assistent legt dann nach dem Gespräch einen Entwurf in der Warenwirtschaft an. Dein Team bestätigt jede Bestellung per Rückruf.')) { inp.checked = false; return; }
+        if (feld === 'f_bestellungen' && an && !confirm(wwBestellFrage())) { inp.checked = false; return; }
         const kanaele = Array.isArray(v.kanaele) && v.kanaele.length ? v.kanaele : ['telefon'];
         const rumpf = feld === 'kanal_whatsapp' ? { kanaele: an ? [...new Set([...kanaele, 'whatsapp'])] : kanaele.filter((x) => x !== 'whatsapp') } : { [feld]: an };
         void wwUmschalten(rumpf, feld, () => { inp.checked = !an; });
@@ -12328,6 +12404,9 @@
         const b = e.target.closest('[data-ww-oz]'); const v = wwStand.d?.verbindung; if (!b || !v || b.disabled) return;
         if ((v.oeffnungszeiten_quelle || 'vocaris') === b.dataset.wwOz) return;
         void wwUmschalten({ oeffnungszeiten_quelle: b.dataset.wwOz }, 'oeffnungszeiten_quelle');
+      });
+      $('wwBestellungen').addEventListener('click', (e) => {
+        const z = e.target.closest('[data-ww-nachricht]'); if (z) { geh('sec-messages'); if (navItem('sec-messages')?.classList.contains('active')) void nachrichtOeffnen(z.dataset.wwNachricht); }
       });
       $('wwUebergaben').addEventListener('click', (e) => {
         const f = e.target.closest('[data-ww-filter]'); if (f) { wwStand.filter = f.dataset.wwFilter; wwUebergabenZeichnen(); return; }
@@ -12338,6 +12417,7 @@
         if (ziel === 'test') { $('wwVerbindung').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); $('wwTesten').focus({ preventScroll: true }); }
         else if (ziel === 'abgleich') { $('wwAbgleich').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
         else if (ziel === 'ausstehend') { wwStand.filter = wwStand.filter === 'ausstehend' ? '' : 'ausstehend'; wwUebergabenZeichnen(); $('wwAbgleich').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        else if (ziel === 'bestellungen') { $('wwBestellungen').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
       };
       $('wwKacheln').addEventListener('click', (e) => kachel(e.target.closest('[data-ww-ziel]')));
       $('wwKacheln').addEventListener('keydown', (e) => { const el = e.target.closest('[data-ww-ziel]'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); kachel(el); } });
