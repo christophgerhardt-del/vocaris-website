@@ -12128,7 +12128,7 @@
           k: 'Telefon-Bestellungen heute', v: b.heute != null ? wwZahl(b.heute) : '–',
           d: teile.length ? teile.join(', ') : v?.f_bestellungen ? (b.heute ? 'alle übertragen' : 'noch keine') : 'Schalter aus',
           art: b.nicht_uebertragen ? 'fehler' : '',
-          tip: (b.heute != null ? 'Aufgenommen heute, gezählt aus deinen Nachrichten der Kategorie „Telefon-Bestellung“.' : '') + (b.offen || b.nicht_uebertragen ? ' Klick zeigt die Liste.' : ''),
+          tip: (b.heute != null ? 'Aufgenommen heute, gezählt aus deinen Nachrichten der Kategorie „Telefon-Bestellung“.' : '') + (b.nicht_uebertragen ? ' „Nicht übertragen“ zählt nur heute.' : '') + (b.offen || b.nicht_uebertragen ? ' Klick zeigt die Liste.' : ''),
           ziel: (b.letzte || []).length ? 'bestellungen' : null,
         });
       }
@@ -12233,7 +12233,8 @@
       const gebinde = Number.isFinite(g?.max_gebinde) ? wwZahl(g.max_gebinde) : '50';
       return 'Bestellungen annehmen?\n\n'
         + 'Der Assistent nimmt dann am Telefon Bestellungen an, liest sie vollständig vor und überträgt sie erst nach einem klaren Ja als unbestätigte Telefon-Bestellung. Dein Team bestätigt sie in der Warenwirtschaft – erst dann wird etwas reserviert.\n\n'
-        + 'Grenzen je Bestellung: ' + euro + ' und ' + gebinde + ' Gebinde. Größere Bestellungen und Bestellungen ohne übertragene Rufnummer werden zur Nachricht, das Team ruft zurück.';
+        + 'Grenzen je Bestellung: ' + euro + ' und ' + gebinde + ' Gebinde. Größere Bestellungen und Bestellungen ohne übertragene Rufnummer werden zur Nachricht, das Team ruft zurück.\n\n'
+        + 'Alkohol nimmt der Assistent nur von Erwachsenen an (er fragt nach 18 Jahren), Geschäftskunden liefert er nur an ihre hinterlegte Anschrift. Bei unsicheren Bestellungen – andere Rückrufnummer, neue Anschrift, Geschäftskunde – ruft dein Team vor dem Bestätigen kurz zurück; die Warenwirtschaft verlangt das.';
     }
     /** Liste der Telefon-Bestellungen, deren Übertragung offen ist oder nicht geklappt hat (aus der Warteschlange). Nie die Kennung. */
     function wwBestellungenZeichnen() {
