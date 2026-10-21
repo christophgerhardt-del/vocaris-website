@@ -2629,7 +2629,8 @@
           </div>
           <div data-if="warenwirtschaft" class="hidden" id="wwBereich">
           <!-- 5 · Warenwirtschaft: nur für freigeschaltete Firmen und nur für Inhaber/Admins (Reiter #wwReiter bleibt sonst verborgen).
-               Name und Adresse des Systems sind Felder der Verbindung, kein fester Text hier (Umbenennung betrifft nur die Einstellung). -->
+               Name und Adresse des Systems sind Felder der Verbindung, kein fester Text hier (Umbenennung betrifft nur die Einstellung);
+               Ordaneo und erp.ordaneo.de stehen nur als Beispiel in den Platzhaltern. -->
           <p class="muted ww-intro">Verbinde deinen Telefonassistenten mit deiner Warenwirtschaft. Dann beantwortet er Fragen zu Sortiment, Preisen, Pfand, Bestand, Lieferung und Zeitfenstern mit aktuellen Daten.</p>
           <div class="ww-hinweis hidden" id="wwServerHinweis" role="note"><b>Auf dem Server noch nicht eingerichtet.</b> Sobald das erledigt ist, trägst du hier die Verbindung ein. Bis dahin beantwortet der Assistent Fragen wie bisher aus deiner Wissensbasis.</div>
           <div class="ww-hinweis hidden" id="wwLadeHinweis" role="status"></div>
@@ -2641,8 +2642,8 @@
               <div class="ww-felder">
                 <div class="ww-feld">
                   <label for="wwName">Name</label>
-                  <input id="wwName" maxlength="60" autocomplete="off" placeholder="Warenwirtschaft" />
-                  <p class="ww-feldhinweis">So heißt das System bei dir. Erscheint nur hier.</p>
+                  <input id="wwName" maxlength="60" autocomplete="off" placeholder="z. B. Ordaneo" />
+                  <p class="ww-feldhinweis">So heißt das System bei dir. Erscheint nur hier. Leer gelassen: der Name, unter dem es sich beim Test meldet.</p>
                 </div>
                 <div class="ww-feld">
                   <label for="wwProtokoll">Schnittstelle</label>
@@ -2651,7 +2652,7 @@
                 </div>
                 <div class="ww-feld ww-feld--breit">
                   <label for="wwUrl">Adresse</label>
-                  <input id="wwUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://…" />
+                  <input id="wwUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="z. B. https://erp.ordaneo.de" />
                   <p class="ww-feldhinweis" id="wwUrlHinweis">Beginnt mit https://. Wenn du sie änderst, trag den Schlüssel neu ein.</p>
                 </div>
                 <div class="ww-feld ww-feld--breit">
@@ -2678,8 +2679,8 @@
                 </div>
                 <div class="ww-feld">
                   <label for="wwSammelkunde">Kundennummer für Shop-Preise</label>
-                  <input id="wwSammelkunde" autocomplete="off" spellcheck="false" placeholder="z. B. Sammelkunde" />
-                  <p class="ww-feldhinweis">Sammelkunde, dessen Preise der Assistent nennt (Bruttopreise).</p>
+                  <input id="wwSammelkunde" autocomplete="off" spellcheck="false" placeholder="z. B. K-10002" />
+                  <p class="ww-feldhinweis" id="wwSammelkundeHinweis">Sammelkunde, an den der Zugang gebunden ist. Seine Preise nennt der Assistent (Bruttopreise).</p>
                 </div>
               </div>
               <div class="stack">
@@ -11859,10 +11860,10 @@
     // Admin ist. Für alle anderen ändert sich nichts: kein Reiter, keine Kachel, keine Meldung – auch dann nicht, wenn der
     // Server die Routen noch gar nicht kennt (404, Netzfehler). Darum hier bewusst fetch statt apiFetch: kein Wiederholen,
     // kein Störungsbalken.
-    // Name und Adresse des Systems sind Felder der Verbindung, die Auswahl der Schnittstelle kommt vom Server; hier steht
-    // kein Produktname. Der Zugangsschlüssel geht nur hinein und kommt nie zurück (Anzeige nur „endet auf …“). Wer die
-    // Adresse ändert, muss den Schlüssel neu eintragen (sonst ließe sich ein hinterlegter Schlüssel an einen fremden Server
-    // schicken) – das prüft auch der Server.
+    // Name und Adresse des Systems sind Felder der Verbindung, die Auswahl der Schnittstelle kommt vom Server; ein Produktname
+    // steht nur als Beispiel in den Platzhaltern (Ordaneo, https://erp.ordaneo.de), nie in der Logik. Der Zugangsschlüssel
+    // geht nur hinein und kommt nie zurück (Anzeige nur „endet auf …“). Wer die Adresse ändert, muss den Schlüssel neu
+    // eintragen (sonst ließe sich ein hinterlegter Schlüssel an einen fremden Server schicken) – das prüft auch der Server.
     //
     // Routen im Server (alle mit Login-Token, Firma als tenant_id im Rumpf; Fehler: Status ≥ 400 mit { error, feld? }):
     //   GET  /api/warenwirtschaft/protokolle  → { protokolle: [{ kennung, bezeichnung }] }
@@ -11882,7 +11883,7 @@
     const WW_SCHRITT = { erreichbar: 'Erreichbar', schluessel: 'Schlüssel und Rechte', lieferregeln: 'Lieferregeln und Standorte', sortiment: 'Sortiment', preise: 'Preise' };
     const WW_ZEICHEN = { ok: ['✓', 'bestanden'], warnung: ['!', 'Hinweis'], fehler: ['✕', 'nicht bestanden'], uebersprungen: ['–', 'übersprungen'] };
     const WW_UEB_STATUS = { ausstehend: ['ausstehend', 'warn'], in_arbeit: ['wird übertragen', 'warn'], gesendet: ['übertragen', 'ok'], abgelehnt: ['abgelehnt', 'fehler'], verworfen: ['verworfen', ''] };
-    const WW_UEB_GRUND = { faehigkeit_fehlt: 'Die Warenwirtschaft nimmt Interessenten noch nicht an.', nicht_erreichbar: 'Die Warenwirtschaft war nicht erreichbar.', schluessel: 'Der Schlüssel wurde abgelehnt.' };
+    const WW_UEB_GRUND = { faehigkeit_fehlt: 'Die Warenwirtschaft nimmt Interessenten noch nicht an.', nicht_erreichbar: 'Die Warenwirtschaft war nicht erreichbar.', schluessel: 'Der Schlüssel wurde abgelehnt.', grenze: 'Die Warenwirtschaft nimmt gerade keine weiteren Interessenten an (Grenze je Stunde oder je Rückrufnummer). Wird später übertragen.' };
     const WW_SCHALTER = [
       { feld: 'aktiv', haupt: true, titel: 'Assistent nutzt die Warenwirtschaft', text: 'Hauptschalter. Aus: Der Assistent antwortet wie bisher nur aus deiner Wissensbasis.' },
       { feld: 'f_sortiment', titel: 'Sortiment, Preise, Pfand und Bestand', text: 'Preise mit Pfand getrennt, Bestand nur grob („vorrätig“, „nur noch wenige“), nie genaue Stückzahlen.' },
@@ -12008,7 +12009,8 @@
     }
     function wwFormFuellen() {
       const S = wwStand, v = S.d?.verbindung || null;
-      $('wwName').value = v?.anzeigename || WW_NAME;
+      // Neue Verbindung: leer mit Beispiel im Platzhalter; der Server setzt nach dem ersten bestandenen Test den gemeldeten Namen.
+      $('wwName').value = v?.anzeigename || '';
       const sel = $('wwProtokoll'); const liste = [...(S.protokolle || [])];
       // Kennung nie als sichtbaren Text: eine nicht (mehr) angebotene Schnittstelle heißt „Bisherige Schnittstelle“.
       if (v?.protokoll && !liste.some((p) => p.kennung === v.protokoll)) liste.push({ kennung: v.protokoll, bezeichnung: 'Bisherige Schnittstelle' });
@@ -12017,6 +12019,7 @@
       $('wwUrl').value = v?.basis_url || '';
       $('wwSchluessel').value = '';
       $('wwSammelkunde').value = v?.sammelkunde || '';
+      wwSammelkundeZeigen();
       wwOrteZeichnen(v);
       S.dirty = false; S.schluesselNeu = false; S.formFuer = tenant?.id;
       wwFeldFehler(null);
@@ -12043,6 +12046,16 @@
         el.id = id; el.value = wert; el.disabled = alt.disabled;
         box.replaceChildren(el);
       });
+    }
+    /** Kundennummer für Shop-Preise: die, an die die Warenwirtschaft den Zugang gebunden hat (aus dem letzten Test), als Vorschlag. */
+    function wwSammelkundeZeigen() {
+      const nr = wwStand.d?.faehigkeiten?.sammelkunde, el = $('wwSammelkunde'), h = $('wwSammelkundeHinweis');
+      if (!el || !h) return;
+      const gemeldet = typeof nr === 'string' && nr ? nr : '';
+      el.placeholder = gemeldet ? 'laut Warenwirtschaft: ' + gemeldet : 'z. B. K-10002';
+      const abweichend = gemeldet && el.value.trim() && el.value.trim().toUpperCase() !== gemeldet.toUpperCase();
+      h.textContent = abweichend ? 'Die Warenwirtschaft hat den Zugang an ' + gemeldet + ' gebunden. Mit einer anderen Nummer nennt der Assistent keine Preise.' : 'Sammelkunde, an den der Zugang gebunden ist. Seine Preise nennt der Assistent (Bruttopreise).';
+      h.classList.toggle('warn', !!abweichend);
     }
     function wwSchluesselZeigen() {
       const S = wwStand, v = S.d?.verbindung || null;
@@ -12074,7 +12087,9 @@
     /** Kachel für die Statusleiste über den Reitern (nur wenn der Reiter sichtbar ist). */
     function wwIfKachel() {
       const d = wwStand?.d, v = d?.verbindung, st = wwStatusInfo(d);
-      return ['warenwirtschaft', 'Warenwirtschaft', v?.aktiv && v.status === 'ok' ? 1 : 0, v ? (st.wert === 'Aktiv' || st.wert === 'Aus' ? (v.aktiv ? 'aktiv' : 'Hauptschalter aus') : st.text) : st.text];
+      // Kurz halten: der Satz zur Störung (z. B. „Der Schlüssel gehört zum Zugang …“) steht im Reiter, sonst wüchse die ganze Kachelreihe.
+      const kurz = v?.status === 'schluessel_ungueltig' ? 'Schlüssel ungültig' : v?.status === 'fehler' ? 'Störung, siehe Reiter' : st.text;
+      return ['warenwirtschaft', 'Warenwirtschaft', v?.aktiv && v.status === 'ok' ? 1 : 0, v ? (st.wert === 'Aktiv' || st.wert === 'Aus' ? (v.aktiv ? 'aktiv' : 'Hauptschalter aus') : kurz) : st.text];
     }
     function wwKachelnZeichnen() {
       const d = wwStand.d || {}, v = d.verbindung || null, z = d.zustand || {}, u = d.uebergaben || null, st = wwStatusInfo(d);
@@ -12197,7 +12212,7 @@
       if (name.length > 60) return wwFeldFehler('wwName', 'Der Name darf höchstens 60 Zeichen lang sein.');
       if (!protokoll) return wwFeldFehler('wwProtokoll', 'Der Server bietet noch keine Schnittstelle an.');
       if (!url) return wwFeldFehler('wwUrl', 'Bitte trag die Adresse ein.');
-      if (!wwUrlGueltig(url)) return wwFeldFehler('wwUrl', 'Die Adresse muss mit https:// beginnen, zum Beispiel https://warenwirtschaft.meinefirma.de.');
+      if (!wwUrlGueltig(url)) return wwFeldFehler('wwUrl', 'Die Adresse muss mit https:// beginnen, zum Beispiel https://erp.ordaneo.de.');
       const urlNeu = !v || url !== v.basis_url;
       if (!schluessel && (!v?.schluessel_hinterlegt || urlNeu || S.schluesselNeu)) return wwFeldFehler('wwSchluessel', v?.schluessel_hinterlegt && urlNeu ? 'Neue Adresse: Bitte trag den Schlüssel neu ein.' : 'Bitte trag den Zugangsschlüssel ein.');
       if (schluessel && (schluessel.length < 8 || schluessel.length > 512 || /\s/.test(schluessel))) return wwFeldFehler('wwSchluessel', 'Das sieht nicht wie ein Zugangsschlüssel aus. Bitte kopier ihn vollständig und ohne Leerzeichen.');
@@ -12226,6 +12241,7 @@
       S.test = { schritte: Array.isArray(a.j.schritte) ? a.j.schritte : [], ok: a.j.ok === true };
       wwStatusUebernehmen(a.j);
       if (!S.dirty) wwOrteZeichnen(S.d.verbindung);
+      wwSammelkundeZeigen();
       wwZeichnen();
       wwMeldung(S.test.ok ? (S.d.verbindung?.aktiv ? 'Test bestanden.' : 'Test bestanden. Jetzt kannst du rechts den Hauptschalter einschalten.') : 'Test nicht bestanden. Was fehlt, steht in der Liste.', S.test.ok ? '' : 'fehler');
     }
@@ -12289,6 +12305,7 @@
         if (!e.target.matches('input, select')) return;
         wwStand.dirty = true; e.target.removeAttribute('aria-invalid');
         if (e.target.id === 'wwUrl') wwSchluesselZeigen();
+        if (e.target.id === 'wwSammelkunde') wwSammelkundeZeigen();
       });
       form.addEventListener('change', (e) => { if (e.target.matches('select')) wwStand.dirty = true; });
       form.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); void wwSpeichern(); } });
