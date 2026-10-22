@@ -56,14 +56,14 @@ schließt es bei Escape und Wegklick, schaltet das Vollbildmenü (`body.menue-of
 <footer class="fuss">
   <div class="huelle">
     <div class="fuss__oben">
-      <div class="fuss__marke"><a class="marke" href="index.html">…Pegelkugel… Vocaris</a><p>Kurztext, EU-Hosting.</p><p>Rheinstr. 26<br>80803 München</p></div>
+      <div class="fuss__marke"><a class="marke" href="index.html">…Pegelkugel… Vocaris</a><p>Kurztext, EU-Hosting.</p><p>Hohenzollernstraße 7<br>80801 München</p></div>
       <div><h4>Produkt</h4><ul><li><a href="funktionen.html">Funktionen</a></li>…</ul></div>
       <div><h4>Branchen</h4><ul>…</ul></div>
       <div><h4>Kontakt</h4><ul>…</ul></div>
     </div>
     <div class="fuss__unten">
       <span class="eu"><svg …Schild…></svg>Verarbeitung und Hosting in der EU</span>
-      <span>© 2026 Vocaris · Christoph Gerhardt, München <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a></span>
+      <span>© 2026 Vocaris · Presio UG (haftungsbeschränkt), München <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a></span>
     </div>
   </div>
 </footer>

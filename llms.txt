@@ -34,4 +34,4 @@
 
 - Testanruf: Rufnummer auf der Startseite eintragen, Vocaris ruft in Sekunden zurück
 - [Demo buchen](https://vocaris.eu/demo.html)
-- Anbieter: Christoph Gerhardt, München, [Impressum](https://vocaris.eu/impressum.html)
+- Anbieter: Presio UG (haftungsbeschränkt), München, [Impressum](https://vocaris.eu/impressum.html)
