@@ -90,7 +90,7 @@
     <ul class="seitenkopf__fakten" aria-label="Kurz gesagt">
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Ein rein europäischer Weg</li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Automatischer Fallback</li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Umschalten in den Einstellungen</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Umschaltbar je Firma</li>
     </ul>
   </div>
 </header>
@@ -101,14 +101,15 @@
     <div class="kopfzeile" data-zeig>
       <span class="vorzeile">Ihre KI. Ihre Wahl.</span>
       <h2 id="modelle-titel">Sie entscheiden, wer für Sie spricht.</h2>
-      <p class="lede">Fünf Sprachmodelle, pro Firma umschaltbar, jeweils mit eigenen Stimmen, inklusive einer rein europäischen Option. Wählen Sie einen Weg, die Grafik darunter zeigt, wohin Ihr Gesprächsaudio geht.</p>
+      <p class="lede">Fünf Sprachmodelle und eine Vorschau, pro Firma umschaltbar, jeweils mit eigenen Stimmen, inklusive einer rein europäischen Option. Wählen Sie einen Weg, die Grafik darunter zeigt, wohin Ihr Gesprächsaudio geht.</p>
     </div>
-    <div class="wege" data-staffel role="group" aria-label="Sprachweg wählen">
+    <div class="wege wege--sechs" data-staffel role="group" aria-label="Sprachweg wählen">
       <button type="button" class="kachel weg" data-weg="realtime" aria-pressed="false"><span class="pille pille--gut">Live</span><b>OpenAI GPT-Realtime</b><span>Natives Speech-to-Speech, sehr schnell. Der bewährte Weg.</span><span class="weg__mehr">Datenweg zeigen</span></button>
       <button type="button" class="kachel weg" data-weg="grok" aria-pressed="false"><span class="pille pille--gut">Live</span><b>xAI Grok Voice</b><span>Sehr gute deutsche Stimme, schnell.</span><span class="weg__mehr">Datenweg zeigen</span></button>
       <button type="button" class="kachel weg" data-weg="gemini" aria-pressed="false"><span class="pille pille--gut">Live</span><b>Google Gemini Live</b><span>Breite Mehrsprachigkeit, erkennt die Sprache des Anrufers selbst.</span><span class="weg__mehr">Datenweg zeigen</span></button>
       <button type="button" class="kachel weg" data-weg="mistral" aria-pressed="true"><span class="pille pille--gut">Live · EU</span><b>Mistral</b><span>Rein europäisch, aus Frankreich. Verarbeitung in der EU, Voreinstellung für neue Firmen.</span><span class="weg__mehr">Datenweg zeigen</span></button>
       <button type="button" class="kachel weg" data-weg="live" aria-pressed="false"><span class="pille">Neu</span><b>OpenAI GPT-Live</b><span>Vollduplex: hört und spricht gleichzeitig, verträgt Unterbrechungen. Werkzeuge laufen über einen Seitenkanal bei uns.</span><span class="weg__mehr">Datenweg zeigen</span></button>
+      <button type="button" class="kachel weg" data-weg="mistral-live" aria-pressed="false"><span class="pille">Vorschau</span><b>Mistral Live</b><span>Voxtral 3: Mistral führt das Gespräch selbst, mit deutscher Stimme. Läuft derzeit über Mistrals globalen Endpunkt, deshalb noch kein EU-Weg.</span><span class="weg__mehr">Datenweg zeigen</span></button>
     </div>
 
     <div class="kachel kachel--voll" data-zeig style="padding:var(--r4)">
@@ -116,7 +117,7 @@
       <div class="datenweg" data-datenweg-grafik aria-live="polite"></div>
       <div class="datenweg__text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><p data-datenweg-text></p></div>
     </div>
-    <p class="hinweis" style="margin-top:var(--r3)" data-zeig><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Bei allen fünf Wegen liegen Wissensdatenbank, Transkripte, Nachrichten und Termine in Deutschland: bei Supabase (EU-Region Frankfurt) und auf unserem Server in Nürnberg. Die Einzelheiten zu jedem Anbieter stehen in der <a href="datenschutz.html">Datenschutzerklärung</a>.</span></p>
+    <p class="hinweis" style="margin-top:var(--r3)" data-zeig><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Bei allen Wegen liegen Wissensdatenbank, Transkripte, Nachrichten und Termine in Deutschland: bei Supabase (EU-Region Frankfurt) und auf unserem Server in Nürnberg. Bei der Vorschau Mistral Live speichert zusätzlich Mistral den Verlauf der Sprachsitzung. Die Einzelheiten zu jedem Anbieter stehen in der <a href="datenschutz.html">Datenschutzerklärung</a>.</span></p>
   </div>
 </section>
 
