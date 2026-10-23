@@ -115,6 +115,7 @@
             <button class="chip" type="button" data-filter="anbieter" data-wert="gemini" aria-pressed="false">Gemini</button>
             <button class="chip" type="button" data-filter="anbieter" data-wert="grok" aria-pressed="false">Grok</button>
             <button class="chip" type="button" data-filter="anbieter" data-wert="mistral" aria-pressed="false">Mistral</button>
+            <button class="chip" type="button" data-filter="anbieter" data-wert="mistral-live" aria-pressed="false">Mistral Live</button>
           </div>
           <div class="fgruppe" role="group" aria-labelledby="fgTarif"><span id="fgTarif">Tarif</span>
             <button class="chip aktiv" type="button" data-filter="tarif" data-wert="" aria-pressed="true">Alle</button>
@@ -370,8 +371,12 @@
     }
 
     // ---- Namen und Listen ----
-    const ANBIETER = { openai: 'OpenAI (GPT-Realtime)', live: 'OpenAI GPT-Live (Vollduplex)', gemini: 'Google Gemini Live', grok: 'xAI Grok Voice', mistral: 'Mistral (EU/DSGVO)' };
-    const ANBIETER_KURZ = { openai: 'OpenAI', live: 'GPT-Live', gemini: 'Gemini', grok: 'Grok', mistral: 'Mistral' };
+    const ANBIETER = { openai: 'OpenAI (GPT-Realtime)', live: 'OpenAI GPT-Live (Vollduplex)', gemini: 'Google Gemini Live', grok: 'xAI Grok Voice', mistral: 'Mistral (EU/DSGVO)', 'mistral-live': 'Mistral Live (Voxtral 3, Vorschau)' };
+    const ANBIETER_KURZ = { openai: 'OpenAI', live: 'GPT-Live', gemini: 'Gemini', grok: 'Grok', mistral: 'Mistral', 'mistral-live': 'Mistral Live' };
+    // Hinweis unter der Auswahl, solange ein Anbieter nur eine Vorschau ist.
+    const ANBIETER_HINWEIS = {
+      'mistral-live': 'Vorschau, nur für Testfirmen: läuft über Mistrals globalen Endpunkt (keine EU-Zusage), eine deutsche Stimme (Heidi), ausgehende Anrufe über die Mistral-Kaskade. Braucht die Migration voice_provider_mistral_live.',
+    };
     const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
     const ABTEILUNG = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
     // Stimmen je Anbieter: nur diese sind für das jeweilige Modell gültig.
@@ -381,6 +386,7 @@
       gemini: [['Aoede', 'Aoede'], ['Puck', 'Puck'], ['Charon', 'Charon'], ['Kore', 'Kore'], ['Fenrir', 'Fenrir'], ['Leda', 'Leda'], ['Orus', 'Orus'], ['Zephyr', 'Zephyr']],
       live: [['gleam', 'Gleam'], ['marin', 'Marin'], ['cedar', 'Cedar'], ['alloy', 'Alloy'], ['sage', 'Sage'], ['verse', 'Verse']],
       mistral: [['en_paul_neutral', 'Paul – neutral'], ['en_paul_cheerful', 'Paul – freundlich'], ['en_paul_confident', 'Paul – souverän'], ['en_paul_happy', 'Paul – fröhlich'], ['gb_oliver_neutral', 'Oliver – britisch'], ['gb_jane_sarcasm', 'Jane – weiblich']],
+      'mistral-live': [['voice_481', 'Heidi – deutsch, weiblich']],
     };
     const stimmeName = (provider, id) => (VOICES_BY_PROVIDER[provider] || []).find(([v]) => v === id)?.[1] || id || '–';
     function voiceOptions(provider, current) {
@@ -736,6 +742,7 @@
             <div><label for="dStimme">Stimme</label><select id="dStimme">${voiceOptions(t.voiceProvider, t.voiceId)}</select></div>
           </div>
           <div class="feldhinweis">Beim Modellwechsel wird die Standardstimme des neuen Anbieters gesetzt.</div>
+          <div class="feldhinweis" id="dAnbieterHinweis"${ANBIETER_HINWEIS[t.voiceProvider] ? '' : ' hidden'}>${esc(ANBIETER_HINWEIS[t.voiceProvider] || '')}</div>
         </div>
         <div class="detail__block">
           <h3>Branche und Module</h3>
@@ -775,6 +782,8 @@
           // Anbieter, dessen Stimme serverseitig gar nicht gesetzt wurde.
           t.voiceProvider = provider; t.voiceId = voiceSel.value;
           toast('KI-Modell: ' + ANBIETER[provider] + ', Stimme ' + stimmeName(provider, t.voiceId));
+          const hinweis = $('dAnbieterHinweis');
+          if (hinweis) { hinweis.textContent = ANBIETER_HINWEIS[provider] || ''; hinweis.hidden = !ANBIETER_HINWEIS[provider]; }
         } catch (e) {
           if (anbieterGesetzt) {
             // Die Stimme konnte nicht gesetzt werden, der Anbieter wurde aber schon gespeichert:
