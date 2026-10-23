@@ -8195,7 +8195,7 @@
       const wmax = Math.max(1, ...wtage); const wt = q('dbWochentag'); wt.innerHTML = '';
       [1, 2, 3, 4, 5, 6, 0].forEach((i) => { const d = document.createElement('div'); d.className = 'db-thema' + (dbFilter?.art === 'wochentag' && dbFilter.wert === i ? ' aktiv' : ''); d.innerHTML = '<div class="n"><span></span><span>' + wtage[i] + '</span></div><div class="b"><span style="width:' + Math.round(wtage[i] / wmax * 100) + '%"></span></div>'; d.querySelector('.n span').textContent = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'][i]; if (wtage[i]) d.onclick = () => filterSetzen({ art: 'wochentag', wert: i, label: ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'][i] }); wt.append(d); });
       // Fakten zum Assistenten
-      const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)', 'mistral-live': 'Mistral Live (Vorschau)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
+      const anbieter = { openai: 'OpenAI GPT-Realtime', grok: 'xAI Grok Voice', gemini: 'Google Gemini Live', mistral: 'Mistral (EU)', live: 'OpenAI GPT-Live', 'mistral-live': 'Mistral Live (Vorschau)' }[cfg?.voice_provider] || cfg?.voice_provider || '–';
       const stimme = ' · ' + stimmenName(cfg?.voice_id); // Anzeigename statt roher Kennung
       const nummern = nums.map((x) => x.phone_number + (x.department && x.department !== 'general' ? ' (' + x.department + ')' : '')).join(', ') || 'noch keine';
       q('dbFakten').innerHTML = [
