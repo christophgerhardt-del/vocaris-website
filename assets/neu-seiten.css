@@ -137,7 +137,6 @@
 .datenweg__text{margin-top:var(--r3);display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:15px;color:var(--text-2);line-height:1.55;max-width:80ch}
 .datenweg__text svg{width:18px;height:18px;color:var(--akzent);margin-top:3px}
 .wege{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--r2);margin-bottom:var(--r4)}
-.wege--sechs{grid-template-columns:repeat(3,1fr)}
 .weg{text-align:left;display:grid;gap:8px;align-content:start;padding:var(--r2) var(--r2) var(--r2);cursor:pointer;color:var(--text-1);transition:transform .25s var(--kurve),box-shadow .25s var(--kurve),border-color .25s}
 .weg:hover{transform:translateY(-2px);box-shadow:var(--schatten)}
 .weg[aria-pressed="true"]{border-color:var(--akzent);box-shadow:0 0 0 3px var(--akzent-zart)}
