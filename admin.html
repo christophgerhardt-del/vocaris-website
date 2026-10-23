@@ -375,7 +375,7 @@
     const ANBIETER_KURZ = { openai: 'OpenAI', live: 'GPT-Live', gemini: 'Gemini', grok: 'Grok', mistral: 'Mistral', 'mistral-live': 'Mistral Live' };
     // Hinweis unter der Auswahl, solange ein Anbieter nur eine Vorschau ist.
     const ANBIETER_HINWEIS = {
-      'mistral-live': 'Vorschau, nur für Testfirmen: läuft über Mistrals globalen Endpunkt (keine EU-Zusage), eine deutsche Stimme (Heidi), ausgehende Anrufe über die Mistral-Kaskade. Braucht die Migration voice_provider_mistral_live.',
+      'mistral-live': 'Vorschau, nur für Testfirmen: läuft über Mistrals globalen Endpunkt (keine EU-Zusage), eine deutsche Stimme (Heidi), ausgehende Anrufe über die Mistral-Kaskade. Umstellen geht nur für Firmen, deren Kennung auf dem Server in MISTRAL_LIVE_FIRMEN steht (sonst lehnt der Server ab), und erst nach der Migration voice_provider_mistral_live.',
     };
     const TARIF_NAMEN = { klein: 'Klein', standard: 'Standard', gross: 'Groß', trial: 'Test' };
     const ABTEILUNG = { general: 'Allgemein', vertrieb: 'Vertrieb', support: 'Support' };
