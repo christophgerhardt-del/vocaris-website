@@ -3875,23 +3875,30 @@
       });
     }
     let pwFalleLoesen = null;
-    function openPwModal(recovery = false) {
-      pwRecovery = recovery;
-      $('pwModalTitle').textContent = recovery ? 'Neues Passwort setzen' : 'Passwort ändern';
-      $('pwModalSub').textContent = recovery
+    // Startcode: Konten, die wir mit einem einmaligen Zugangscode anlegen, tragen
+    // user_metadata.passwort_setzen = true. Dann muss beim ersten Login ein eigenes
+    // Passwort her – ohne Abbrechen, bis es gespeichert ist.
+    let pwPflicht = false;
+    function openPwModal(recovery = false, pflicht = false) {
+      pwRecovery = recovery; pwPflicht = pflicht;
+      $('pwModalTitle').textContent = pflicht ? 'Willkommen – eigenes Passwort festlegen' : recovery ? 'Neues Passwort setzen' : 'Passwort ändern';
+      $('pwModalSub').textContent = pflicht
+        ? 'Du hast dich mit deinem Zugangscode angemeldet. Lege jetzt dein eigenes Passwort fest (mindestens 8 Zeichen). Der Zugangscode gilt danach nicht mehr.'
+        : recovery
         ? 'Lege jetzt dein neues Passwort fest (mindestens 8 Zeichen).'
         : 'Wähle ein neues Passwort (mindestens 8 Zeichen).';
+      $('pwCancel').classList.toggle('hidden', pflicht);
       $('pwNew').value = ''; $('pwNew2').value = ''; $('pwMsg').textContent = ''; pwFeldFehler(false);
       $('pwModal').classList.remove('hidden');
       // Rückziel fest auf den Konto-Knopf: "Passwort ändern" steht im Konto-Menü, das sich beim Klick
       // selbst schließt (liste.addEventListener('click', ...) weiter unten) – der eigentliche Auslöser
       // wäre beim Schließen also schon wieder unsichtbar.
-      pwFalleLoesen = fokusFalle($('pwModal'), closePwModal, $('kontoKnopf'));
+      pwFalleLoesen = fokusFalle($('pwModal'), () => { if (!pwPflicht) closePwModal(); }, $('kontoKnopf'));
       setTimeout(() => $('pwNew').focus(), 50);
     }
     /** Zentrales Schließen: blendet aus, löst die Fokusfalle und gibt den Fokus ans auslösende Element zurück. */
     function closePwModal() {
-      $('pwModal').classList.add('hidden'); pwRecovery = false;
+      $('pwModal').classList.add('hidden'); pwRecovery = false; pwPflicht = false; $('pwCancel').classList.remove('hidden');
       if (pwFalleLoesen) { const f = pwFalleLoesen; pwFalleLoesen = null; f(); }
     }
     $('changePwBtn').onclick = () => openPwModal(false);
@@ -3901,10 +3908,11 @@
       if (a.length < 8) { $('pwMsg').textContent = 'Mindestens 8 Zeichen.'; pwFeldFehler(true); return; }
       if (a !== b) { $('pwMsg').textContent = 'Die Passwörter stimmen nicht überein.'; pwFeldFehler(true); return; }
       $('pwSave').disabled = true;
-      const { error } = await sb.auth.updateUser({ password: a });
+      const pflicht = pwPflicht;
+      const { error } = await sb.auth.updateUser(pflicht ? { password: a, data: { passwort_setzen: false } } : { password: a });
       $('pwSave').disabled = false;
       if (error) { $('pwMsg').textContent = fehlerText(error); pwFeldFehler(true); return; }
-      closePwModal(); toast('Passwort geändert.');
+      closePwModal(); toast(pflicht ? 'Passwort gespeichert. Ab jetzt meldest du dich damit an.' : 'Passwort geändert.');
     };
     // Beim Weitertippen gilt der vorige Fehler nicht mehr als aktuell.
     ['pwNew', 'pwNew2'].forEach((id) => $(id).addEventListener('input', () => pwFeldFehler(false)));
@@ -3965,6 +3973,7 @@
       const boot = $('boot'); if (!tenant) boot.classList.remove('hidden');
       await loadAll();
       boot.classList.add('hidden');
+      if (session?.user?.user_metadata?.passwort_setzen === true) openPwModal(false, true);
       if (location.hash.indexOf('cal=ok') >= 0) { toast('Kalender verbunden.'); history.replaceState(null, '', 'app.html'); }
       else if (location.hash.indexOf('cal=err') >= 0) { toast('Kalender-Verbindung fehlgeschlagen.', 'err'); history.replaceState(null, '', 'app.html'); }
     }
