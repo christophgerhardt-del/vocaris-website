@@ -2545,12 +2545,16 @@
               <div style="flex:2"><input id="whTgToken" placeholder="123456:ABC-DEF… (Bot-Token)" aria-label="Telegram Bot-Token" /></div>
               <div><input id="whTgChat" placeholder="Chat-ID, z. B. 12345678" aria-label="Telegram Chat-ID" /></div>
             </div>
+            <!-- SMS ausgeblendet (02.11.2026): Telnyx hat kein Messaging-Profil, keine Nummer kann SMS senden.
+                 Felder bleiben im DOM, damit Laden/Speichern unverändert läuft. Wieder einblenden, sobald SMS eingerichtet ist. -->
+            <div hidden>
             <label for="whSms">SMS <span class="muted">(Handynummer, +49…)</span></label>
             <div class="grid2">
               <div style="flex:2"><input id="whSms" placeholder="+49 170 1234567" inputmode="tel" /></div>
               <div><label class="chk" style="margin:0"><input type="checkbox" id="whSmsUrgent" checked /> <b>nur dringende Nachrichten</b></label></div>
             </div>
             <p class="muted" style="text-align:left;padding:0;margin:4px 0 0;font-size:12.5px">Kurz und ohne Anhang: Name, Nummer, Anliegen. Aus bedeutet: jede Nachricht kommt auch per SMS.</p>
+            </div>
             <p class="muted" style="text-align:left;padding:0;margin:14px 0 0;font-size:12.5px">Die E-Mail nach jedem Anruf (Ereignis „Anruf beendet“) enthält jetzt die Zusammenfassung und den vollständigen Gesprächsverlauf.</p>
           </div>
 
@@ -4221,7 +4225,7 @@
     // ---- Schnittstellen: Reiter + Statusleiste ----
     function ifStatus() {
       const box = $('ifStatus'); if (!box) return;
-      const an = $('whEnabled')?.checked; const kanaele = [['E-Mail', $('whEmail')?.value], ['Slack', $('whSlack')?.value], ['Teams', $('whTeams')?.value], ['Telegram', $('whTgToken')?.value], ['SMS', $('whSms')?.value]].filter(([, v]) => (v || '').trim()).map(([k]) => k);
+      const an = $('whEnabled')?.checked; const kanaele = [['E-Mail', $('whEmail')?.value], ['Slack', $('whSlack')?.value], ['Teams', $('whTeams')?.value], ['Telegram', $('whTgToken')?.value]].filter(([, v]) => (v || '').trim()).map(([k]) => k);
       const ereignisse = [['whMsg', 'Nachrichten'], ['whAppt', 'Termine'], ['whGap', 'offene Fragen'], ['whCall', 'Anrufe']].filter(([id]) => $(id)?.checked).map(([, l]) => l);
       const zaehl = (id) => document.querySelectorAll('#' + id + ' .item').length;
       const kacheln = [
@@ -10532,7 +10536,7 @@
       'sec-gaps': ['Fragen von Anrufern, die der Assistent nicht beantworten konnte.', 'Antwort eintippen und <b>Speichern</b>: Sie landet in der Wissensdatenbank und gilt ab dem nächsten Anruf. <b>Verwerfen</b> entfernt Fragen, die nicht passen.'],
       'sec-assistant': ['In sechs Reitern: Grundlagen, Verhalten, Zeiten & Ausnahmen, Stimme & Sprache, Erreichbarkeit, Datenschutz & Berichte. Wie sich der Assistent meldet und verhält: Begrüßung, Rolle, Ton, Öffnungszeiten, Stimme, Regeln und was er erfassen oder weiterverbinden soll.', 'Alles greift nach <b>Speichern</b> (auch Strg+S) beim nächsten Anruf. <b>Testanruf</b> zeigt deine Nummer zum Anrufen; das Gespräch erscheint sofort unter Eingehend.'],
       'sec-booking': ['Terminbuchung am Telefon: Dauer, Puffer, Vorlauf und Zeitfenster festlegen, Kalender verbinden.', 'Gebuchte Termine stehen in der Liste; der iCal-Link bringt sie in deinen Kalender.'],
-      'sec-webhooks': ['Wohin Ereignisse gehen: E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten, Terminen, Fragen und Anrufen. Dazu CRM, Ticketsystem, API-Schlüssel und eigener Webhook.', '<b>Speichern</b> sichert Ereignisse und Kanäle, <b>Test senden</b> prüft alle aktiven Ziele.'],
+      'sec-webhooks': ['Wohin Ereignisse gehen: E-Mail, Slack, Teams oder Telegram bei neuen Nachrichten, Terminen, Fragen und Anrufen. Dazu CRM, Ticketsystem, API-Schlüssel und eigener Webhook.', '<b>Speichern</b> sichert Ereignisse und Kanäle, <b>Test senden</b> prüft alle aktiven Ziele.'],
       'sec-number': ['Deine Vocaris-Rufnummern mit Abteilung und Weiterleitung. Die Nummer richten wir für dich ein; hier siehst du den Stand.', 'Darunter die <b>Sperrliste</b>: Gesperrte Nummern nimmt der Assistent nicht mehr an.'],
       'sec-team': ['Wer sich anmelden darf: Inhaber, Verwaltung oder Mitarbeiter mit abgestuften Rechten.', '<b>Einladen</b> schickt eine E-Mail mit Link. Zugänge lassen sich hier auch wieder entfernen.'],
       'sec-floorplan': ['Tische und Bereiche zeichnen: Im Bearbeitungsmodus ziehst du Tische, legst Plätze fest und fasst sie zusammen.', 'Live zeigt der Plan, welche Tische frei, reserviert oder besetzt sind.'],
@@ -10567,7 +10571,7 @@
         { ok: chk.nummer, t: 'Rufnummer vorhanden', s: chk.nummer ? '' : 'Wir schalten deine Nummer frei – Stand unter Telefonnummer.', ziel: 'sec-number' },
         { ok: chk.begruessung, t: 'Begrüßung angepasst', s: 'So meldet sich der Assistent beim Abnehmen.', ziel: 'sec-assistant', danach: () => setTimeout(() => { asReiterZeigen('grund'); $('greeting')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('greeting')?.focus(); }, 150) },
         { ok: chk.wissen >= 5, t: 'Mindestens fünf Wissenseinträge', s: chk.wissen + ' von 5 · Öffnungszeiten, Preise, Abläufe' + (dbDaten && dbDaten.kbEchtN != null && dbDaten.kbN > dbDaten.kbEchtN ? ' · Vorlagen zählen erst, wenn du sie angepasst hast' : ''), ziel: 'sec-kb' },
-        { ok: chk.benachrichtigung, t: 'Benachrichtigung eingerichtet', s: 'E-Mail, Slack, Teams, Telegram oder SMS bei neuen Nachrichten.', ziel: 'sec-webhooks', danach: () => document.querySelector('#ifTabs [data-iftab="benachrichtigungen"]')?.click() },
+        { ok: chk.benachrichtigung, t: 'Benachrichtigung eingerichtet', s: 'E-Mail, Slack, Teams oder Telegram bei neuen Nachrichten.', ziel: 'sec-webhooks', danach: () => document.querySelector('#ifTabs [data-iftab="benachrichtigungen"]')?.click() },
         { ok: chk.testanruf, t: 'Testanruf gemacht', s: 'Ruf deine Nummer an und sieh das Gespräch unter Eingehend.', ziel: 'sec-live', danach: () => testanrufOeffnen() },
       ];
       const fertig = schritte.filter((x) => x.ok).length;
@@ -11560,7 +11564,7 @@
         for (const [ziel, text] of Object.entries(kur.navTexte || {})) { textTauschen(navItem(ziel), text); textTauschen($(ziel)?.querySelector('.pagehead'), text); }
         const nurBenachrichtigung = zustand.industry === 'restaurant';
         $('sec-webhooks')?.classList.toggle('if-nur-benachrichtigung', nurBenachrichtigung);
-        if (nurBenachrichtigung) { const ps = $('sec-webhooks')?.querySelector('.pagesub'); if (ps) ps.textContent = 'Wohin neue Nachrichten, offene Fragen und Anrufe gemeldet werden: E-Mail, Slack, Teams, Telegram oder SMS.'; }
+        if (nurBenachrichtigung) { const ps = $('sec-webhooks')?.querySelector('.pagesub'); if (ps) ps.textContent = 'Wohin neue Nachrichten, offene Fragen und Anrufe gemeldet werden: E-Mail, Slack, Teams oder Telegram.'; }
         // Ohne Assistenten-Weg (Restaurant: dort spricht immer ein Mensch) gibt es keine geplanten Anrufe.
         $('obGeplant')?.classList.toggle('hidden', !assistentWegErlaubt());
         navOrdnen(); tabbarAnpassen(zustand);
