@@ -1609,7 +1609,7 @@
           <p class="login__sub">Melde dich an, um deinen Assistenten zu verwalten.</p>
           <label for="email">E-Mail</label>
           <input id="email" type="email" autocomplete="email" placeholder="name@firma.de" />
-          <label for="password">Passwort <span class="muted" style="font-weight:400">oder Zugangscode</span></label>
+          <label for="password">Passwort</label>
           <div class="pw">
             <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
             <button type="button" id="pwToggle" class="pw__toggle" aria-label="Passwort anzeigen">
@@ -3883,7 +3883,7 @@
       pwRecovery = recovery; pwPflicht = pflicht;
       $('pwModalTitle').textContent = pflicht ? 'Willkommen – eigenes Passwort festlegen' : recovery ? 'Neues Passwort setzen' : 'Passwort ändern';
       $('pwModalSub').textContent = pflicht
-        ? 'Du hast dich mit deinem Zugangscode angemeldet. Lege jetzt dein eigenes Passwort fest (mindestens 8 Zeichen). Der Zugangscode gilt danach nicht mehr.'
+        ? 'Du hast dich mit deinem initialen Passwort angemeldet. Lege jetzt dein eigenes Passwort fest (mindestens 8 Zeichen). Das initiale Passwort gilt danach nicht mehr.'
         : recovery
         ? 'Lege jetzt dein neues Passwort fest (mindestens 8 Zeichen).'
         : 'Wähle ein neues Passwort (mindestens 8 Zeichen).';
