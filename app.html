@@ -4046,6 +4046,7 @@
       ]);
       module = { termine: !!bkCfg?.enabled, reservierung: !!rsCfg?.enabled };
       applyVisibility({ industry: tenant.industry || 'general', module });
+      ausgehendLaden();
       if (['sec-overview', 'sec-live', 'sec-outbound', 'sec-kontakte', 'sec-messages', 'sec-tickets', 'sec-auswertung', 'sec-kb', 'sec-gaps', 'sec-assistant', 'sec-number', 'sec-team', 'sec-booking', 'sec-webhooks', 'sec-restaurant', 'sec-guests'].includes(document.querySelector('.nav-item.active')?.dataset.target)) document.querySelector('.main')?.classList.add('main--dashboard');
       if (module.reservierung) updateMenuStatus();
 
@@ -6410,7 +6411,7 @@
       $('tnBar')?.classList.toggle('hidden', !zeigen || aufSeite);
       $('tnInline')?.classList.toggle('hidden', !zeigen);
       // Solange telefoniert wird, lädt niemand zu einem zweiten Anruf ein.
-      $('obWaehl')?.classList.toggle('hidden', zeigen);
+      $('obWaehl')?.classList.toggle('hidden', zeigen || ausgehendFrei === false);
     }
 
     /** Mikrofonpegel in der Anrufzeile (drei Striche). */
@@ -11818,6 +11819,27 @@
       const urteil = error ? 'kein_tarif' : tarifUrteil(data);
       tarifStand = { aktiv: urteil === 'aktiv', urteil, fehler: !!error, plan: data?.plan ?? null, status: data?.status ?? null };
       nummernKaufZeigen();
+    }
+    // Ausgehende Anrufe gibt es erst nach Freigabe durch den Support (tenant_freigaben; der Server sperrt dasselbe
+    // in ausgehend-schutz.ts). null = unbekannt, etwa solange die Tabelle fehlt: dann nichts ausblenden.
+    var ausgehendFrei = null;
+    async function ausgehendLaden() {
+      if (!tenant) return;
+      const fuer = tenant.id;
+      const { data, error } = await sb.from('tenant_freigaben').select('ausgehend').eq('tenant_id', fuer).maybeSingle();
+      if (tenant?.id !== fuer) return;
+      ausgehendFrei = error ? null : data?.ausgehend === true;
+      ausgehendZeigen();
+    }
+    function ausgehendZeigen() {
+      const gesperrt = ausgehendFrei === false;
+      $('obAnrufKnopf')?.classList.toggle('hidden', gesperrt);
+      if (gesperrt) $('obWaehl')?.classList.add('hidden');
+      let h = $('obGesperrt');
+      if (!gesperrt) { h?.remove(); return; }
+      if (!h) { h = document.createElement('div'); h.id = 'obGesperrt'; h.className = 'num-tarif-hinweis'; h.setAttribute('role', 'note'); $('obWaehl')?.before(h); }
+      const link = '<a href="mailto:' + KONTAKT_MAIL + '?subject=' + encodeURIComponent('Ausgehende Anrufe für ' + (tenant?.name || 'meine Firma')) + '">' + KONTAKT_MAIL + '</a>';
+      h.innerHTML = '<p><b>Ausgehende Anrufe sind für deine Firma noch nicht freigeschaltet.</b> Schreib uns an ' + link + ', dann schalten wir sie frei.</p>';
     }
     const kontaktLink = () => '<a href="mailto:' + KONTAKT_MAIL + '?subject=' + encodeURIComponent('Rufnummer für ' + (tenant?.name || 'meine Firma')) + '">' + KONTAKT_MAIL + '</a>';
     function nummernKaufZeigen() {

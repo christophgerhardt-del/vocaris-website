@@ -750,6 +750,11 @@
             ${modTag(t.kioskEnabled, 'Kiosk', 'Das Personal-iPad ist freigeschaltet.', 'Kiosk nicht freigeschaltet.')}
           </div>
           ${hinweis}
+        </div>
+        <div class="detail__block">
+          <h3>Ausgehende Anrufe</h3>
+          <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer"><input type="checkbox" id="dAusgehend"${t.ausgehend ? ' checked' : ''}${t.ausgehend === undefined ? ' disabled' : ''}> Freigeschaltet</label>
+          <div class="feldhinweis">${t.ausgehend === undefined ? 'Der Server liefert dieses Feld noch nicht.' : 'Neue Firmen starten gesperrt. Freigeschaltet darf die Firma über Vocaris anrufen: Assistent ruft an, geplante Anrufe, Anruf übers eigene Telefon und im Browser.'}</div>
         </div>`;
       wireDetail(t);
       // Nachfolger für den weggefallenen Fokus: die Detail-Überschrift, nicht <body>.
@@ -795,6 +800,14 @@
         catch (e) { toast(e.message, 'err'); voiceSel.value = t.voiceId; }
       };
       $('dBranche').onchange = (e) => setIndustry(t, e.target);
+      $('dAusgehend').onchange = async (e) => {
+        const an = e.target.checked;
+        if (an && !(await frage('Ausgehende Anrufe freischalten?', t.name + ' kann danach über Vocaris anrufen. Diese Anrufe kosten Telefon- und KI-Minuten.', 'Freischalten'))) { e.target.checked = false; return; }
+        e.target.disabled = true;
+        try { await api('/api/admin/tenants/ausgehend', { tenantId: t.id, an }); t.ausgehend = an; toast(an ? 'Ausgehende Anrufe freigeschaltet' : 'Ausgehende Anrufe gesperrt'); }
+        catch (err) { e.target.checked = !an; toast(err.message, 'err'); }
+        finally { e.target.disabled = false; }
+      };
       document.querySelectorAll('#detailInhalt [data-unassign]').forEach((b) => {
         b.onclick = async () => {
           if (!(await frage('Nummer lösen?', 'Die Nummer ' + b.dataset.unassign + ' wird von ' + t.name + ' getrennt. Anrufe auf dieser Nummer nimmt danach niemand an.', 'Lösen'))) return;
