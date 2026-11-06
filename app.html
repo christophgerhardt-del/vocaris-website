@@ -1460,6 +1460,8 @@
     #sec-number:not(.mit-tarif) :is(#numAddKnopf, #numAddPanel) { display: none !important; }
     .num-tarif-hinweis { margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--white); font-size: 13px; color: var(--ink-soft); text-align: left; }
     .num-tarif-hinweis p { margin: 0; }
+    /* Ausgehende Anrufe nicht freigeschaltet (ausgehendZeigen): auch die Nebeneingänge ausblenden. */
+    body.ausgehend-gesperrt [data-leer="klick:obAnrufKnopf"], body.ausgehend-gesperrt .gp-link[data-planen] { display: none; }
     .num-tarif-hinweis b { color: var(--ink); font-weight: 600; }
     /* Nachträge zur UI-Runde (#37): Die Stundenachse der Auswertung lag über „Gesprächsdauer“ (C18 setzte den Abstand
        für alle .db-stunden auf 4px), und „Ton“/„Hinweise“ brachen im schmalen Konto-Menü dreizeilig um. */
@@ -8710,7 +8712,7 @@
       // Ohne geplante Anrufe nur eine Zeile statt eines großen Leer-Kastens – der Verlauf darunter bleibt im ersten Bild.
       if (!offen) {
         const p = document.createElement('p'); p.className = 'gp-leer'; p.textContent = 'Kein Anruf geplant.';
-        if (assistentWegErlaubt()) { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = 'Anruf planen'; k.dataset.tip = 'Der Assistent ruft zur gewählten Uhrzeit von selbst an'; k.onclick = () => rueckrufPlanenOeffnen('', '', ''); p.append(' ', k); }
+        if (assistentWegErlaubt()) { const k = document.createElement('button'); k.type = 'button'; k.className = 'gp-link'; k.textContent = 'Anruf planen'; k.dataset.planen = ''; k.dataset.tip = 'Der Assistent ruft zur gewählten Uhrzeit von selbst an'; k.onclick = () => rueckrufPlanenOeffnen('', '', ''); p.append(' ', k); }
         if (aeltere) p.append(' · ', aelterKnopf());
         liste.append(p);
         if (!rrAeltereOffen || !aeltere) return;
@@ -11833,6 +11835,7 @@
     }
     function ausgehendZeigen() {
       const gesperrt = ausgehendFrei === false;
+      document.body.classList.toggle('ausgehend-gesperrt', gesperrt);
       $('obAnrufKnopf')?.classList.toggle('hidden', gesperrt);
       if (gesperrt) $('obWaehl')?.classList.add('hidden');
       let h = $('obGesperrt');
