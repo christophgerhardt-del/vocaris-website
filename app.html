@@ -2325,7 +2325,7 @@
               </div>
               <div class="panel" id="asSelbst" data-astab="erreichbar">
                 <h3>Anrufe, die du selbst führst</h3>
-                <p class="muted" style="margin-top:0;text-align:left;padding:0">Mit „Über Vocaris anrufen“ ruft Vocaris zuerst dich an und verbindet dich dann. Der Angerufene sieht deine Firmennummer, und das Gespräch wird mitgeschrieben wie ein Assistenten-Anruf.</p>
+                <p class="muted" style="margin-top:0;text-align:left;padding:0">Mit „Über Vocaris anrufen“ ruft Vocaris zuerst dich an und verbindet dich dann. Der Angerufene sieht deine Firmennummer, und das Gespräch wird mitgeschrieben wie ein Assistenten-Anruf. Dieselbe Nummer klingelt, wenn du ein laufendes Gespräch des Assistenten mit „Übernehmen“ an dich holst.</p>
                 <label for="asAgentNummer">Deine eigene Rufnummer <span class="muted">dort klingelt es</span></label>
                 <input id="asAgentNummer" placeholder="+49 170 1234567" inputmode="tel" />
                 <label style="margin-top:14px;display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="asBridgeTranscript" style="width:auto;margin:0"><span>Diese Gespräche mitschreiben</span></label>
@@ -5850,6 +5850,7 @@
       p.innerHTML = '<div class="lv-detailkopf"><div><span class="live-pill">● Live</span> <b class="lv-nr"></b> <span class="muted" style="font-size:13px">· seit <span data-seit=""></span></span></div>'
         + '<div class="stack" style="margin:0">'
         + '<button class="btn btn--ghost sm" type="button" data-mithoeren>Mithören</button>'
+        + '<button class="btn btn--ghost sm" type="button" data-uebernehmen>Übernehmen</button>'
         + '<button class="btn btn--danger sm" type="button" data-auflegen>Auflegen</button>'
         + '<button class="btn btn--ghost sm" type="button" data-details>Details</button>'
         + '</div></div><div class="transcript" data-transkript></div>';
@@ -5861,6 +5862,7 @@
       mit.classList.toggle('btn--primary', mhLaeuft === c.id);
       mit.onclick = () => (mhLaeuft === c.id ? mithoerenBeenden() : mithoerenStarten(c.id));
       p.querySelector('[data-auflegen]').onclick = function () { anrufAuflegen(c.id, this); };
+      p.querySelector('[data-uebernehmen]').onclick = function () { anrufUebernehmen(c.id, this); };
       transkriptZeichnen(x, p.querySelector('[data-transkript]'), true);
       return p;
     }
@@ -6194,6 +6196,30 @@
       } catch (e) {
         toast('Auflegen: ' + e.message, 'err');
         if (knopf) { knopf.disabled = false; knopf.textContent = 'Auflegen'; }
+      }
+    }
+
+    // Gespräch selbst übernehmen: Der Assistent kündigt kurz an, dann klingelt die eigene Rufnummer
+    // (Assistent › Erreichbarkeit). Welche Nummer, entscheidet der Server, nicht die Anfrage.
+    async function anrufUebernehmen(callId, knopf) {
+      if (!confirm('Gespräch übernehmen? Der Assistent verbindet den Anrufer mit deiner eigenen Rufnummer. Halte das Telefon bereit.')) return;
+      if (knopf) { knopf.disabled = true; knopf.textContent = 'Verbinde …'; }
+      try {
+        const r = await fetch(API + '/api/call/uebernehmen', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ call_id: callId }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Fehler');
+        // Das Gespräch führt jetzt ein Mensch – das gehört nicht mehr in den Browser.
+        if (mhLaeuft === callId) mithoerenBeenden();
+        toast('Wird durchgestellt, gleich klingelt ' + (fmtNr(j.nummer) || 'dein Telefon') + '.', '', 6000);
+        if (knopf) knopf.textContent = 'Übernommen';
+        setTimeout(() => loadLive(), 8000);
+      } catch (e) {
+        toast('Übernehmen: ' + e.message, 'err', 8000);
+        if (knopf) { knopf.disabled = false; knopf.textContent = 'Übernehmen'; }
       }
     }
 
