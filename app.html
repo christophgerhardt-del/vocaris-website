@@ -2538,6 +2538,7 @@
             <p class="muted" style="text-align:left;padding:0;margin-bottom:14px">Sofort-Hinweis, sobald etwas reinkommt. Trag nur ein, was du nutzt — leere Felder werden ignoriert.</p>
             <label for="whEmail" style="margin-top:0">E-Mail</label>
             <input id="whEmail" placeholder="name@firma.de" />
+            <label class="chk" style="margin:6px 0 0"><input type="checkbox" id="whEmailUrgent" /> <b>nur dringende Nachrichten</b> <span class="muted">– z. B. kurzfristige Absagen; alles andere siehst du in der App</span></label>
             <label for="whSlack">Slack <span class="muted">(eingehender Webhook)</span></label>
             <input id="whSlack" placeholder="https://hooks.slack.com/services/…" />
             <label for="whTeams">Microsoft Teams <span class="muted">(eingehender Webhook)</span></label>
@@ -4082,6 +4083,7 @@
       $('whTgToken').value = wh?.telegram_token ?? '';
       $('whTgChat').value = wh?.telegram_chat_id ?? '';
       $('whEmail').value = wh?.email_to ?? ($('userEmail').textContent || '');
+      $('whEmailUrgent').checked = wh?.email_urgent_only === true;
       if ($('whSms')) { $('whSms').value = wh?.sms_to ?? ''; $('whSmsUrgent').checked = wh?.sms_urgent_only !== false; }
       $('whUrl').value = wh?.url ?? '';
       $('whSecret').value = wh?.secret || genSecret();
@@ -9270,6 +9272,7 @@
         slack_url: $('whSlack').value.trim(), teams_url: $('whTeams').value.trim(),
         telegram_token: $('whTgToken').value.trim(), telegram_chat_id: $('whTgChat').value.trim(),
         email_to: $('whEmail').value.trim(),
+        email_urgent_only: !!$('whEmailUrgent')?.checked,
         sms_to: $('whSms')?.value.replace(/\s+/g, '') || null, sms_urgent_only: $('whSmsUrgent')?.checked !== false,
       }, { onConflict: 'tenant_id' });
       $('whSave').disabled = false;
