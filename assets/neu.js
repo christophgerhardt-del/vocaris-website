@@ -327,30 +327,7 @@
     addEventListener('scroll', mal, { passive: true }); addEventListener('resize', mal); mal();
   }
 
-  /* ── 9. Testanruf: Formular, exakt wie bisher (POST /api/demo-call) ─────── */
-  function testanruf() {
-    $$('[data-callform]').forEach(function (f) {
-      var err = $('[data-err]', f) || (f.parentElement && f.parentElement.querySelector('[data-err]'));
-      f.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var input = f.querySelector('input[type=tel]'), consent = f.querySelector('[data-consent]');
-        var num = (input.value || '').replace(/[^\d+]/g, '');
-        if (err) err.textContent = '';
-        if (!/^\+49\d{6,13}$/.test(num)) { if (err) err.textContent = 'Bitte eine deutsche Nummer im Format +49… angeben.'; input.focus(); return; }
-        if (consent && !consent.checked) { if (err) err.textContent = 'Bitte die Einwilligung bestätigen.'; return; }
-        var btn = f.querySelector('button[type=submit]'); btn.disabled = true; var old = btn.textContent; btn.textContent = 'Ruft an…';
-        fetch(API + '/api/demo-call', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: num, consent: true }) })
-          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-          .then(function (res) {
-            if (!res.ok) { if (err) err.textContent = (res.d && res.d.error) || 'Anruf konnte nicht gestartet werden.'; btn.disabled = false; btn.textContent = old; return; }
-            var s = document.createElement('div'); s.className = 'formerfolg'; s.setAttribute('role', 'status');
-            s.innerHTML = '<b>Geschafft.</b><span>Vocaris ruft Sie in wenigen Sekunden an. Nehmen Sie einfach ab.</span>';
-            f.replaceWith(s);
-          })
-          .catch(function () { if (err) err.textContent = 'Server nicht erreichbar. Bitte später erneut.'; btn.disabled = false; btn.textContent = old; });
-      });
-    });
-  }
+  /* ── 9. Testanruf: seit 10.11.2026 entfernt, der Abschluss führt zur Demo-Anfrage (demo.html) ── */
 
   /* ── 10. Live-Status: echte Messung, keine Behauptung ───────────────────── */
   function status() {
@@ -384,5 +361,5 @@
     addEventListener('resize', setzen);
   }
 
-  kopf(); zeigen(); zaehler(); simulator(); player(); tour(); rechner(); schritte(); testanruf(); status(); ctaleiste();
+  kopf(); zeigen(); zaehler(); simulator(); player(); tour(); rechner(); schritte(); status(); ctaleiste();
 })();
